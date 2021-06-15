@@ -39,6 +39,7 @@ import companyRepresentatives from './company-representatives'
 import masterTaxonomy from './masterTaxonomy'
 import clientTaxonomy from './clientTaxonomy'
 import notifications from './notifications'
+import onboarding from './onboarding'
 
 const router = new Router()
 
@@ -106,5 +107,6 @@ router.use('/company-representatives', companyRepresentatives)
 router.use('/clientTaxonomies', clientTaxonomy)
 router.use('/masterTaxonomies', masterTaxonomy)
 router.use('/notifications', notifications)
+router.use('/onboardings', onboarding)
 
 export default router
