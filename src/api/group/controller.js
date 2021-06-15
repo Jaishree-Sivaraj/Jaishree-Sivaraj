@@ -54,10 +54,10 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
       .then((groups) => {
         let responseList = [];
         groups.forEach(item => {
-          let batchObjects = [];
-          item.batchList.forEach(obj => {
-            batchObjects.push({value: obj.id, label: obj.batchName});
-          })
+          // let batchObjects = [];
+          // item.batchList.forEach(obj => {
+          //   batchObjects.push({value: obj.id, label: obj.batchName});
+          // })
           let analystObjects = [];
           item.assignedAnalyst.forEach(obj => {
             analystObjects.push({value: obj.id, label: obj.name});
@@ -70,7 +70,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
             _id: item.id,
             groupName: item.groupName,
             admin: { value: item.groupAdmin.id, label: item.groupAdmin.name },
-            assignBatch: batchObjects,
+            assignBatch: item.batchList,
             assignAnalyst: analystObjects,
             assignQA: qaObjects,
             status: true
