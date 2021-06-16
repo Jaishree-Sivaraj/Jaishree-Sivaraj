@@ -54,8 +54,8 @@ export const destroy = ({ user, params }, res, next) =>
 
 export const type8Validation = async ({ user, body }, res, next) => {
   console.log(body.datapointId, body.companyId, body.clientTaxonomyId, body.currentYear, body.previousYear, body.response);
-  let derivedDatapoints = await DerivedDatapoints.find({ companyId: body.companyId, status: true });
-  let standalone_datapoints = await StandaloneDatapoints.find({ companyId: body.companyId, status: true });
+  let derivedDatapoints = await DerivedDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
+  let standalone_datapoints = await StandaloneDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
   let mergedDetails = _.concat(derivedDatapoints, standalone_datapoints);
   let datapointDetails = await Datapoints.findOne({ _id: body.datapointId, clientTaxonomyId: body.clientTaxonomyId });
   if (datapointDetails.methodName.trim() == 'OR') {
@@ -64,14 +64,14 @@ export const type8Validation = async ({ user, body }, res, next) => {
       for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
         let parameterDPResponse, previousYearResponse;
         _.filter(mergedDetails, (object, index) => {
-          if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId == parameters[parameterIndex].id) {
+          if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameters[parameterIndex].id) {
             parameterDPResponse = object;
-          } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
-            previousYearResponse = object
+          } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
+            previousYearResponse = object;
           }
         })
         console.log(parameterDPResponse, previousYearResponse)
-        if (parameterDPResponse.response) {
+        if (parameterDPResponse) {
           if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
             if (datapointDetails.checkCondition.trim() == 'greater') {
               let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
@@ -90,7 +90,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
             }
           }
         } else {
-          return res.status(404).json({ message: "Response not found" });
+          return res.status(404).json({ message: "Response is missing for " + parameters[parameterIndex].code + "year :"+ body.currentYear});
         }
         if (parameterIndex == parameters.length - 1) {
           return res.status(402).json({ message: "Condition Failed" });
@@ -103,13 +103,13 @@ export const type8Validation = async ({ user, body }, res, next) => {
     let parameter = datapointDetails.dependentCodes;
     let parameterDPResponse, previousYearResponse;
     _.filter(mergedDetails, (object, index) => {
-      if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId == parameter[0].id) {
+      if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameter[0].id) {
         parameterDPResponse = object;
-      } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
+      } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
         previousYearResponse = object;
       }
     })
-    if (parameterDPResponse.response) {
+    if (parameterDPResponse) {
       if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
         if (datapointDetails.checkCondition.trim() == 'greater') {
           let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
@@ -129,6 +129,8 @@ export const type8Validation = async ({ user, body }, res, next) => {
       } else {
         return res.status(404).json({ message: "Condition Failed" });
       }
+    } else {
+      return res.status(404).json({ message: "Response is missing for " + parameter[0].code + "year :"+ body.currentYear});
     }
   } else if (datapointDetails.methodName.trim() == 'ANDOR') {
     let parameters = datapointDetails.dependentCodes;
