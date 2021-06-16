@@ -1,5 +1,7 @@
+import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Group } from '.'
+import { User } from '../user'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -38,7 +40,14 @@ export const createGroup = async({ user, bodymen: { body } }, res, next) =>{
     status: true
   }
   await Group.create({ ...groupObject, createdBy: user })
-    .then((group) => group.view(true))
+    .then(async(group) => {
+      let assignedAnalystAndQAList = _.concat(qaList, analystList);
+      if (assignedAnalystAndQAList.length > 0) {
+        await User.updateMany({
+          "_id": { $in: assignedAnalystAndQAList }
+        }, { $set: { isAssignedToGroup: true } }, {});        
+      }
+    })
     .then(success(res, 201))
     .catch(next)
 }
