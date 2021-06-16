@@ -33,7 +33,6 @@ export const getUsersByRole = ({ params, querymen: { query, select, cursor } }, 
       }))
     )
     .then(success(res))
-
     .catch(next)
 }
 
@@ -301,8 +300,6 @@ async function storeOnBoardingImagesInLocalStorage(onboardingBase64Image, folder
     })
   })
 }
-
-
 
 export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
   User.findById(body.userId)
