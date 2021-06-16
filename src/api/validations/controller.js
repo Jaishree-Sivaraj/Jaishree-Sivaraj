@@ -136,18 +136,20 @@ export const type8Validation = async ({ user, body }, res, next) => {
     let parameters = datapointDetails.dependentCodes;
     let param1Value, param2Value, param3Value;
     let previousYearResponse;
+    //let year;
     _.filter(mergedDetails, (object, index) => {
       if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
         previousYearResponse = object
-      } else if (object.datapointId == parameters[0].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
         param1Value = object.response ? object.response : ''
-      } else if (object.datapointId == parameters[1].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
         param2Value = object.response ? object.response : ''
-      } else if (object.datapointId == parameters[2].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
         param3Value = object.response ? object.response : ''
       }
     })
-    if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes') || param3Value.toLowerCase() == 'yes') {
+    //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes') || param3Value.toLowerCase() == 'yes') {
+      if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes')) || (param3Value == 'yes' || param3Value == 'Yes')) {
       if (datapointDetails.checkCondition.trim() == 'greater') {
         let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
         if (Number(body.response) > Number(calculatedResponse)) {
@@ -167,23 +169,25 @@ export const type8Validation = async ({ user, body }, res, next) => {
       return res.status(404).json({ message: "Condition Failed" });
     }
   } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
-    let parameters = datapointDetails.dependentCodes.split;
+    console.log('...',datapointDetails);
+    let parameters = datapointDetails.dependentCodes;
     let param1Value, param2Value, param3Value, param4Value;
     let previousYearResponse;
     _.filter(mergedDetails, (object, index) => {
       if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
         previousYearResponse = object
-      } else if (object.datapointId == parameters[0].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
         param1Value = object.response ? object.response : ''
-      } else if (object.datapointId == parameters[1].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
         param2Value = object.response ? object.response : ''
-      } else if (object.datapointId == parameters[2].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
         param3Value = object.response ? object.response : ''
-      } else if (object.datapointId == parameters[3].id, year == body.currentYear) {
+      } else if (object.datapointId == parameters[3].id, object.year == body.currentYear) {
         param4Value = object.response ? object.response : ''
       }
     })
-    if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes' && param3Value.toLowerCase() == 'yes') || param4Value.toLowerCase() == 'yes') {
+    //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes' && param3Value.toLowerCase() == 'yes') || param4Value.toLowerCase() == 'yes') {
+      if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes') && (param3Value == 'yes' || param3Value == 'yes') || (param4Value == 'yes' || param4Value == 'Yes'))) {
       if (datapointDetails.checkCondition.trim() == 'greater') {
         let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
         if (Number(body.response) > Number(calculatedResponse)) {
