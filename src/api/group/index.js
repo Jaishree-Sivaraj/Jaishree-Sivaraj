@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, createGroup, updateGroup } from './controller'
+import { create, index, show, update, destroy, createGroup, updateGroup, getGroupsOfAnAdmin } from './controller'
 import { schema } from './model'
 export Group, { schema } from './model'
 
@@ -68,6 +68,23 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+ * @api {get} /groups Retrieve groups
+ * @apiName RetrieveGroups
+ * @apiGroup Group
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of groups.
+ * @apiSuccess {Object[]} rows List of groups.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/my-groups/:groupAdmin',
+  token({ required: true }),
+  query(),
+  getGroupsOfAnAdmin)
 
 /**
  * @api {get} /groups/:id Retrieve group

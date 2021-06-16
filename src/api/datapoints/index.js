@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
@@ -123,6 +123,20 @@ router.get('/import-from-json/categoryId',
   token({ required: true }),
   includeCategoryIdsFromJson)
 
+/**
+* @api {get} /datapoints/list/:categoryId/:companyId/:clientTaxonomyId/:year Get categorywise datapoints
+* @apiName GetCategorywiseDatapoints
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} datapoints Datapoints's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Datapoints not found.
+* @apiError 401 user access only.
+*/
+router.get('/list/:categoryId/:companyId/:clientTaxonomyId/:year',
+  token({ required: true }),
+  getCategorywiseDatapoints)
 
 /**
  * @api {put} /datapoints/:id Update datapoints

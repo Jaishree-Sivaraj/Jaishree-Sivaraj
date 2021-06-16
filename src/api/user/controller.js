@@ -33,7 +33,6 @@ export const getUsersByRole = ({ params, querymen: { query, select, cursor } }, 
       }))
     )
     .then(success(res))
-
     .catch(next)
 }
 
@@ -181,7 +180,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 email: onBoardingDetails.email ? onBoardingDetails.email : '',
                 password: onBoardingDetails.password ? onBoardingDetails.password : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                CompanyName: onBoardingDetails.CompanyName ? onBoardingDetails.CompanyName : "",
+                CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
                 authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                 companyIdForClient: companyIdForClient,
                 status: true,
@@ -268,10 +267,10 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       .catch((err) => {
         return res.status(500).json({ message: "Failed to store companyIdForCompany" })
       })
-  } else if(onBoardingDetails.roleName == "Analyst") {
-//TODO
-  } else if(onBoardingDetails.roleName == "QA") {
-//TODO
+  } else if (onBoardingDetails.roleName == "Analyst") {
+    //TODO
+  } else if (onBoardingDetails.roleName == "QA") {
+    //TODO
   } else {
     return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
   }
@@ -302,8 +301,6 @@ async function storeOnBoardingImagesInLocalStorage(onboardingBase64Image, folder
   })
 }
 
-
-
 export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
   User.findById(body.userId)
     .populate('roleId')
@@ -325,9 +322,24 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
 }
 
 export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
-  console.log('updateUserRoles');
-  User.find({ isUserApproved: true, isRoleAssigned: true });//Separate New API to return only approved and role assigned users
+  //User.find({ isUserApproved: true, isRoleAssigned: true });//Separate New API to return only approved and role assigned users
+  var roles = body.roleDetails.map(rec => rec.value);
+  User.updateOne({ _id: body.id }, { $set: { isRoleAssigned: true, roleId: roles } })
+    .then((updatedObject) => {
+      if (updatedObject) {
+        return res.status(200).json({ message: "Role details added to user" });
+      } else {
+        return res.status(500).json({ message: "Failed to update Role details" });
+      }
+    })
 }
+
+// export const getApprovedAndAssignedRoleUser = (req, res, next => {
+//   User.find({ isUserApproved: true, isRoleAssigned: true }).then((approvedUsers) => {
+//     res.send(approvedUsers);
+//   })
+// })
+
 
 export const update = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)

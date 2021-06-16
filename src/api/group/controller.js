@@ -1,5 +1,7 @@
+import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Group } from '.'
+import { User } from '../user'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -38,7 +40,14 @@ export const createGroup = async({ user, bodymen: { body } }, res, next) =>{
     status: true
   }
   await Group.create({ ...groupObject, createdBy: user })
-    .then((group) => group.view(true))
+    .then(async(group) => {
+      let assignedAnalystAndQAList = _.concat(qaList, analystList);
+      if (assignedAnalystAndQAList.length > 0) {
+        await User.updateMany({
+          "_id": { $in: assignedAnalystAndQAList }
+        }, { $set: { isAssignedToGroup: true } }, {});        
+      }
+    })
     .then(success(res, 201))
     .catch(next)
 }
@@ -54,10 +63,10 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
       .then((groups) => {
         let responseList = [];
         groups.forEach(item => {
-          let batchObjects = [];
-          item.batchList.forEach(obj => {
-            batchObjects.push({value: obj.id, label: obj.batchName});
-          })
+          // let batchObjects = [];
+          // item.batchList.forEach(obj => {
+          //   batchObjects.push({value: obj.id, label: obj.batchName});
+          // })
           let analystObjects = [];
           item.assignedAnalyst.forEach(obj => {
             analystObjects.push({value: obj.id, label: obj.name});
@@ -70,7 +79,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
             _id: item.id,
             groupName: item.groupName,
             admin: { value: item.groupAdmin.id, label: item.groupAdmin.name },
-            assignBatch: batchObjects,
+            assignBatch: item.batchList,
             assignAnalyst: analystObjects,
             assignQA: qaObjects,
             status: true
@@ -85,6 +94,48 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     )
     .then(success(res))
     .catch(next)
+
+export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor } }, res, next) => {
+  Group.count({groupAdmin: params.groupAdmin ? params.groupAdmin : null})
+    .then(count => Group.find({groupAdmin: params.groupAdmin ? params.groupAdmin : null})
+      .populate('createdBy')
+      .populate('groupAdmin')
+      .populate('batchList')
+      .populate('assignedAnalyst')
+      .populate('assignedQA')
+      .then((groups) => {
+        let responseList = [];
+        groups.forEach(item => {
+          let analystObjects = [];
+          item.assignedAnalyst.forEach(obj => {
+            analystObjects.push({value: obj.id, label: obj.name});
+          })
+          let qaObjects = [];
+          item.assignedQA.forEach(obj => {
+            qaObjects.push({value: obj.id, label: obj.name});
+          })
+          let objectToPush = {
+            _id: item.id,
+            groupName: item.groupName,
+            admin: { value: item.groupAdmin.id, label: item.groupAdmin.name },
+            assignBatch: item.batchList,
+            assignAnalyst: analystObjects,
+            assignQA: qaObjects,
+            status: true
+          }
+          responseList.push(objectToPush);
+        });
+        return ({
+          count,
+          message: "Groups retrieved successfully!",
+          status: "200",
+          rows: responseList
+        })
+    })
+    )
+    .then(success(res))
+    .catch(next)
+}
 
 export const show = ({ params }, res, next) =>
   Group.findById(params.id)

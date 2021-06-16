@@ -2,6 +2,7 @@ import _ from 'lodash'
 import * as fs from 'fs'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Datapoints } from '.'
+import { StandaloneDatapoints } from '../standalone_datapoints'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Datapoints.create({ ...body, updatedBy: user })
@@ -98,6 +99,28 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
     }
     res.status(200).json({ message: "extra cloums added" });
   })
+}
+
+export const getCategorywiseDatapoints = async(req, res, next) => {
+  let categoryDatapoints = await Datapoints.find({clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, status: true}).sort({ collectionOrderNumber: 1 });
+  let dpDetailsList = [];
+  for (let index = 0; index < categoryDatapoints.length; index++) {
+    let dpObject = categoryDatapoints[index];
+    let datapointHistory = [];
+    // let histories = await StandaloneDatapoints.find({datapointId: dpObject.id, clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, year: { $ne: "2020-2021" }, status: true}).populate('createdBy')
+    let histories = await StandaloneDatapoints.find({companyId: req.params.companyId, datapointId: dpObject.id, year: { $ne: req.params.year }, status: true}).populate('createdBy')
+    .populate('companyId')
+    .populate('taskId')
+    .populate('datapointId');
+    if (histories.length > 0) {
+      for (let hIndex = 0; hIndex < histories.length; hIndex++) {
+        const object = histories[hIndex];
+        datapointHistory.push({ year: object.year, response: object.response, performanceResponse: object.performanceResult, sourceUrl: object.sourceUrl ? object.sourceUrl : '', standardDeviation: object.standaradDeviation ? object.standaradDeviation : '', average: object.average ? object.average : '' });
+      }      
+    }
+    dpDetailsList.push({ dpObject, datapointHistory: datapointHistory });
+  }
+  return res.json({count: dpDetailsList.length, rows: dpDetailsList});
 }
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>

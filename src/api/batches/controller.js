@@ -57,12 +57,14 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
         batches.forEach(item => {
           let yearObjects = [];
           item.years.forEach(obj => {
-            yearObjects.push({value: obj.value, label: obj.value});
+            yearObjects.push({value: obj, label: obj});
           })
           let companyObjects = [];
-          item.companiesList.forEach(obj => {
-            companyObjects.push({value: obj.id, selectedCompany: obj.companyName});
-          })
+          if (item.companiesList.length > 0) {
+            item.companiesList.forEach(obj => {
+              companyObjects.push({value: obj.id, selectedCompany: obj.companyName});
+            })            
+          }
           let objectToPush = {
             _id: item.id,
             years: yearObjects,
@@ -93,12 +95,14 @@ export const show = ({ params }, res, next) =>
     .then((batch) => {
       let yearObjects = [];
       batch.years.forEach(obj => {
-        yearObjects.push({value: obj.value, label: obj.value});
+        yearObjects.push({value: obj, label: obj});
       })
       let companyObjects = [];
-      batch.companiesList.forEach(obj => {
-        companyObjects.push({value: obj.id, selectedCompany: obj.companyName});
-      })
+      if (batch.companiesList.length > 0) {
+        batch.companiesList.forEach(obj => {
+          companyObjects.push({value: obj.id, selectedCompany: obj.companyName});
+        })        
+      }
      let responseObject = {
        _id: batch.id,
        batchName: batch.batchName,

@@ -25,10 +25,10 @@ export const login = ({ user }, res, next) => {
 
           //nodemail code will come here to send OTP
           const content = `
-            Hey, ${response.user.name}.<br><br>
-            You requested a OTP for your esgapi account.<br>
-            Please use the following code as your OTP - <b>${otpNumber}</b>.<br>
-            If you didn't make this request then you can safely ignore this email or contact admin. :)<br><br>
+            Hey, ${response.user.name}.<br/><br/>
+            You requested a OTP for your esgapi account.<br/>
+            Please use the following code as your OTP - <b>${otpNumber}</b>.<br/>
+            If you didn't make this request then you can safely ignore this email or contact admin. <br/><br/>
             &mdash; ESG Team
           `;
           var transporter = nodemailer.createTransport({
@@ -43,7 +43,7 @@ export const login = ({ user }, res, next) => {
             from: 'testmailer09876@gmail.com',
             to: response.user.email,
             subject: 'ESG - OTP',
-            text: content
+            html: content
           });
           return res.send({ token: response.token, user: response.user });
         }

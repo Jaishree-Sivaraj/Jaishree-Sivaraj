@@ -76,16 +76,16 @@ export const type8Validation = async ({ user, body }, res, next) => {
             if (datapointDetails.checkCondition.trim() == 'greater') {
               let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
               if (Number(body.response) > Number(calculatedResponse)) {
-                return res.status(200).json({ message: "Valid Response" });
+                return res.status(200).json({ message: "Valid Response", isValidResponse: true });
               } else {
-                return res.status(400).json({ message: "Invalid Response" });
+                return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
               }
             } else {
               let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
               if (Number(body.response) < Number(calculatedResponse)) {
-                return res.status(200).json({ message: "Valid Response" });
+                return res.status(200).json({ message: "Valid Response", isValidResponse: true });
               } else {
-                return res.status(400).json({ message: "Invalid Response" });
+                return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
               }
             }
           }
@@ -114,16 +114,16 @@ export const type8Validation = async ({ user, body }, res, next) => {
         if (datapointDetails.checkCondition.trim() == 'greater') {
           let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
           if (Number(body.response) > Number(calculatedResponse)) {
-            return res.status(200).json({ message: "Valid Response" });
+            return res.status(200).json({ message: "Valid Response", isValidResponse: true });
           } else {
-            return res.status(400).json({ message: "Invalid Response" });
+            return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
           }
         } else {
           let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
           if (Number(body.response) < Number(calculatedResponse)) {
-            return res.status(200).json({ message: "Valid Response" });
+            return res.status(200).json({ message: "Valid Response", isValidResponse: true });
           } else {
-            return res.status(400).json({ message: "Invalid Response" });
+            return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
           }
         }
       } else {
@@ -149,16 +149,16 @@ export const type8Validation = async ({ user, body }, res, next) => {
       if (datapointDetails.checkCondition.trim() == 'greater') {
         let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
         if (Number(body.response) > Number(calculatedResponse)) {
-          return res.status(200).json({ message: "Valid Response" });
+          return res.status(200).json({ message: "Valid Response", isValidResponse: true });
         } else {
-          return res.status(400).json({ message: "Invalid Response" });
+          return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
         }
       } else {
         let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
         if (Number(body.response) < Number(calculatedResponse)) {
-          return res.status(200).json({ message: "Valid Response" });
+          return res.status(200).json({ message: "Valid Response", isValidResponse: true });
         } else {
-          return res.status(400).json({ message: "Invalid Response" });
+          return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
         }
       }
     } else {
@@ -185,9 +185,9 @@ export const type8Validation = async ({ user, body }, res, next) => {
       if (datapointDetails.checkCondition.trim() == 'greater') {
         let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
         if (Number(body.response) > Number(calculatedResponse)) {
-          return res.status(200).json({ message: "Valid Response" });
+          return res.status(200).json({ message: "Valid Response", isValidResponse: true });
         } else {
-          return res.status(400).json({ message: "Invalid Response" });
+          return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
         }
       }
     } else {

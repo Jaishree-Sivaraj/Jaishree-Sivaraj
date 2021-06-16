@@ -57,7 +57,8 @@ const userSchema = new Schema({
   status: {
     type: Boolean,
     default: true
-  },companyId:{
+  },
+  companyId:{
     type: Schema.ObjectId,
     ref: 'Companies',
     required: false
@@ -69,6 +70,14 @@ const userSchema = new Schema({
   companyIdForClient:{
     type: String,
     default: ''
+  },
+  isRoleAssigned: {
+    type: Boolean,
+    default: false
+  },
+  isAssignedToGroup: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -102,7 +111,7 @@ userSchema.pre('save', function (next) {
 userSchema.methods = {
   view (full) {
     const view = {}
-    let fields = ['id', 'name', 'email', 'role', 'roleId', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'status']
+    let fields = ['id', 'name', 'email', 'role', 'roleId', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'isRoleAssigned', 'isAssignedToGroup', 'status']
 
     if (full) {
       fields = [...fields, 'email', 'createdAt']

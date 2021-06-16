@@ -25,7 +25,7 @@ const { keyIssueName, keyIssueCode, keyIssueDescription, themeId, status } = sch
  * @apiError 401 admin access only.
  */
 router.post('/',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   body({ keyIssueName, keyIssueCode, keyIssueDescription, themeId }),
   create)
 
@@ -78,7 +78,7 @@ router.get('/:id',
  * @apiError 401 admin access only.
  */
 router.put('/:id',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   body({ keyIssueName, keyIssueCode, keyIssueDescription, themeId, status }),
   update)
 
@@ -93,7 +93,7 @@ router.put('/:id',
  * @apiError 401 admin access only.
  */
 router.delete('/:id',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   destroy)
 
 export default router
