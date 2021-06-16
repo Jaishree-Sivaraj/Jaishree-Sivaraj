@@ -222,6 +222,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       isUserApproved: false,
       status: true
     }
+    console.log('test', onBoardingDetails.companiesList);
+    var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
+    console.log('companiesList', companiesList);
     await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForCompanyUrl, 'authenticationLetterForCompany')
       .then(async (authenticationLetterForCompanyUrl) => {
         await storeOnBoardingImagesInLocalStorage(onBoardingDetails.companyIdForCompany, 'companyIdForCompany')
@@ -236,7 +239,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     email: onBoardingDetails.email ? onBoardingDetails.email : '',
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: onBoardingDetails.companiesList ? onBoardingDetails.companiesList : "",
+                    companiesList: companiesList ? companiesList : "",
                     authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl,
                     companyIdForCompany: companyIdForCompany,
                     status: true,
