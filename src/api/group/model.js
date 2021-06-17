@@ -14,11 +14,7 @@ const groupSchema = new Schema({
     ref: 'User',
     required: true
   },
-  assignedQA: [{ 
-    type : Schema.ObjectId, 
-    ref: 'User' 
-  }],
-  assignedAnalyst: [{ 
+  assignedMembers: [{ 
     type : Schema.ObjectId, 
     ref: 'User' 
   }],
@@ -46,8 +42,7 @@ groupSchema.methods = {
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       groupName: this.groupName,
       groupAdmin: this.groupAdmin ? this.groupAdmin.view(full) : null,
-      assignedAnalyst: this.assignedAnalyst ? this.assignedAnalyst : [],
-      assignedQA: this.assignedQA ? this.assignedQA : [],
+      assignedMembers: this.assignedMembers ? this.assignedMembers : [],
       batchList: this.batchList ? this.batchList : [],
       status: this.status,
       createdAt: this.createdAt,
