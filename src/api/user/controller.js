@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { success, notFound } from '../../services/response/'
 import { User } from '.'
 import { sign } from '../../services/jwt'
@@ -21,11 +22,18 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const getUsersByRole = ({ params, querymen: { query, select, cursor } }, res, next) => {
-  let findQuery = query;
-  findQuery.role = params.role ? params.role : '';
+export const getUsersByRole = (req, res, next) => {
+  // console.log('querymen', querymen);
+  console.log('req.query', req.query);
+  console.log('req.params', req.params);
+  console.log('req.select', req.select);
+  console.log('req.cursor', req.cursor);
+  let findQuery = _.omit(req.query,'access_token');
+  findQuery.role = req.params.role ? req.params.role : '';
+  findQuery.isAssignedToGroup = Boolean(findQuery.isAssignedToGroup);
+  console.log('findQuery', findQuery);
   User.count(findQuery)
-    .then(count => User.find(findQuery, select, cursor)
+    .then(count => User.find(findQuery)
       .populate('roleId')
       .then(users => ({
         rows: users.map((user) => user.view()),
