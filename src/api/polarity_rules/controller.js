@@ -216,8 +216,8 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
 
 export const mockPercentileCalculation = async ({ user, body }, res, next) => {
   let zscoreValue ,performanceResult ;
-  let datapointsDetails = await StandaloneDatapoints.find({ companyId: body.companyId, datapointId: body.datapointId }).populate('datapointId');
-  if (datapointsDetails[0].datapointId.polarity == 'Positive') {
+  let datapointsDetails = await DerivedDatapoints.findOne({ _id: body.datapointId });
+  if (datapointsDetails.polarity == 'Positive') {
     zscoreValue = (Number(body.response) - Number(body.average)) / Number(body.standardDeviation);
   } else {
     zscoreValue = (Number(body.average) - Number(body.response)) / Number(body.standardDeviation);
