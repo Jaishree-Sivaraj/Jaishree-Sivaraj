@@ -167,7 +167,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
       return res.status(404).json({ message: "Condition Failed" });
     }
   } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
-    let parameters = datapointDetails.dependentCodes.split;
+    let parameters = datapointDetails.dependentCodes.split(',');
     let param1Value, param2Value, param3Value, param4Value;
     let previousYearResponse;
     _.filter(mergedDetails, (object, index) => {
