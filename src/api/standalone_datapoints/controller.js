@@ -316,13 +316,12 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           }
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           const structuredCompanyDetails = [];
-          let companyNameForMissedDPs = '';
           for (let index = 0; index < companiesToBeAdded.length; index++) {
             const item = companiesToBeAdded[index];
 
             let companyObject = {
               companyName: item['Company Name'],
-              cin: item['CIN'],
+              cin: item['CIN'].replace('\r\n', ''),
               nicCode: item['NIC Code'],
               nic: item['NIC Code'].toString().substring(0, 2),
               nicIndustry: item['NIC industry'],
@@ -333,8 +332,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               status: true,
               createdBy: userDetail
             }
-            await Companies.updateOne({ cin: item['CIN'] }, { $set: companyObject }, { upsert: true });
-            companyNameForMissedDPs = item['Company Name'];
+            await Companies.updateOne({ cin: item['CIN'].replace('\r\n', '').trim() }, { $set: companyObject }, { upsert: true });
             structuredCompanyDetails.push(companyObject);
           }
           const datapointList = await Datapoints.find({ status: true }).populate('updatedBy').populate('keyIssueId').populate('functionId');
@@ -359,7 +357,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           });
           const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
-            let companyObject = companiesList.filter(obj => obj.cin === item['CIN']);
+            let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
             let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
             let responseValue;
             if (item['Response'] == 0 || item['Response'] == '0') {
@@ -372,6 +370,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             return {
               categoryName: item['Category'],
               keyIssueName: item['Key Issues'],
+              dpCode: item['DP Code'] ? item['DP Code'] : '',
               datapointId: datapointObject[0] ? datapointObject[0].id : null,
               year: item['Fiscal Year'],
               fiscalYearEndDate: item['Fiscal Year End Date'],
@@ -382,8 +381,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               taskId: null,
               submittedBy: '',
               submittedDate: '',
-              standaradDeviation:'',
-              average:'',
+              standaradDeviation: '',
+              average: '',
               activeStatus: '',
               lastModifiedDate: '',
               modifiedBy: '',
@@ -415,7 +414,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           let inactiveBoardMembersList = [];
           let kmpMembersList = [];
           const structuredBoardMemberMatrixDetails = filteredBoardMemberMatrixDetails.map(function (item) {
-            let companyObject = companiesList.filter(obj => obj.cin === item['CIN']);
+            let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
             let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
             let allKeyNamesList = Object.keys(item);
             const boardMembersNameList = _.filter(allKeyNamesList, function (keyName) {
@@ -438,6 +437,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             _.forEach(boardMembersNameList, function (value) {
               let memberDetail = {
                 memberName: value,
+                dpCode: item['DP Code'] ? item['DP Code'] : '',
                 response: item[value],
                 datapointId: datapointObject[0] ? datapointObject[0].id : null,
                 companyId: companyObject[0] ? companyObject[0].id : null,
@@ -496,7 +496,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           });
 
           const structuredKmpMatrixDetails = filteredKmpMatrixDetails.map(function (item) {
-            let companyObject = companiesList.filter(obj => obj.cin === item['CIN']);
+            let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
             let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
             let allKeyNamesList = Object.keys(item);
             const kmpMembersNameList = _.filter(allKeyNamesList, function (keyName) {
@@ -521,6 +521,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let memberDetail = {
                 memberName: value,
                 response: item[value],
+                dpCode: item['DP Code'] ? item['DP Code'] : '',
                 memberStatus: true,
                 datapointId: datapointObject[0] ? datapointObject[0].id : null,
                 companyId: companyObject[0] ? companyObject[0].id : null,
@@ -593,20 +594,27 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           }
 
           var actualDPList = _.concat(structuredStandaloneDetails, boardMembersList, kmpMembersList);
-          let missingDPList = [], expectedDPList = [];
+          let missingDPList = [], expectedDPList = [], missingDatapointsDetails = [], missingDPsLength = [];
           let standaloneDatapointsList = await Datapoints.find({ relevantForIndia: "Yes", dataCollection: "Yes", functionId: { "$ne": '609bcceb1d64cd01eeda092c' } })
           //actualDPlist, expectedDPlist(548) 
           for (let expectedDPIndex = 0; expectedDPIndex < standaloneDatapointsList.length; expectedDPIndex++) {
-            expectedDPList.push(standaloneDatapointsList[expectedDPIndex].id)
+            expectedDPList.push(standaloneDatapointsList[expectedDPIndex].code)
           }
           for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
             for (let year = 0; year < distinctYears.length; year++) {
-              let missingDPs = _.filter(expectedDPList, (expectedId) => !_.some(actualDPList, (obj) => expectedId == obj.datapointId && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
-              missingDPList = _.concat(missingDPList, missingDPs)
+              let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
+              let missingDPObject = {
+                companyName: insertedCompanies[companyIdIndex].companyName,
+                year: distinctYears[year],
+                missingDPs: missingDPs
+              }
+              missingDPsLength = _.concat(missingDPsLength,missingDPs);
+              missingDatapointsDetails.push(missingDPObject);
             }
           }
+          missingDPList = _.concat(missingDPList, missingDatapointsDetails)
           console.log(missingDPList)
-          if (missingDPList.length == 0) {
+          if (missingDPsLength.length == 0) {
             const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
               "companyId": { $in: insertedCompanyIds },
               "year": { $in: distinctYears }
@@ -647,15 +655,21 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             res.json({ message: "Files upload success", companies: insertedCompanies, nicList: distinctNics });
 
           } else {
-            let missingDPcodeNames = [];
-            for (let missingDPIndex = 0; missingDPIndex < missingDPList.length; missingDPIndex++) {
-              _.find(standaloneDatapointsList, (object) => {
-                if (object.id == missingDPList[missingDPIndex]) {
-                  missingDPcodeNames.push(object.code);
-                }
-              })
-            }
-            return res.status(400).json({ message: "Missing DP Codes", CompanyName: companyNameForMissedDPs, missingDatapoints: missingDPcodeNames });
+            // let missingDPcodeNames = [];
+            // let companyNameForMissedDPs = '';
+            // for (let missingDPIndex = 0; missingDPIndex < missingDPList.length; missingDPIndex++) {
+            //   let missingDPListId = missingDPList[missingDPIndex].missingDPs;
+            //   companyNameForMissedDPs = missingDPList[missingDPIndex].companyName;
+            //   for (let missingDPIdIndex = 0; missingDPIdIndex < missingDPListId.length; missingDPIdIndex++) {
+            //     _.find(standaloneDatapointsList, (object) => {
+            //       if (object.id == missingDPListId[missingDPIdIndex]) {
+            //         missingDPcodeNames.push(object.code);
+            //       }
+            //     })
+            //   }
+            // }
+            // return res.status(400).json({ message: "Missing DP Codes", CompanyName: companyNameForMissedDPs, missingDatapoints: missingDPcodeNames });
+            return res.status(400).json({ message: "Missing DP Codes", missingDatapoints: missingDPList });
           }
         } else {
           return res.status(400).json({ message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });

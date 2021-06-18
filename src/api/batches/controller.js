@@ -28,7 +28,6 @@ export const createBatch = async({ user, bodymen: { body } }, res, next) => {
     clientTaxonomy: body.taxonomy ? body.taxonomy.value : '',
     companiesList: companiesList,
     years: yearsList,
-    batchSLA: body.batchSLA,
     status: true
   }
   await Batches.create({ ...batchObject, createdBy: user })
@@ -36,7 +35,7 @@ export const createBatch = async({ user, bodymen: { body } }, res, next) => {
     await Companies.updateMany({
       "_id": { $in: companiesList }
     }, { $set: { isAssignedToBatch: true } }, {});
-    return res.status(200).json(batch);
+    return res.status(200).json({ message: "New batch created", status: "200", data: batch});
   })
   .catch((err) => {
     /* istanbul ignore else */
@@ -68,7 +67,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
           let objectToPush = {
             _id: item.id,
             years: yearObjects,
-            batchSLA: item.batchSLA,
             batchName: item.batchName,
             taxonomy: { value: item.clientTaxonomy.id, label: item.clientTaxonomy.taxonomyName },
             companies: companyObjects,
@@ -107,7 +105,6 @@ export const show = ({ params }, res, next) =>
        _id: batch.id,
        batchName: batch.batchName,
        years: yearObjects,
-       batchSLA: batch.batchSLA,
        companies: companyObjects,
        taxonomy: { value: batch.clientTaxonomy.id, label: batch.clientTaxonomy.taxonomyName }
      }
@@ -119,7 +116,7 @@ export const show = ({ params }, res, next) =>
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
     Batches.findById(params.id)
         .populate('createdBy')
-        .populate('companyId.companyName')
+        .populate('companiesList')
         .then(notFound(res))
         .then(authorOrAdmin(res, user, 'createdBy'))
         .then((batches) => batches ? Object.assign(batches, body).save() : null)
@@ -154,7 +151,6 @@ export const updateBatch = async({ user, bodymen: { body }, params }, res, next)
         clientTaxonomy: body.taxonomy ? body.taxonomy.value : '',
         companiesList: companiesList,
         years: yearsList,
-        batchSLA: body.batchSLA,
         status: body.status
       }
       await Batches.update({_id: params.id}, { $set: batchObject })
@@ -163,7 +159,7 @@ export const updateBatch = async({ user, bodymen: { body }, params }, res, next)
           console.log('error', err);
           return err;
         } else {
-          return ({ message: "Batch updated successfuly!", data: batchObject });
+          return ({ message: "Batch updated successfuly!", status: "200", data: batchObject });
         }
       })
     })
