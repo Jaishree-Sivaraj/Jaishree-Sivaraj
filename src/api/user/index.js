@@ -2,13 +2,17 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
+<<<<<<< HEAD
 import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles,uploadEmailsFile } from './controller'
+=======
+import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole } from './controller'
+>>>>>>> 85dbe0988b0f3d794773e1ca9bda75dbba5b2651
 import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
 const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status } = schema.tree
-const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [];
+const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {};
 /**
  * @api {get} /users Retrieve users
  * @apiName RetrieveUsers
@@ -118,7 +122,7 @@ router.post('/',
  */
 router.post('/new-onboard',
   token({ required: true }),
-  body({onBoardingDetails}),
+  body({ onBoardingDetails }),
   onBoardNewUser)
 
 /**
@@ -139,6 +143,25 @@ router.put('/update-status',
   token({ required: true }),
   body({ userId, isUserApproved, comments }),
   updateUserStatus)
+
+/**
+* @api {put} /users/assign-role to update role for user
+* @apiName assign-role
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token User access_token.
+* @apiParam {String} [_id] User's userId.
+* @apiParam {Boolean} [isUserApproved] User's isUserApproved.
+* @apiParam {String} [comments] User's comments.
+* @apiSuccess {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 Current user or admin access only.
+* @apiError 404 User not found.
+*/
+router.put('/assign-role',
+  token({ required: true }),
+  body({ userDetails, roleDetails }),
+  assignRole)
 
 /**
  * @api {put} /users/update/roles Update user roles

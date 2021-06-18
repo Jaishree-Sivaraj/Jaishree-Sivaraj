@@ -36,13 +36,13 @@ const employeesSchema = new Schema({
     type: String
   },
   pancardUrl: {
-    type: String
+    type: Buffer,
   },
   aadhaarUrl: {
-    type: String
+    type: Buffer,
   },
   cancelledChequeUrl: {
-    type: String
+    type: Buffer,
   },
   status: {
     type: Boolean,
@@ -57,7 +57,7 @@ const employeesSchema = new Schema({
 })
 
 employeesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -71,9 +71,9 @@ employeesSchema.methods = {
       bankAccountNumber: this.bankAccountNumber,
       bankIFSCCode: this.bankIFSCCode,
       accountHolderName: this.accountHolderName,
-      pancardUrl: this.pancardUrl,
-      aadhaarUrl: this.aadhaarUrl,
-      cancelledChequeUrl: this.cancelledChequeUrl,
+      pancardUrl: this.pancardUrl.toString('base64'),
+      aadhaarUrl: this.aadhaarUrl.toString('base64'),
+      cancelledChequeUrl: this.cancelledChequeUrl.toString('base64'),
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

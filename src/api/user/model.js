@@ -38,6 +38,18 @@ const userSchema = new Schema({
     type: String,
     default: 'user'
   },
+  roleDetails: {
+    roles: [{
+      type: Schema.ObjectId,
+      ref: 'Role',
+      required: false
+    }],
+    primaryRole: {
+      type: Schema.ObjectId,
+      ref: 'Role',
+      required: false
+    }
+  },
   picture: {
     type: String,
     trim: true
@@ -58,16 +70,16 @@ const userSchema = new Schema({
     type: Boolean,
     default: true
   },
-  companyId:{
+  companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',
     required: false
   },
-  authenticationLetterForClientUrl:{
+  authenticationLetterForClientUrl: {
     type: String,
     default: ''
   },
-  companyIdForClient:{
+  companyIdForClient: {
     type: String,
     default: ''
   },
@@ -109,9 +121,9 @@ userSchema.pre('save', function (next) {
 })
 
 userSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {}
-    let fields = ['id', 'name', 'email', 'role', 'roleId', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'isRoleAssigned', 'isAssignedToGroup', 'status']
+    let fields = ['id', 'name', 'email', 'role', 'roleId', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'isRoleAssigned', 'isAssignedToGroup', 'status', "roleDetails"]
 
     if (full) {
       fields = [...fields, 'email', 'createdAt']
@@ -122,7 +134,7 @@ userSchema.methods = {
     return view
   },
 
-  authenticate (password) {
+  authenticate(password) {
     return bcrypt.compare(password, this.password).then((valid) => valid ? this : false)
   }
 

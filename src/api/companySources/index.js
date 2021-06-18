@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, getDocumentsByCompanyId } from './controller'
 import { schema } from './model'
 export CompanySources, { schema } from './model'
 
 const router = new Router()
-const { sourceTypeId, sourceUrl, sourceFile, publicationDate } = schema.tree
+const { sourceTypeId, sourceUrl, sourceFile, publicationDate, companyId } = schema.tree
 
 /**
  * @api {post} /companySources Create company sources
@@ -21,8 +21,20 @@ const { sourceTypeId, sourceUrl, sourceFile, publicationDate } = schema.tree
  * @apiError 404 Company sources not found.
  */
 router.post('/',
-  body({ sourceTypeId, sourceUrl, sourceFile, publicationDate }),
+  body({ sourceTypeId, sourceUrl, sourceFile, publicationDate, companyId }),
   create)
+
+
+/**
+ * @api {get} /companySources/:id Retrieve company sources
+ * @apiName RetrieveCompanySources
+ * @apiGroup CompanySources
+ * @apiSuccess {Object} companySources Company sources's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Company sources not found.
+ */
+router.get('/companyDocuments/:companyId',
+  getDocumentsByCompanyId)
 
 /**
  * @api {get} /companySources Retrieve company sources
