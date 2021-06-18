@@ -93,7 +93,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
           return res.status(404).json({ message: "Response is missing for " + parameters[parameterIndex].code + "year :"+ body.currentYear});
         }
         if (parameterIndex == parameters.length - 1) {
-          return res.status(402).json({ message: "Condition Failed" });
+          return res.status(412).json({ message: "Condition Failed" });
         }
       }
     } else {
@@ -127,7 +127,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
           }
         }
       } else {
-        return res.status(404).json({ message: "Condition Failed" });
+        return res.status(412).json({ message: "Condition Failed" });
       }
     } else {
       return res.status(404).json({ message: "Response is missing for " + parameter[0].code + "year :"+ body.currentYear});
@@ -166,7 +166,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
         }
       }
     } else {
-      return res.status(404).json({ message: "Condition Failed" });
+      return res.status(412).json({ message: "Condition Failed" });
     }
   } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
     console.log('...',datapointDetails);
@@ -197,7 +197,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
         }
       }
     } else {
-      return res.status(404).json({ message: "Condition Failed" });
+      return res.status(412).json({ message: "Condition Failed" });
     }
   }
 }

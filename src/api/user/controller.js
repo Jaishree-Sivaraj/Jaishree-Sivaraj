@@ -1,4 +1,7 @@
+import multer from 'multer'
+import XLSX from 'xlsx'
 import _ from 'lodash'
+import nodemailer from 'nodemailer'
 import { success, notFound } from '../../services/response/'
 import { User } from '.'
 import { sign } from '../../services/jwt'
@@ -421,7 +424,7 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 //     res.send(approvedUsers);
 //   })
 // })
-
+    
 
 export const update = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -445,7 +448,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
+export const updatePassword = ({ bodymen: { body }, params, user }, res, next) => 
   User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
     .then((result) => {
@@ -577,3 +580,81 @@ export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, n
 
 }
 
+
+var emailFiles = multer.diskStorage({ //multers disk shop photos storage settings
+  destination: function (req, file, cb) {
+    // cb(null, './uploads/')
+    console.log('__dirname ', __dirname);
+    // console.log('process.env.PWD', process.env.PWD);
+    cb(null, __dirname + '/uploads');
+  },
+  filename: function (req, file, cb) {
+    var datetimestamp = Date.now();
+    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+  }
+});
+var uploadFiles = multer({ //multer settings
+  storage: emailFiles,
+  fileFilter: function (req, file, callback) { //file filter
+    if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
+      return callback(new Error('Wrong extension type'));
+    }
+    callback(null, true);
+  }
+}).single('file');
+
+export const uploadEmailsFile = async (req, res, next) => {
+  try {
+    uploadFiles(req, res, async function (err) {  
+      if (err) {
+        res.status('400').json({ error_code: 1, err_desc: err });
+        return;
+      }
+      const filePath = req.file.path;
+      var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
+      if (workbook.SheetNames.length > 0) {
+        var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        try {
+          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet,{defval:" "});
+          //code for sending onboarding links to emails
+          if (sheetAsJson.length > 0) {
+            for (let index = 0; index < sheetAsJson.length; index++) {
+              const rowObject = sheetAsJson[index];
+              
+              //nodemail code will come here to send OTP
+              const content = `
+                Hai,<br/>
+                Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
+                URL: ${rowObject['Link']}<br/><br/>
+                &mdash; ESG Team `;
+              var transporter = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                  user: 'testmailer09876@gmail.com',
+                  pass: 'ijsfupqcuttlpcez'
+                }
+              });
+              
+              transporter.sendMail({
+                from: 'testmailer09876@gmail.com',
+                to: rowObject['Email'],
+                subject: 'ESG - Onboarding',
+                html: content
+              });
+            }
+          }
+          return res.json(sheetAsJson);
+        } catch (error) {
+          return res.status(400).json({ message: error.message })
+        }        
+      }
+    });
+  } catch (error) {
+    if (error) {
+      return res.status(403).json({
+        message: error.message ? error.message : 'Failed to upload onboarding emails',
+        status: 403
+      });      
+    }
+  }
+} 

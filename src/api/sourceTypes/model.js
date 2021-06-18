@@ -4,8 +4,8 @@ const sourceTypesSchema = new Schema({
   typeName: {
     type: String
   },
-  duration: {
-    type: String
+  isMultiYear: {
+    type: Boolean
   },
   status: {
     type: Boolean,
