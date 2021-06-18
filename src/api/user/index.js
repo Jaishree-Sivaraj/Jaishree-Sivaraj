@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles,uploadEmailsFile } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
@@ -84,8 +84,6 @@ router.get('/:id',
  * @api {post} /users Create user
  * @apiName CreateUser
  * @apiGroup User
- * @apiPermission master
- * @apiParam {String} access_token Master access_token.
  * @apiParam {String} email User's email.
  * @apiParam {String{6..}} password User's password.
  * @apiParam {String} [name] User's name.
@@ -98,7 +96,6 @@ router.get('/:id',
  * @apiError 409 Email already registered.
  */
 router.post('/',
-  master(),
   body({ email, password, name, picture, role, roleId, phoneNumber }),
   create)
 
@@ -209,6 +206,23 @@ router.put('/:id/password',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+  /**
+ * @api {post} /user/uploadEmailsFile Upload EmailsFile
+ * @apiName EmailsFile
+ * @apiGroup User
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} Emails data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Emails not found.
+ * @apiError 401 user access only.
+ */
+ router.post('/uploadEmailsFile',
+ token({ required: true }),
+ query(),
+ uploadEmailsFile)
+
 
 
 export default router
