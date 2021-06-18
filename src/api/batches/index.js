@@ -7,7 +7,7 @@ import { schema } from './model'
 export Batches, { schema } from './model'
 
 const router = new Router()
-const { batchName, years, batchSLA, status, companiesList, clientTaxonomy } = schema.tree
+const { batchName, years, status, companiesList, clientTaxonomy } = schema.tree
 const companies = [], taxonomy = {};
 
 /**
@@ -19,7 +19,6 @@ const companies = [], taxonomy = {};
  * @apiParam clientTaxonomy Batches's clientTaxonomy.
  * @apiParam batchName Batches's batchName.
  * @apiParam years Batches's years.
- * @apiParam batchSLA Batches's batchSLA.
  * @apiParam companiesList Batches's companiesList.
  * @apiSuccess {Object} batches Batches's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -28,7 +27,7 @@ const companies = [], taxonomy = {};
  */
 router.post('/',
   token({ required: true }),
-  body({ batchName, years, batchSLA, companiesList, clientTaxonomy }),
+  body({ batchName, years, companiesList, clientTaxonomy }),
   create)
 
 /**
@@ -40,7 +39,6 @@ router.post('/',
  * @apiParam taxonomy Batches's taxonomy.
  * @apiParam batchName Batches's batchName.
  * @apiParam years Batches's years.
- * @apiParam batchSLA Batches's batchSLA.
  * @apiParam companies Batches's companies.
  * @apiSuccess {Object} batches Batches's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -49,7 +47,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ batchName, years, batchSLA, companies, taxonomy }),
+  body({ batchName, years, companies, taxonomy }),
   createBatch)
 
 /**
@@ -93,7 +91,6 @@ router.get('/:id',
  * @apiParam clientTaxonomy Batches's clientTaxonomy.
  * @apiParam batchName Batches's batchName.
  * @apiParam years Batches's years.
- * @apiParam batchSLA Batches's batchSLA.
  * @apiParam companiesList Batches's companiesList.
  * @apiParam status Batches's status.
  * @apiSuccess {Object} batches Batches's data.
@@ -103,7 +100,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ batchName, years, batchSLA, status, companiesList, clientTaxonomy }),
+  body({ batchName, years, status, companiesList, clientTaxonomy }),
   update)
 
 /**
@@ -115,7 +112,6 @@ router.put('/:id',
  * @apiParam taxonomy Batches's taxonomy.
  * @apiParam batchName Batches's batchName.
  * @apiParam years Batches's years.
- * @apiParam batchSLA Batches's batchSLA.
  * @apiParam companies Batches's companies.
  * @apiParam status Batches's status.
  * @apiSuccess {Object} batches Batches's data.
@@ -125,7 +121,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ batchName, years, batchSLA, companies, taxonomy, status }),
+  body({ batchName, years, companies, taxonomy, status }),
   updateBatch)
 
 /**

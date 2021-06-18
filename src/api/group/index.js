@@ -7,8 +7,8 @@ import { schema } from './model'
 export Group, { schema } from './model'
 
 const router = new Router()
-const { groupName, groupAdmin, batchList, assignedAnalyst, assignedQA, status } = schema.tree
-const admin = {}, assignQA = [], assignAnalyst = [], assignBatch = [];
+const { groupName, groupAdmin, batchList, assignedMembers, status } = schema.tree
+const admin = {}, assignMembers = [], assignBatch = [];
 
 /**
  * @api {post} /groups Create group
@@ -19,8 +19,7 @@ const admin = {}, assignQA = [], assignAnalyst = [], assignBatch = [];
  * @apiParam groupName Group's groupName.
  * @apiParam groupAdmin Group's groupAdmin.
  * @apiParam batchList Group's batchList.
- * @apiParam assignedAnalyst Group's assignedAnalyst.
- * @apiParam assignedQA Group's assignedQA.
+ * @apiParam assignedMembers Group's assignedMembers.
  * @apiSuccess {Object} group Group's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Group not found.
@@ -28,7 +27,7 @@ const admin = {}, assignQA = [], assignAnalyst = [], assignBatch = [];
  */
 router.post('/',
   token({ required: true }),
-  body({ groupName, groupAdmin, batchList, assignAnalyst, assignQA}),
+  body({ groupName, groupAdmin, batchList, assignMembers}),
   create)
 
 /**
@@ -39,8 +38,7 @@ router.post('/',
  * @apiParam {String} access_token user access token.
  * @apiParam groupName Group's groupName.
  * @apiParam admin Group's admin.
- * @apiParam assignQA Group's assignQA.
- * @apiParam assignAnalyst Group's assignAnalyst.
+ * @apiParam assignMembers Group's assignMembers.
  * @apiParam assignBatch Group's assignBatch.
  * @apiSuccess {Object} group Group's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -49,7 +47,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ groupName, admin, assignQA, assignAnalyst, assignBatch}),
+  body({ groupName, admin, assignMembers, assignBatch}),
   createGroup)
 
 /**
@@ -109,6 +107,7 @@ router.get('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam groupName Group's groupName.
  * @apiParam groupAdmin Group's groupAdmin.
+ * @apiParam assignedMembers Group's assignedMembers.
  * @apiParam batchList Group's batchList.
  * @apiParam status Group's status.
  * @apiSuccess {Object} group Group's data.
@@ -118,7 +117,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ groupName, groupAdmin, batchList, assignedAnalyst, assignedQA, status }),
+  body({ groupName, groupAdmin, batchList, assignedMembers, status }),
   update)
 
 /**
@@ -130,8 +129,7 @@ router.put('/:id',
  * @apiParam groupName Group's groupName.
  * @apiParam groupAdmin Group's groupAdmin.
  * @apiParam assignBatch Group's assignBatch.
- * @apiParam assignAnalyst Group's assignAnalyst.
- * @apiParam assignQA Group's assignQA.
+ * @apiParam assignMembers Group's assignMembers.
  * @apiParam status Group's status.
  * @apiSuccess {Object} group Group's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -140,7 +138,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ groupName, admin, assignBatch, assignAnalyst, assignQA, status }),
+  body({ groupName, admin, assignBatch, assignMembers, status }),
   updateGroup)
 
 /**

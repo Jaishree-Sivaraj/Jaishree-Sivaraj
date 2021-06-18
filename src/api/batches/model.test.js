@@ -5,7 +5,7 @@ let user, batches
 
 beforeEach(async () => {
   user = await User.create({ email: 'a@a.com', password: '123456' })
-  batches = await Batches.create({ createdBy: user, clientTaxonomy: 'test', batchName: 'test', batchSLA: 'test', companies: 'test', status: 'test' })
+  batches = await Batches.create({ createdBy: user, clientTaxonomy: 'test', batchName: 'test', companies: 'test', status: 'test' })
 })
 
 describe('view', () => {
@@ -17,7 +17,6 @@ describe('view', () => {
     expect(view.createdBy.id).toBe(user.id)
     expect(view.clientTaxonomy).toBe(batches.clientTaxonomy)
     expect(view.batchName).toBe(batches.batchName)
-    expect(view.batchSLA).toBe(batches.batchSLA)
     expect(view.companies).toBe(batches.companies)
     expect(view.status).toBe(batches.status)
     expect(view.createdAt).toBeTruthy()
@@ -32,7 +31,6 @@ describe('view', () => {
     expect(view.createdBy.id).toBe(user.id)
     expect(view.clientTaxonomy).toBe(batches.clientTaxonomy)
     expect(view.batchName).toBe(batches.batchName)
-    expect(view.batchSLA).toBe(batches.batchSLA)
     expect(view.companies).toBe(batches.companies)
     expect(view.status).toBe(batches.status)
     expect(view.createdAt).toBeTruthy()

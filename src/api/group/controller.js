@@ -10,18 +10,11 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .catch(next)
 
 export const createGroup = async({ user, bodymen: { body } }, res, next) =>{
-  let qaList = [];
-  if (body.assignQA && body.assignQA.length > 0) {
-    for (let index = 0; index < body.assignQA.length; index++) {
-      const qa = body.assignQA[index].value;
-      qaList.push(qa);
-    }
-  }
-  let analystList = [];
-  if (body.assignAnalyst && body.assignAnalyst.length > 0) {
-    for (let aindex = 0; aindex < body.assignAnalyst.length; aindex++) {
-      const analyst = body.assignAnalyst[aindex].value;
-      analystList.push(analyst);
+  let membersList = [];
+  if (body.assignMembers && body.assignMembers.length > 0) {
+    for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
+      const analyst = body.assignMembers[aindex].value;
+      membersList.push(analyst);
     }
   }
   let batchList = [];
@@ -34,17 +27,15 @@ export const createGroup = async({ user, bodymen: { body } }, res, next) =>{
   let groupObject = {
     groupName: body.groupName ? body.groupName : '',
     groupAdmin: body.admin ? body.admin.value : '',
-    assignedQA: qaList,
-    assignedAnalyst: analystList,
+    assignedMembers: membersList,
     batchList: batchList,
     status: true
   }
   await Group.create({ ...groupObject, createdBy: user })
     .then(async(group) => {
-      let assignedAnalystAndQAList = _.concat(qaList, analystList);
-      if (assignedAnalystAndQAList.length > 0) {
+      if (membersList.length > 0) {
         await User.updateMany({
-          "_id": { $in: assignedAnalystAndQAList }
+          "_id": { $in: membersList }
         }, { $set: { isAssignedToGroup: true } }, {});        
       }
     })
@@ -58,35 +49,27 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
       .populate('createdBy')
       .populate('groupAdmin')
       .populate('batchList')
-      .populate('assignedAnalyst')
-      .populate('assignedQA')
+      .populate('assignedMembers')
       .then((groups) => {
         let responseList = [];
         groups.forEach(item => {
-          // let batchObjects = [];
-          // item.batchList.forEach(obj => {
-          //   batchObjects.push({value: obj.id, label: obj.batchName});
-          // })
-          let analystObjects = [];
-          item.assignedAnalyst.forEach(obj => {
-            analystObjects.push({value: obj.id, label: obj.name});
-          })
-          let qaObjects = [];
-          item.assignedQA.forEach(obj => {
-            qaObjects.push({value: obj.id, label: obj.name});
+          let memberObjects = [];
+          item.assignedMembers.forEach(obj => {
+            memberObjects.push({value: obj.id, label: obj.name});
           })
           let objectToPush = {
             _id: item.id,
             groupName: item.groupName,
             admin: { value: item.groupAdmin.id, label: item.groupAdmin.name },
             assignBatch: item.batchList,
-            assignAnalyst: analystObjects,
-            assignQA: qaObjects,
+            assignMembers: memberObjects,
             status: true
           }
           responseList.push(objectToPush);
         });
         return ({
+          message: "Groups retrieved successfully",
+          status: "200",
           count,
           rows: responseList
         })
@@ -101,26 +84,20 @@ export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor }
       .populate('createdBy')
       .populate('groupAdmin')
       .populate('batchList')
-      .populate('assignedAnalyst')
-      .populate('assignedQA')
+      .populate('assignedMembers')
       .then((groups) => {
         let responseList = [];
         groups.forEach(item => {
-          let analystObjects = [];
-          item.assignedAnalyst.forEach(obj => {
-            analystObjects.push({value: obj.id, label: obj.name});
-          })
-          let qaObjects = [];
-          item.assignedQA.forEach(obj => {
-            qaObjects.push({value: obj.id, label: obj.name});
+          let memberObjects = [];
+          item.assignedMembers.forEach(obj => {
+            memberObjects.push({value: obj.id, label: obj.name});
           })
           let objectToPush = {
             _id: item.id,
             groupName: item.groupName,
             admin: { value: item.groupAdmin.id, label: item.groupAdmin.name },
             assignBatch: item.batchList,
-            assignAnalyst: analystObjects,
-            assignQA: qaObjects,
+            assignMembers: memberObjects,
             status: true
           }
           responseList.push(objectToPush);
@@ -142,31 +119,25 @@ export const show = ({ params }, res, next) =>
     .populate('createdBy')
     .populate('groupAdmin')
     .populate('batchList')
-    .populate('assignedAnalyst')
-    .populate('assignedQA')
+    .populate('assignedMembers')
     .then(notFound(res))
     .then((group) => {
       let batchObjects = [];
       group.batchList.forEach(obj => {
         batchObjects.push({value: obj.id, label: obj.batchName});
       })
-      let analystObjects = [];
-      group.assignedAnalyst.forEach(obj => {
-        analystObjects.push({value: obj.id, label: obj.name});
-      })
-      let qaObjects = [];
-      group.assignedQA.forEach(obj => {
-        qaObjects.push({value: obj.id, label: obj.name});
+      let memberObjects = [];
+      group.assignedMembers.forEach(obj => {
+        memberObjects.push({value: obj.id, label: obj.name});
       })
       let responseObject = {
         _id: group.id,
         groupName: group.groupName,
         assignBatch: batchObjects,
-        assignAnalyst: analystObjects,
-        assignQA: qaObjects,
+        assignMembers: memberObjects,
         admin: { value: group.groupAdmin.id, label: group.groupAdmin.name }
       }
-      return (responseObject);
+      return ({ message: "Retrieved group successfully!", status: "200", data: responseObject});
     })
     .then(success(res))
     .catch(next)
@@ -176,8 +147,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .populate('createdBy')
     .populate('groupAdmin')
     .populate('batchList')
-    .populate('assignedAnalyst')
-    .populate('assignedQA')
+    .populate('assignedMembers')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((group) => group ? Object.assign(group, body).save() : null)
@@ -186,18 +156,11 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next)
 
 export const updateGroup = async({ user, bodymen: { body }, params }, res, next) => {
-  let qaList = [];
-  if (body.assignQA && body.assignQA.length > 0) {
-    for (let index = 0; index < body.assignQA.length; index++) {
-      const qa = body.assignQA[index].value;
-      qaList.push(qa);
-    }
-  }
-  let analystList = [];
-  if (body.assignAnalyst && body.assignAnalyst.length > 0) {
-    for (let aindex = 0; aindex < body.assignAnalyst.length; aindex++) {
-      const analyst = body.assignAnalyst[aindex].value;
-      qaList.push(analyst);
+  let membersList = [];
+  if (body.assignMembers && body.assignMembers.length > 0) {
+    for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
+      const member = body.assignMembers[aindex].value;
+      membersList.push(member);
     }
   }
   let batchList = [];
@@ -210,8 +173,7 @@ export const updateGroup = async({ user, bodymen: { body }, params }, res, next)
   let groupObject = {
     groupName: body.groupName ? body.groupName : '',
     groupAdmin: body.admin ? body.admin.value : '',
-    assignedQA: qaList,
-    assignedAnalyst: analystList,
+    assignedMembers: membersList,
     batchList: batchList,
     status: body.status
   }
@@ -222,7 +184,7 @@ export const updateGroup = async({ user, bodymen: { body }, params }, res, next)
       console.log('error', err);
       return err;
     } else {
-      return ({ message: "Group updated successfuly!", data: groupObject });
+      return ({ message: "Group updated successfuly!", status: "200", data: groupObject });
     }
   })
 }
