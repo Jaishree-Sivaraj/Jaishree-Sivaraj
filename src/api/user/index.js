@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, getAllUsersToAssignRoles } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
@@ -24,6 +24,24 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+/**
+* @api {get} /users/assign-role to get
+* @apiName assign-role
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token User access_token.
+* @apiParam {String} [_id] User's userId.
+* @apiParam {Boolean} [isUserApproved] User's isUserApproved.
+* @apiParam {String} [comments] User's comments.
+* @apiSuccess {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 Current user or admin access only.
+* @apiError 404 User not found.
+*/
+router.get('/assign-role',
+  token({ required: true }),
+  query(),
+  getAllUsersToAssignRoles)
 
 /**
  * @api {get} /users/:role Retrieve users by role

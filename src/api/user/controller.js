@@ -14,7 +14,11 @@ import { compareSync } from 'bcrypt'
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
     .then(count => User.find(query, select, cursor)
-      .populate('roleId')
+      .populate('roleId').populate({
+        path: 'roleDetails.roles'
+      }).populate({
+        path: 'roleDetails.primaryRole'
+      })
       .then(users => ({
         rows: users.map((user) => user.view()),
         count
@@ -29,7 +33,7 @@ export const getUsersByRole = (req, res, next) => {
   console.log('req.params', req.params);
   console.log('req.select', req.select);
   console.log('req.cursor', req.cursor);
-  let findQuery = _.omit(req.query,'access_token');
+  let findQuery = _.omit(req.query, 'access_token');
   findQuery.role = req.params.role ? req.params.role : '';
   findQuery.isAssignedToGroup = Boolean(findQuery.isAssignedToGroup);
   console.log('findQuery', findQuery);
@@ -341,16 +345,13 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     roles,
     primaryRole
   }
-  console.log('roleDetails', roleDetails);
   User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails } }).then((updatedObject) => {
-    console.log('updatedObject', updatedObject);
     if (updatedObject) {
       User.findById(body.userDetails.value).populate({
         path: 'roleDetails.roles'
       }).populate({
         path: 'roleDetails.primaryRole'
       }).then((userById) => {
-        console.log('test', userById.roleDetails);
         var resObject = {
           "userDetails": {
             "value": userById._id,
@@ -370,6 +371,33 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     } else {
       return res.status(500).json({ message: "Failed to update Role details" });
     }
+  }).catch((err) => {
+    next(err);
+  })
+}
+
+export const getAllUsersToAssignRoles = (req, res, next) => {
+  User.find().populate({
+    path: 'roleDetails.roles'
+  }).populate({
+    path: 'roleDetails.primaryRole'
+  }).then((userById) => {
+    var resArray = userById.map((rec) => {
+      console.log(JSON.stringify(rec));
+      return {
+        "userDetails": {
+          "value": rec._id,
+          "label": rec.name
+        },
+        "roleDetails": {
+          "role": rec.roleDetails.roles.map((rec1) => {
+            return { value: rec1.id, label: rec1.roleName }
+          }),
+          "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+        }
+      }
+    })
+    return res.status(200).send({ status: '200', message: 'users fetched successfully', count: resArray.length, rows: resArray });
   }).catch((err) => {
     next(err);
   })
