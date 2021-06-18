@@ -3,18 +3,23 @@ import mongoose, { Schema } from 'mongoose'
 const companySourcesSchema = new Schema({
   sourceTypeId: {
     type: Schema.ObjectId,
-    ref:'SourceTypes',
-    required:true
+    ref: 'SourceTypes',
+    required: true
   },
   sourceUrl: {
     type: String
   },
   sourceFile: {
-    type: String
+    type: Buffer
   },
   publicationDate: {
     type: Date
-  }
+  },
+  companyId: {
+    type: Schema.ObjectId,
+    ref: 'Companies',
+    required: false
+  },
 }, {
   timestamps: true,
   toJSON: {
@@ -24,13 +29,14 @@ const companySourcesSchema = new Schema({
 })
 
 companySourcesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       sourceTypeId: this.sourceTypeId ? this.sourceTypeId.view(full) : null,
+      companyId: this.companyId ? this.companyId.view(full) : null,
       sourceUrl: this.sourceUrl,
-      sourceFile: this.sourceFile, 
+      sourceFile: this.sourceFile.toString('base64'),
       publicationDate: this.publicationDate,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

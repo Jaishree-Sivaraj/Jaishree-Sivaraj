@@ -8,6 +8,7 @@ import { CompanyRepresentatives } from '../company-representatives'
 import fileType from 'file-type'
 import * as fs from 'fs'
 import path from 'path'
+import { compareSync } from 'bcrypt'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
@@ -118,9 +119,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
                   bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
                   accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: pancardUrl,
-                  aadhaarUrl: aadhaarUrl,
-                  cancelledChequeUrl: cancelledChequeUrl,
+                  pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
+                  aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
+                  cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
                   status: true,
                   createdBy: user
                 }).then((resp) => {
@@ -322,6 +323,48 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
       }
     })
 
+}
+
+export const assignRole = ({ bodymen: { body }, user }, res, next) => {
+  console.log('assign', body)
+  var roles = body.roleDetails.role.map((rec) => rec.value);
+  var primaryRole = body.roleDetails.primaryRole.value;
+  var roleDetails = {
+    roles,
+    primaryRole
+  }
+  console.log('roleDetails', roleDetails);
+  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails } }).then((updatedObject) => {
+    console.log('updatedObject', updatedObject);
+    if (updatedObject) {
+      User.findById(body.userDetails.value).populate({
+        path: 'roleDetails.roles'
+      }).populate({
+        path: 'roleDetails.primaryRole'
+      }).then((userById) => {
+        console.log('test', userById.roleDetails);
+        var resObject = {
+          "userDetails": {
+            "value": userById._id,
+            "label": userById.name
+          },
+          "roleDetails": {
+            "role": userById.roleDetails.roles.map((rec) => {
+              return { value: rec.id, label: rec.roleName }
+            }),
+            "primaryRole": { value: userById.roleDetails.primaryRole.id, label: userById.roleDetails.primaryRole.roleName }
+          }
+        }
+        return res.status(200).send(resObject);
+      }).catch((err) => {
+        next(err);
+      })
+    } else {
+      return res.status(500).json({ message: "Failed to update Role details" });
+    }
+  }).catch((err) => {
+    next(err);
+  })
 }
 
 export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
