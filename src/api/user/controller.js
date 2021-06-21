@@ -367,7 +367,7 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
             "primaryRole": { value: userById.roleDetails.primaryRole.id, label: userById.roleDetails.primaryRole.roleName }
           }
         }
-        return res.status(200).send(resObject);
+        return res.status(200).send({ status: '200', message: 'Roles Updated Successfully', resObject });
       }).catch((err) => {
         next(err);
       })
@@ -375,7 +375,8 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
       return res.status(500).json({ message: "Failed to update Role details" });
     }
   }).catch((err) => {
-    next(err);
+    //next(err);
+    return res.status(500).json({ message: "Failed to update Role details" });
   })
 }
 
@@ -424,7 +425,7 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 //     res.send(approvedUsers);
 //   })
 // })
-    
+
 
 export const update = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -448,7 +449,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updatePassword = ({ bodymen: { body }, params, user }, res, next) => 
+export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
     .then((result) => {
@@ -605,7 +606,7 @@ var uploadFiles = multer({ //multer settings
 
 export const uploadEmailsFile = async (req, res, next) => {
   try {
-    uploadFiles(req, res, async function (err) {  
+    uploadFiles(req, res, async function (err) {
       if (err) {
         res.status('400').json({ error_code: 1, err_desc: err });
         return;
@@ -615,45 +616,39 @@ export const uploadEmailsFile = async (req, res, next) => {
       if (workbook.SheetNames.length > 0) {
         var worksheet = workbook.Sheets[workbook.SheetNames[0]];
         try {
-          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet,{defval:" "});
+          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
           //code for sending onboarding links to emails
           let existingUserEmailsList = await User.find({"status": true});
           if (sheetAsJson.length > 0) {
             let existingEmails = [];
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-              let isEmailExisting = existingUserEmailsList.find(object=> rowObject['Email'] == object.email );
-              console.log('isEmailExisting', isEmailExisting);
-              //nodemail code will come here to send OTP
-              if(!isEmailExisting){
-                const content = `
-                  Hai,<br/>
-                  Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
-                  URL: ${rowObject['Link']}<br/><br/>
-                  &mdash; ESG Team `;
-                var transporter = nodemailer.createTransport({
-                  service: 'Gmail',
-                  auth: {
-                    user: 'testmailer09876@gmail.com',
-                    pass: 'ijsfupqcuttlpcez'
-                  }
-                });
-                
-                transporter.sendMail({
-                  from: 'testmailer09876@gmail.com',
-                  to: rowObject['Email'],
-                  subject: 'ESG - Onboarding',
-                  html: content
-                });
-              }else{
-                existingEmails.push(isEmailExisting.email);
-              }
+               //nodemail code will come here to send OTP
+              const content = `
+                Hai,<br/>
+                Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
+                URL: ${rowObject['Link']}<br/><br/>
+                &mdash; ESG Team `;
+              var transporter = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                  user: 'testmailer09876@gmail.com',
+                  pass: 'ijsfupqcuttlpcez'
+                }
+              });
+
+              transporter.sendMail({
+                from: 'testmailer09876@gmail.com',
+                to: rowObject['Email'],
+                subject: 'ESG - Onboarding',
+                html: content
+              });
             }
             return res.json({status : 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
           }
         } catch (error) {
           return res.status(400).json({ message: error.message })
-        }        
+        }
       }
     });
   } catch (error) {
@@ -661,7 +656,7 @@ export const uploadEmailsFile = async (req, res, next) => {
       return res.status(403).json({
         message: error.message ? error.message : 'Failed to upload onboarding emails',
         status: 403
-      });      
+      });
     }
   }
 } 
