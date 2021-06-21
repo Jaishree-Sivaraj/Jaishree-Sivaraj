@@ -197,8 +197,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 password: onBoardingDetails.password ? onBoardingDetails.password : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                 CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                companyIdForClient: companyIdForClient,
+                authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
+                companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
                 status: true,
                 createdBy: user
               });
@@ -227,7 +227,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       return res.status(500).json({ message: "Failed to store authenticationLetterForClientUrl" })
     });
   } else if (onBoardingDetails.roleName == "Company Representative") {
-    var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
+    var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -256,8 +256,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl,
-                    companyIdForCompany: companyIdForCompany,
+                    authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
+                    companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
                     status: true,
                     createdBy: user
                   });

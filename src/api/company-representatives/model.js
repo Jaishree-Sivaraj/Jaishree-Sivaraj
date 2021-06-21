@@ -14,15 +14,15 @@ const companyRepresentativesSchema = new Schema({
   name: {
     type: String
   },
-  companiesList: [{ 
-    type : Schema.ObjectId, 
-    ref: 'Companies' 
+  companiesList: [{
+    type: Schema.ObjectId,
+    ref: 'Companies'
   }],
   authenticationLetterForCompanyUrl: {
-    type: String
+    type: Buffer
   },
   companyIdForCompany: {
-    type: String
+    type: Buffer
   },
   status: {
     type: Boolean,
@@ -37,7 +37,7 @@ const companyRepresentativesSchema = new Schema({
 })
 
 companyRepresentativesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -45,8 +45,8 @@ companyRepresentativesSchema.methods = {
       userId: this.userId ? this.userId.view(full) : null,
       name: this.name,
       companiesList: this.companiesList ? this.companiesList : [],
-      authenticationLetterForCompanyUrl: this.authenticationLetterForCompanyUrl,
-      companyIdForCompany: this.companyIdForCompany,
+      authenticationLetterForCompanyUrl: this.authenticationLetterForCompanyUrl.toString('base64'),
+      companyIdForCompany: this.companyIdForCompany.toString('base64'),
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
