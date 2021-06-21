@@ -603,18 +603,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
             for (let year = 0; year < distinctYears.length; year++) {
               let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
-              let missingDPObject = {
-                companyName: insertedCompanies[companyIdIndex].companyName,
-                year: distinctYears[year],
-                missingDPs: missingDPs
+              if(missingDPs.length > 0){
+                let missingDPObject = {
+                  companyName: insertedCompanies[companyIdIndex].companyName,
+                  year: distinctYears[year],
+                  missingDPs: missingDPs
+                }
+                // missingDPsLength = _.concat(missingDPsLength,missingDPs);
+                missingDatapointsDetails.push(missingDPObject);
               }
-              missingDPsLength = _.concat(missingDPsLength,missingDPs);
-              missingDatapointsDetails.push(missingDPObject);
             }
           }
           missingDPList = _.concat(missingDPList, missingDatapointsDetails)
           console.log(missingDPList)
-          if (missingDPsLength.length == 0) {
+          if (missingDPList.length == 0) {
             const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
               "companyId": { $in: insertedCompanyIds },
               "year": { $in: distinctYears }
