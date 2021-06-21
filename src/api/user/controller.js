@@ -618,11 +618,12 @@ export const uploadEmailsFile = async (req, res, next) => {
         try {
           var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
           //code for sending onboarding links to emails
+          let existingUserEmailsList = await User.find({"status": true});
           if (sheetAsJson.length > 0) {
+            let existingEmails = [];
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-
-              //nodemail code will come here to send OTP
+               //nodemail code will come here to send OTP
               const content = `
                 Hai,<br/>
                 Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
@@ -643,8 +644,8 @@ export const uploadEmailsFile = async (req, res, next) => {
                 html: content
               });
             }
+            return res.json({status : 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
           }
-          return res.json(sheetAsJson);
         } catch (error) {
           return res.status(400).json({ message: error.message })
         }
@@ -657,5 +658,47 @@ export const uploadEmailsFile = async (req, res, next) => {
         status: 403
       });
     }
+  }
+} 
+
+export const sendMultipleOnBoardingLinks = async({ bodymen: { body } }, res, next)=>{
+  console.log(body.emailList);
+  const emailList = body.emailList;
+  let existingUserEmailsList = await User.find({"status": true});
+  if(emailList.length > 0){
+    let existingEmails = [];
+    for (let index = 0; index < emailList.length; index++) {
+      const rowObject = emailList[index];
+      console.log(rowObject['Email']);
+      let isEmailExisting = existingUserEmailsList.find(object=> rowObject['Email'] == object.email );
+      console.log('isEmailExisting', isEmailExisting);
+      if(!isEmailExisting){
+        //nodemail code will come here to send OTP
+        const content = `
+          Hai,<br/>
+          Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
+          URL: ${rowObject['Link']}<br/><br/>
+          &mdash; ESG Team `;
+        var transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: 'testmailer09876@gmail.com',
+            pass: 'ijsfupqcuttlpcez'
+          }
+        });
+        
+        transporter.sendMail({
+          from: 'testmailer09876@gmail.com',
+          to: rowObject['Email'],
+          subject: 'ESG - Onboarding',
+          html: content
+        });
+      }else{
+        existingEmails.push(isEmailExisting.email);
+      }
+    }
+    return res.json({status : 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
+  }else{
+    return res.status(400).json({ message: "No Emails Present in the EmailList" })
   }
 }
