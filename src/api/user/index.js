@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
 const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status } = schema.tree
-const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [];
+const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {};
 /**
  * @api {get} /users Retrieve users
  * @apiName RetrieveUsers
@@ -24,6 +24,24 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+/**
+* @api {get} /users/assign-role to get
+* @apiName assign-role
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token User access_token.
+* @apiParam {String} [_id] User's userId.
+* @apiParam {Boolean} [isUserApproved] User's isUserApproved.
+* @apiParam {String} [comments] User's comments.
+* @apiSuccess {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 Current user or admin access only.
+* @apiError 404 User not found.
+*/
+router.get('/assign-role',
+  token({ required: true }),
+  query(),
+  getAllUsersToAssignRoles)
 
 /**
  * @api {get} /users/:role Retrieve users by role
@@ -84,8 +102,6 @@ router.get('/:id',
  * @api {post} /users Create user
  * @apiName CreateUser
  * @apiGroup User
- * @apiPermission master
- * @apiParam {String} access_token Master access_token.
  * @apiParam {String} email User's email.
  * @apiParam {String{6..}} password User's password.
  * @apiParam {String} [name] User's name.
@@ -98,7 +114,6 @@ router.get('/:id',
  * @apiError 409 Email already registered.
  */
 router.post('/',
-  master(),
   body({ email, password, name, picture, role, roleId, phoneNumber }),
   create)
 
@@ -121,7 +136,7 @@ router.post('/',
  */
 router.post('/new-onboard',
   token({ required: true }),
-  body({onBoardingDetails}),
+  body({ onBoardingDetails }),
   onBoardNewUser)
 
 /**
@@ -142,6 +157,25 @@ router.put('/update-status',
   token({ required: true }),
   body({ userId, isUserApproved, comments }),
   updateUserStatus)
+
+/**
+* @api {put} /users/assign-role to update role for user
+* @apiName assign-role
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token User access_token.
+* @apiParam {String} [_id] User's userId.
+* @apiParam {Boolean} [isUserApproved] User's isUserApproved.
+* @apiParam {String} [comments] User's comments.
+* @apiSuccess {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 Current user or admin access only.
+* @apiError 404 User not found.
+*/
+router.put('/assign-role',
+  token({ required: true }),
+  body({ userDetails, roleDetails }),
+  assignRole)
 
 /**
  * @api {put} /users/update/roles Update user roles
@@ -209,6 +243,23 @@ router.put('/:id/password',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+/**
+* @api {post} /user/uploadEmailsFile Upload EmailsFile
+* @apiName EmailsFile
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} Emails data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Emails not found.
+* @apiError 401 user access only.
+*/
+router.post('/uploadEmailsFile',
+  token({ required: true }),
+  query(),
+  uploadEmailsFile)
+
 
 
 export default router

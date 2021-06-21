@@ -13,8 +13,6 @@ const { roleName, roleCode, status } = schema.tree
  * @api {post} /role Create role
  * @apiName CreateRole
  * @apiGroup Role
- * @apiPermission master
- * @apiParam {String} access_token master access token.
  * @apiParam roleName Role's roleName.
  * @apiParam roleCode Role's roleCode.
  * @apiSuccess {Object} role Role's data.
@@ -23,7 +21,6 @@ const { roleName, roleCode, status } = schema.tree
  * @apiError 401 master access only.
  */
 router.post('/',
-  master(),
   body({ roleName, roleCode }),
   create)
 

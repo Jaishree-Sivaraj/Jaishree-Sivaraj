@@ -38,8 +38,6 @@ router.post('/',
  * @api {get} /companies Retrieve companies
  * @apiName RetrieveCompanies
  * @apiGroup Companies
- * @apiPermission user
- * @apiParam {String} access_token user access token.
  * @apiUse listParams
  * @apiSuccess {Number} count Total amount of companies.
  * @apiSuccess {Object[]} rows List of companies.
@@ -47,7 +45,7 @@ router.post('/',
  * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: true }),
+  token({ required: false }),
   query(),
   index)
 

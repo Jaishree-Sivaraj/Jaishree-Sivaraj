@@ -1,4 +1,7 @@
+import multer from 'multer'
+import XLSX from 'xlsx'
 import _ from 'lodash'
+import nodemailer from 'nodemailer'
 import { success, notFound } from '../../services/response/'
 import { User } from '.'
 import { sign } from '../../services/jwt'
@@ -9,11 +12,16 @@ import { CompanyRepresentatives } from '../company-representatives'
 import fileType from 'file-type'
 import * as fs from 'fs'
 import path from 'path'
+import { compareSync } from 'bcrypt'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
     .then(count => User.find(query, select, cursor)
-      .populate('roleId')
+      .populate('roleId').populate({
+        path: 'roleDetails.roles'
+      }).populate({
+        path: 'roleDetails.primaryRole'
+      })
       .then(users => ({
         rows: users.map((user) => user.view()),
         count
@@ -28,7 +36,7 @@ export const getUsersByRole = (req, res, next) => {
   console.log('req.params', req.params);
   console.log('req.select', req.select);
   console.log('req.cursor', req.cursor);
-  let findQuery = _.omit(req.query,'access_token');
+  let findQuery = _.omit(req.query, 'access_token');
   findQuery.role = req.params.role ? req.params.role : '';
   findQuery.isAssignedToGroup = Boolean(findQuery.isAssignedToGroup);
   console.log('findQuery', findQuery);
@@ -126,9 +134,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
                   bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
                   accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: pancardUrl,
-                  aadhaarUrl: aadhaarUrl,
-                  cancelledChequeUrl: cancelledChequeUrl,
+                  pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
+                  aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
+                  cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
                   status: true,
                   createdBy: user
                 }).then((resp) => {
@@ -332,6 +340,72 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
 
 }
 
+export const assignRole = ({ bodymen: { body }, user }, res, next) => {
+  console.log('assign', body)
+  var roles = body.roleDetails.role.map((rec) => rec.value);
+  var primaryRole = body.roleDetails.primaryRole.value;
+  var roleDetails = {
+    roles,
+    primaryRole
+  }
+  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails } }).then((updatedObject) => {
+    if (updatedObject) {
+      User.findById(body.userDetails.value).populate({
+        path: 'roleDetails.roles'
+      }).populate({
+        path: 'roleDetails.primaryRole'
+      }).then((userById) => {
+        var resObject = {
+          "userDetails": {
+            "value": userById._id,
+            "label": userById.name
+          },
+          "roleDetails": {
+            "role": userById.roleDetails.roles.map((rec) => {
+              return { value: rec.id, label: rec.roleName }
+            }),
+            "primaryRole": { value: userById.roleDetails.primaryRole.id, label: userById.roleDetails.primaryRole.roleName }
+          }
+        }
+        return res.status(200).send(resObject);
+      }).catch((err) => {
+        next(err);
+      })
+    } else {
+      return res.status(500).json({ message: "Failed to update Role details" });
+    }
+  }).catch((err) => {
+    next(err);
+  })
+}
+
+export const getAllUsersToAssignRoles = (req, res, next) => {
+  User.find().populate({
+    path: 'roleDetails.roles'
+  }).populate({
+    path: 'roleDetails.primaryRole'
+  }).then((userById) => {
+    var resArray = userById.map((rec) => {
+      console.log(JSON.stringify(rec));
+      return {
+        "userDetails": {
+          "value": rec._id,
+          "label": rec.name
+        },
+        "roleDetails": {
+          "role": rec.roleDetails.roles.map((rec1) => {
+            return { value: rec1.id, label: rec1.roleName }
+          }),
+          "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+        }
+      }
+    })
+    return res.status(200).send({ status: '200', message: 'users fetched successfully', count: resArray.length, rows: resArray });
+  }).catch((err) => {
+    next(err);
+  })
+}
+
 export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
   //User.find({ isUserApproved: true, isRoleAssigned: true });//Separate New API to return only approved and role assigned users
   var roles = body.roleDetails.map(rec => rec.value);
@@ -350,7 +424,7 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 //     res.send(approvedUsers);
 //   })
 // })
-
+    
 
 export const update = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -374,7 +448,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
+export const updatePassword = ({ bodymen: { body }, params, user }, res, next) => 
   User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
     .then((result) => {
@@ -506,3 +580,81 @@ export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, n
 
 }
 
+
+var emailFiles = multer.diskStorage({ //multers disk shop photos storage settings
+  destination: function (req, file, cb) {
+    // cb(null, './uploads/')
+    console.log('__dirname ', __dirname);
+    // console.log('process.env.PWD', process.env.PWD);
+    cb(null, __dirname + '/uploads');
+  },
+  filename: function (req, file, cb) {
+    var datetimestamp = Date.now();
+    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+  }
+});
+var uploadFiles = multer({ //multer settings
+  storage: emailFiles,
+  fileFilter: function (req, file, callback) { //file filter
+    if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
+      return callback(new Error('Wrong extension type'));
+    }
+    callback(null, true);
+  }
+}).single('file');
+
+export const uploadEmailsFile = async (req, res, next) => {
+  try {
+    uploadFiles(req, res, async function (err) {  
+      if (err) {
+        res.status('400').json({ error_code: 1, err_desc: err });
+        return;
+      }
+      const filePath = req.file.path;
+      var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
+      if (workbook.SheetNames.length > 0) {
+        var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        try {
+          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet,{defval:" "});
+          //code for sending onboarding links to emails
+          if (sheetAsJson.length > 0) {
+            for (let index = 0; index < sheetAsJson.length; index++) {
+              const rowObject = sheetAsJson[index];
+              
+              //nodemail code will come here to send OTP
+              const content = `
+                Hai,<br/>
+                Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
+                URL: ${rowObject['Link']}<br/><br/>
+                &mdash; ESG Team `;
+              var transporter = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                  user: 'testmailer09876@gmail.com',
+                  pass: 'ijsfupqcuttlpcez'
+                }
+              });
+              
+              transporter.sendMail({
+                from: 'testmailer09876@gmail.com',
+                to: rowObject['Email'],
+                subject: 'ESG - Onboarding',
+                html: content
+              });
+            }
+          }
+          return res.json(sheetAsJson);
+        } catch (error) {
+          return res.status(400).json({ message: error.message })
+        }        
+      }
+    });
+  } catch (error) {
+    if (error) {
+      return res.status(403).json({
+        message: error.message ? error.message : 'Failed to upload onboarding emails',
+        status: 403
+      });      
+    }
+  }
+} 
