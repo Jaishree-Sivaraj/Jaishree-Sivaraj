@@ -18,6 +18,10 @@ const categoriesSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  clientTaxonomyId: {
+    type: Schema.ObjectId,
+    ref: 'ClientTaxonomy'
   }
 }, {
   timestamps: true,
@@ -28,13 +32,14 @@ const categoriesSchema = new Schema({
 })
 
 categoriesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       categoryName: this.categoryName ? this.categoryName : '',
       categoryCode: this.categoryCode ? this.categoryCode : '',
       categoryDescription: this.categoryDescription ? this.categoryDescription : '',
+      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

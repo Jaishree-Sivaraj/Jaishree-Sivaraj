@@ -7,6 +7,7 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { StandaloneDatapoints } from '.'
 import { Companies } from '../companies'
 import { Datapoints } from '../datapoints'
+import { ClientTaxonomy } from '../clientTaxonomy'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { object } from 'mongoose/lib/utils'
@@ -314,6 +315,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
           }
+          let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           const structuredCompanyDetails = [];
           for (let index = 0; index < companiesToBeAdded.length; index++) {
@@ -329,6 +331,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               cmieProwessCode: item['CMIE/Prowess Code'],
               socialAnalystName: item['Analyst Name'],
               socialQAName: item['QA Name'],
+              clientTaxonomyId: clientTaxonomyId._id,
               status: true,
               createdBy: userDetail
             }
@@ -376,6 +379,23 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               fiscalYearEndDate: item['Fiscal Year End Date'],
               response: responseValue,
               companyId: companyObject[0] ? companyObject[0].id : null,
+              sourceName: item['Source name'],
+              url: item['URL'] ? item['URL'].toString() : '',
+              pageNumber: item['Page number'],
+              publicationDate: item['Publication date'],
+              textSnippet: item['Text snippet'],
+              screenShot: item['Screenshot (in png)'],
+              pdf: item['PDF'],
+              wordDoc: item['Word Doc (.docx)'],
+              excel: item['Excel (.xlsx)'],
+              filePathway: item['File pathway'],
+              commentCalculations: item['Comments/Calculations'],
+              dataVerification: item['Data Verification'],
+              errorType: item['Error Type'],
+              internalFileSource: item['Internal file source'],
+              errorComments: item['Error Comments'],
+              analystComments: item['Analyst Comments'],
+              additionalComments: item['Additional comments'],
               performanceResult: '',
               standaloneStatus: '',
               taskId: null,
@@ -443,6 +463,23 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 companyId: companyObject[0] ? companyObject[0].id : null,
                 year: item['Fiscal Year'],
                 fiscalYearEndDate: item['Fiscal Year End Date'],
+                sourceName: item['Source name'],
+                url: item['URL'] ? item['URL'].toString() : '',
+                pageNumber: item['Page number'],
+                publicationDate: item['Publication date'],
+                textSnippet: item['Text snippet'],
+                screenShot: item['Screenshot (in png)'],
+                pdf: item['PDF'],
+                wordDoc: item['Word Doc (.docx)'],
+                excel: item['Excel (.xlsx)'],
+                filePathway: item['File pathway'],
+                commentCalculations: item['Comments/Calculations'],
+                dataVerification: item['Data Verification'],
+                errorType: item['Error Type'],
+                internalFileSource: item['Internal file source'],
+                errorComments: item['Error Comments'],
+                analystComments: item['Analyst Comments'],
+                additionalComments: item['Additional comments'],
                 memberStatus: true,
                 status: true,
                 createdBy: userDetail
@@ -527,6 +564,23 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 companyId: companyObject[0] ? companyObject[0].id : null,
                 year: item['Fiscal Year'],
                 fiscalYearEndDate: item['Fiscal Year End Date'],
+                sourceName: item['Source name'],
+                url: item['URL'] ? item['URL'].toString() : '',
+                pageNumber: item['Page number'],
+                publicationDate: item['Publication date'],
+                textSnippet: item['Text snippet'],
+                screenShot: item['Screenshot (in png)'],
+                pdf: item['PDF'],
+                wordDoc: item['Word Doc (.docx)'],
+                excel: item['Excel (.xlsx)'],
+                filePathway: item['File pathway'],
+                commentCalculations: item['Comments/Calculations'],
+                dataVerification: item['Data Verification'],
+                errorType: item['Error Type'],
+                internalFileSource: item['Internal file source'],
+                errorComments: item['Error Comments'],
+                analystComments: item['Analyst Comments'],
+                additionalComments: item['Additional comments'],
                 status: true,
                 createdBy: userDetail
               };
@@ -608,7 +662,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 year: distinctYears[year],
                 missingDPs: missingDPs
               }
-              missingDPsLength = _.concat(missingDPsLength,missingDPs);
+              missingDPsLength = _.concat(missingDPsLength, missingDPs);
               missingDatapointsDetails.push(missingDPObject);
             }
           }

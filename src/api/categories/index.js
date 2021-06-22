@@ -7,7 +7,7 @@ import { schema } from './model'
 export Categories, { schema } from './model'
 
 const router = new Router()
-const { categoryName, categoryCode, categoryDescription, status } = schema.tree
+const { categoryName, categoryCode, categoryDescription, status, clientTaxonomyId } = schema.tree
 
 /**
  * @api {post} /categories Create categories
@@ -18,6 +18,7 @@ const { categoryName, categoryCode, categoryDescription, status } = schema.tree
  * @apiParam categoryName Categories's categoryName.
  * @apiParam categoryCode Categories's categoryCode.
  * @apiParam categoryDescription Categories's categoryDescription.
+ * @apiParam clientTaxonomyId Categories's clientTaxonomyId.
  * @apiSuccess {Object} categories Categories's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Categories not found.
@@ -25,7 +26,7 @@ const { categoryName, categoryCode, categoryDescription, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ categoryName, categoryCode, categoryDescription }),
+  body({ categoryName, categoryCode, categoryDescription, clientTaxonomyId }),
   create)
 
 /**
@@ -70,6 +71,7 @@ router.get('/:id',
  * @apiParam categoryCode Categories's categoryCode.
  * @apiParam categoryDescription Categories's categoryDescription.
  * @apiParam status Categories's status.
+ * @apiParam clientTaxonomyId Categories's clientTaxonomyId.
  * @apiSuccess {Object} categories Categories's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Categories not found.
@@ -77,7 +79,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ categoryName, categoryCode, categoryDescription, status }),
+  body({ categoryName, categoryCode, categoryDescription, status, clientTaxonomyId }),
   update)
 
 /**
