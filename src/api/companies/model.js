@@ -6,6 +6,11 @@ const companiesSchema = new Schema({
     ref: 'User',
     required: true
   },
+  clientTaxonomyId: {
+    type: Schema.ObjectId,
+    ref: 'ClientTaxonomy',
+    required: true
+  },
   companyName: {
     type: String
   },

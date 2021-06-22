@@ -6,6 +6,7 @@ import { getJsDateFromExcel } from 'excel-date-to-js'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Controversy } from '.'
 import { Companies } from '../companies'
+import { ClientTaxonomy } from '../clientTaxonomy'
 import { Datapoints } from '../datapoints'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -94,13 +95,13 @@ export const uploadControversies = async (req, res, next) => {
         const filePath = req.files.file[index].path;
         var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
         var sheet_name_list = workbook.SheetNames;
-  
+
         sheet_name_list.forEach(function (currentSheetName) {
           console.log('currentSheetName', currentSheetName);
           var worksheet = workbook.Sheets[currentSheetName];
           try {
-            var sheetAsJson = XLSX.utils.sheet_to_json(worksheet,{defval:" "});
-            allFilesObject.push(sheetAsJson);            
+            var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+            allFilesObject.push(sheetAsJson);
           } catch (error) {
             return res.status(400).json({ message: error.message })
           }
@@ -109,6 +110,7 @@ export const uploadControversies = async (req, res, next) => {
       let companyDetails = [], controversyDetails = [];
       if (allFilesObject.length > 0) {
         let currentCompanyName;
+        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
         for (let index = 0; index < allFilesObject.length; index++) {
           console.log(allFilesObject[index].length);
           console.log(allFilesObject[index]);
@@ -123,6 +125,7 @@ export const uploadControversies = async (req, res, next) => {
               cmieProwessCode: allFilesObject[index][0]['CMIE/Prowess Code'],
               socialAnalystName: allFilesObject[index][0]['Analyst Name'],
               socialQAName: allFilesObject[index][0]['QA Name'],
+              clientTaxonomyId: clientTaxonomyId._id,
               status: true,
               createdBy: userDetail
             }
@@ -151,7 +154,7 @@ export const uploadControversies = async (req, res, next) => {
                     } catch (error) {
                       console.log(error.message);
                       return res.status(500).json({ message: `Found invalid date format in ${currentCompanyName}, please correct and try again!` })
-                    }                    
+                    }
                   }
                   controversyList.push({
                     sourceName: allFilesObject[index][rowIndex]['Source name'] ? allFilesObject[index][rowIndex]['Source name'] : '',
@@ -194,10 +197,10 @@ export const uploadControversies = async (req, res, next) => {
                 let isDpValueExist = controversyDetails.findIndex(obj => obj.companyId == currentCompanyName && obj.datapointId == controversyObject.datapointId && obj.year == controversyObject.year)
                 if (isDpValueExist > -1) {
                   if (!controversyDetails[isDpValueExist].controversyDetails && controversyList[0]) {
-                    controversyDetails[isDpValueExist].controversyDetails = [controversyList[0]]; 
-                  } else{
+                    controversyDetails[isDpValueExist].controversyDetails = [controversyList[0]];
+                  } else {
                     if (controversyDetails[isDpValueExist].controversyDetails && controversyList[0]) {
-                      controversyDetails[isDpValueExist].controversyDetails.push(controversyList[0]);                      
+                      controversyDetails[isDpValueExist].controversyDetails.push(controversyList[0]);
                     }
                   }
                   if (controversyDetails[isDpValueExist].response) {
@@ -246,10 +249,10 @@ export const uploadControversies = async (req, res, next) => {
       await Controversy.updateMany({
         "companyId": { $in: insertedCompanyIds }
       }, { $set: { status: false } }, {});
-      
+
       controversyDetails.map(obj => {
         insertedCompanies.find(item => {
-          if(item.companyName === obj.companyId){
+          if (item.companyName === obj.companyId) {
             obj.companyId = item.id;
             return;
           }
@@ -269,17 +272,17 @@ export const uploadControversies = async (req, res, next) => {
             //  console.log('result', result);
           }
         });
-        return res.json({ message: "Files upload success", companies: insertedCompanies, data: controversyDetails });
-    });    
+      return res.json({ message: "Files upload success", companies: insertedCompanies, data: controversyDetails });
+    });
   } catch (error) {
     return res.status(403).json({
       message: error.message ? error.message : 'Failed to upload controversy files',
       status: 403
-    });   
+    });
   }
 }
 
-export const generateJson = async({params, user}, res, next) => {
+export const generateJson = async ({ params, user }, res, next) => {
   let companyDetails = await Companies.findOne({ _id: params.companyId, status: true });
   if (companyDetails) {
     let companyControversyYears = await Controversy.find({ companyId: params.companyId, status: true }).distinct('year');
@@ -298,9 +301,9 @@ export const generateJson = async({params, user}, res, next) => {
           Data: []
         };
         let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, status: true })
-        .populate('createdBy')
-        .populate('companyId')
-        .populate('datapointId');
+          .populate('createdBy')
+          .populate('companyId')
+          .populate('datapointId');
         if (companyControversiesYearwise.length > 0) {
           for (let index = 0; index < companyControversiesYearwise.length; index++) {
             const element = companyControversiesYearwise[index];

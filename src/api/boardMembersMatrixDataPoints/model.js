@@ -7,12 +7,12 @@ const boardMembersMatrixDataPointsSchema = new Schema({
     required: true
   },
   datapointId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Datapoints',
     required: true
   },
   companyId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Companies',
     required: true
   },
@@ -25,15 +25,69 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   response: {
     type: String
   },
-  fiscalYearEndDate:{
-    type:String
+  fiscalYearEndDate: {
+    type: String
   },
   memberStatus: {
     type: Boolean
   },
+  sourceName: {
+    type: String
+  },
+  url: {
+    type: String
+  },
+  pageNumber: {
+    type: String
+  },
+  publicationDate: {
+    type: String
+  },
+  textSnippet: {
+    type: String
+  },
+  screenShot: {
+    type: String
+  },
+  pdf: {
+    type: String
+  },
+  wordDoc: {
+    type: String
+  },
+  excel: {
+    type: String
+  },
+  filePathway: {
+    type: String
+  },
+  commentCalculations: {
+    type: String
+  },
+  dataVerification: {
+    type: String
+  },
+  errorType: {
+    type: String
+  },
+  errorComments: {
+    type: String
+  },
+  internalFileSource: {
+    type: String
+  },
+  errorStatus: {
+    type: String
+  },
+  analystComments: {
+    type: String
+  },
+  additionalComments: {
+    type: String
+  },
   status: {
     type: Boolean,
-    default:true
+    default: true
   }
 }, {
   timestamps: true,
@@ -44,7 +98,7 @@ const boardMembersMatrixDataPointsSchema = new Schema({
 })
 
 boardMembersMatrixDataPointsSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -55,6 +109,23 @@ boardMembersMatrixDataPointsSchema.methods = {
       year: this.year,
       response: this.response,
       fiscalYearEndDate: this.fiscalYearEndDate,
+      sourceName: this.sourceName,
+      url: this.url,
+      pageNumber: this.pageNumber,
+      publicationDate: this.publicationDate,
+      textSnippet: this.textSnippet,
+      screenShot: this.screenShot,
+      pdf: this.pdf,
+      wordDoc: this.wordDoc,
+      excel: this.excel,
+      filePathway: this.filePathway,
+      commentCalculations: this.commentCalculations,
+      dataVerification: this.dataVerification,
+      errorType: this.errorType,
+      errorComments: this.errorComments,
+      analystComments: this.analystComments,
+      internalFileSource: this.internalFileSource,
+      additionalComments: this.additionalComments,
       memberStatus: this.memberStatus,
       status: this.status,
       createdAt: this.createdAt,
