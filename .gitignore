@@ -16,3 +16,4 @@ DOCS.md
 .vscode/launch.json
 src/api/standalone_datapoints/uploads/
 src/api/controversy/uploads/
+uploads
