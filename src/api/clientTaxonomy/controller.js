@@ -22,7 +22,7 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
   }
   await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
   .then((clientTaxonomy) => {
-    return res.status(200).json(clientTaxonomy);
+    return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy});
   })
   .catch((err) => {
     res.status(400).json({
@@ -36,10 +36,10 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
   ClientTaxonomy.count(query)
     .then(count => ClientTaxonomy.find(query)
       .populate('createdBy')
-      .populate({
-        path: 'fields.id',
-        model: 'Taxonomies'
-      })
+      // .populate({
+      //   path: 'fields.id',
+      //   model: 'Taxonomies'
+      // })
       .then((clientTaxonomies) => {
         let responseList = [];
         clientTaxonomies.forEach(item => {
@@ -56,6 +56,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
           responseList.push(objectToPush);
         });
         return ({
+          message: "Client taxonomy retrieved successfully",
           count,
           rows: responseList
         })
@@ -68,10 +69,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
 export const show = ({ params }, res, next) =>
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
-    .populate({
-      path: 'fields.id',
-      model: 'Taxonomies'
-    })
     .then(notFound(res))
     .then((clientTaxonomy) => {
       // let headersList = [];
@@ -84,7 +81,7 @@ export const show = ({ params }, res, next) =>
         headers: item.fields ? item.fields : [],
         status: item.status
       }
-      return responseObject;
+      return { status: "200", message: "Client taxonomy retrieved successfully", data: responseObject };
     })
     .then(success(res))
     .catch(next)
@@ -92,10 +89,6 @@ export const show = ({ params }, res, next) =>
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
-    .populate({
-      path: 'fields.id',
-      model: 'Taxonomies'
-    })
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((clientTaxonomy) => clientTaxonomy ? Object.assign(clientTaxonomy, body).save() : null)
@@ -106,14 +99,10 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, res, next) => {
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
-    .populate({
-      path: 'fields.id',
-      model: 'Taxonomies'
-    })
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then(async(clientTaxonomy) => {
-      let fields = [];
+      // let fields = [];
       // if (body.headers && body.headers.length > 0) {
       //   for (let index = 0; index < body.headers.length; index++) {
       //     const masterTaxonomy = body.headers[index].value;
@@ -131,7 +120,7 @@ export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, r
           console.log('error', err);
           return err;
         } else {
-          return ({ message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
+          return ({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
         }
       })
     })
