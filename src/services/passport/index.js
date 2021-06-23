@@ -14,7 +14,7 @@ export const password = () => async(req, res, next) =>
         let bodyData = Buffer.from(req.body.login, 'base64');
         let bodyDetails = bodyData.toString('ascii');
         let loginDetails = JSON.parse(bodyDetails);
-        let email = loginDetails.username, password = loginDetails.password;
+        let email = loginDetails.email, password = loginDetails.password;
         const userSchema = new Schema({ email: schema.tree.email, password: schema.tree.password });
         userSchema.validate({ email, password }, (err) => {
           if (err) return res.status(401).json({ message: err.message });
