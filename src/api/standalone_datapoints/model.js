@@ -31,6 +31,60 @@ const standaloneDatapointsSchema = new Schema({
   standaloneStatus: {
     type: String
   },
+  sourceName: {
+    type: String
+  },
+  url: {
+    type: String
+  },
+  pageNumber: {
+    type: String
+  },
+  publicationDate: {
+    type: String
+  },
+  textSnippet: {
+    type: String
+  },
+  screenShot: {
+    type: String
+  },
+  pdf: {
+    type: String
+  },
+  wordDoc: {
+    type: String
+  },
+  excel: {
+    type: String
+  },
+  filePathway: {
+    type: String
+  },
+  commentCalculations: {
+    type: String
+  },
+  dataVerification: {
+    type: String
+  },
+  errorType: {
+    type: String
+  },
+  errorComments: {
+    type: String
+  },
+  internalFileSource: {
+    type: String
+  },
+  errorStatus: {
+    type: String
+  },
+  analystComments: {
+    type: String
+  },
+  additionalComments: {
+    type: String
+  },
   taskId: {
     type: Schema.ObjectId,
     ref: 'TaskAssignment',
@@ -74,7 +128,7 @@ const standaloneDatapointsSchema = new Schema({
 })
 
 standaloneDatapointsSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -90,8 +144,25 @@ standaloneDatapointsSchema.methods = {
       submittedBy: this.submittedBy,
       submittedDate: this.submittedDate,
       activeStatus: this.activeStatus,
-      standaradDeviation:this.standaradDeviation,
-      average:this.average,
+      sourceName: this.sourceName,
+      url: this.url,
+      pageNumber: this.pageNumber,
+      publicationDate: this.publicationDate,
+      textSnippet: this.textSnippet,
+      screenShot: this.screenShot,
+      pdf: this.pdf,
+      wordDoc: this.wordDoc,
+      excel: this.excel,
+      filePathway: this.filePathway,
+      commentCalculations: this.commentCalculations,
+      dataVerification: this.dataVerification,
+      errorType: this.errorType,
+      errorComments: this.errorComments,
+      analystComments: this.analystComments,
+      internalFileSource: this.internalFileSource,
+      additionalComments: this.additionalComments,
+      standaradDeviation: this.standaradDeviation,
+      average: this.average,
       lastModifiedDate: this.lastModifiedDate,
       modifiedBy: this.modifiedBy,
       isSubmitted: this.isSubmitted,

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as body } from 'bodymen'
 import { login, loginOtp, validateOTP } from './controller'
-import { password, master, token } from '../../services/passport'
+import { password, master, token, otpVerification } from '../../services/passport'
 
 const router = new Router()
 const email = '', otp = '';
@@ -32,8 +32,8 @@ router.post('/',
  * @apiError 401 Master access only or invalid credentials.
  */
  router.post('/auth-otp',
- token(),
- body({email, otp}),
- validateOTP)
+ otpVerification(),
+//  body({email, otp}),
+ loginOtp)
 
 export default router

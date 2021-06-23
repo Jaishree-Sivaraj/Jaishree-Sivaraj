@@ -31,9 +31,63 @@ const kmpMatrixDataPointsSchema = new Schema({
   memberStatus: {
     type: Boolean
   },
+  sourceName: {
+    type: String
+  },
+  url: {
+    type: String
+  },
+  pageNumber: {
+    type: String
+  },
+  publicationDate: {
+    type: String
+  },
+  textSnippet: {
+    type: String
+  },
+  screenShot: {
+    type: String
+  },
+  pdf: {
+    type: String
+  },
+  wordDoc: {
+    type: String
+  },
+  excel: {
+    type: String
+  },
+  filePathway: {
+    type: String
+  },
+  commentCalculations: {
+    type: String
+  },
+  dataVerification: {
+    type: String
+  },
+  errorType: {
+    type: String
+  },
+  errorComments: {
+    type: String
+  },
+  internalFileSource: {
+    type: String
+  },
+  errorStatus: {
+    type: String
+  },
+  analystComments: {
+    type: String
+  },
+  additionalComments: {
+    type: String
+  },
   status: {
     type: Boolean,
-    default:true
+    default: true
   }
 }, {
   timestamps: true,
@@ -44,7 +98,7 @@ const kmpMatrixDataPointsSchema = new Schema({
 })
 
 kmpMatrixDataPointsSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -56,6 +110,23 @@ kmpMatrixDataPointsSchema.methods = {
       year: this.year,
       fiscalYearEndDate: this.fiscalYearEndDate,
       memberStatus: this.memberStatus,
+      sourceName: this.sourceName,
+      url: this.url,
+      pageNumber: this.pageNumber,
+      publicationDate: this.publicationDate,
+      textSnippet: this.textSnippet,
+      screenShot: this.screenShot,
+      pdf: this.pdf,
+      wordDoc: this.wordDoc,
+      excel: this.excel,
+      filePathway: this.filePathway,
+      commentCalculations: this.commentCalculations,
+      dataVerification: this.dataVerification,
+      errorType: this.errorType,
+      errorComments: this.errorComments,
+      analystComments: this.analystComments,
+      internalFileSource: this.internalFileSource,
+      additionalComments: this.additionalComments,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
