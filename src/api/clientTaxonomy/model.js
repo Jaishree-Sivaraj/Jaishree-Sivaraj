@@ -10,9 +10,15 @@ const clientTaxonomySchema = new Schema({
     type: String
   },
   fields:[{
-    type: Schema.Types.ObjectId,
-    ref: 'Taxonomies',
-    required: true
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Taxonomies',
+      required: true
+    },
+    name: {
+      type: String,
+      default: ''
+    }
   }],
   status: {
     type: Boolean,

@@ -8,16 +8,16 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .catch(next)
 
 export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next) => {
-  let fields = [];
-  if (body.headers && body.headers.length > 0) {
-    for (let index = 0; index < body.headers.length; index++) {
-      const masterTaxonomy = body.headers[index].value;
-      fields.push(masterTaxonomy);
-    }
-  }
+  // let fields = [];
+  // if (body.headers && body.headers.length > 0) {
+  //   for (let index = 0; index < body.headers.length; index++) {
+  //     const masterTaxonomy = body.headers[index].value;
+  //     fields.push(masterTaxonomy);
+  //   }
+  // }
   let clientTaxonomyObject = {
     taxonomyName: body.taxonomyName ? body.taxonomyName : '',
-    fields: fields,
+    fields: body.headers ? body.headers : [],
     status: true
   }
   await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
@@ -35,18 +35,22 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
   query.status = true;
   ClientTaxonomy.count(query)
     .then(count => ClientTaxonomy.find(query)
-      .populate('createdBy').populate('fields')
+      .populate('createdBy')
+      .populate({
+        path: 'fields.id',
+        model: 'Taxonomies'
+      })
       .then((clientTaxonomies) => {
         let responseList = [];
         clientTaxonomies.forEach(item => {
-          let headersList = [];
-          item.fields.forEach(obj => {
-            headersList.push({value: obj.id, label: obj.name});
-          })
+          // let headersList = [];
+          // item.fields.forEach(obj => {
+          //   headersList.push({value: obj.id, label: obj.name});
+          // })
           let objectToPush = {
             _id: item.id,
             taxonomyName: item.taxonomyName,
-            headers: headersList,
+            headers: item.fields ? item.fields : [],
             status: item.status
           }
           responseList.push(objectToPush);
@@ -63,17 +67,21 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
 
 export const show = ({ params }, res, next) =>
   ClientTaxonomy.findById(params.id)
-    .populate('createdBy').populate('fields')
+    .populate('createdBy')
+    .populate({
+      path: 'fields.id',
+      model: 'Taxonomies'
+    })
     .then(notFound(res))
     .then((clientTaxonomy) => {
-      let headersList = [];
-      item.fields.forEach(obj => {
-        headersList.push({value: obj.id, label: obj.name});
-      })
+      // let headersList = [];
+      // item.fields.forEach(obj => {
+      //   headersList.push({value: obj.id, label: obj.name});
+      // })
       let responseObject = {
         _id: clientTaxonomy.id,
         taxonomyName: clientTaxonomy.taxonomyName,
-        headers: headersList,
+        headers: item.fields ? item.fields : [],
         status: item.status
       }
       return responseObject;
@@ -84,6 +92,10 @@ export const show = ({ params }, res, next) =>
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
+    .populate({
+      path: 'fields.id',
+      model: 'Taxonomies'
+    })
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((clientTaxonomy) => clientTaxonomy ? Object.assign(clientTaxonomy, body).save() : null)
@@ -94,19 +106,23 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, res, next) => {
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
+    .populate({
+      path: 'fields.id',
+      model: 'Taxonomies'
+    })
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then(async(clientTaxonomy) => {
       let fields = [];
-      if (body.headers && body.headers.length > 0) {
-        for (let index = 0; index < body.headers.length; index++) {
-          const masterTaxonomy = body.headers[index].value;
-          fields.push(masterTaxonomy);
-        }
-      }
+      // if (body.headers && body.headers.length > 0) {
+      //   for (let index = 0; index < body.headers.length; index++) {
+      //     const masterTaxonomy = body.headers[index].value;
+      //     fields.push(masterTaxonomy);
+      //   }
+      // }
       let clientTaxonomyObject = {
         taxonomyName: body.taxonomyName ? body.taxonomyName : '',
-        fields: fields,
+        fields: body.headers ? body.headers : [],
         status: true
       }
       await ClientTaxonomy.update({_id: params.id}, { $set: clientTaxonomyObject })
