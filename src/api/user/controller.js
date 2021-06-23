@@ -380,6 +380,26 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
   })
 }
 
+export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) => {
+  let filterQuery = { "status": true };
+  if (body.filters.length > 0) {
+    for (let index = 0; index < body.filters.length; index++) {
+      let filterWith = body.filters[index].filterWith;
+      let value = body.filters[index].value;
+      if (filterWith === 'role') {
+        let roleDetails = await Role.findOne({ roleName: value }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+        if (roleDetails && Object.keys(roleDetails).length > 0) {
+          filterQuery["$or"] = [{ "roleDetails.roles": { "$in": roleDetails._id } }, { "roleDetails.primaryRole": roleDetails._id }]
+        }
+      } else {
+        filterQuery[filterWith] = value;
+      }
+    }
+  }
+  var userDetailsInRoles = await User.find(filterQuery).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
+}
+
 export const getAllUsersToAssignRoles = (req, res, next) => {
   User.find().populate({
     path: 'roleDetails.roles'
@@ -618,12 +638,12 @@ export const uploadEmailsFile = async (req, res, next) => {
         try {
           var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
           //code for sending onboarding links to emails
-          let existingUserEmailsList = await User.find({"status": true});
+          let existingUserEmailsList = await User.find({ "status": true });
           if (sheetAsJson.length > 0) {
             let existingEmails = [];
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-               //nodemail code will come here to send OTP
+              //nodemail code will come here to send OTP
               const content = `
                 Hai,<br/>
                 Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
@@ -644,7 +664,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                 html: content
               });
             }
-            return res.json({status : 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
+            return res.json({ status: 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
           }
         } catch (error) {
           return res.status(400).json({ message: error.message })
@@ -659,20 +679,20 @@ export const uploadEmailsFile = async (req, res, next) => {
       });
     }
   }
-} 
+}
 
-export const sendMultipleOnBoardingLinks = async({ bodymen: { body } }, res, next)=>{
+export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
   console.log(body.emailList);
   const emailList = body.emailList;
-  let existingUserEmailsList = await User.find({"status": true});
-  if(emailList.length > 0){
+  let existingUserEmailsList = await User.find({ "status": true });
+  if (emailList.length > 0) {
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
       console.log(rowObject['Email']);
-      let isEmailExisting = existingUserEmailsList.find(object=> rowObject['Email'] == object.email );
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['Email'] == object.email);
       console.log('isEmailExisting', isEmailExisting);
-      if(!isEmailExisting){
+      if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
@@ -686,19 +706,19 @@ export const sendMultipleOnBoardingLinks = async({ bodymen: { body } }, res, nex
             pass: 'ijsfupqcuttlpcez'
           }
         });
-        
+
         transporter.sendMail({
           from: 'testmailer09876@gmail.com',
           to: rowObject['Email'],
           subject: 'ESG - Onboarding',
           html: content
         });
-      }else{
+      } else {
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.json({status : 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
-  }else{
+    return res.json({ status: 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+  } else {
     return res.status(400).json({ message: "No Emails Present in the EmailList" })
   }
 }

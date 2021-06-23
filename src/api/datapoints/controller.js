@@ -3,6 +3,8 @@ import * as fs from 'fs'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Datapoints } from '.'
 import { StandaloneDatapoints } from '../standalone_datapoints'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Datapoints.create({ ...body, updatedBy: user })
@@ -101,26 +103,57 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
   })
 }
 
-export const getCategorywiseDatapoints = async(req, res, next) => {
-  let categoryDatapoints = await Datapoints.find({clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, status: true}).sort({ collectionOrderNumber: 1 });
+export const getCategorywiseDatapoints = async (req, res, next) => {
+  let categoryDatapoints = await Datapoints.find({ clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, status: true }).sort({ collectionOrderNumber: 1 });
   let dpDetailsList = [];
-  for (let index = 0; index < categoryDatapoints.length; index++) {
-    let dpObject = categoryDatapoints[index];
-    let datapointHistory = [];
-    // let histories = await StandaloneDatapoints.find({datapointId: dpObject.id, clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, year: { $ne: "2020-2021" }, status: true}).populate('createdBy')
-    let histories = await StandaloneDatapoints.find({companyId: req.params.companyId, datapointId: dpObject.id, year: { $ne: req.params.year }, status: true}).populate('createdBy')
+  let allStandaloneDetails = [];
+  let allBoardMemberMatrixDetails = [];
+  let allKmpMatrixDetails = [];
+  allStandaloneDetails = await StandaloneDatapoints.find({
+    companyId: req.params.companyId,
+    status: true
+  }).populate('createdBy')
+    .populate('datapointId')
     .populate('companyId')
     .populate('taskId')
-    .populate('datapointId');
+
+  allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    companyId: req.params.companyId,
+    status: true
+  }).populate('createdBy')
+    .populate('datapointId')
+    .populate('companyId')
+
+  allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+    companyId: req.params.companyId,
+    status: true
+  }).populate('createdBy')
+    .populate('datapointId')
+    .populate('companyId')
+  let mergeDetails = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
+  for (let index = 0; index < categoryDatapoints.length; index++) {
+    let dpObject = categoryDatapoints[index];
+    let datapointHistory = [], dpDetails = [];
+    let mockYears = ['2018-2019', '2019-2020'];
+    for (let year = 0; year < mockYears.length; year++) {
+      let objectToPush = {};
+      objectToPush = dpObject.toObject();
+      objectToPush['year'] = mockYears[year];
+      dpDetails.push(objectToPush);
+      console.log(dpDetails);
+    }
+    // let histories = await StandaloneDatapoints.find({datapointId: dpObject.id, clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, year: { $ne: "2020-2021" }, status: true}).populate('createdBy')
+    let histories = mergeDetails.filter(obj => obj.datapointId.id == dpObject.id)
     if (histories.length > 0) {
       for (let hIndex = 0; hIndex < histories.length; hIndex++) {
         const object = histories[hIndex];
-        datapointHistory.push({ year: object.year, response: object.response, performanceResponse: object.performanceResult, sourceUrl: object.sourceUrl ? object.sourceUrl : '', standardDeviation: object.standaradDeviation ? object.standaradDeviation : '', average: object.average ? object.average : '' });
-      }      
+        // datapointHistory.push({ year: object.year, response: object.response, performanceResponse: object.performanceResult, sourceUrl: object.sourceUrl ? object.sourceUrl : '', standardDeviation: object.standaradDeviation ? object.standaradDeviation : '', average: object.average ? object.average : '' });
+        datapointHistory.push(object);
+      }
     }
-    dpDetailsList.push({ dpObject, datapointHistory: datapointHistory });
+    dpDetailsList.push({ dpDetails: dpDetails, datapointHistory: datapointHistory });
   }
-  return res.json({count: dpDetailsList.length, rows: dpDetailsList});
+  res.status(200).json({ count: dpDetailsList.length, rows: dpDetailsList });
 }
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
