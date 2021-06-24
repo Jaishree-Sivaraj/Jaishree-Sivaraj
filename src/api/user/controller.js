@@ -400,22 +400,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     populate({ path: 'roleDetails.roles' }).
     populate({ path: 'roleDetails.primaryRole' }).
     catch((err) => { return res.json({ status: '500', message: err.message }) });
-  var resArray = userDetailsInRoles.map((rec) => {
-    console.log(JSON.stringify(rec));
-    return {
-      "userDetails": {
-        "value": rec._id,
-        "label": rec.name
-      },
-      "roleDetails": {
-        "role": rec.roleDetails.roles.map((rec1) => {
-          return { value: rec1.id, label: rec1.roleName }
-        }),
-        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-      }
-    }
-  })
-  return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
+  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
 }
 
 export const getAllUsersToAssignRoles = (req, res, next) => {
@@ -625,7 +610,7 @@ export const uploadEmailsFile = async (req, res, next) => {
   try {
     uploadFiles(req, res, async function (err) {
       convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
-     if (err) {
+      if (err) {
         res.status('400').json({ error_code: 1, err_desc: err });
         return;
       }
@@ -634,30 +619,30 @@ export const uploadEmailsFile = async (req, res, next) => {
         try {
           var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
           //code for sending onboarding links to emails
-          let existingUserEmailsList = await User.find({"status": true});
-          let rolesList = await Role.find({"status": true});
+          let existingUserEmailsList = await User.find({ "status": true });
+          let rolesList = await Role.find({ "status": true });
           if (sheetAsJson.length > 0) {
             let existingEmails = [];
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-              let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
-              let rolesDetails = rolesList.find(object =>(object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
+              let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
               let link;
-              if (rowObject['email'] == ' ' || !rowObject['email'] ) {
-                return res.json({status : "400", message :" Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails});
+              if (rowObject['email'] == ' ' || !rowObject['email']) {
+                return res.json({ status: "400", message: " Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails });
               }
-              if(rowObject['link'] == ' ' || !rowObject['link']){
-                if(rolesDetails.roleName == "Employee"){
+              if (rowObject['link'] == ' ' || !rowObject['link']) {
+                if (rolesDetails.roleName == "Employee") {
                   link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else if(rolesDetails.roleName == "CompanyRepresentative"){
+                } else if (rolesDetails.roleName == "CompanyRepresentative") {
                   link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else{
+                } else {
                   link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
                 }
                 rowObject["link"] = link;
               }
               //nodemail code will come here to send OTP  
-              if(!isEmailExisting){
+              if (!isEmailExisting) {
                 const content = `
                   Hai,<br/>
                   Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
@@ -677,11 +662,11 @@ export const uploadEmailsFile = async (req, res, next) => {
                   subject: 'ESG - Onboarding',
                   html: content
                 });
-              } else{
+              } else {
                 existingEmails.push(isEmailExisting.email);
               }
             }
-            return res.json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
+            return res.json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
           }
         } catch (error) {
           return res.status(400).json({ message: error.message })
@@ -701,15 +686,15 @@ export const uploadEmailsFile = async (req, res, next) => {
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
   console.log(body.emailList);
   const emailList = body.emailList;
-  let existingUserEmailsList = await User.find({"status": true});
-  let rolesList = await Role.find({"status": true});
-  if(emailList.length > 0){
+  let existingUserEmailsList = await User.find({ "status": true });
+  let rolesList = await Role.find({ "status": true });
+  if (emailList.length > 0) {
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
       let roleDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
-      if(!isEmailExisting){
+      if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
@@ -734,8 +719,8 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
-  }else{
+    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+  } else {
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
 }
