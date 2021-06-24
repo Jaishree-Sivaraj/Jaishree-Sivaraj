@@ -60,9 +60,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
   const userDetail = req.user;
   try {
     upload(req, res, async function (err) {
-      console.log(new Error(err));
+      //console.log(new Error(err));
       if (err) {
-        res.status('400').json({ error_code: 1, err_desc: err });
+        res.status('400').json({ status: "400", error_code: 1, err_desc: err });
         return;
       }
       let allFilesObject = [];
@@ -455,7 +455,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   try {
                     cessaDate = getJsDateFromExcel(item[value]);
                   } catch (error) {
-                    return res.status(500).json({ message: `Found invalid date format in ${companyObject ? companyObject.companyName : 'a company'}, please correct and try again!` })
+                    return res.status(500).json({ status: "500", message: `Found invalid date format in ${companyObject ? companyObject.companyName : 'a company'}, please correct and try again!` })
                   }
                   let currentDate = new Date();
                   if (cessaDate < currentDate) {
@@ -603,18 +603,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
             for (let year = 0; year < distinctYears.length; year++) {
               let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
-              let missingDPObject = {
-                companyName: insertedCompanies[companyIdIndex].companyName,
-                year: distinctYears[year],
-                missingDPs: missingDPs
+              if(missingDPs.length > 0){
+                let missingDPObject = {
+                  companyName: insertedCompanies[companyIdIndex].companyName,
+                  year: distinctYears[year],
+                  missingDPs: missingDPs
+                }
+                // missingDPsLength = _.concat(missingDPsLength,missingDPs);
+                missingDatapointsDetails.push(missingDPObject);
               }
-              missingDPsLength = _.concat(missingDPsLength,missingDPs);
-              missingDatapointsDetails.push(missingDPObject);
             }
           }
           missingDPList = _.concat(missingDPList, missingDatapointsDetails)
           console.log(missingDPList)
-          if (missingDPsLength.length == 0) {
+          if (missingDPList.length == 0) {
             const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
               "companyId": { $in: insertedCompanyIds },
               "year": { $in: distinctYears }
@@ -669,13 +671,13 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             //   }
             // }
             // return res.status(400).json({ message: "Missing DP Codes", CompanyName: companyNameForMissedDPs, missingDatapoints: missingDPcodeNames });
-            return res.status(400).json({ message: "Missing DP Codes", missingDatapoints: missingDPList });
+            return res.status(400).json({ status: "400", message: "Missing DP Codes", missingDatapoints: missingDPList });
           }
         } else {
-          return res.status(400).json({ message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });
+          return res.status(400).json({ status: "400", message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });
         }
       } else {
-        return res.status(400).json({ message: "No files for attached!" });
+        return res.status(400).json({ status: "400", message: "No files for attached!" });
       }
     });
   } catch (error) {
