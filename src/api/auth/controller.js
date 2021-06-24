@@ -5,12 +5,21 @@ import { sign, verify } from '../../services/jwt'
 import { success } from '../../services/response/'
 import { jwtSecret, masterKey } from '../../config'
 import { User } from '../user'
+import { Role } from '../role'
 
-export const login = ({ user }, res, next) => {
+export const login = async({ user }, res, next) => {
   sign(user.id)
-    .then((response) => {
+    .then(async(response) => {
       if(user){
-        if(user.roleId.roleName == 'SuperAdmin'){
+        let roleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+        let userDetail = await User.findOne({ 
+          _id: user.id,
+          status: true, 
+          '$or': [ { 
+            'roleDetails.roles': { '$in': [ roleDetails.id ] } 
+          }, { 'roleDetails.primaryRole': roleDetails.id } ]})
+          .catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+        if(userDetail){
           //Generating 4 digit random number for OTP
           let otpNumber = Math.floor(1000 + Math.random() * 9000);
           //update the otp value in user data

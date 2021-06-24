@@ -4,7 +4,7 @@ import { login, loginOtp, validateOTP } from './controller'
 import { password, master, token, otpVerification } from '../../services/passport'
 
 const router = new Router()
-const email = '', otp = '';
+const email = '', otp = ''; 
 
 /**
  * @api {post} /auth Authenticate

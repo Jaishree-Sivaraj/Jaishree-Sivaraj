@@ -287,7 +287,7 @@ router.delete('/:id',
 * @apiError 404 Emails not found.
 * @apiError 401 user access only.
 */
-router.post('/uploadEmailsFile',
+router.post('/new-onboard/upload-emails-file',
   token({ required: true }),
   query(),
   uploadEmailsFile)
