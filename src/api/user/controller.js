@@ -197,8 +197,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 password: onBoardingDetails.password ? onBoardingDetails.password : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                 CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                companyIdForClient: companyIdForClient,
+                authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
+                companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
                 status: true,
                 createdBy: user
               });
@@ -227,7 +227,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       return res.status(500).json({ message: "Failed to store authenticationLetterForClientUrl" })
     });
   } else if (onBoardingDetails.roleName == "Company Representative") {
-    var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
+    var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -256,8 +256,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl,
-                    companyIdForCompany: companyIdForCompany,
+                    authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
+                    companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
                     status: true,
                     createdBy: user
                   });
@@ -378,6 +378,26 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     //next(err);
     return res.status(500).json({ message: "Failed to update Role details" });
   })
+}
+
+export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) => {
+  let filterQuery = { "status": true };
+  if (body.filters.length > 0) {
+    for (let index = 0; index < body.filters.length; index++) {
+      let filterWith = body.filters[index].filterWith;
+      let value = body.filters[index].value;
+      if (filterWith === 'role') {
+        let roleDetails = await Role.findOne({ roleName: value }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+        if (roleDetails && Object.keys(roleDetails).length > 0) {
+          filterQuery["$or"] = [{ "roleDetails.roles": { "$in": roleDetails._id } }, { "roleDetails.primaryRole": roleDetails._id }]
+        }
+      } else {
+        filterQuery[filterWith] = value;
+      }
+    }
+  }
+  var userDetailsInRoles = await User.find(filterQuery).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
 }
 
 export const getAllUsersToAssignRoles = (req, res, next) => {
@@ -658,9 +678,9 @@ export const uploadEmailsFile = async (req, res, next) => {
       });
     }
   }
-} 
+}
 
-export const sendMultipleOnBoardingLinks = async({ bodymen: { body } }, res, next)=>{
+export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
   console.log(body.emailList);
   const emailList = body.emailList;
   let existingUserEmailsList = await User.find({"status": true});
@@ -685,14 +705,14 @@ export const sendMultipleOnBoardingLinks = async({ bodymen: { body } }, res, nex
             pass: 'ijsfupqcuttlpcez'
           }
         });
-        
+
         transporter.sendMail({
           from: 'testmailer09876@gmail.com',
           to: rowObject['email'],
           subject: 'ESG - Onboarding',
           html: content
         });
-      }else{
+      } else {
         existingEmails.push(isEmailExisting.email);
       }
     }

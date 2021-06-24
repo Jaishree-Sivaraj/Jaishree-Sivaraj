@@ -124,7 +124,7 @@ router.get('/import-from-json/categoryId',
   includeCategoryIdsFromJson)
 
 /**
-* @api {get} /datapoints/list/:categoryId/:companyId/:clientTaxonomyId/:year Get categorywise datapoints
+* @api {get} /datapoints/list/:categoryId/:companyId/:clientTaxonomyId Get categorywise datapoints
 * @apiName GetCategorywiseDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
@@ -134,7 +134,7 @@ router.get('/import-from-json/categoryId',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.get('/list/:categoryId/:companyId/:clientTaxonomyId/:year',
+router.get('/list/:categoryId/:companyId/:clientTaxonomyId',
   token({ required: true }),
   getCategorywiseDatapoints)
 

@@ -19,10 +19,10 @@ const clientRepresentativesSchema = new Schema({
     required: true
   },
   authenticationLetterForClientUrl: {
-    type: String
+    type: Buffer
   },
   companyIdForClient: {
-    type: String
+    type: Buffer
   },
   status: {
     type: Boolean,
@@ -45,8 +45,8 @@ clientRepresentativesSchema.methods = {
       userId: this.userId ? this.userId.view(full) : null,
       name: this.name,
       CompanyName: this.CompanyName ? this.CompanyName : null,
-      authenticationLetterForClientUrl: this.authenticationLetterForClientUrl,
-      companyIdForClient: this.companyIdForClient,
+      authenticationLetterForClientUrl: this.authenticationLetterForClientUrl.toString('base64'),
+      companyIdForClient: this.companyIdForClient.toString('base64'),
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

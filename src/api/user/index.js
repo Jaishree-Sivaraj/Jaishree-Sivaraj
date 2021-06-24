@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks, genericFilterUser } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
 const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status } = schema.tree
-const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {}, emailList = [];
+const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {}, emailList = [], filterWith = '', value = '', filters = [];
 /**
  * @api {get} /users Retrieve users
  * @apiName RetrieveUsers
@@ -139,20 +139,37 @@ router.post('/new-onboard',
   body({ onBoardingDetails }),
   onBoardNewUser)
 
-  /**
- * @api {post} /users/new-onboard/send-mails send onboarding links
- * @apiName SendOnBoardingLinks
- * @apiGroup User
- * @apiParam {Array} emailList User's emailList.
- * @apiSuccess (Sucess 201) {Object} user User's data.
- * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 401 User access only.
- * @apiError 409 Email already registered.
- */
+/**
+* @api {post} /users/new-onboard/send-mails send onboarding links
+* @apiName SendOnBoardingLinks
+* @apiGroup User
+* @apiParam {Array} emailList User's emailList.
+* @apiSuccess (Sucess 201) {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 User access only.
+* @apiError 409 Email already registered.
+*/
 router.post('/new-onboard/send-mails',
-token({ required: true }),
-body({ emailList }),
-sendMultipleOnBoardingLinks)
+  token({ required: true }),
+  body({ emailList }),
+  sendMultipleOnBoardingLinks)
+
+
+/**
+* @api {post} /users/filter-user user filter
+* @apiName filterUser
+* @apiGroup User
+* @apiParam {Array} filters User's emailList.
+* @apiSuccess (Sucess 201) {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 User access only.
+* @apiError 409 Email already registered.
+*/
+router.post('/filter-user',
+  token({ required: true }),
+  body({ filters }),
+  genericFilterUser
+)
 
 /**
  * @api {put} /users/update-status Update user status
