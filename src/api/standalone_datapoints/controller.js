@@ -729,7 +729,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           return res.status(400).json({ status: "400", message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });
         }
       } else {
-        return res.status(400).json({ status: "400", message: "No files for attached!" });
+        return res.status(400).json({ status: "400", message: "No files attached!" });
       }
     });
   } catch (error) {
