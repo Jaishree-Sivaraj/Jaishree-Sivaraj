@@ -64,11 +64,9 @@ export const login = async({ user }, res, next) => {
 
 export const loginOtp = async(req, res, next) => {
   sign(req.user.id)
-    .then(async(token) => { 
-      if (req.body.login) {
-        let bodyData = Buffer.from(req.body.login, 'base64');
-        let loginDetails = JSON.parse(bodyData);
-        let userDetail = await User.findOne({ email: loginDetails.email });
+    .then(async(token) => {
+      if (req.body) {
+        let userDetail = await User.findOne({ email: req.body.email });
         if (userDetail) {
           return res.status(200).json({ token: token, message: "OTP verified successfully!", user: userDetail.view(true) });
         } else {
