@@ -61,7 +61,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
   const userDetail = req.user;
   try {
     upload(req, res, async function (err) {
-      console.log(new Error(err));
+      //console.log(new Error(err));
       if (err) {
         res.status('400').json({ status: "400", error_code: 1, err_desc: err });
         return;
@@ -657,18 +657,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
             for (let year = 0; year < distinctYears.length; year++) {
               let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
-              let missingDPObject = {
-                companyName: insertedCompanies[companyIdIndex].companyName,
-                year: distinctYears[year],
-                missingDPs: missingDPs
+              if(missingDPs.length > 0){
+                let missingDPObject = {
+                  companyName: insertedCompanies[companyIdIndex].companyName,
+                  year: distinctYears[year],
+                  missingDPs: missingDPs
+                }
+                // missingDPsLength = _.concat(missingDPsLength,missingDPs);
+                missingDatapointsDetails.push(missingDPObject);
               }
-              missingDPsLength = _.concat(missingDPsLength, missingDPs);
-              missingDatapointsDetails.push(missingDPObject);
             }
           }
           missingDPList = _.concat(missingDPList, missingDatapointsDetails)
           console.log(missingDPList)
-          if (missingDPsLength.length == 0) {
+          if (missingDPList.length == 0) {
             const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
               "companyId": { $in: insertedCompanyIds },
               "year": { $in: distinctYears }
@@ -729,7 +731,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           return res.status(400).json({ status: "400", message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });
         }
       } else {
-        return res.status(400).json({ status: "400", message: "No files attached!" });
+        return res.status(400).json({ status: "400", message: "No files for attached!" });
       }
     });
   } catch (error) {

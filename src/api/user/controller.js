@@ -396,12 +396,37 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       }
     }
   }
-  var userDetailsInRoles = await User.find(filterQuery).catch((err) => { return res.json({ status: '500', message: err.message }) });
-  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
+  var userDetailsInRoles = await User.find(filterQuery).
+    populate({ path: 'roleDetails.roles' }).
+    populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  var resArray = userDetailsInRoles.map((rec) => {
+    console.log('test', JSON.stringify(rec));
+    return {
+      "userDetails": {
+        "value": rec._id,
+        "label": rec.name,
+      },
+      "roleDetails": {
+        "role": rec.roleDetails.roles.map((rec1) => {
+          return { value: rec1.id, label: rec1.roleName }
+        }),
+        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+      },
+      "role": rec.role,
+      "email": rec.email,
+      "phoneNumber": rec.phoneNumber,
+      "isUserApproved": rec.isUserApproved,
+      "isRoleAssigned": rec.isRoleAssigned,
+      "isAssignedToGroup": rec.isAssignedToGroup,
+      "createdAt": rec.createdAt,
+      "status": rec.status
+    }
+  })
+  return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
 }
 
 export const getAllUsersToAssignRoles = (req, res, next) => {
-  User.find().populate({
+  User.find({ isUserApproved: true }).populate({
     path: 'roleDetails.roles'
   }).populate({
     path: 'roleDetails.primaryRole'
@@ -601,70 +626,69 @@ export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, n
 
 }
 
-
-var emailFiles = multer.diskStorage({ //multers disk shop photos storage settings
-  destination: function (req, file, cb) {
-    // cb(null, './uploads/')
-    console.log('__dirname ', __dirname);
-    // console.log('process.env.PWD', process.env.PWD);
-    cb(null, __dirname + '/uploads');
-  },
-  filename: function (req, file, cb) {
-    var datetimestamp = Date.now();
-    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
-  }
-});
-var uploadFiles = multer({ //multer settings
-  storage: emailFiles,
-  fileFilter: function (req, file, callback) { //file filter
-    if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
-      return callback(new Error('Wrong extension type'));
-    }
-    callback(null, true);
-  }
-}).single('file');
-
 export const uploadEmailsFile = async (req, res, next) => {
+
+  let convertedWorkbook;
   try {
     uploadFiles(req, res, async function (err) {
+      convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
       if (err) {
         res.status('400').json({ error_code: 1, err_desc: err });
         return;
       }
-      const filePath = req.file.path;
-      var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
-      if (workbook.SheetNames.length > 0) {
-        var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (convertedWorkbook.SheetNames.length > 0) {
+        var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
         try {
           var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
           //code for sending onboarding links to emails
           let existingUserEmailsList = await User.find({ "status": true });
+          let rolesList = await Role.find({ "status": true });
           if (sheetAsJson.length > 0) {
             let existingEmails = [];
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-              //nodemail code will come here to send OTP
-              const content = `
-                Hai,<br/>
-                Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
-                URL: ${rowObject['Link']}<br/><br/>
-                &mdash; ESG Team `;
-              var transporter = nodemailer.createTransport({
-                service: 'Gmail',
-                auth: {
-                  user: 'testmailer09876@gmail.com',
-                  pass: 'ijsfupqcuttlpcez'
+              let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
+              let link;
+              if (rowObject['email'] == ' ' || !rowObject['email']) {
+                return res.json({ status: "400", message: " Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails });
+              }
+              if (rowObject['link'] == ' ' || !rowObject['link']) {
+                if (rolesDetails.roleName == "Employee") {
+                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                } else if (rolesDetails.roleName == "CompanyRepresentative") {
+                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                } else {
+                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
                 }
-              });
+                rowObject["link"] = link;
+              }
+              //nodemail code will come here to send OTP  
+              if (!isEmailExisting) {
+                const content = `
+                  Hai,<br/>
+                  Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+                  URL: ${rowObject['link']}<br/><br/>
+                  &mdash; ESG Team `;
+                var transporter = nodemailer.createTransport({
+                  service: 'Gmail',
+                  auth: {
+                    user: 'testmailer09876@gmail.com',
+                    pass: 'ijsfupqcuttlpcez'
+                  }
+                });
 
-              transporter.sendMail({
-                from: 'testmailer09876@gmail.com',
-                to: rowObject['Email'],
-                subject: 'ESG - Onboarding',
-                html: content
-              });
+                transporter.sendMail({
+                  from: 'testmailer09876@gmail.com',
+                  to: rowObject['email'],
+                  subject: 'ESG - Onboarding',
+                  html: content
+                });
+              } else {
+                existingEmails.push(isEmailExisting.email);
+              }
             }
-            return res.json({ status: 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+            return res.json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
           }
         } catch (error) {
           return res.status(400).json({ message: error.message })
@@ -685,19 +709,19 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
   console.log(body.emailList);
   const emailList = body.emailList;
   let existingUserEmailsList = await User.find({ "status": true });
+  let rolesList = await Role.find({ "status": true });
   if (emailList.length > 0) {
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      console.log(rowObject['Email']);
-      let isEmailExisting = existingUserEmailsList.find(object => rowObject['Email'] == object.email);
-      console.log('isEmailExisting', isEmailExisting);
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let roleDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
       if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
-          Please use the following link to submit your ${rowObject['onboardingtype']} onboarding details:<br/>
-          URL: ${rowObject['Link']}<br/><br/>
+          Please use the following link to submit your ${roleDetails.roleName} onboarding details:<br/>
+          URL: ${rowObject['link']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
@@ -709,7 +733,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
 
         transporter.sendMail({
           from: 'testmailer09876@gmail.com',
-          to: rowObject['Email'],
+          to: rowObject['email'],
           subject: 'ESG - Onboarding',
           html: content
         });
@@ -717,8 +741,8 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.json({ status: 200, message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
   } else {
-    return res.status(400).json({ message: "No Emails Present in the EmailList" })
+    return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
 }
