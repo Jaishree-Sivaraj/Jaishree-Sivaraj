@@ -722,3 +722,16 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
     return res.status(400).json({ message: "No Emails Present in the EmailList" })
   }
 }
+
+// export const getRoleUser = async ({ req, res, next }) => {
+//   let userRoles = ['Analyst', 'QA', 'GroupAdmin'];
+//   let roleIds = [];
+//   for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+//     let roleDetails = await Role.findOne({ roleName: userRoles[roleIndex] });
+//     roleIds.push(roleDetails.id);
+//   }
+//   //let userDetails = await User.find({ status: true, '$or': [{ 'roleDetails.roles': { '$in': roleIds } }, { 'roleDetails.primaryRole': { '$in': roleIds } }] })
+//   let userDetails = await User.find({ status: true,  roleId: { '$in': roleIds }  })
+//   return res.json({ status: 200, message: "User Details retrieved successfully ", UserDetails: userDetails });
+
+// }
