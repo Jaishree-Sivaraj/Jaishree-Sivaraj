@@ -398,9 +398,31 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
   }
   var userDetailsInRoles = await User.find(filterQuery).
     populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).
-    catch((err) => { return res.json({ status: '500', message: err.message }) });
-  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
+    populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  var resArray = userDetailsInRoles.map((rec) => {
+    console.log('test', JSON.stringify(rec));
+    return {
+      "userDetails": {
+        "value": rec._id,
+        "label": rec.name,
+      },
+      "roleDetails": {
+        "role": rec.roleDetails.roles.map((rec1) => {
+          return { value: rec1.id, label: rec1.roleName }
+        }),
+        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+      },
+      "role": rec.role,
+      "email": rec.email,
+      "phoneNumber": rec.phoneNumber,
+      "isUserApproved": rec.isUserApproved,
+      "isRoleAssigned": rec.isRoleAssigned,
+      "isAssignedToGroup": rec.isAssignedToGroup,
+      "createdAt": rec.createdAt,
+      "status": rec.status
+    }
+  })
+  return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
 }
 
 export const getAllUsersToAssignRoles = (req, res, next) => {
