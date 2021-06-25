@@ -30,28 +30,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const getUsersByRole = (req, res, next) => {
-  // console.log('querymen', querymen);
-  console.log('req.query', req.query);
-  console.log('req.params', req.params);
-  console.log('req.select', req.select);
-  console.log('req.cursor', req.cursor);
-  let findQuery = _.omit(req.query, 'access_token');
-  findQuery.role = req.params.role ? req.params.role : '';
-  findQuery.isAssignedToGroup = Boolean(findQuery.isAssignedToGroup);
-  console.log('findQuery', findQuery);
-  User.count(findQuery)
-    .then(count => User.find(findQuery)
-      .populate('roleId')
-      .then(users => ({
-        rows: users.map((user) => user.view()),
-        count
-      }))
-    )
-    .then(success(res))
-    .catch(next)
-}
-
 export const getUsersApprovals = ({ params, querymen: { query, select, cursor }, res, next }) => {
   query.isUserApproved = params.isUserApproved;
   User.count(query)
@@ -67,7 +45,7 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
 }
 
 export const show = ({ params }, res, next) =>
-  User.findById(params.id)
+  User.findById(params.id) // get user documents and attach in response
     .populate('roleId')
     .then(notFound(res))
     .then((user) => user ? user.view() : null)
@@ -110,8 +88,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
@@ -176,8 +153,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
@@ -231,8 +207,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
