@@ -388,6 +388,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
         "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
       },
       "role": rec.role,
+      "userType": rec.userType,
       "email": rec.email,
       "phoneNumber": rec.phoneNumber,
       "isUserApproved": rec.isUserApproved,
