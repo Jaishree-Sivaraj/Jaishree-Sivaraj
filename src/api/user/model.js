@@ -136,6 +136,17 @@ userSchema.methods = {
 
   authenticate(password) {
     return bcrypt.compare(password, this.password).then((valid) => valid ? this : false)
+  },
+
+  authenticateOtp(otp) {
+    return new Promise(resolve => {
+      console.log("one");
+      if (otp == this.otp) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    });
   }
 
 }
