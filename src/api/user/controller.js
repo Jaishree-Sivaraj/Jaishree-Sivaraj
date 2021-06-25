@@ -396,12 +396,37 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       }
     }
   }
-  var userDetailsInRoles = await User.find(filterQuery).catch((err) => { return res.json({ status: '500', message: err.message }) });
-  return res.status(200).json({ status: '200', count: userDetailsInRoles.length, message: 'Users Fetched Successfully', data: userDetailsInRoles });
+  var userDetailsInRoles = await User.find(filterQuery).
+    populate({ path: 'roleDetails.roles' }).
+    populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  var resArray = userDetailsInRoles.map((rec) => {
+    console.log('test', JSON.stringify(rec));
+    return {
+      "userDetails": {
+        "value": rec._id,
+        "label": rec.name,
+      },
+      "roleDetails": {
+        "role": rec.roleDetails.roles.map((rec1) => {
+          return { value: rec1.id, label: rec1.roleName }
+        }),
+        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+      },
+      "role": rec.role,
+      "email": rec.email,
+      "phoneNumber": rec.phoneNumber,
+      "isUserApproved": rec.isUserApproved,
+      "isRoleAssigned": rec.isRoleAssigned,
+      "isAssignedToGroup": rec.isAssignedToGroup,
+      "createdAt": rec.createdAt,
+      "status": rec.status
+    }
+  })
+  return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
 }
 
 export const getAllUsersToAssignRoles = (req, res, next) => {
-  User.find().populate({
+  User.find({ isUserApproved: true }).populate({
     path: 'roleDetails.roles'
   }).populate({
     path: 'roleDetails.primaryRole'
@@ -658,7 +683,7 @@ export const uploadEmailsFile = async (req, res, next) => {
               existingEmails.push(isEmailExisting.email);
             }
           }
-          return res.json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails.length > 0 ? existingEmails : "Nil"});
+          return res.json({status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil"});
         }
       } catch (error) {
         return res.status(400).json({ message: error.message })
@@ -679,15 +704,15 @@ export const uploadEmailsFile = async (req, res, next) => {
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
   console.log(body.emailList);
   const emailList = body.emailList;
-  let existingUserEmailsList = await User.find({"status": true});
-  let rolesList = await Role.find({"status": true});
-  if(emailList.length > 0){
+  let existingUserEmailsList = await User.find({ "status": true });
+  let rolesList = await Role.find({ "status": true });
+  if (emailList.length > 0) {
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
       let roleDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
-      if(!isEmailExisting){
+      if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
@@ -712,8 +737,21 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails.length > 0 ? existingEmails : "Nil"});
+    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil"});
   }else{
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
 }
+
+// export const getRoleUser = async ({ req, res, next }) => {
+//   let userRoles = ['Analyst', 'QA', 'GroupAdmin'];
+//   let roleIds = [];
+//   for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+//     let roleDetails = await Role.findOne({ roleName: userRoles[roleIndex] });
+//     roleIds.push(roleDetails.id);
+//   }
+//   //let userDetails = await User.find({ status: true, '$or': [{ 'roleDetails.roles': { '$in': roleIds } }, { 'roleDetails.primaryRole': { '$in': roleIds } }] })
+//   let userDetails = await User.find({ status: true,  roleId: { '$in': roleIds }  })
+//   return res.json({ status: 200, message: "User Details retrieved successfully ", UserDetails: userDetails });
+
+// }
