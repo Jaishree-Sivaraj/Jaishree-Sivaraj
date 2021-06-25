@@ -24,6 +24,19 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+ * @api {get} /users/getRoleUser Retrieve User by roles
+ * @apiName Retrieve UserByRoles
+ * @apiGroup User
+ * @apiPermission user
+ * @apiParam {String} access_token User access_token.
+ * @apiSuccess {Object} user User's data.
+ */
+
+// router.get('/getRoleUser',
+//   token({ required: true }),
+//   getRoleUser)
 /**
 * @api {get} /users/assign-role to get
 * @apiName assign-role

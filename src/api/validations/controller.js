@@ -201,3 +201,21 @@ export const type8Validation = async ({ user, body }, res, next) => {
     }
   }
 }
+
+export const type3Validation = async ({ user, body }, res, next) => {
+  console.log(body.datapointId, body.companyId, body.clientTaxonomyId, body.previousYear, body.response);
+  let previousResponse = await StandaloneDatapoints.findOne({ datapointId: body.datapointId, companyId: body.companyId, year: body.previousYear });
+  try {
+    if (previousResponse.response.toLowerCase() == 'yes' || previousResponse.response.toLowerCase() == 'y') {
+      if (body.response.toLowerCase() == 'yes' || body.response.toLowerCase() == 'y') {
+        return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+      } else {
+        return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+      }
+    } else {
+      return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+    }
+  } catch (error) {
+    return res.status(412).json({ message: error.message, isValidResponse: false });
+  }
+}
