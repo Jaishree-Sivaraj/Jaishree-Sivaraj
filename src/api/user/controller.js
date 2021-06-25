@@ -603,73 +603,69 @@ export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, n
 
 export const uploadEmailsFile = async (req, res, next) => {
 
-  let convertedWorkbook;
   try {
-    uploadFiles(req, res, async function (err) {
-      convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
-     if (err) {
-        res.status('400').json({ error_code: 1, err_desc: err });
-        return;
-      }
-      if (convertedWorkbook.SheetNames.length > 0) {
-        var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
-        try {
-          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
-          //code for sending onboarding links to emails
-          let existingUserEmailsList = await User.find({"status": true});
-          let rolesList = await Role.find({"status": true});
-          if (sheetAsJson.length > 0) {
-            let existingEmails = [];
-            for (let index = 0; index < sheetAsJson.length; index++) {
-              const rowObject = sheetAsJson[index];
-              let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
-              let rolesDetails = rolesList.find(object =>(object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
-              let link;
-              if (rowObject['email'] == ' ' || !rowObject['email'] ) {
-                return res.json({status : "400", message :" Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails});
-              }
-              if(rowObject['link'] == ' ' || !rowObject['link']){
-                if(rolesDetails.roleName == "Employee"){
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else if(rolesDetails.roleName == "CompanyRepresentative"){
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else{
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                }
-                rowObject["link"] = link;
-              }
-              //nodemail code will come here to send OTP  
-              if(!isEmailExisting){
-                const content = `
-                  Hai,<br/>
-                  Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                  URL: ${rowObject['link']}<br/><br/>
-                  &mdash; ESG Team `;
-                var transporter = nodemailer.createTransport({
-                  service: 'Gmail',
-                  auth: {
-                    user: 'testmailer09876@gmail.com',
-                    pass: 'ijsfupqcuttlpcez'
-                  }
-                });
-
-                transporter.sendMail({
-                  from: 'testmailer09876@gmail.com',
-                  to: rowObject['email'],
-                  subject: 'ESG - Onboarding',
-                  html: content
-                });
-              } else{
-                existingEmails.push(isEmailExisting.email);
-              }
+    let convertedWorkbook;
+    convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    if (convertedWorkbook.SheetNames.length > 0) {
+      var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
+      try {
+        var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+        //code for sending onboarding links to emails
+        let existingUserEmailsList = await User.find({"status": true});
+        let rolesList = await Role.find({"status": true});
+        if (sheetAsJson.length > 0) {
+          let existingEmails = [];
+          for (let index = 0; index < sheetAsJson.length; index++) {
+            const rowObject = sheetAsJson[index];
+            let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
+            let rolesDetails = rolesList.find(object =>(object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
+            let link;
+            if (rowObject['email'] == ' ' || !rowObject['email'] ) {
+              return res.json({status : "400", message :" Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails});
             }
-            return res.json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
+            if(rowObject['link'] == ' ' || !rowObject['link']){
+              if(rolesDetails.roleName == "Employee"){
+                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+              } else if(rolesDetails.roleName == "CompanyRepresentative"){
+                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+              } else{
+                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+              }
+              rowObject["link"] = link;
+            }
+            //nodemail code will come here to send OTP  
+            if(!isEmailExisting){
+              const content = `
+                Hai,<br/>
+                Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+                URL: ${rowObject['link']}<br/><br/>
+                &mdash; ESG Team `;
+              var transporter = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                  user: 'testmailer09876@gmail.com',
+                  pass: 'ijsfupqcuttlpcez'
+                }
+              });
+
+              transporter.sendMail({
+                from: 'testmailer09876@gmail.com',
+                to: rowObject['email'],
+                subject: 'ESG - Onboarding',
+                html: content
+              });
+            } else{
+              existingEmails.push(isEmailExisting.email);
+            }
           }
-        } catch (error) {
-          return res.status(400).json({ message: error.message })
+          return res.json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails.length > 0 ? existingEmails : "Nil"});
         }
+      } catch (error) {
+        return res.status(400).json({ message: error.message })
       }
-    });
+    } else {
+      return res.status(400).json({ status: "400", message: "Invalid excel file please check!" })
+    }
   } catch (error) {
     if (error) {
       return res.status(403).json({
@@ -696,7 +692,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         const content = `
           Hai,<br/>
           Please use the following link to submit your ${roleDetails.roleName} onboarding details:<br/>
-          URL: ${rowObject['link']}<br/><br/>
+          URL: http://localhost${rowObject['link']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
@@ -716,7 +712,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails});
+    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails.length > 0 ? existingEmails : "Nil"});
   }else{
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
