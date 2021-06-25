@@ -604,7 +604,7 @@ export const jsonGeneration = async ({ user, params }, res, next) => {
   }
   // [ year:20{} ,{}]
 
-  return res.status(200).json({ message: "Retrieved successfully!", data: jsonResponseObject })
+  return res.status(200).json({ message: "Success.", status: 200, data: jsonResponseObject })
 
 }
 
