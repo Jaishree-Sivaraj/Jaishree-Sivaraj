@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, getUsersByRole, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks, genericFilterUser } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks, genericFilterUser } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
-const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status } = schema.tree
+const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status, userType } = schema.tree
 const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {}, emailList = [], filterWith = '', value = '', filters = [];
 /**
  * @api {get} /users Retrieve users
@@ -24,6 +24,19 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+ * @api {get} /users/getRoleUser Retrieve User by roles
+ * @apiName Retrieve UserByRoles
+ * @apiGroup User
+ * @apiPermission user
+ * @apiParam {String} access_token User access_token.
+ * @apiSuccess {Object} user User's data.
+ */
+
+// router.get('/getRoleUser',
+//   token({ required: true }),
+//   getRoleUser)
 /**
 * @api {get} /users/assign-role to get
 * @apiName assign-role
@@ -42,22 +55,6 @@ router.get('/assign-role',
   token({ required: true }),
   query(),
   getAllUsersToAssignRoles)
-
-/**
- * @api {get} /users/:role Retrieve users by role
- * @apiName RetrieveUsersByRole
- * @apiGroup User
- * @apiPermission user
- * @apiParam {String} access_token User access_token.
- * @apiUse listParams
- * @apiSuccess {Object[]} users List of users.
- * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 401 user access only.
- */
-router.get('/:role',
-  token({ required: true }),
-  query(),
-  getUsersByRole)
 
 /**
  * @api {get} /users/approvals/:isUserApproved Retrieve users approvals
@@ -105,16 +102,14 @@ router.get('/:id',
  * @apiParam {String} email User's email.
  * @apiParam {String{6..}} password User's password.
  * @apiParam {String} [name] User's name.
- * @apiParam {String} [picture] User's picture.
- * @apiParam {String} [roleId] User's roleId.
- * @apiParam {String=user,admin} [role=user] User's role.
+ * @apiParam {String} [picture] User Type.
  * @apiSuccess (Sucess 201) {Object} user User's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 Master access only.
  * @apiError 409 Email already registered.
  */
 router.post('/',
-  body({ email, password, name, picture, role, roleId, phoneNumber }),
+  body({ email, password, name, userType, phoneNumber }),
   create)
 
 /**
