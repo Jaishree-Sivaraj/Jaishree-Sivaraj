@@ -619,7 +619,7 @@ export const uploadEmailsFile = async (req, res, next) => {
           for (let index = 0; index < sheetAsJson.length; index++) {
             const rowObject = sheetAsJson[index];
             let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
-            let rolesDetails = rolesList.find(object =>(object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
+            let rolesDetails = rolesList.find(object => (object.id == rowObject['onboardingtype']) || (object.roleName == rowObject['onboardingtype']));
             let link;
             if (rowObject['email'] == ' ' || !rowObject['email'] ) {
               return res.json({status : "400", message :" Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails});
