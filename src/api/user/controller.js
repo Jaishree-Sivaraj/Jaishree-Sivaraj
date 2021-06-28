@@ -674,51 +674,68 @@ export const uploadEmailsFile = async (req, res, next) => {
         let existingUserEmailsList = await User.find({ "status": true });
         let rolesList = await Role.find({ "status": true });
         if (sheetAsJson.length > 0) {
-          let existingEmails = [];
-          for (let index = 0; index < sheetAsJson.length; index++) {
-            const rowObject = sheetAsJson[index];
-            let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-            let rolesDetails = rolesList.find(object => (object.id == rowObject['onboardingtype']) || (object.roleName == rowObject['onboardingtype']));
-            let link;
+          let existingEmails = [], hasInvalidData = false;
+          for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
+            const rowObject = sheetAsJson[index1];
             if (rowObject['email'] == ' ' || !rowObject['email']) {
-              return res.json({ status: "400", message: " Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails });
-            }
-            if (rowObject['link'] == ' ' || !rowObject['link']) {
-              if (rolesDetails.roleName == "Employee") {
-                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-              } else if (rolesDetails.roleName == "CompanyRepresentative") {
-                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-              } else {
-                link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-              }
-              rowObject["link"] = link;
-            }
-            //nodemail code will come here to send OTP  
-            if (!isEmailExisting) {
-              const content = `
-                Hai,<br/>
-                Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                URL: ${rowObject['link']}<br/><br/>
-                &mdash; ESG Team `;
-              var transporter = nodemailer.createTransport({
-                service: 'Gmail',
-                auth: {
-                  user: 'testmailer09876@gmail.com',
-                  pass: 'ijsfupqcuttlpcez'
-                }
-              });
-
-              transporter.sendMail({
-                from: 'testmailer09876@gmail.com',
-                to: rowObject['email'],
-                subject: 'ESG - Onboarding',
-                html: content
-              });
-            } else {
-              existingEmails.push(isEmailExisting.email);
+              hasInvalidData = true;
+              return res.json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
+            } else if (rowObject['onboardingtype'] != 'Employee' && rowObject['onboardingtype'] != 'Company Representative' && rowObject['onboardingtype'] != 'Client Representative') {
+              hasInvalidData = true;
+              return res.json({ status: "400", message: "Invalid input for onboardingtype, Please check!" });
             }
           }
-          return res.json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+          if (!hasInvalidData) {
+            for (let index = 0; index < sheetAsJson.length; index++) {
+              const rowObject = sheetAsJson[index];
+              let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
+              let link;
+              if (rolesDetails) {
+                if (rowObject['link'] == ' ' || !rowObject['link']) {
+                  if (rolesDetails.roleName == "Employee") {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                  } else if (rolesDetails.roleName == "Company Representative") {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                  } else {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                  }
+                  rowObject["link"] = link;
+                }
+                //nodemail code will come here to send OTP  
+                if (!isEmailExisting) {
+                  const content = `
+                    Hai,<br/>
+                    Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+                    URL: ${rowObject['link']}<br/><br/>
+                    &mdash; ESG Team `;
+                  var transporter = nodemailer.createTransport({
+                    service: 'Gmail',
+                    auth: {
+                      user: 'testmailer09876@gmail.com',
+                      pass: 'ijsfupqcuttlpcez'
+                    }
+                  });
+
+                  transporter.sendMail({
+                    from: 'testmailer09876@gmail.com',
+                    to: rowObject['email'],
+                    subject: 'ESG - Onboarding',
+                    html: content
+                  });
+                } else {
+                  existingEmails.push(isEmailExisting.email);
+                }
+              } else {
+                return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
+              }
+            }
+            return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+          } else {
+            return res.status(400).json({ status: "400", message: "File has some invalid data please check!" });
+          }
+        } else {
+          return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" })
         }
       } catch (error) {
         return res.status(400).json({ message: error.message })
