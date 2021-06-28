@@ -44,13 +44,20 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
     .catch(next)
 }
 
-export const show = ({ params }, res, next) =>
-  User.findById(params.id) // get user documents and attach in response
-    .populate('roleId')
-    .then(notFound(res))
-    .then((user) => user ? user.view() : null)
-    .then(success(res))
-    .catch(next)
+export const show = ({ params }, res, next) => {
+  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (user) {
+    //if (user.userType && user.userType === 'Employee') {
+    Employees.find({ userId: user._id }).then(function (employee) {
+      console.log(typeof employee[0]);
+      user.pancardUrl = employee[0].pancardUrl.toString('base64');
+      user.aadhaarUrl = employee[0].aadhaarUrl.toString('base64');
+      user.cancelledChequeUrl = employee[0].cancelledChequeUrl.toString('base64');
+      console.log('user', user);
+      return res.json(user.view)
+    })
+    //}
+  })
+}
 
 export const showMe = ({ user }, res) =>
   res.json(user.view(true))
@@ -448,27 +455,78 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 // })
 
 
-export const update = ({ bodymen: { body }, params, user }, res, next) =>
-  User.findById(params.id === 'me' ? user.id : params.id)
-    .populate('roleId')
-    .then(notFound(res))
-    .then((result) => {
-      if (!result) return null
-      const isAdmin = user.role === 'admin'
-      const isSelfUpdate = user.id === result.id
-      if (!isSelfUpdate && !isAdmin) {
-        res.status(401).json({
-          valid: false,
-          message: 'You can\'t change other user\'s data'
-        })
-        return null
-      }
-      return result
-    })
-    .then((user) => user ? Object.assign(user, body).save() : null)
-    .then((user) => user ? user.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = ({ bodymen: { body }, params, user }, res, next) => {
+  if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+    body.userDetails.isUserRejected = true;
+  }
+  User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
+    if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+      User.findById(body.userId).then(function (userDetails) {
+        var link = '';
+        if ((userDetails.userType && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+          console.log("employees", link)
+        } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+        } else if ((userDetails.userType && userDetails.userType == "Company Representative") || (userDetails.role && userDetails.role == "Company Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+        }
+        const content = `
+                  Hai,<br/>
+                  Please use the following link to submit your ${userDetails.userType} onboarding details:<br/>
+                  URL: ${link}<br/><br/>
+                  &mdash; ESG Team `;
+        var transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: 'testmailer09876@gmail.com',
+            pass: 'ijsfupqcuttlpcez'
+          }
+        });
+        transporter.sendMail({
+          from: 'testmailer09876@gmail.com',
+          to: userDetails['email'],
+          subject: 'ESG - Onboarding',
+          html: content
+        });
+      })
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    } else {
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    }
+  }).catch(err => {
+    return res.status(500).json({
+      message: err.message ? err.message : 'Failed to update userDetails',
+    });
+  })
+}
+
+
+// export const update = ({ bodymen: { body }, params, user }, res, next) =>
+//   User.findById(params.id === 'me' ? user.id : params.id)
+//     .populate('roleId')
+//     .then(notFound(res))
+//     .then((result) => {
+//       if (!result) return null
+//       const isAdmin = user.role === 'admin'
+//       const isSelfUpdate = user.id === result.id
+//       if (!isSelfUpdate && !isAdmin) {
+//         res.status(401).json({
+//           valid: false,
+//           message: 'You can\'t change other user\'s data'
+//         })
+//         return null
+//       }
+//       return result
+//     })
+//     .then((user) => user ? Object.assign(user, body).save() : null)
+//     .then((user) => user ? user.view(true) : null)
+//     .then(success(res))
+//     .catch(next)
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -657,7 +715,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                       pass: 'ijsfupqcuttlpcez'
                     }
                   });
-    
+
                   transporter.sendMail({
                     from: 'testmailer09876@gmail.com',
                     to: rowObject['email'],
@@ -666,9 +724,9 @@ export const uploadEmailsFile = async (req, res, next) => {
                   });
                 } else {
                   existingEmails.push(isEmailExisting.email);
-                }                
+                }
               } else {
-                return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });    
+                return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
               }
             }
             return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
