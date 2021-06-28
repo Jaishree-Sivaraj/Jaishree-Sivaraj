@@ -44,13 +44,20 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
     .catch(next)
 }
 
-export const show = ({ params }, res, next) =>
-  User.findById(params.id) // get user documents and attach in response
-    .populate('roleId')
-    .then(notFound(res))
-    .then((user) => user ? user.view() : null)
-    .then(success(res))
-    .catch(next)
+export const show = ({ params }, res, next) => {
+  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (user) {
+    //if (user.userType && user.userType === 'Employee') {
+    Employees.find({ userId: user._id }).then(function (employee) {
+      console.log(typeof employee[0]);
+      user.pancardUrl = employee[0].pancardUrl.toString('base64');
+      user.aadhaarUrl = employee[0].aadhaarUrl.toString('base64');
+      user.cancelledChequeUrl = employee[0].cancelledChequeUrl.toString('base64');
+      console.log('user', user);
+      return res.json(user.view)
+    })
+    //}
+  })
+}
 
 export const showMe = ({ user }, res) =>
   res.json(user.view(true))
@@ -448,27 +455,79 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 // })
 
 
-export const update = ({ bodymen: { body }, params, user }, res, next) =>
-  User.findById(params.id === 'me' ? user.id : params.id)
-    .populate('roleId')
-    .then(notFound(res))
-    .then((result) => {
-      if (!result) return null
-      const isAdmin = user.role === 'admin'
-      const isSelfUpdate = user.id === result.id
-      if (!isSelfUpdate && !isAdmin) {
-        res.status(401).json({
-          valid: false,
-          message: 'You can\'t change other user\'s data'
-        })
-        return null
-      }
-      return result
-    })
-    .then((user) => user ? Object.assign(user, body).save() : null)
-    .then((user) => user ? user.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = ({ bodymen: { body }, params, user }, res, next) => {
+  if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+    body.userDetails.isUserRejected = true;
+  }
+  User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
+    if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+      User.findById(body.userId).then(function (userDetails) {
+        var link = '';
+        if (userDetails.role && userDetails.role === "Employee") {
+          console.log("employees")
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
+        } else if (userDetails.userType == "Client Representative" && userDetails.userType === "Client Representative") {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
+        }
+        else if (userDetails.userType == "Company Representative") {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
+        }
+        const content = `
+                  Hai,<br/>
+                  Please use the following link to submit your ${userDetails.userType} onboarding details:<br/>
+                  URL: ${link}<br/><br/>
+                  &mdash; ESG Team `;
+        var transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: 'testmailer09876@gmail.com',
+            pass: 'ijsfupqcuttlpcez'
+          }
+        });
+        transporter.sendMail({
+          from: 'testmailer09876@gmail.com',
+          to: 'akhilendhar.g@indiumsoft.com',
+          subject: 'ESG - Onboarding',
+          html: content
+        });
+      })
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    } else {
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    }
+  }).catch(err => {
+    return res.status(500).json({
+      message: err.message ? err.message : 'Failed to update userDetails',
+    });
+  })
+}
+
+
+// export const update = ({ bodymen: { body }, params, user }, res, next) =>
+//   User.findById(params.id === 'me' ? user.id : params.id)
+//     .populate('roleId')
+//     .then(notFound(res))
+//     .then((result) => {
+//       if (!result) return null
+//       const isAdmin = user.role === 'admin'
+//       const isSelfUpdate = user.id === result.id
+//       if (!isSelfUpdate && !isAdmin) {
+//         res.status(401).json({
+//           valid: false,
+//           message: 'You can\'t change other user\'s data'
+//         })
+//         return null
+//       }
+//       return result
+//     })
+//     .then((user) => user ? Object.assign(user, body).save() : null)
+//     .then((user) => user ? user.view(true) : null)
+//     .then(success(res))
+//     .catch(next)
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -612,30 +671,30 @@ export const uploadEmailsFile = async (req, res, next) => {
       try {
         var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
         //code for sending onboarding links to emails
-        let existingUserEmailsList = await User.find({"status": true});
-        let rolesList = await Role.find({"status": true});
+        let existingUserEmailsList = await User.find({ "status": true });
+        let rolesList = await Role.find({ "status": true });
         if (sheetAsJson.length > 0) {
           let existingEmails = [];
           for (let index = 0; index < sheetAsJson.length; index++) {
             const rowObject = sheetAsJson[index];
-            let isEmailExisting = existingUserEmailsList.find(object=> rowObject['email'] == object.email );
+            let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
             let rolesDetails = rolesList.find(object => (object.id == rowObject['onboardingtype']) || (object.roleName == rowObject['onboardingtype']));
             let link;
-            if (rowObject['email'] == ' ' || !rowObject['email'] ) {
-              return res.json({status : "400", message :" Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails});
+            if (rowObject['email'] == ' ' || !rowObject['email']) {
+              return res.json({ status: "400", message: " Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails });
             }
-            if(rowObject['link'] == ' ' || !rowObject['link']){
-              if(rolesDetails.roleName == "Employee"){
+            if (rowObject['link'] == ' ' || !rowObject['link']) {
+              if (rolesDetails.roleName == "Employee") {
                 link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-              } else if(rolesDetails.roleName == "CompanyRepresentative"){
+              } else if (rolesDetails.roleName == "CompanyRepresentative") {
                 link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-              } else{
+              } else {
                 link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
               }
               rowObject["link"] = link;
             }
             //nodemail code will come here to send OTP  
-            if(!isEmailExisting){
+            if (!isEmailExisting) {
               const content = `
                 Hai,<br/>
                 Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
@@ -655,11 +714,11 @@ export const uploadEmailsFile = async (req, res, next) => {
                 subject: 'ESG - Onboarding',
                 html: content
               });
-            } else{
+            } else {
               existingEmails.push(isEmailExisting.email);
             }
           }
-          return res.json({status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil"});
+          return res.json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
         }
       } catch (error) {
         return res.status(400).json({ message: error.message })
@@ -713,8 +772,8 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil"});
-  }else{
+    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+  } else {
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
 }
