@@ -463,14 +463,13 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
         var link = '';
-        if (userDetails.role && userDetails.role === "Employee") {
-          console.log("employees")
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
-        } else if (userDetails.userType == "Client Representative" && userDetails.userType === "Client Representative") {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
-        }
-        else if (userDetails.userType == "Company Representative") {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType}?id=${userDetails.id}`;
+        if ((userDetails.userType && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+          console.log("employees", link)
+        } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+        } else if ((userDetails.userType && userDetails.userType == "Company Representative") || (userDetails.role && userDetails.role == "Company Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
         }
         const content = `
                   Hai,<br/>
@@ -486,7 +485,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         });
         transporter.sendMail({
           from: 'testmailer09876@gmail.com',
-          to: 'akhilendhar.g@indiumsoft.com',
+          to: userDetails['email'],
           subject: 'ESG - Onboarding',
           html: content
         });
