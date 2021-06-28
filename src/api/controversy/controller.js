@@ -308,9 +308,9 @@ export const generateJson = async ({ params, user }, res, next) => {
           for (let index = 0; index < companyControversiesYearwise.length; index++) {
             const element = companyControversiesYearwise[index];
             let dataObject = {
+              Dpcode: element.datapointId.code,
               Year: element.year,
-              DPCode: element.datapointId.code,
-              Response: element.response,
+              ResponseUnit: element.response,
               controversy: element.controversyDetails
             }
             yearwiseData.Data.push(dataObject);
