@@ -620,10 +620,10 @@ export const uploadEmailsFile = async (req, res, next) => {
             const rowObject = sheetAsJson[index1];
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
-              return res.json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
+              return res.status(400).json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
             } else if (rowObject['onboardingtype'] != 'Employee' && rowObject['onboardingtype'] != 'Company Representative' && rowObject['onboardingtype'] != 'Client Representative') {
               hasInvalidData = true;
-              return res.json({ status: "400", message: "Invalid input for onboardingtype, Please check!" });
+              return res.status(400).json({ status: "400", message: "Invalid input for onboardingtype, Please check!" });
             }
           }
           if (!hasInvalidData) {
