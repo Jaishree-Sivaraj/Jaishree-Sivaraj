@@ -39,7 +39,7 @@ var upload = multer({ //multer settings
     }
     callback(null, true);
   }
-}).fields([{ name: 'file', maxCount: 192 }]);
+}).fields([{ name: 'file', maxCount: 198 }]);
 
 function alphaToNum(alpha) {
   var i = 0, num = 0, len = alpha.length;
