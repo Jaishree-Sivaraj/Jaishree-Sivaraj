@@ -664,7 +664,7 @@ export const uploadEmailsFile = async (req, res, next) => {
 
   try {
     let convertedWorkbook;
-    convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
     if (convertedWorkbook.SheetNames.length > 0) {
       var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
       try {
