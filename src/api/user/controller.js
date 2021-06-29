@@ -30,28 +30,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const getUsersByRole = (req, res, next) => {
-  // console.log('querymen', querymen);
-  console.log('req.query', req.query);
-  console.log('req.params', req.params);
-  console.log('req.select', req.select);
-  console.log('req.cursor', req.cursor);
-  let findQuery = _.omit(req.query, 'access_token');
-  findQuery.role = req.params.role ? req.params.role : '';
-  findQuery.isAssignedToGroup = Boolean(findQuery.isAssignedToGroup);
-  console.log('findQuery', findQuery);
-  User.count(findQuery)
-    .then(count => User.find(findQuery)
-      .populate('roleId')
-      .then(users => ({
-        rows: users.map((user) => user.view()),
-        count
-      }))
-    )
-    .then(success(res))
-    .catch(next)
-}
-
 export const getUsersApprovals = ({ params, querymen: { query, select, cursor }, res, next }) => {
   query.isUserApproved = params.isUserApproved;
   User.count(query)
@@ -66,13 +44,71 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
     .catch(next)
 }
 
-export const show = ({ params }, res, next) =>
-  User.findById(params.id)
-    .populate('roleId')
-    .then(notFound(res))
-    .then((user) => user ? user.view() : null)
-    .then(success(res))
-    .catch(next)
+export const show = ({ params }, res, next) => {
+  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (userDetails) {
+    var userType = '';
+    userDetails = userDetails.toObject();
+    delete userDetails.password;
+    if (userDetails.userType) {
+      userType = userDetails.userType;
+    } else {
+      if (userDetails.role) {
+        userType = userDetails.role;
+      }
+    }
+    if (userType === 'Employee') {
+      Employees.findOne({ userId: userDetails._id }).then(function (employee) {
+        var employeeDocuments = {
+          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl.toString('base64') : '',
+          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl.toString('base64') : '',
+          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl.toString('base64') : ''
+        }
+        userDetails.documents = employeeDocuments;
+        userDetails.firstName = employee.firstName;
+        userDetails.middleName = employee.middleName;
+        userDetails.lastName = employee.lastName;
+        userDetails.panNumber = employee.panNumber;
+        userDetails.aadhaarNumber = employee.aadhaarNumber;
+        userDetails.bankAccountNumber = employee.bankAccountNumber;
+        userDetails.bankIFSCCode = employee.bankIFSCCode;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else if (userType === 'Company Representative') {
+      CompanyRepresentatives.findOne({ userId: userDetails._id }).then(function (company) {
+        var companyDocuments = {
+          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl.toString('base64') : '',
+          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany.toString('base64') : ''
+        }
+        userDetails.documents = companyDocuments;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else if (userType === 'Client Representative') {
+      ClientRepresentatives.findOne({ userId: userDetails._id }).then(function (client) {
+        console.log('client', client);
+        var clientDocuments = {
+          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl.toString('base64') : '',
+          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient.toString('base64') : '',
+        }
+        userDetails.documents = clientDocuments;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else {
+      return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+    }
+  }).catch(err => {
+    console.log('err', err);
+    return res.status(500).json({ message: "Failed to get user" })
+  })
+}
 
 export const showMe = ({ user }, res) =>
   res.json(user.view(true))
@@ -102,7 +138,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   let bodyData = Buffer.from(body.onBoardingDetails, 'base64');
   let bodyDetails = bodyData.toString('ascii');
   let onBoardingDetails = JSON.parse(bodyDetails);
-  //console.log('onBoardingDetails', onBoardingDetails);
   let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
   let userObject;
   if (onBoardingDetails.roleName == "Employee") {
@@ -110,182 +145,140 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
       status: true
     }
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.pancardUrl, 'pan').then(async (pancardUrl) => {
-      await storeOnBoardingImagesInLocalStorage(onBoardingDetails.aadhaarUrl, 'aadhar').then(async (aadhaarUrl) => {
-        await storeOnBoardingImagesInLocalStorage(onBoardingDetails.cancelledChequeUrl, 'cancelledCheque').then(async (cancelledChequeUrl) => {
-          await User.create(userObject)
-            .then(async (response) => {
-              if (response) {
-                let userId = response.id;
-                await Employees.create({
-                  userId: userId,
-                  firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                  middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                  lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                  panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                  aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                  bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                  bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                  accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
-                  aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
-                  cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
-                  status: true,
-                  createdBy: user
-                }).then((resp) => {
-                  if (resp) {
-                    return res.status(200).json({ message: "New Employee onboarded successfully!", _id: response.id, name: response.name, email: response.email });
-                  } else {
-                    return res.status(500).json({ message: "Failed to onboard employee" });
-                  }
-                });
-              } else {
-                return res.status(500).json({ message: "Failed to onboard employee" });
-              }
-            })
-            .catch((err) => {
-              /* istanbul ignore else */
-              if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
-              } else {
-                next(err)
-              }
-            })
-        }).catch((err) => {
-          return res.status(500).json({ message: "Failed to store cancelledChequeUrl" })
-        });
-      }).catch((err) => {
-        return res.status(500).json({ message: "Failed to store aadharcard url" })
-      });
-    }).catch((err) => {
-      return res.status(500).json({ message: "Failed to store pancard url" })
-    });
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await Employees.create({
+            userId: userId,
+            firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+            middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
+            lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
+            panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
+            aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
+            bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
+            bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
+            accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
+            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
+            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
+            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
+            status: true
+          }).then((resp) => {
+            if (resp) {
+              return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+            } else {
+              return res.status(500).json({ message: "Failed to onboard employee" });
+            }
+          });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard employee" });
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
+          })
+        } else {
+          next(err)
+        }
+      })
   } else if (onBoardingDetails.roleName == "Client Representative") {
     var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
       status: true
     }
-    console.log(userObject);
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForClientUrl, 'authenticationLetterForClient').then(async (authenticationLetterForClientUrl) => {
-      await storeOnBoardingImagesInLocalStorage(onBoardingDetails.companyIdForClient, 'companyIdForClient').then(async (companyIdForClient) => {
-        await User.create(userObject)
-          .then(async (response) => {
-            if (response) {
-              let userId = response.id;
-              await ClientRepresentatives.create({
-                userId: userId,
-                name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
-                companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
-                status: true,
-                createdBy: user
-              });
-              return res.status(200).json({ message: "New Client Representative onboarded successfully!", _id: response.id, name: response.name, email: response.email });
-            } else {
-              return res.status(500).json({ message: "Failed to onboard client representative" });
-            }
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await ClientRepresentatives.create({
+            userId: userId,
+            name: onBoardingDetails.name ? onBoardingDetails.name : '',
+            email: onBoardingDetails.email ? onBoardingDetails.email : '',
+            password: onBoardingDetails.password ? onBoardingDetails.password : '',
+            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+            CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
+            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
+            status: true
+          });
+          return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard client representative" });
+        }
+      })
+      .catch((err) => {
+        /* istanbul ignore else */
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
           })
-          .catch((err) => {
-            /* istanbul ignore else */
-            if (err.name === 'MongoError' && err.code === 11000) {
-              res.status(409).json({
-                valid: false,
-                param: 'email',
-                message: 'email already registered'
-              })
-            } else {
-              console.log('error', err)
-              next(err)
-            }
-          })
-      }).catch((err) => {
-        return res.status(500).json({ message: "Failed to store companyIdForClient" })
-      });
-    }).catch((err) => {
-      return res.status(500).json({ message: "Failed to store authenticationLetterForClientUrl" })
-    });
+        } else {
+          console.log('error', err)
+          next(err)
+        }
+      })
   } else if (onBoardingDetails.roleName == "Company Representative") {
     var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
     userObject = {
       email: onBoardingDetails.email ? onBoardingDetails.email : '',
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
-      role: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      roleId: roleObject && roleObject._id ? roleObject._id : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       password: onBoardingDetails.password ? onBoardingDetails.password : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
       isUserApproved: false,
       status: true
     }
-    console.log('test', onBoardingDetails.companiesList);
     var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-    console.log('companiesList', companiesList);
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForCompanyUrl, 'authenticationLetterForCompany')
-      .then(async (authenticationLetterForCompanyUrl) => {
-        await storeOnBoardingImagesInLocalStorage(onBoardingDetails.companyIdForCompany, 'companyIdForCompany')
-          .then(async (companyIdForCompany) => {
-            await User.create(userObject)
-              .then(async (response) => {
-                if (response) {
-                  let userId = response.id;
-                  await CompanyRepresentatives.create({
-                    userId: userId,
-                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
-                    companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
-                    status: true,
-                    createdBy: user
-                  });
-                  return res.status(200).json({ message: "New Company Representative onboarded successfully!", _id: response.id, name: response.name, email: response.email });
-                } else {
-                  return res.status(500).json({ message: "Failed to onboard company representative" });
-                }
-              })
-              .catch((err) => {
-                /* istanbul ignore else */
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                } else {
-                  next(err)
-                }
-              })
-          })
-          .catch((err) => {
-            return res.status(500).json({ message: "Failed to store authenticationLetterForCompany" })
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await CompanyRepresentatives.create({
+            userId: userId,
+            name: onBoardingDetails.name ? onBoardingDetails.name : '',
+            email: onBoardingDetails.email ? onBoardingDetails.email : '',
+            password: onBoardingDetails.password ? onBoardingDetails.password : '',
+            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+            companiesList: companiesList ? companiesList : "",
+            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
+            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
+            status: true
           });
+          return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard company representative" });
+        }
       })
       .catch((err) => {
-        return res.status(500).json({ message: "Failed to store companyIdForCompany" })
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
+          })
+        } else {
+          next(err)
+        }
       })
+
   } else if (onBoardingDetails.roleName == "Analyst") {
     //TODO
   } else if (onBoardingDetails.roleName == "QA") {
@@ -348,7 +341,7 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     roles,
     primaryRole
   }
-  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails } }).then((updatedObject) => {
+  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails, isRoleAssigned: true } }).then((updatedObject) => {
     if (updatedObject) {
       User.findById(body.userDetails.value).populate({
         path: 'roleDetails.roles'
@@ -400,7 +393,6 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     populate({ path: 'roleDetails.roles' }).
     populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
-    console.log('test', JSON.stringify(rec));
     return {
       "userDetails": {
         "value": rec._id,
@@ -413,13 +405,16 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
         "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
       },
       "role": rec.role,
+      "userType": rec.userType,
       "email": rec.email,
       "phoneNumber": rec.phoneNumber,
       "isUserApproved": rec.isUserApproved,
       "isRoleAssigned": rec.isRoleAssigned,
       "isAssignedToGroup": rec.isAssignedToGroup,
       "createdAt": rec.createdAt,
-      "status": rec.status
+      "status": rec.status,
+      "isUserRejected": rec.isUserRejected ? rec.isUserRejected : null,
+      "isUserActive": rec.isUserActive ? rec.isUserActive : null
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
@@ -472,27 +467,78 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
 // })
 
 
-export const update = ({ bodymen: { body }, params, user }, res, next) =>
-  User.findById(params.id === 'me' ? user.id : params.id)
-    .populate('roleId')
-    .then(notFound(res))
-    .then((result) => {
-      if (!result) return null
-      const isAdmin = user.role === 'admin'
-      const isSelfUpdate = user.id === result.id
-      if (!isSelfUpdate && !isAdmin) {
-        res.status(401).json({
-          valid: false,
-          message: 'You can\'t change other user\'s data'
-        })
-        return null
-      }
-      return result
-    })
-    .then((user) => user ? Object.assign(user, body).save() : null)
-    .then((user) => user ? user.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = ({ bodymen: { body }, params, user }, res, next) => {
+  if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+    body.userDetails.isUserRejected = true;
+  }
+  User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
+    if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+      User.findById(body.userId).then(function (userDetails) {
+        var link = '';
+        if ((userDetails.userType && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType || userDetails.role}?id=${userDetails.id}`;
+          console.log("employees", link)
+        } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+        } else if ((userDetails.userType && userDetails.userType == "Company Representative") || (userDetails.role && userDetails.role == "Company Representative")) {
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+        }
+        const content = `
+                  Hai,<br/>
+                  Please use the following link to submit your ${userDetails.userType} onboarding details:<br/>
+                  URL: ${link}<br/><br/>
+                  &mdash; ESG Team `;
+        var transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: 'testmailer09876@gmail.com',
+            pass: 'ijsfupqcuttlpcez'
+          }
+        });
+        transporter.sendMail({
+          from: 'testmailer09876@gmail.com',
+          to: userDetails['email'],
+          subject: 'ESG - Onboarding',
+          html: content
+        });
+      })
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    } else {
+      return res.status(200).json({
+        message: 'User details updated successfully',
+      });
+    }
+  }).catch(err => {
+    return res.status(500).json({
+      message: err.message ? err.message : 'Failed to update userDetails',
+    });
+  })
+}
+
+
+// export const update = ({ bodymen: { body }, params, user }, res, next) =>
+//   User.findById(params.id === 'me' ? user.id : params.id)
+//     .populate('roleId')
+//     .then(notFound(res))
+//     .then((result) => {
+//       if (!result) return null
+//       const isAdmin = user.role === 'admin'
+//       const isSelfUpdate = user.id === result.id
+//       if (!isSelfUpdate && !isAdmin) {
+//         res.status(401).json({
+//           valid: false,
+//           message: 'You can\'t change other user\'s data'
+//         })
+//         return null
+//       }
+//       return result
+//     })
+//     .then((user) => user ? Object.assign(user, body).save() : null)
+//     .then((user) => user ? user.view(true) : null)
+//     .then(success(res))
+//     .catch(next)
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -628,73 +674,86 @@ export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, n
 
 export const uploadEmailsFile = async (req, res, next) => {
 
-  let convertedWorkbook;
   try {
-    uploadFiles(req, res, async function (err) {
-      convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
-      if (err) {
-        res.status('400').json({ error_code: 1, err_desc: err });
-        return;
-      }
-      if (convertedWorkbook.SheetNames.length > 0) {
-        var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
-        try {
-          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
-          //code for sending onboarding links to emails
-          let existingUserEmailsList = await User.find({ "status": true });
-          let rolesList = await Role.find({ "status": true });
-          if (sheetAsJson.length > 0) {
-            let existingEmails = [];
+    let convertedWorkbook;
+    convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    if (convertedWorkbook.SheetNames.length > 0) {
+      var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
+      try {
+        var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+        //code for sending onboarding links to emails
+        let existingUserEmailsList = await User.find({ "status": true });
+        let rolesList = await Role.find({ "status": true });
+        if (sheetAsJson.length > 0) {
+          let existingEmails = [], hasInvalidData = false;
+          for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
+            const rowObject = sheetAsJson[index1];
+            if (rowObject['email'] == ' ' || !rowObject['email']) {
+              hasInvalidData = true;
+              return res.status(400).json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
+            } else if (rowObject['onboardingtype'] != 'Employee' && rowObject['onboardingtype'] != 'Company Representative' && rowObject['onboardingtype'] != 'Client Representative') {
+              hasInvalidData = true;
+              return res.status(400).json({ status: "400", message: "Invalid input for onboardingtype, Please check!" });
+            }
+          }
+          if (!hasInvalidData) {
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
               let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']) || (object._id == rowObject['onboardingtype']));
+              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
               let link;
-              if (rowObject['email'] == ' ' || !rowObject['email']) {
-                return res.json({ status: "400", message: " Email Id is not Present in the Column Please check input file ", mailNotSentTo: existingEmails });
-              }
-              if (rowObject['link'] == ' ' || !rowObject['link']) {
-                if (rolesDetails.roleName == "Employee") {
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else if (rolesDetails.roleName == "CompanyRepresentative") {
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                } else {
-                  link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                }
-                rowObject["link"] = link;
-              }
-              //nodemail code will come here to send OTP  
-              if (!isEmailExisting) {
-                const content = `
-                  Hai,<br/>
-                  Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                  URL: ${rowObject['link']}<br/><br/>
-                  &mdash; ESG Team `;
-                var transporter = nodemailer.createTransport({
-                  service: 'Gmail',
-                  auth: {
-                    user: 'testmailer09876@gmail.com',
-                    pass: 'ijsfupqcuttlpcez'
+              if (rolesDetails) {
+                if (rowObject['link'] == ' ' || !rowObject['link']) {
+                  if (rolesDetails.roleName == "Employee") {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                  } else if (rolesDetails.roleName == "Company Representative") {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
+                  } else {
+                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
                   }
-                });
+                  rowObject["link"] = link;
+                }
+                //nodemail code will come here to send OTP  
+                if (!isEmailExisting) {
+                  const content = `
+                    Hai,<br/>
+                    Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+                    URL: ${rowObject['link']}<br/><br/>
+                    &mdash; ESG Team `;
+                  var transporter = nodemailer.createTransport({
+                    service: 'Gmail',
+                    auth: {
+                      user: 'testmailer09876@gmail.com',
+                      pass: 'ijsfupqcuttlpcez'
+                    }
+                  });
 
-                transporter.sendMail({
-                  from: 'testmailer09876@gmail.com',
-                  to: rowObject['email'],
-                  subject: 'ESG - Onboarding',
-                  html: content
-                });
+                  transporter.sendMail({
+                    from: 'testmailer09876@gmail.com',
+                    to: rowObject['email'],
+                    subject: 'ESG - Onboarding',
+                    html: content
+                  });
+                } else {
+                  existingEmails.push(isEmailExisting.email);
+                }
               } else {
-                existingEmails.push(isEmailExisting.email);
+                return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
               }
             }
-            return res.json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+            return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+          } else {
+            return res.status(400).json({ status: "400", message: "File has some invalid data please check!" });
           }
-        } catch (error) {
-          return res.status(400).json({ message: error.message })
+        } else {
+          return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" })
         }
+      } catch (error) {
+        return res.status(400).json({ message: error.message })
       }
-    });
+    } else {
+      return res.status(400).json({ status: "400", message: "Invalid excel file please check!" })
+    }
   } catch (error) {
     if (error) {
       return res.status(403).json({
@@ -721,7 +780,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         const content = `
           Hai,<br/>
           Please use the following link to submit your ${roleDetails.roleName} onboarding details:<br/>
-          URL: ${rowObject['link']}<br/><br/>
+          URL: http://localhost${rowObject['link']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
@@ -741,7 +800,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", mailNotSentTo: existingEmails });
+    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
   } else {
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }

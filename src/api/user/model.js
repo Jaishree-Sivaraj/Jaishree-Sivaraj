@@ -38,6 +38,9 @@ const userSchema = new Schema({
     type: String,
     default: 'user'
   },
+  userType: {
+    type: String
+  },
   roleDetails: {
     roles: [{
       type: Schema.ObjectId,
@@ -90,6 +93,14 @@ const userSchema = new Schema({
   isAssignedToGroup: {
     type: Boolean,
     default: false
+  },
+  isUserActive: {
+    type: Boolean,
+    default: true
+  },
+  isUserRejected: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -123,7 +134,7 @@ userSchema.pre('save', function (next) {
 userSchema.methods = {
   view(full) {
     const view = {}
-    let fields = ['id', 'name', 'email', 'role', 'roleId', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'isRoleAssigned', 'isAssignedToGroup', 'status', "roleDetails"]
+    let fields = ['id', 'name', 'email', 'role', 'roleId', 'userType', 'picture', 'phoneNumber', 'comments', 'isUserApproved', 'isRoleAssigned', 'isAssignedToGroup', 'status', "roleDetails"]
 
     if (full) {
       fields = [...fields, 'email', 'createdAt']
