@@ -48,6 +48,7 @@ export const show = ({ params }, res, next) => {
   User.findById(params.id).populate('roleId').then(notFound(res)).then(function (userDetails) {
     var userType = '';
     userDetails = userDetails.toObject();
+    delete userDetails.password;
     if (userDetails.userType) {
       userType = userDetails.userType;
     } else {
@@ -58,9 +59,9 @@ export const show = ({ params }, res, next) => {
     if (userType === 'Employee') {
       Employees.findOne({ userId: userDetails._id }).then(function (employee) {
         var employeeDocuments = {
-          pancardUrl: employee.pancardUrl.toString('base64'),
-          aadhaarUrl: employee.aadhaarUrl.toString('base64'),
-          cancelledChequeUrl: employee.cancelledChequeUrl.toString('base64')
+          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl.toString('base64') : '',
+          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl.toString('base64') : '',
+          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl.toString('base64') : ''
         }
         userDetails.documents = employeeDocuments;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
@@ -71,8 +72,8 @@ export const show = ({ params }, res, next) => {
     } else if (userType === 'Company Representative') {
       CompanyRepresentatives.findOne({ userId: userDetails._id }).then(function (company) {
         var companyDocuments = {
-          authenticationLetterForCompanyUrl: company.authenticationLetterForCompanyUrl.toString('base64'),
-          companyIdForCompany: company.companyIdForCompany.toString('base64')
+          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl.toString('base64') : '',
+          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany.toString('base64') : ''
         }
         userDetails.documents = companyDocuments;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
@@ -82,9 +83,10 @@ export const show = ({ params }, res, next) => {
       })
     } else if (userType === 'Client Representative') {
       ClientRepresentatives.findOne({ userId: userDetails._id }).then(function (client) {
+        console.log('client', client);
         var clientDocuments = {
-          authenticationLetterForClientUrl: client.authenticationLetterForClientUrl.toString('base64'),
-          companyIdForClient: client.companyIdForClient.toString('base64'),
+          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl.toString('base64') : '',
+          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient.toString('base64') : '',
         }
         userDetails.documents = clientDocuments;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
@@ -372,7 +374,7 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     roles,
     primaryRole
   }
-  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails } }).then((updatedObject) => {
+  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails, isRoleAssigned: true } }).then((updatedObject) => {
     if (updatedObject) {
       User.findById(body.userDetails.value).populate({
         path: 'roleDetails.roles'
