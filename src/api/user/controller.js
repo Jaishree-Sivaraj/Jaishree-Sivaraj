@@ -64,6 +64,13 @@ export const show = ({ params }, res, next) => {
           cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl.toString('base64') : ''
         }
         userDetails.documents = employeeDocuments;
+        userDetails.firstName = employee.firstName;
+        userDetails.middleName = employee.middleName;
+        userDetails.lastName = employee.lastName;
+        userDetails.panNumber = employee.panNumber;
+        userDetails.aadhaarNumber = employee.aadhaarNumber;
+        userDetails.bankAccountNumber = employee.bankAccountNumber;
+        userDetails.bankIFSCCode = employee.bankIFSCCode;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
@@ -169,7 +176,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   createdBy: user
                 }).then((resp) => {
                   if (resp) {
-                    return res.status(200).json({ message: "New Employee onboarded successfully!", _id: response.id, name: response.name, email: response.email });
+                    return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
                   } else {
                     return res.status(500).json({ message: "Failed to onboard employee" });
                   }
@@ -229,7 +236,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 status: true,
                 createdBy: user
               });
-              return res.status(200).json({ message: "New Client Representative onboarded successfully!", _id: response.id, name: response.name, email: response.email });
+              return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
             } else {
               return res.status(500).json({ message: "Failed to onboard client representative" });
             }
@@ -286,7 +293,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     status: true,
                     createdBy: user
                   });
-                  return res.status(200).json({ message: "New Company Representative onboarded successfully!", _id: response.id, name: response.name, email: response.email });
+                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard company representative" });
                 }
