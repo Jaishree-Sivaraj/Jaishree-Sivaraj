@@ -45,17 +45,59 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
 }
 
 export const show = ({ params }, res, next) => {
-  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (user) {
-    //if (user.userType && user.userType === 'Employee') {
-    Employees.find({ userId: user._id }).then(function (employee) {
-      console.log(typeof employee[0]);
-      user.pancardUrl = employee[0].pancardUrl.toString('base64');
-      user.aadhaarUrl = employee[0].aadhaarUrl.toString('base64');
-      user.cancelledChequeUrl = employee[0].cancelledChequeUrl.toString('base64');
-      console.log('user', user);
-      return res.json(user.view)
-    })
-    //}
+  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (userDetails) {
+    var userType = '';
+    userDetails = userDetails.toObject();
+    if (userDetails.userType) {
+      userType = userDetails.userType;
+    } else {
+      if (userDetails.role) {
+        userType = userDetails.role;
+      }
+    }
+    if (userType === 'Employee') {
+      Employees.findOne({ userId: userDetails._id }).then(function (employee) {
+        var employeeDocuments = {
+          pancardUrl: employee.pancardUrl.toString('base64'),
+          aadhaarUrl: employee.aadhaarUrl.toString('base64'),
+          cancelledChequeUrl: employee.cancelledChequeUrl.toString('base64')
+        }
+        userDetails.documents = employeeDocuments;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else if (userType === 'Company Representative') {
+      CompanyRepresentatives.findOne({ userId: userDetails._id }).then(function (company) {
+        var companyDocuments = {
+          authenticationLetterForCompanyUrl: company.authenticationLetterForCompanyUrl.toString('base64'),
+          companyIdForCompany: company.companyIdForCompany.toString('base64')
+        }
+        userDetails.documents = companyDocuments;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else if (userType === 'Client Representative') {
+      ClientRepresentatives.findOne({ userId: userDetails._id }).then(function (client) {
+        var clientDocuments = {
+          authenticationLetterForClientUrl: client.authenticationLetterForClientUrl.toString('base64'),
+          companyIdForClient: client.companyIdForClient.toString('base64'),
+        }
+        userDetails.documents = clientDocuments;
+        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+      }).catch(err => {
+        console.log('err', err);
+        return res.status(500).json({ message: "Failed to get user" })
+      })
+    } else {
+      return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+    }
+  }).catch(err => {
+    console.log('err', err);
+    return res.status(500).json({ message: "Failed to get user" })
   })
 }
 
@@ -464,7 +506,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       User.findById(body.userId).then(function (userDetails) {
         var link = '';
         if ((userDetails.userType && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
+          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType || userDetails.role}?id=${userDetails.id}`;
           console.log("employees", link)
         } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
           link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
