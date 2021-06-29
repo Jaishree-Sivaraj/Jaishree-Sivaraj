@@ -264,7 +264,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       isUserApproved: false,
       status: true
     }
-    console.log('test', onBoardingDetails.companiesList);
     var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
     console.log('companiesList', companiesList);
     await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForCompanyUrl, 'authenticationLetterForCompany')
@@ -426,7 +425,6 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     populate({ path: 'roleDetails.roles' }).
     populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
-    console.log('test', JSON.stringify(rec));
     return {
       "userDetails": {
         "value": rec._id,

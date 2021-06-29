@@ -131,7 +131,6 @@ router.post('/',
  * @apiError 409 Email already registered.
  */
 router.post('/new-onboard',
-  token({ required: true }),
   body({ onBoardingDetails }),
   onBoardNewUser)
 
