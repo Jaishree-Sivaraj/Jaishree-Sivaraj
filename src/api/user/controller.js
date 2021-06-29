@@ -444,7 +444,9 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       "isRoleAssigned": rec.isRoleAssigned,
       "isAssignedToGroup": rec.isAssignedToGroup,
       "createdAt": rec.createdAt,
-      "status": rec.status
+      "status": rec.status,
+      "isUserRejected": rec.isUserRejected ? rec.isUserRejected : null,
+      "isUserActive": rec.isUserActive ? rec.isUserActive : null
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
