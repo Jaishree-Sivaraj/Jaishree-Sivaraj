@@ -138,7 +138,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   let bodyData = Buffer.from(body.onBoardingDetails, 'base64');
   let bodyDetails = bodyData.toString('ascii');
   let onBoardingDetails = JSON.parse(bodyDetails);
-  //console.log('onBoardingDetails', onBoardingDetails);
   let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
   let userObject;
   if (onBoardingDetails.roleName == "Employee") {
@@ -152,60 +151,46 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       isUserApproved: false,
       status: true
     }
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.pancardUrl, 'pan').then(async (pancardUrl) => {
-      await storeOnBoardingImagesInLocalStorage(onBoardingDetails.aadhaarUrl, 'aadhar').then(async (aadhaarUrl) => {
-        await storeOnBoardingImagesInLocalStorage(onBoardingDetails.cancelledChequeUrl, 'cancelledCheque').then(async (cancelledChequeUrl) => {
-          await User.create(userObject)
-            .then(async (response) => {
-              if (response) {
-                let userId = response.id;
-                await Employees.create({
-                  userId: userId,
-                  firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                  middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                  lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                  panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                  aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                  bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                  bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                  accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
-                  aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
-                  cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
-                  status: true,
-                  createdBy: user
-                }).then((resp) => {
-                  if (resp) {
-                    return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-                  } else {
-                    return res.status(500).json({ message: "Failed to onboard employee" });
-                  }
-                });
-              } else {
-                return res.status(500).json({ message: "Failed to onboard employee" });
-              }
-            })
-            .catch((err) => {
-              /* istanbul ignore else */
-              if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
-              } else {
-                next(err)
-              }
-            })
-        }).catch((err) => {
-          return res.status(500).json({ message: "Failed to store cancelledChequeUrl" })
-        });
-      }).catch((err) => {
-        return res.status(500).json({ message: "Failed to store aadharcard url" })
-      });
-    }).catch((err) => {
-      return res.status(500).json({ message: "Failed to store pancard url" })
-    });
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await Employees.create({
+            userId: userId,
+            firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+            middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
+            lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
+            panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
+            aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
+            bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
+            bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
+            accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
+            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
+            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
+            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
+            status: true
+          }).then((resp) => {
+            if (resp) {
+              return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+            } else {
+              return res.status(500).json({ message: "Failed to onboard employee" });
+            }
+          });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard employee" });
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
+          })
+        } else {
+          next(err)
+        }
+      })
   } else if (onBoardingDetails.roleName == "Client Representative") {
     var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
     userObject = {
@@ -217,49 +202,39 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       isUserApproved: false,
       status: true
     }
-    console.log(userObject);
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForClientUrl, 'authenticationLetterForClient').then(async (authenticationLetterForClientUrl) => {
-      await storeOnBoardingImagesInLocalStorage(onBoardingDetails.companyIdForClient, 'companyIdForClient').then(async (companyIdForClient) => {
-        await User.create(userObject)
-          .then(async (response) => {
-            if (response) {
-              let userId = response.id;
-              await ClientRepresentatives.create({
-                userId: userId,
-                name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
-                companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
-                status: true,
-                createdBy: user
-              });
-              return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-            } else {
-              return res.status(500).json({ message: "Failed to onboard client representative" });
-            }
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await ClientRepresentatives.create({
+            userId: userId,
+            name: onBoardingDetails.name ? onBoardingDetails.name : '',
+            email: onBoardingDetails.email ? onBoardingDetails.email : '',
+            password: onBoardingDetails.password ? onBoardingDetails.password : '',
+            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+            CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
+            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
+            status: true
+          });
+          return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard client representative" });
+        }
+      })
+      .catch((err) => {
+        /* istanbul ignore else */
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
           })
-          .catch((err) => {
-            /* istanbul ignore else */
-            if (err.name === 'MongoError' && err.code === 11000) {
-              res.status(409).json({
-                valid: false,
-                param: 'email',
-                message: 'email already registered'
-              })
-            } else {
-              console.log('error', err)
-              next(err)
-            }
-          })
-      }).catch((err) => {
-        return res.status(500).json({ message: "Failed to store companyIdForClient" })
-      });
-    }).catch((err) => {
-      return res.status(500).json({ message: "Failed to store authenticationLetterForClientUrl" })
-    });
+        } else {
+          console.log('error', err)
+          next(err)
+        }
+      })
   } else if (onBoardingDetails.roleName == "Company Representative") {
     var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
     userObject = {
@@ -272,52 +247,38 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       status: true
     }
     var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-    console.log('companiesList', companiesList);
-    await storeOnBoardingImagesInLocalStorage(onBoardingDetails.authenticationLetterForCompanyUrl, 'authenticationLetterForCompany')
-      .then(async (authenticationLetterForCompanyUrl) => {
-        await storeOnBoardingImagesInLocalStorage(onBoardingDetails.companyIdForCompany, 'companyIdForCompany')
-          .then(async (companyIdForCompany) => {
-            await User.create(userObject)
-              .then(async (response) => {
-                if (response) {
-                  let userId = response.id;
-                  await CompanyRepresentatives.create({
-                    userId: userId,
-                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
-                    companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
-                    status: true,
-                    createdBy: user
-                  });
-                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-                } else {
-                  return res.status(500).json({ message: "Failed to onboard company representative" });
-                }
-              })
-              .catch((err) => {
-                /* istanbul ignore else */
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                } else {
-                  next(err)
-                }
-              })
-          })
-          .catch((err) => {
-            return res.status(500).json({ message: "Failed to store authenticationLetterForCompany" })
+    await User.create(userObject)
+      .then(async (response) => {
+        if (response) {
+          let userId = response.id;
+          await CompanyRepresentatives.create({
+            userId: userId,
+            name: onBoardingDetails.name ? onBoardingDetails.name : '',
+            email: onBoardingDetails.email ? onBoardingDetails.email : '',
+            password: onBoardingDetails.password ? onBoardingDetails.password : '',
+            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+            companiesList: companiesList ? companiesList : "",
+            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
+            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
+            status: true
           });
+          return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+        } else {
+          return res.status(500).json({ message: "Failed to onboard company representative" });
+        }
       })
       .catch((err) => {
-        return res.status(500).json({ message: "Failed to store companyIdForCompany" })
+        if (err.name === 'MongoError' && err.code === 11000) {
+          res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
+          })
+        } else {
+          next(err)
+        }
       })
+
   } else if (onBoardingDetails.roleName == "Analyst") {
     //TODO
   } else if (onBoardingDetails.roleName == "QA") {
