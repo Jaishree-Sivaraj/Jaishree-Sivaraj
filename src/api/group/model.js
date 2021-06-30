@@ -14,13 +14,13 @@ const groupSchema = new Schema({
     ref: 'User',
     required: true
   },
-  assignedMembers: [{ 
-    type : Schema.ObjectId, 
-    ref: 'User' 
+  assignedMembers: [{
+    type: Schema.ObjectId,
+    ref: 'User'
   }],
-  batchList: [{ 
-    type : Schema.ObjectId, 
-    ref: 'Batches' 
+  batchList: [{
+    type: Schema.ObjectId,
+    ref: 'Batches'
   }],
   status: {
     type: Boolean,
@@ -35,7 +35,7 @@ const groupSchema = new Schema({
 })
 
 groupSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,

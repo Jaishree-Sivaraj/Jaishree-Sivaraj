@@ -9,6 +9,7 @@ export Group, { schema } from './model'
 const router = new Router()
 const { groupName, groupAdmin, batchList, assignedMembers, status } = schema.tree
 const admin = {}, assignMembers = [], assignBatch = [];
+const grpName = '',grpAdmin = {}, grpMembers = [], assignedBatches = [];
 
 /**
  * @api {post} /groups Create group
@@ -47,7 +48,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ groupName, admin, assignMembers, assignBatch}),
+  body({ grpName,grpAdmin, grpMembers, assignedBatches}),
   createGroup)
 
 /**

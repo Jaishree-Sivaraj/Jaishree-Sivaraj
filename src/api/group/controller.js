@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Group } from '.'
 import { User } from '../user'
+import { BatchWisePillarAssignment } from '../batchWisePillarAssignment'
+import { json } from 'body-parser'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -9,38 +11,63 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const createGroup = async({ user, bodymen: { body } }, res, next) =>{
-  let membersList = [];
-  if (body.assignMembers && body.assignMembers.length > 0) {
-    for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
-      const analyst = body.assignMembers[aindex].value;
-      membersList.push(analyst);
-    }
-  }
-  let batchList = [];
-  if (body.assignBatch && body.assignBatch.length > 0) {
-    for (let bindex = 0; bindex < body.assignBatch.length; bindex++) {
-      const batch = body.assignBatch[bindex].value;
-      batchList.push(batch);
-    }
-  }
-  let groupObject = {
-    groupName: body.groupName ? body.groupName : '',
-    groupAdmin: body.admin ? body.admin.value : '',
-    assignedMembers: membersList,
-    batchList: batchList,
-    status: true
-  }
-  await Group.create({ ...groupObject, createdBy: user })
-    .then(async(group) => {
-      if (membersList.length > 0) {
-        await User.updateMany({
-          "_id": { $in: membersList }
-        }, { $set: { isAssignedToGroup: true } }, {});        
+export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
+  try {
+    let membersList = [], batchWisePillars = [];;
+    if (body.grpMembers && body.grpMembers.length > 0) {
+      for (let grpIndex = 0; grpIndex < body.grpMembers.length; grpIndex++) {
+        let ss = body.grpMembers[grpIndex]
+        console.log(ss)
+        const analyst = body.grpMembers[grpIndex].userDetail.value;
+        membersList.push(analyst);
       }
-    })
-    .then(success(res, 201))
-    .catch(next)
+    }
+    let batchList = []
+    if (body.assignedBatches && body.assignedBatches.length > 0) {
+      for (let batchIndex = 0; batchIndex < body.assignedBatches.length; batchIndex++) {
+        const batch = body.assignedBatches[batchIndex].id;
+        const batchMembers = body.assignedBatches[batchIndex].members;
+        for (let memberIndex = 0; memberIndex < batchMembers.length; memberIndex++) {
+          let batchWisePillarMemberObject = {
+            userId: batchMembers[memberIndex].userId,
+            batchId: batch,
+            pillars: batchMembers[memberIndex].pillars
+          }
+          batchWisePillars.push(batchWisePillarMemberObject);
+        }
+        batchList.push(batch);
+      }
+    }
+    let groupObject = {
+      groupName: body.grpName ? body.grpName : ' ',
+      groupAdmin: body.grpAdmin ? body.grpAdmin.value : ' ',
+      assignedMembers: membersList,
+      batchList: batchList,
+      status: true
+    }
+    await Group.create({ ...groupObject, createdBy: user })
+      .then(async (group) => {
+        if (membersList.length > 0) {
+          await User.updateMany({
+            "_id": { $in: membersList }
+          }, { $set: { isAssignedToGroup: true } }, {});
+        }
+      })
+    // .then(success(res, 201))
+    // .catch(next)
+    await BatchWisePillarAssignment.insertMany(batchWisePillars)
+      .then((err, result) => {
+        if (err) {
+          console.log('error', err);
+        } else {
+          //  console.log('result', result);
+        }
+      });
+    res.status(200).json({ status: "200", message: "Group Created Successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -55,7 +82,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
         groups.forEach(item => {
           let memberObjects = [];
           item.assignedMembers.forEach(obj => {
-            memberObjects.push({value: obj.id, label: obj.name});
+            memberObjects.push({ value: obj.id, label: obj.name });
           })
           let objectToPush = {
             _id: item.id,
@@ -73,14 +100,14 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
           count,
           rows: responseList
         })
-    })
+      })
     )
     .then(success(res))
     .catch(next)
 
 export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor } }, res, next) => {
-  Group.count({groupAdmin: params.groupAdmin ? params.groupAdmin : null})
-    .then(count => Group.find({groupAdmin: params.groupAdmin ? params.groupAdmin : null})
+  Group.count({ groupAdmin: params.groupAdmin ? params.groupAdmin : null })
+    .then(count => Group.find({ groupAdmin: params.groupAdmin ? params.groupAdmin : null })
       .populate('createdBy')
       .populate('groupAdmin')
       .populate('batchList')
@@ -90,7 +117,7 @@ export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor }
         groups.forEach(item => {
           let memberObjects = [];
           item.assignedMembers.forEach(obj => {
-            memberObjects.push({value: obj.id, label: obj.name});
+            memberObjects.push({ value: obj.id, label: obj.name });
           })
           let objectToPush = {
             _id: item.id,
@@ -108,7 +135,7 @@ export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor }
           status: "200",
           rows: responseList
         })
-    })
+      })
     )
     .then(success(res))
     .catch(next)
@@ -124,11 +151,11 @@ export const show = ({ params }, res, next) =>
     .then((group) => {
       let batchObjects = [];
       group.batchList.forEach(obj => {
-        batchObjects.push({value: obj.id, label: obj.batchName});
+        batchObjects.push({ value: obj.id, label: obj.batchName });
       })
       let memberObjects = [];
       group.assignedMembers.forEach(obj => {
-        memberObjects.push({value: obj.id, label: obj.name});
+        memberObjects.push({ value: obj.id, label: obj.name });
       })
       let responseObject = {
         _id: group.id,
@@ -137,7 +164,7 @@ export const show = ({ params }, res, next) =>
         assignMembers: memberObjects,
         admin: { value: group.groupAdmin.id, label: group.groupAdmin.name }
       }
-      return ({ message: "Retrieved group successfully!", status: "200", data: responseObject});
+      return ({ message: "Retrieved group successfully!", status: "200", data: responseObject });
     })
     .then(success(res))
     .catch(next)
@@ -155,7 +182,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updateGroup = async({ user, bodymen: { body }, params }, res, next) => {
+export const updateGroup = async ({ user, bodymen: { body }, params }, res, next) => {
   let membersList = [];
   if (body.assignMembers && body.assignMembers.length > 0) {
     for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
@@ -177,16 +204,16 @@ export const updateGroup = async({ user, bodymen: { body }, params }, res, next)
     batchList: batchList,
     status: body.status
   }
-  
-  await Group.update({_id: params.id}, { $set: groupObject })
-  .then((err, result) => {
-    if (err) {
-      console.log('error', err);
-      return err;
-    } else {
-      return ({ message: "Group updated successfuly!", status: "200", data: groupObject });
-    }
-  })
+
+  await Group.update({ _id: params.id }, { $set: groupObject })
+    .then((err, result) => {
+      if (err) {
+        console.log('error', err);
+        return err;
+      } else {
+        return ({ message: "Group updated successfuly!", status: "200", data: groupObject });
+      }
+    })
 }
 
 export const destroy = ({ user, params }, res, next) =>
