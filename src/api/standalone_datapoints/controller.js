@@ -21,9 +21,6 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 
 var companyESG = multer.diskStorage({ //multers disk shop photos storage settings
   destination: function (req, file, cb) {
-    // cb(null, './uploads/')
-    console.log('__dirname ', __dirname);
-    // console.log('process.env.PWD', process.env.PWD);
     cb(null, __dirname + '/uploads');
   },
   filename: function (req, file, cb) {
@@ -61,7 +58,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
   const userDetail = req.user;
   try {
     upload(req, res, async function (err) {
-      //console.log(new Error(err));
       if (err) {
         res.status('400').json({ status: "400", error_code: 1, err_desc: err });
         return;
@@ -317,7 +313,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
-          console.log(allStandaloneDetails);
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
             let categoriesToBeCheck = _.filter(allStandaloneDetails, function (object) {
@@ -326,7 +321,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
             let categoryLength = _.uniqBy(categoriesToBeCheck, 'Category');
-            console.log(categoryLength)
             if (categoryLength.length != 3) {
               let missingFileObject = {
                 companyName: companiesToBeAdded[cinIndex]['Company Name'],
@@ -340,12 +334,12 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             const structuredCompanyDetails = [];
             for (let index = 0; index < companiesToBeAdded.length; index++) {
               const item = companiesToBeAdded[index];
-
+              let nicString = item['NIC Code'].toString();
               let companyObject = {
                 companyName: item['Company Name'],
                 cin: item['CIN'].replace('\r\n', ''),
                 nicCode: item['NIC Code'],
-                nic: item['NIC Code'].toString().substring(0, 2),
+                nic: nicString.substring(0, 2),
                 nicIndustry: item['NIC industry'],
                 isinCode: item['ISIN Code'],
                 cmieProwessCode: item['CMIE/Prowess Code'],
@@ -383,12 +377,18 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue;
-              if (item['Response'] == 0 || item['Response'] == '0') {
-                responseValue = item['Response'];
-              } else if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
-                responseValue = "NA";
+              if (item['Response'].toString().length > 0) {
+                if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
+                  if (item['Response'] == "0" || item['Response'] == 0) {
+                    responseValue = item['Response'];
+                  } else {
+                    responseValue = "NA";
+                  }
+                } else {
+                  responseValue = item['Response'];
+                }
               } else {
-                responseValue = item['Response'];
+                responseValue = "NA";
               }
               return {
                 categoryName: item['Category'],
@@ -689,7 +689,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            console.log(missingDPList)
             if (missingDPList.length == 0) {
               const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
                 "companyId": { $in: insertedCompanyIds },
