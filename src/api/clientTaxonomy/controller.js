@@ -118,9 +118,9 @@ export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, r
       .then((err, result) => {
         if (err) {
           console.log('error', err);
-          return err;
+          return res.status(200).json({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
         } else {
-          return ({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
+          // 
         }
       })
     })

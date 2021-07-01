@@ -10,9 +10,18 @@ const taxonomiesSchema = new Schema({
     type: String,
     required: true
   },
+  fieldName: {
+    type: String,
+    required: true,
+    default: ''
+  },
   description: {
     type: String,
     default: ''
+  },
+  isRequired: {
+    type: Boolean,
+    default: true
   },
   status: {
     type: Boolean,
@@ -33,7 +42,9 @@ taxonomiesSchema.methods = {
       id: this.id,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       name: this.name ? this.name : '',
+      fieldName: this.fieldName ? this.fieldName : '',
       description: this.description ? this.description : '',
+      isRequired: this.isRequired,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

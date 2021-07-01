@@ -20,11 +20,13 @@ beforeEach(async () => {
 test('POST /taxonomies 201 (user)', async () => {
   const { status, body } = await request(app())
     .post(`${apiRoot}`)
-    .send({ access_token: userSession, name: 'test', description: 'test', status: 'test' })
+    .send({ access_token: userSession, name: 'test', fieldName: 'test', description: 'test', isRequired: 'test', status: 'test' })
   expect(status).toBe(201)
   expect(typeof body).toEqual('object')
   expect(body.name).toEqual('test')
+  expect(body.fieldName).toEqual('test')
   expect(body.description).toEqual('test')
+  expect(body.isRequired).toEqual('test')
   expect(body.status).toEqual('test')
   expect(typeof body.createdBy).toEqual('object')
 })
@@ -77,20 +79,22 @@ test('GET /taxonomies/:id 404 (user)', async () => {
 test('PUT /taxonomies/:id 200 (user)', async () => {
   const { status, body } = await request(app())
     .put(`${apiRoot}/${taxonomies.id}`)
-    .send({ access_token: userSession, name: 'test', description: 'test', status: 'test' })
+    .send({ access_token: userSession, name: 'test', fieldName: 'test', description: 'test', isRequired: 'test', status: 'test' })
   expect(status).toBe(200)
   expect(typeof body).toEqual('object')
   expect(body.id).toEqual(taxonomies.id)
   expect(body.name).toEqual(taxonomies.name)
+  expect(body.fieldName).toEqual(taxonomies.fieldName)
   expect(body.description).toEqual(taxonomies.description)
-  expect(body.status).toEqual('test')
+  expect(body.isRequired).toEqual(taxonomies.isRequired)
+  expect(body.status).toEqual(taxonomies.status)
   expect(typeof body.createdBy).toEqual('object')
 })
 
 test('PUT /taxonomies/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .put(`${apiRoot}/${taxonomies.id}`)
-    .send({ access_token: anotherSession, name: 'test', description: 'test', status: 'test' })
+    .send({ access_token: anotherSession, name: 'test', fieldName: 'test', description: 'test', isRequired: 'test', status: 'test' })
   expect(status).toBe(401)
 })
 
@@ -103,7 +107,7 @@ test('PUT /taxonomies/:id 401', async () => {
 test('PUT /taxonomies/:id 404 (user)', async () => {
   const { status } = await request(app())
     .put(apiRoot + '/123456789098765432123456')
-    .send({ access_token: anotherSession, name: 'test', description: 'test', status: 'test' })
+    .send({ access_token: anotherSession, name: 'test', fieldName: 'test', description: 'test', isRequired: 'test', status: 'test' })
   expect(status).toBe(404)
 })
 
