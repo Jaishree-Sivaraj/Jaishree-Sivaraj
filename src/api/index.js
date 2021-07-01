@@ -42,6 +42,7 @@ import notifications from './notifications'
 import onboarding from './onboarding'
 import companySources from './companySources'
 import sourceTypes from './sourceTypes'
+import batchWisePillarAssignment from './batchWisePillarAssignment'
 
 const router = new Router()
 
@@ -111,6 +112,7 @@ router.use('/masterTaxonomies', masterTaxonomy)
 router.use('/notifications', notifications)
 router.use('/onboardings', onboarding)
 router.use('/companySources', companySources)
-router.use('/sourceTypes', sourceTypes) 
+router.use('/sourceTypes', sourceTypes)
+router.use('/batchWisePillarAssignments', batchWisePillarAssignment)
 
 export default router
