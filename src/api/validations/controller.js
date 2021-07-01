@@ -219,3 +219,7 @@ export const type3Validation = async ({ user, body }, res, next) => {
     return res.status(412).json({ message: error.message, isValidResponse: false });
   }
 }
+
+export const getAllValidation = async ({ user, body }, res, next) => {
+  
+}

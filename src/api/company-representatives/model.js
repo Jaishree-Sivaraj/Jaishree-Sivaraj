@@ -4,7 +4,7 @@ const companyRepresentativesSchema = new Schema({
   createdBy: {
     type: Schema.ObjectId,
     ref: 'User',
-    required: true
+    required: false,
   },
   userId: {
     type: Schema.ObjectId,

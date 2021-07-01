@@ -93,6 +93,14 @@ const userSchema = new Schema({
   isAssignedToGroup: {
     type: Boolean,
     default: false
+  },
+  isUserActive: {
+    type: Boolean,
+    default: true
+  },
+  isUserRejected: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

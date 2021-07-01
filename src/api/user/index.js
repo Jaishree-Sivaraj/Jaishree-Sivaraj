@@ -93,6 +93,7 @@ router.get('/me',
  * @apiError 404 User not found.
  */
 router.get('/:id',
+  token({ required: true }),
   show)
 
 /**
@@ -130,7 +131,6 @@ router.post('/',
  * @apiError 409 Email already registered.
  */
 router.post('/new-onboard',
-  token({ required: true }),
   body({ onBoardingDetails }),
   onBoardNewUser)
 
@@ -236,9 +236,9 @@ router.put('/update/roles',
  * @apiError 401 Current user or admin access only.
  * @apiError 404 User not found.
  */
-router.put('/:id',
+router.put('/',
   token({ required: true }),
-  body({ name, roleId, picture }),
+  body({ userId, userDetails }),
   update)
 
 /**
