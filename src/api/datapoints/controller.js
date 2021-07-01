@@ -1,10 +1,15 @@
 import _ from 'lodash'
+import XLSX from 'xlsx'
 import * as fs from 'fs'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Datapoints } from '.'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
+import { ClientTaxonomy } from '../clientTaxonomy'
+import { Categories } from '../categories'
+import { KeyIssues } from '../key_issues'
+import { Functions } from '../functions'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Datapoints.create({ ...body, updatedBy: user })
@@ -154,6 +159,113 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     dpDetailsList.push({ dpDetails: dpDetails, datapointHistory: datapointHistory });
   }
   res.status(200).json({ count: dpDetailsList.length, rows: dpDetailsList });
+}
+
+export const uploadTaxonomyDatapoints = async (req, res, next) => {
+  if (req.body.clientTaxonomyId && req.file) {
+    try {
+      let allSheetsObject = [];
+      const filePath = req.file.path;
+      var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
+      var sheet_name_list = workbook.SheetNames;
+      sheet_name_list.forEach(function (currentSheetName) {
+        var worksheet = workbook.Sheets[currentSheetName];
+        try {
+          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+          allSheetsObject.push(sheetAsJson);
+        } catch (error) {
+          return res.status(400).json({ message: error.message })
+        }
+      });
+      let newDatapoints = [], headerNameList = [];
+      let allCategories = [], allKeyIssues = [], allFunctions = [];
+      allCategories = await Categories.find({ status: true });
+      allKeyIssues = await KeyIssues.find({ status: true });
+      allFunctions = await Functions.find({ status: true });
+      await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
+      .populate('fields.id')
+      .then((clientTaxonomies) => {
+        if (clientTaxonomies) {
+          for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
+            const fieldNameObject = clientTaxonomies.fields[nameIndex];
+            headerNameList.push({ 
+              "aliasName": fieldNameObject.name ? fieldNameObject.name : '', 
+              "masterName": fieldNameObject.id.name ? fieldNameObject.id.name : '', 
+              "headerId": fieldNameObject.id.id ? fieldNameObject.id.id : '', 
+              "fieldName": fieldNameObject.id.fieldName ? fieldNameObject.id.fieldName : '' 
+            });
+          }
+        }
+      });
+      if (headerNameList.length >= 22) {
+        if (allSheetsObject.length > 0) {
+          for (let objIndex = 0; objIndex < allSheetsObject.length; objIndex++) {
+            const rowObjects = allSheetsObject[objIndex];
+            if (rowObjects.length > 0) {
+              let newDpObjectToPush = {};
+              newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
+              newDpObjectToPush["createdAt"] = Date.now();
+              newDpObjectToPush["updatedAt"] = Date.now();
+              newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
+              for (let rindex = 0; rindex < rowObjects.length; rindex++) {
+                const rowObject = rowObjects[rindex];
+                for (let hIndex = 0; hIndex < headerNameList.length; hIndex++) {
+                  const headerObject = headerNameList[hIndex];
+                  if (headerObject.fieldName == "categoryId") {
+                    //find in allCategories
+                    let categoryObject = allCategories.find((rec) => rec.categoryName === rowObject[headerObject.aliasName])
+                    if (categoryObject && categoryObject.id) {
+                      newDpObjectToPush[headerObject.fieldName] = categoryObject.id;
+                    } else {
+                      return res.status(400).json({ status: "400", message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!` });
+                    }
+                  } else if (headerObject.fieldName == "functionId") {
+                    //find in allFunctions
+                    let functionObject = allFunctions.find((rec) => rec.functionType === rowObject[headerObject.aliasName])
+                    if (functionObject && functionObject.id) {
+                      newDpObjectToPush[headerObject.fieldName] = functionObject.id;
+                    } else {
+                      return res.status(400).json({ status: "400", message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!` });
+                    }
+                  } else if (headerObject.fieldName == "keyIssueId") {
+                    //find in allKeyIssues
+                    let keyIssueObject = allKeyIssues.find((rec) => rec.keyIssueName === rowObject[headerObject.aliasName])
+                    if (keyIssueObject && keyIssueObject.id) {
+                      newDpObjectToPush[headerObject.fieldName] = keyIssueObject.id;
+                    } else {
+                      return res.status(400).json({ status: "400", message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!` });
+                    }
+                  } else {
+                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.aliasName];
+                  }
+                }
+                newDatapoints.push(newDpObjectToPush);              
+              }
+              await Datapoints.insertMany(newDatapoints)
+                .then((err, result) => {
+                  if (err) {
+                    console.log('error', err);
+                  } else {
+                    //  console.log('result', result);
+                  }
+                });
+              return res.status(200).json({ status: "200", message: "Datapoint uploaded successfully!", data: newDatapoints });
+            } else {
+              return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" });
+            }
+          }
+        } else {
+          return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" }); 
+        }
+      } else {
+        return res.status(400).json({ status: "400", message: "Missing mandatory fields, please check!" }); 
+      }
+    } catch (error) {
+      return res.status(500).json({ status: "500", message: error.message });
+    }
+  } else {
+    return res.status(400).json({ status: "400", message: "Missing fields in payload" });
+  }
 }
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
