@@ -7,7 +7,7 @@ import { schema } from './model'
 export Taxonomies, { schema } from './model'
 
 const router = new Router()
-const { name, description, status } = schema.tree
+const { name, fieldName, description, isRequired, status } = schema.tree
 
 /**
  * @api {post} /taxonomies Create taxonomies
@@ -16,7 +16,9 @@ const { name, description, status } = schema.tree
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam name Taxonomies's name.
+ * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
+ * @apiParam isRequired Taxonomies's isRequired.
  * @apiSuccess {Object} taxonomies Taxonomies's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Taxonomies not found.
@@ -24,7 +26,7 @@ const { name, description, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ name, description }),
+  body({ name, fieldName, description, isRequired }),
   create)
 
 /**
@@ -66,7 +68,9 @@ router.get('/:id',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam name Taxonomies's name.
+ * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
+ * @apiParam isRequired Taxonomies's isRequired.
  * @apiParam status Taxonomies's status.
  * @apiSuccess {Object} taxonomies Taxonomies's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -75,7 +79,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, description, status }),
+  body({ name, fieldName, description, isRequired, status }),
   update)
 
 /**
