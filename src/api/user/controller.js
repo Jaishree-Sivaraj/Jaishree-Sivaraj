@@ -73,29 +73,29 @@ export const show = ({ params }, res, next) => {
         userDetails.bankIFSCCode = employee.bankIFSCCode;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Company Representative') {
-      CompanyRepresentatives.findOne({ userId: userDetails._id }).then(function (company) {
+      CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (company) {
         var companyDocuments = {
           authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl.toString('base64') : '',
           companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany.toString('base64') : ''
         }
         userDetails.documents = companyDocuments;
+        userDetails.companies = company.companiesList;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
-      ClientRepresentatives.findOne({ userId: userDetails._id }).then(function (client) {
-        console.log('client', client);
+      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('CompanyName').then(function (client) {
         var clientDocuments = {
           authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl.toString('base64') : '',
           companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient.toString('base64') : '',
         }
         userDetails.documents = clientDocuments;
+        userDetails.companyName = client.CompanyName ? client.CompanyName.companyName : null;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
@@ -134,10 +134,8 @@ export const create = ({ bodymen: { body } }, res, next) =>
     })
 
 export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, next) => {
-
   let bodyData = Buffer.from(body.onBoardingDetails, 'base64');
-  let bodyDetails = bodyData.toString('ascii');
-  let onBoardingDetails = JSON.parse(bodyDetails);
+  let onBoardingDetails = JSON.parse(bodyData);
   let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
   let userObject;
   if (onBoardingDetails.roleName == "Employee") {
@@ -165,9 +163,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
             bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
             accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
-            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
-            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
+            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl.split(",")[1], 'base64'),
+            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl.split(",")[1], 'base64'),
+            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl.split(",")[1], 'base64'),
             status: true
           }).then((resp) => {
             if (resp) {
@@ -213,8 +211,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
-            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
+            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl.split(",")[1], "base64"),
+            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient.split(",")[1], "base64"),
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
@@ -258,8 +256,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             companiesList: companiesList ? companiesList : "",
-            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
-            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
+            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl.split(",")[1], 'base64'),
+            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany.split(",")[1], 'base64'),
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
