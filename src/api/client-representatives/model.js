@@ -15,8 +15,8 @@ const clientRepresentativesSchema = new Schema({
     type: String
   },
   CompanyName: {
-    type: String,
-    required: true
+    type: Schema.ObjectId,
+    ref: 'Companies'
   },
   authenticationLetterForClientUrl: {
     type: Buffer
