@@ -413,8 +413,8 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       "isAssignedToGroup": rec.isAssignedToGroup,
       "createdAt": rec.createdAt,
       "status": rec.status,
-      "isUserRejected": rec.isUserRejected ? rec.isUserRejected : null,
-      "isUserActive": rec.isUserActive ? rec.isUserActive : null
+      "isUserRejected": rec.isUserRejected,
+      "isUserActive": rec.isUserActive
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
@@ -474,8 +474,13 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
+        console.log(userDetails)
+        if (userDetails) {
+
+        }
+        userDetails = userDetails.toObject();
         var link = '';
-        if ((userDetails.userType && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
+        if ((userDetails.hasOwnProperty('userType') && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
           link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType || userDetails.role}?id=${userDetails.id}`;
           console.log("employees", link)
         } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
