@@ -377,7 +377,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue;
-              if (item['Response'].toString().length > 0) {
+              if (String(item['Response']).length > 0) {
                 if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
                   if (item['Response'] == "0" || item['Response'] == 0) {
                     responseValue = item['Response'];
