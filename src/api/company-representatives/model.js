@@ -19,10 +19,10 @@ const companyRepresentativesSchema = new Schema({
     ref: 'Companies'
   }],
   authenticationLetterForCompanyUrl: {
-    type: Buffer
+    type: String
   },
   companyIdForCompany: {
-    type: Buffer
+    type: String
   },
   status: {
     type: Boolean,
@@ -45,8 +45,8 @@ companyRepresentativesSchema.methods = {
       userId: this.userId ? this.userId.view(full) : null,
       name: this.name,
       companiesList: this.companiesList ? this.companiesList : [],
-      authenticationLetterForCompanyUrl: this.authenticationLetterForCompanyUrl.toString('base64'),
-      companyIdForCompany: this.companyIdForCompany.toString('base64'),
+      authenticationLetterForCompanyUrl: this.authenticationLetterForCompanyUrl,
+      companyIdForCompany: this.companyIdForCompany,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

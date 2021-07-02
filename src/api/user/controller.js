@@ -59,9 +59,9 @@ export const show = ({ params }, res, next) => {
     if (userType === 'Employee') {
       Employees.findOne({ userId: userDetails._id }).then(function (employee) {
         var employeeDocuments = {
-          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl.toString('base64') : '',
-          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl.toString('base64') : '',
-          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl.toString('base64') : ''
+          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl : '',
+          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
+          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
         }
         userDetails.documents = employeeDocuments;
         userDetails.firstName = employee.firstName;
@@ -78,8 +78,8 @@ export const show = ({ params }, res, next) => {
     } else if (userType === 'Company Representative') {
       CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (company) {
         var companyDocuments = {
-          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl.toString('base64') : '',
-          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany.toString('base64') : ''
+          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
+          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany : ''
         }
         userDetails.documents = companyDocuments;
         userDetails.companies = company.companiesList;
@@ -91,8 +91,8 @@ export const show = ({ params }, res, next) => {
     } else if (userType === 'Client Representative') {
       ClientRepresentatives.findOne({ userId: userDetails._id }).populate('CompanyName').then(function (client) {
         var clientDocuments = {
-          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl.toString('base64') : '',
-          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient.toString('base64') : '',
+          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
+          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
         userDetails.companyName = client.CompanyName ? client.CompanyName.companyName : null;
@@ -163,9 +163,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
             bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
             accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl.split(",")[1], 'base64'),
-            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl.split(",")[1], 'base64'),
-            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl.split(",")[1], 'base64'),
+            pancardUrl: onBoardingDetails.pancardUrl,
+            aadhaarUrl: onBoardingDetails.aadhaarUrl,
+            cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
             status: true
           }).then((resp) => {
             if (resp) {
@@ -211,8 +211,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl.split(",")[1], "base64"),
-            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient.split(",")[1], "base64"),
+            authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+            companyIdForClient: onBoardingDetails.companyIdForClient,
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
@@ -256,8 +256,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             companiesList: companiesList ? companiesList : "",
-            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl.split(",")[1], 'base64'),
-            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany.split(",")[1], 'base64'),
+            authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+            companyIdForCompany: onBoardingDetails.companyIdForCompany,
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
