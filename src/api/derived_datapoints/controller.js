@@ -362,7 +362,7 @@ export const calculateForACompany = async ({ user, params }, res, next) => {
             }
           }
           for (let dataPointIndex = 0; dataPointIndex < dataPointsIdList.length; dataPointIndex++) {
-
+            
             let isDpExistInPolarityRule = polarityRulesList.findIndex((object, index) => object.datapointId.id == dataPointsIdList[dataPointIndex].id);
             if (isDpExistInPolarityRule <= -1) {
               let datapointDetail = dataPointsIdList[dataPointIndex];
@@ -386,7 +386,9 @@ export const calculateForACompany = async ({ user, params }, res, next) => {
                         } else if (datapointDetail.polarity == 'Negative') {
                           await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'No' } });
                         } else {
-                          await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                          if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                            await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: foundResponse.response } });
+                          }
                         }
                       } else if (foundResponse.response == "No" || foundResponse.response == "N" || foundResponse.response == "no" || foundResponse.response == "n") {
                         if (datapointDetail.polarity == 'Positive') {
@@ -394,7 +396,9 @@ export const calculateForACompany = async ({ user, params }, res, next) => {
                         } else if (datapointDetail.polarity == 'Negative') {
                           await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'Yes' } });
                         } else {
-                          await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                          if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                            await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: foundResponse.response } });
+                          }
                         }
                       } else if (datapointDetail.finalUnit === 'Number' || datapointDetail.finalUnit === 'Number (Tonne)' || datapointDetail.finalUnit === 'Number (tCO2e)' || datapointDetail.finalUnit.trim() === 'Currency' || datapointDetail.finalUnit === 'Days' || datapointDetail.finalUnit === 'Hours' || datapointDetail.finalUnit === 'Miles' || datapointDetail.finalUnit === 'Million Hours Worked' || datapointDetail.finalUnit === 'No/Low/Medium/High/Very High' || datapointDetail.finalUnit === 'Number (tCFCe)' || datapointDetail.finalUnit === 'Number (Cubic meter)' || datapointDetail.finalUnit === 'Number (KWh)' || datapointDetail.finalUnit === 'Percentage' && datapointDetail.signal == 'No') {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: foundResponse.response } });
@@ -425,7 +429,9 @@ export const calculateForACompany = async ({ user, params }, res, next) => {
                         } else if (datapointDetail.polarity == 'Negative') {
                           allDerivedDatapoints[foundResponseIndex].performanceResult = 'No';
                         } else {
-                          allDerivedDatapoints[foundResponseIndex].performanceResult = 'NA';
+                          if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                            allDerivedDatapoints[foundResponseIndex].performanceResult = foundResponse.response;
+                          }
                         }
                       } else if (foundResponse.response == "No" || foundResponse.response == "N" || foundResponse.response == "no" || foundResponse.response == "n") {
                         if (datapointDetail.polarity == 'Positive') {
@@ -433,7 +439,9 @@ export const calculateForACompany = async ({ user, params }, res, next) => {
                         } else if (datapointDetail.polarity == 'Negative') {
                           allDerivedDatapoints[foundResponseIndex].performanceResult = 'Yes';
                         } else {
-                          allDerivedDatapoints[foundResponseIndex].performanceResult = 'NA';
+                          if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                            allDerivedDatapoints[foundResponseIndex].performanceResult = foundResponse.response;
+                          }
                         }
                       } else if (datapointDetail.finalUnit === 'Number' || datapointDetail.finalUnit === 'Number (Tonne)' || datapointDetail.finalUnit === 'Number (tCO2e)' || datapointDetail.finalUnit.trim() === 'Currency' || datapointDetail.finalUnit === 'Days' || datapointDetail.finalUnit === 'Hours' || datapointDetail.finalUnit === 'Miles' || datapointDetail.finalUnit === 'Million Hours Worked' || datapointDetail.finalUnit === 'No/Low/Medium/High/Very High' || datapointDetail.finalUnit === 'Number (tCFCe)' || datapointDetail.finalUnit === 'Number (Cubic meter)' || datapointDetail.finalUnit === 'Number (KWh)' || datapointDetail.finalUnit === 'Percentage' && datapointDetail.signal == 'No') {
                         allDerivedDatapoints[foundResponseIndex].performanceResult = foundResponse.response;
