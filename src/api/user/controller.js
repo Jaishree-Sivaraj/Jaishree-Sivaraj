@@ -739,7 +739,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                   });
                 } else {
                   // existingEmails.push(isEmailExisting.email);
-                  return res.status(409).json({status: "409", message: "Duplicate of emails present please check!"})
+                  return res.status(409).json({status: "409", message: "Duplicate emails present in file please check!", DuplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil"})
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
@@ -817,7 +817,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         });
       } else {
         existingEmails.push(isEmailExisting.email);
-        return res.status(409).json({status: "409", message: "Duplicate of emails present please check!"})
+        return res.status(409).json({status: "409", message: "Duplicate emails present in file please check!", DuplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil"})
       }
     }
     return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
