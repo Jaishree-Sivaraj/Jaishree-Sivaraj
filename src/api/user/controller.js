@@ -59,9 +59,9 @@ export const show = ({ params }, res, next) => {
     if (userType === 'Employee') {
       Employees.findOne({ userId: userDetails._id }).then(function (employee) {
         var employeeDocuments = {
-          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl.toString('base64') : '',
-          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl.toString('base64') : '',
-          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl.toString('base64') : ''
+          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl : '',
+          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
+          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
         }
         userDetails.documents = employeeDocuments;
         userDetails.firstName = employee.firstName;
@@ -73,29 +73,29 @@ export const show = ({ params }, res, next) => {
         userDetails.bankIFSCCode = employee.bankIFSCCode;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Company Representative') {
-      CompanyRepresentatives.findOne({ userId: userDetails._id }).then(function (company) {
+      CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (company) {
         var companyDocuments = {
-          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl.toString('base64') : '',
-          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany.toString('base64') : ''
+          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
+          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany : ''
         }
         userDetails.documents = companyDocuments;
+        userDetails.companies = company.companiesList;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
-      ClientRepresentatives.findOne({ userId: userDetails._id }).then(function (client) {
-        console.log('client', client);
+      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('CompanyName').then(function (client) {
         var clientDocuments = {
-          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl.toString('base64') : '',
-          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient.toString('base64') : '',
+          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
+          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
+        userDetails.companyName = client.CompanyName ? client.CompanyName.companyName : null;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
@@ -134,10 +134,8 @@ export const create = ({ bodymen: { body } }, res, next) =>
     })
 
 export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, next) => {
-
   let bodyData = Buffer.from(body.onBoardingDetails, 'base64');
-  let bodyDetails = bodyData.toString('ascii');
-  let onBoardingDetails = JSON.parse(bodyDetails);
+  let onBoardingDetails = JSON.parse(bodyData);
   let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
   let userObject;
   if (onBoardingDetails.roleName == "Employee") {
@@ -165,9 +163,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
             bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
             accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-            pancardUrl: Buffer.from(onBoardingDetails.pancardUrl, 'base64'),
-            aadhaarUrl: Buffer.from(onBoardingDetails.aadhaarUrl, 'base64'),
-            cancelledChequeUrl: Buffer.from(onBoardingDetails.cancelledChequeUrl, 'base64'),
+            pancardUrl: onBoardingDetails.pancardUrl,
+            aadhaarUrl: onBoardingDetails.aadhaarUrl,
+            cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
             status: true
           }).then((resp) => {
             if (resp) {
@@ -213,8 +211,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-            authenticationLetterForClientUrl: Buffer.from(onBoardingDetails.authenticationLetterForClientUrl, 'base64'),
-            companyIdForClient: Buffer.from(onBoardingDetails.companyIdForClient, 'base64'),
+            authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+            companyIdForClient: onBoardingDetails.companyIdForClient,
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
@@ -258,8 +256,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             password: onBoardingDetails.password ? onBoardingDetails.password : '',
             phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
             companiesList: companiesList ? companiesList : "",
-            authenticationLetterForCompanyUrl: Buffer.from(onBoardingDetails.authenticationLetterForCompanyUrl, 'base64'),
-            companyIdForCompany: Buffer.from(onBoardingDetails.companyIdForCompany, 'base64'),
+            authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+            companyIdForCompany: onBoardingDetails.companyIdForCompany,
             status: true
           });
           return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
@@ -690,9 +688,13 @@ export const uploadEmailsFile = async (req, res, next) => {
         let existingUserEmailsList = await User.find({ "status": true });
         let rolesList = await Role.find({ "status": true });
         if (sheetAsJson.length > 0) {
-          let existingEmails = [], hasInvalidData = false;
+          let existingEmails = [], hasInvalidData = false, isEmailExisting = [];
           for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
             const rowObject = sheetAsJson[index1];
+            let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+            if (checkEmail) {
+                isEmailExisting.push(checkEmail);
+            }
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
               return res.status(400).json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
@@ -704,26 +706,22 @@ export const uploadEmailsFile = async (req, res, next) => {
           if (!hasInvalidData) {
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-              let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
               let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
               let link;
-              if (rolesDetails) {
-                if (rowObject['link'] == ' ' || !rowObject['link']) {
-                  if (rolesDetails.roleName == "Employee") {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  } else if (rolesDetails.roleName == "Company Representative") {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  } else {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  }
-                  rowObject["link"] = link;
+              if (rolesDetails) {                          
+                if (rolesDetails.roleName == "Employee") {
+                  link = `/onboard/new-user?role=Employee&email=${rowObject['email']}`
+                } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+                  link = `/onboard/new-user?role=CompanyRepresentative&email=${rowObject['email']}`
+                } else {
+                  link = `/onboard/new-user?role=ClientRepresentative&email=${rowObject['email']}`
                 }
                 //nodemail code will come here to send OTP  
-                if (!isEmailExisting) {
+                if (isEmailExisting.length <= 0) {
                   const content = `
                     Hai,<br/>
                     Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                    URL: ${rowObject['link']}?email=${rowObject['email']}<br/><br/>
+                    URL: http://localhost:3000${link}<br/><br/>
                     &mdash; ESG Team `;
                   var transporter = nodemailer.createTransport({
                     service: 'Gmail',
@@ -740,7 +738,8 @@ export const uploadEmailsFile = async (req, res, next) => {
                     html: content
                   });
                 } else {
-                  existingEmails.push(isEmailExisting.email);
+                  // existingEmails.push(isEmailExisting.email);
+                  return res.status(409).json({status: "409", message: "Duplicate of emails present please check!"})
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
@@ -772,20 +771,35 @@ export const uploadEmailsFile = async (req, res, next) => {
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
   console.log(body.emailList);
   const emailList = body.emailList;
-  let existingUserEmailsList = await User.find({ "status": true });
+ // let existingUserEmailsList = await User.find({ "status": true });
   let rolesList = await Role.find({ "status": true });
   if (emailList.length > 0) {
-    let existingEmails = [];
+    let existingEmails = [], existingUserEmailsList, isEmailExisting = [];
+     existingUserEmailsList = await User.find({ "status": true });
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-      let roleDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
+      isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+
+    }
+
+    for (let index = 0; index < emailList.length; index++) {
+      const rowObject = emailList[index];
+     // let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
+      let link;
+        if (rolesDetails.roleName == "Employee") {
+          link = `/onboard/new-user?role=Employee`
+        } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+          link = `/onboard/new-user?role=CompanyRepresentative`
+        } else {
+          link = `/onboard/new-user?role=ClientRepresentative`
+        }
       if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
-          Please use the following link to submit your ${roleDetails.roleName} onboarding details:<br/>
-          URL: http://localhost:3000${rowObject['link']}&email=${rowObject['email']}<br/><br/>
+          Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+          URL: http://localhost:3000${link}&email=${rowObject['email']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
@@ -803,6 +817,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         });
       } else {
         existingEmails.push(isEmailExisting.email);
+        return res.status(409).json({status: "409", message: "Duplicate of emails present please check!"})
       }
     }
     return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });

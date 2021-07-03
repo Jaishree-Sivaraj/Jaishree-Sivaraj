@@ -36,13 +36,13 @@ const employeesSchema = new Schema({
     type: String
   },
   pancardUrl: {
-    type: Buffer,
+    type: String,
   },
   aadhaarUrl: {
-    type: Buffer,
+    type: String,
   },
   cancelledChequeUrl: {
-    type: Buffer,
+    type: String,
   },
   status: {
     type: Boolean,
@@ -71,9 +71,9 @@ employeesSchema.methods = {
       bankAccountNumber: this.bankAccountNumber,
       bankIFSCCode: this.bankIFSCCode,
       accountHolderName: this.accountHolderName,
-      pancardUrl: this.pancardUrl.toString('base64'),
-      aadhaarUrl: this.aadhaarUrl.toString('base64'),
-      cancelledChequeUrl: this.cancelledChequeUrl.toString('base64'),
+      pancardUrl: this.pancardUrl,
+      aadhaarUrl: this.aadhaarUrl,
+      cancelledChequeUrl: this.cancelledChequeUrl,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
