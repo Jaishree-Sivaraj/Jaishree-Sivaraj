@@ -316,7 +316,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
             let categoriesToBeCheck = _.filter(allStandaloneDetails, function (object) {
-              if (object.CIN == companiesToBeAdded[cinIndex].CIN) {
+              if (object.CIN.replace('\r\n', '') == companiesToBeAdded[cinIndex].CIN.replace('\r\n', '')) {
                 return object;
               }
             });
