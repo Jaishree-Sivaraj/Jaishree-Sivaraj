@@ -267,6 +267,30 @@ export const uploadTaxonomyDatapoints = async (req, res, next) => {
     return res.status(400).json({ status: "400", message: "Missing fields in payload" });
   }
 }
+async function storeDatapointsFile(onboardingBase64Image, folderName) {
+  console.log('in function storeDatapointsFile')
+  return new Promise(function (resolve, reject) {
+    let base64File = onboardingBase64Image.split(';base64,').pop();
+    fileType.fromBuffer((Buffer.from(base64File, 'base64'))).then(function (res) {
+      let fileName = 'datapoint' + '_' + Date.now() + '.' + res.ext;
+      console.log('__dirname', __dirname);
+      var filePath = path.join(__dirname, 'uploads/') + fileName;
+      console.log('filePath', filePath);
+      fs.writeFile(filePath, base64File, { encoding: 'base64' }, function (err) {
+        if (err) {
+          console.log('error while storing file', err);
+          reject(err);
+        } else {
+          console.log('File created');
+          resolve(fileName);
+        }
+      });
+    }).catch(function (err) {
+      console.log('err', err);
+      reject(err);
+    })
+  })
+}
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Datapoints.findById(params.id)

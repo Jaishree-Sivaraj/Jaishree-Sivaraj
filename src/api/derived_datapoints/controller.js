@@ -705,8 +705,8 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
       let numeratorValues = [];
       let denominatorValue = '';
       for (let k = 0; k < distinctYears.length; k++) {
+        const year = distinctYears[k];
         _.filter(mergedDetails, (object, index) => {
-          const year = distinctYears[k];
           if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
             numeratorValues.push(object)
           } else if (object.datapointId.id == denominatorDpId && object.companyId.id == companyId && object.year == year) {
@@ -1327,21 +1327,16 @@ async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapo
       let activeMembers = []
       _.filter(mergedDetails, (object, index) => {
         if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
-          activeMembers.push(object)
+          activeMembers.push(object.response ? object.response.toString() : '0')
         }
       });
       if (activeMembers.length > 0) {
         sumValue = activeMembers.reduce(function (prev, next) {
           if (prev && next) {
-            if (prev.response && next.response) {
-              let prevResponse = prev.response.toString().replace(/,/g, '').trim();
-              let nextResponse = next.response.toString().replace(/,/g, '').trim();
-              return {
-                response: Number(prevResponse) + Number(nextResponse)
-              };
-            } else {
-              sumValue = 0;
-            }
+            let prevResponse = prev.replace(/,/g, '').trim();
+            let nextResponse = next.replace(/,/g, '').trim();
+            let sum = Number(prevResponse) + Number(nextResponse);
+            return sum.toString();
           } else {
             sumValue = 0;
           }
@@ -1500,6 +1495,18 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
+          } else {
+            let derivedDatapointsObject = {
+              companyId: companyId,
+              datapointId: ruleDatapointId,
+              year: year,
+              response: 'NA',
+              memberName: '',
+              memberStatus: true,
+              status: true,
+              createdBy: userDetail
+            }
+            allDerivedDatapoints.push(derivedDatapointsObject);
           }
         } else {
 
@@ -1583,6 +1590,18 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
             datapointId: ruleDatapointId,
             year: year,
             response: finalResponse ? finalResponse.toString() : finalResponse,
+            memberName: '',
+            memberStatus: true,
+            status: true,
+            createdBy: userDetail
+          }
+          allDerivedDatapoints.push(derivedDatapointsObject);
+        } else {
+          let derivedDatapointsObject = {
+            companyId: companyId,
+            datapointId: ruleDatapointId,
+            year: year,
+            response: 'NA',
             memberName: '',
             memberStatus: true,
             status: true,
