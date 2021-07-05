@@ -695,7 +695,7 @@ export const uploadEmailsFile = async (req, res, next) => {
             const rowObject = sheetAsJson[index1];
             let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email);
             if (checkEmail) {
-              isEmailExisting.push(checkEmail);
+              isEmailExisting.push(rowObject['email']);
             }
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
