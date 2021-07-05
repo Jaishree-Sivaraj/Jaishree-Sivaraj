@@ -781,7 +781,9 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
       isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-
+      if (isEmailExisting) {
+        existingEmails.push(isEmailExisting.email);
+      }
     }
 
     for (let index = 0; index < emailList.length; index++) {
@@ -817,8 +819,6 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
           subject: 'ESG - Onboarding',
           html: content
         });
-      } else {
-        existingEmails.push(isEmailExisting.email);
       }
     }
     if (existingEmails.length > 0) {
