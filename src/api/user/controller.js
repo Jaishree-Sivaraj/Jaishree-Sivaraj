@@ -82,7 +82,9 @@ export const show = ({ params }, res, next) => {
           companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany : ''
         }
         userDetails.documents = companyDocuments;
-        userDetails.companies = company.companiesList;
+        userDetails.companies = company.companiesList.map((rec) => {
+          return { lable: 'companyName', value: rec.companyName }
+        });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
@@ -95,7 +97,7 @@ export const show = ({ params }, res, next) => {
           companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
-        userDetails.companyName = client.CompanyName ? client.CompanyName.companyName : null;
+        userDetails.companyName = client.CompanyName ? { label: 'companyName', value: client.CompanyName.companyName } : null;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         console.log('err', err);
