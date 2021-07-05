@@ -695,7 +695,7 @@ export const uploadEmailsFile = async (req, res, next) => {
             const rowObject = sheetAsJson[index1];
             let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email);
             if (checkEmail) {
-                isEmailExisting.push(checkEmail);
+              isEmailExisting.push(checkEmail);
             }
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
@@ -710,7 +710,7 @@ export const uploadEmailsFile = async (req, res, next) => {
               const rowObject = sheetAsJson[index];
               let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
               let link;
-              if (rolesDetails) {                          
+              if (rolesDetails) {                 
                 if (rolesDetails.roleName == "Employee") {
                   link = `/onboard/new-user?role=Employee&email=${rowObject['email']}`
                 } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
@@ -740,8 +740,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                     html: content
                   });
                 } else {
-                  // existingEmails.push(isEmailExisting.email);
-                  return res.status(409).json({status: "409", message: "Duplicate emails present in file please check!", DuplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil"})
+                  return res.status(409).json({status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: isEmailExisting.length > 0 ? isEmailExisting : "Nil"})
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
