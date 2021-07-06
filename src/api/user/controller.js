@@ -845,6 +845,10 @@ export const uploadEmailsFile = async (req, res, next) => {
           let existingEmails = [], hasInvalidData = false;
           for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
             const rowObject = sheetAsJson[index1];
+            let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+            if (checkEmail) {
+              isEmailExisting.push(rowObject['email']);
+            }
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
               return res.status(400).json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
@@ -860,15 +864,12 @@ export const uploadEmailsFile = async (req, res, next) => {
               let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
               let link;
               if (rolesDetails) {
-                if (rowObject['link'] == ' ' || !rowObject['link']) {
-                  if (rolesDetails.roleName == "Employee") {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  } else if (rolesDetails.roleName == "Company Representative") {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  } else {
-                    link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${rolesDetails.roleName}`
-                  }
-                  rowObject["link"] = link;
+                if (rolesDetails.roleName == "Employee") {
+                  link = `/onboard/new-user?role=Employee&email=${rowObject['email']}`
+                } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+                  link = `/onboard/new-user?role=CompanyRepresentative&email=${rowObject['email']}`
+                } else {
+                  link = `/onboard/new-user?role=ClientRepresentative&email=${rowObject['email']}`
                 }
                 //nodemail code will come here to send OTP  
                 if (!isEmailExisting) {
@@ -892,7 +893,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                     html: content
                   });
                 } else {
-                  existingEmails.push(isEmailExisting.email);
+                  return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: isEmailExisting.length > 0 ? isEmailExisting : "Nil" })
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
@@ -930,8 +931,24 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-      let roleDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
+      isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      if (isEmailExisting) {
+        existingEmails.push(isEmailExisting.email);
+      }
+    }
+
+    for (let index = 0; index < emailList.length; index++) {
+      const rowObject = emailList[index];
+      // let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
+      let link;
+      if (rolesDetails.roleName == "Employee") {
+        link = `/onboard/new-user?role=Employee`
+      } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+        link = `/onboard/new-user?role=CompanyRepresentative`
+      } else {
+        link = `/onboard/new-user?role=ClientRepresentative`
+      }
       if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
@@ -953,11 +970,13 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
           subject: 'ESG - Onboarding',
           html: content
         });
-      } else {
-        existingEmails.push(isEmailExisting.email);
       }
     }
-    return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+    if (existingEmails.length > 0) {
+      return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" });
+    } else {
+      return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+    }
   } else {
     return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
   }
