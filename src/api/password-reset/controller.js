@@ -16,7 +16,7 @@ export const create = ({ bodymen: { body: { email, link } } }, res, next) =>
         Hey, ${user.name}.<br><br>
         You requested a new password for your esgapi account.<br>
         Please use the following link to set a new password. It will expire in 1 hour.<br><br>
-        <a href="${link}">${link}</a><br><br>
+        <a href="${link}">click here</a><br><br>
         If you didn't make this request then you can safely ignore this email. :)<br><br>
         &mdash; esgapi Team
       `
@@ -28,13 +28,13 @@ export const create = ({ bodymen: { body: { email, link } } }, res, next) =>
         }
       });
       
-      return transporter.sendMail({
+      transporter.sendMail({
         from: 'testmailer09876@gmail.com',
         to: email,
         subject: 'esgapi - Password Reset',
-        text: content.toString()
+        html: content.toString()
       });
-      // return sendMail({ toEmail: email, subject: 'esgapi - Password Reset', content })
+      return res.send({ status: "200", message: "Email sent successfully!" })
     })
     .then((response) => {
       console.log('response', response);
