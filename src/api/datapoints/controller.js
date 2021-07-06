@@ -109,6 +109,7 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
 }
 
 export const getCategorywiseDatapoints = async (req, res, next) => {
+  console.log(req.params.taskId, req.params.year)
   let categoryDatapoints = await Datapoints.find({ clientTaxonomyId: req.params.clientTaxonomyId, categoryId: req.params.categoryId, status: true }).sort({ collectionOrderNumber: 1 }).populate('clientTaxonomyId');
   let dpDetailsList = [];
   let allStandaloneDetails = [];

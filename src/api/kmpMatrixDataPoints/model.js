@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const kmpMatrixDataPointsSchema = new Schema({
   createdBy: {
@@ -85,6 +87,32 @@ const kmpMatrixDataPointsSchema = new Schema({
   additionalComments: {
     type: String
   },
+  collectionStatus: {
+    type: String,
+    default: 'Yet to start'
+  },
+  verificationStatus: {
+    type: String,
+    default: 'Yet to start'
+  },
+  errorAcceptStatus: {
+    type: String,
+    default: ''
+  },
+  errorRejectComment: {
+    type: String,
+    default: ''
+  },
+  hasError: {
+    type: Boolean,
+    default: false
+  },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false,
+    default: null
+  },
   status: {
     type: Boolean,
     default: true
@@ -93,7 +121,9 @@ const kmpMatrixDataPointsSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
@@ -106,6 +136,7 @@ kmpMatrixDataPointsSchema.methods = {
       companyId: this.companyId ? this.companyId.view(full) : null,
       memberName: this.memberName,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
+      taskId: this.taskId ? this.taskId.view(full) : null,
       response: this.response,
       year: this.year,
       fiscalYearEndDate: this.fiscalYearEndDate,
@@ -125,6 +156,11 @@ kmpMatrixDataPointsSchema.methods = {
       errorType: this.errorType,
       errorComments: this.errorComments,
       analystComments: this.analystComments,
+      collectionStatus: this.collectionStatus,
+      errorAcceptStatus: this.errorAcceptStatus,
+      verificationStatus: this.verificationStatus,
+      errorRejectComment: this.errorRejectComment,
+      hasError: this.hasError,
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,
       status: this.status,

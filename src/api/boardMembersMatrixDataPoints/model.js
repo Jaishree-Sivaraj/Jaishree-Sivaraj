@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const boardMembersMatrixDataPointsSchema = new Schema({
   createdBy: {
@@ -85,6 +87,32 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   additionalComments: {
     type: String
   },
+  collectionStatus: {
+    type: String,
+    default: 'Yet to start'
+  },
+  verificationStatus: {
+    type: String,
+    default: 'Yet to start'
+  },
+  errorAcceptStatus: {
+    type: String,
+    default: ''
+  },
+  errorRejectComment: {
+    type: String,
+    default: ''
+  },
+  hasError: {
+    type: Boolean,
+    default: false
+  },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false,
+    default: null
+  },
   status: {
     type: Boolean,
     default: true
@@ -93,7 +121,9 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
@@ -105,6 +135,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
       companyId: this.companyId.view(full) ? this.companyId.view(full) : null,
+      taskId: this.taskId ? this.taskId.view(full) : null,
       memberName: this.memberName,
       year: this.year,
       response: this.response,
@@ -126,6 +157,11 @@ boardMembersMatrixDataPointsSchema.methods = {
       analystComments: this.analystComments,
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,
+      collectionStatus: this.collectionStatus,
+      errorAcceptStatus: this.errorAcceptStatus,
+      verificationStatus: this.verificationStatus,
+      errorRejectComment: this.errorRejectComment,
+      hasError: this.hasError,
       memberStatus: this.memberStatus,
       status: this.status,
       createdAt: this.createdAt,

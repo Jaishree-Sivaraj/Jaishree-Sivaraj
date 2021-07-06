@@ -242,6 +242,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     if (!data[row] && value) data[row] = {};
                     if (col != 'A') {
                       if (headers['A']) {
+                        console.log(data[row][headers['A']]);
                         if (data[row][headers['A']]) {
                           //take all column names in an array
                           let currentColumnIndex = allColumnNames.indexOf(col);
@@ -415,7 +416,12 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 internalFileSource: item['Internal file source'],
                 errorComments: item['Error Comments'],
                 analystComments: item['Analyst Comments'],
-                additionalComments: item['Additional comments'],
+                additionalComments: item['Additional comments'],                
+                collectionStatus: 'Completed',
+                errorAcceptStatus: '',
+                verificationStatus: '',
+                errorRejectComment: '',
+                hasError: false,
                 performanceResult: '',
                 standaloneStatus: '',
                 taskId: null,
@@ -499,7 +505,13 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   internalFileSource: item['Internal file source'],
                   errorComments: item['Error Comments'],
                   analystComments: item['Analyst Comments'],
-                  additionalComments: item['Additional comments'],
+                  additionalComments: item['Additional comments'],             
+                  collectionStatus: 'Completed',
+                  errorAcceptStatus: '',
+                  verificationStatus: '',
+                  errorRejectComment: '',
+                  hasError: false,
+                  taskId: null,
                   memberStatus: true,
                   status: true,
                   createdBy: userDetail
@@ -600,7 +612,13 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   internalFileSource: item['Internal file source'],
                   errorComments: item['Error Comments'],
                   analystComments: item['Analyst Comments'],
-                  additionalComments: item['Additional comments'],
+                  additionalComments: item['Additional comments'],                   
+                  collectionStatus: 'Completed',
+                  errorAcceptStatus: '',
+                  verificationStatus: '',
+                  errorRejectComment: '',
+                  hasError: false,
+                  taskId: null,
                   status: true,
                   createdBy: userDetail
                 };
@@ -689,7 +707,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            if (missingDPList.length == 0) {
+            if (missingDPList.length != 0) {
               const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
                 "companyId": { $in: insertedCompanyIds },
                 "year": { $in: distinctYears }
@@ -765,7 +783,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
     });
   }
 }
-
+export const dataCollection = async ({ user, bodymen: { body }, params }, res, next) =>{
+  console.log( body.taskId, body.year , body.companyId, body.pillarId);
+}
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   StandaloneDatapoints.count(query)
     .then(count => StandaloneDatapoints.find(query, select, cursor)
@@ -806,9 +826,13 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next)
 
 export const destroy = ({ user, params }, res, next) =>
+
   StandaloneDatapoints.findById(params.id)
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+
+
