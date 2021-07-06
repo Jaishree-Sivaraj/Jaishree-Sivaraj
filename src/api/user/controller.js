@@ -87,7 +87,6 @@ export const show = ({ params }, res, next) => {
         });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
@@ -100,14 +99,12 @@ export const show = ({ params }, res, next) => {
         userDetails.companyName = client.CompanyName ? { label: client.CompanyName.companyName, value: 'companyName' } : null;
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        console.log('err', err);
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else {
       return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
     }
   }).catch(err => {
-    console.log('err', err);
     return res.status(500).json({ message: "Failed to get user" })
   })
 }
@@ -140,26 +137,22 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   let onBoardingDetails = JSON.parse(bodyData);
   let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
   let userObject;
-  console.log('email', onBoardingDetails.email);
   if (onBoardingDetails.email) {
-    User.findOne({ email: onBoardingDetails.email }).then((userFound) => {
-      console.log('user', userFound);
+    await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
       if (userFound) {
         if (userFound.isUserRejected && !userFound.isUserApproved) {
           if (onBoardingDetails.roleName == "Employee") {
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
             userObject = {
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
               name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
               isUserApproved: false,
               status: true,
               isUserRejected: false
             };
-            User.updateOne({ id: userFound.id }, { $set: { userObject } }).then(() => {
-              Employees.updateOne({ userId: userFound.id }, {
+            await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async () => {
+              await Employees.updateOne({ userId: userFound.id }, {
                 $set: {
                   userId: userFound.id,
                   firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
@@ -193,23 +186,17 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           } else if (onBoardingDetails.roleName == "Client Representative") {
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
             userObject = {
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
               name: onBoardingDetails.name ? onBoardingDetails.name : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
               isUserApproved: false,
               status: true,
               isUserRejected: false
             }
-            User.updateOne({ id: userFound.id }, { $set: userObject }).then(async (response) => {
-              ClientRepresentatives.updateOne({ userId: userFound.id }, {
+            await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async (response) => {
+              await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                 $set: {
                   userId: userFound.id,
-                  name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                  email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                  password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                  phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                   CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
                   authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
                   companyIdForClient: onBoardingDetails.companyIdForClient,
@@ -228,35 +215,30 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   message: 'email already registered'
                 })
               } else {
-                console.log('error', err)
                 next(err)
               }
             })
           } else if (onBoardingDetails.roleName == "Company Representative") {
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
             userObject = {
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
               name: onBoardingDetails.name ? onBoardingDetails.name : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
               isUserApproved: false,
               status: true,
               isUserRejected: false
             }
             var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-            User.updateOne({ id: userFound.id }, { $set: { userObject } })
+            await User.updateOne({ _id: userFound.id }, { $set: userObject })
               .then(async () => {
-                CompanyRepresentatives.create({
-                  userId: userFound.id,
-                  name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                  email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                  password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                  phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                  companiesList: companiesList ? companiesList : "",
-                  authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
-                  companyIdForCompany: onBoardingDetails.companyIdForCompany,
-                  status: true
+                await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
+                  $set: {
+                    userId: userFound.id,
+                    companiesList: companiesList ? companiesList : "",
+                    authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+                    companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                    status: true
+                  }
                 }).then(async () => {
                   var userDetails = await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
                   return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
@@ -380,7 +362,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   message: 'email already registered'
                 })
               } else {
-                console.log('error', err)
                 next(err)
               }
             })
@@ -441,25 +422,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
 }
 
 async function storeOnBoardingImagesInLocalStorage(onboardingBase64Image, folderName) {
-  console.log('in function storeOnBoardingImagesInLocalStorage')
   return new Promise(function (resolve, reject) {
     let base64Image = onboardingBase64Image.split(';base64,').pop();
     fileType.fromBuffer((Buffer.from(base64Image, 'base64'))).then(function (res) {
       let fileName = folderName + '_' + Date.now() + '.' + res.ext;
-      console.log('__dirname', __dirname);
       var filePath = path.join(__dirname, '../../../uploads/') + folderName + '/' + fileName;
-      console.log('filePath', filePath);
       fs.writeFile(filePath, base64Image, { encoding: 'base64' }, function (err) {
         if (err) {
-          console.log('error while storing file', err);
           reject(err);
         } else {
-          console.log('File created');
           resolve(fileName);
         }
       });
     }).catch(function (err) {
-      console.log('err', err);
       reject(err);
     })
   })
@@ -486,7 +461,6 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
 }
 
 export const assignRole = ({ bodymen: { body }, user }, res, next) => {
-  console.log('assign', body)
   var roles = body.roleDetails.role.map((rec) => rec.value);
   var primaryRole = body.roleDetails.primaryRole.value;
   var roleDetails = {
@@ -543,7 +517,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
   }
   var userDetailsInRoles = await User.find(filterQuery).
     populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+    populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
     return {
       "userDetails": {
@@ -579,7 +553,6 @@ export const getAllUsersToAssignRoles = (req, res, next) => {
     path: 'roleDetails.primaryRole'
   }).then((userById) => {
     var resArray = userById.map((rec) => {
-      console.log(JSON.stringify(rec));
       return {
         "userDetails": {
           "value": rec._id,
@@ -626,20 +599,9 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
-        console.log(userDetails)
-        if (userDetails) {
-
-        }
+        var link = 'https://unruffled-bhaskara-834a98.netlify.app/onboard/new-user?';
+        link = link + `role=${userDetails.userType || userDetails.role}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
-        var link = '';
-        if ((userDetails.hasOwnProperty('userType') && userDetails.userType === 'Employee') || (userDetails.role && userDetails.role === "Employee")) {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.userType || userDetails.role}?id=${userDetails.id}`;
-          console.log("employees", link)
-        } else if ((userDetails.userType && userDetails.userType === "Client Representative") || (userDetails.role && userDetails.role === "Client Representative")) {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
-        } else if ((userDetails.userType && userDetails.userType == "Company Representative") || (userDetails.role && userDetails.role == "Company Representative")) {
-          link = `https://unruffled-bhaskara-834a98.netlify.app/onboard/${userDetails.role || userDetails.userType}?id=${userDetails.id}`;
-        }
         const content = `
                   Hai,<br/>
                   Please use the following link to submit your ${userDetails.userType} onboarding details:<br/>
@@ -923,7 +885,6 @@ export const uploadEmailsFile = async (req, res, next) => {
 }
 
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
-  console.log(body.emailList);
   const emailList = body.emailList;
   let existingUserEmailsList = await User.find({ "status": true });
   let rolesList = await Role.find({ "status": true });
