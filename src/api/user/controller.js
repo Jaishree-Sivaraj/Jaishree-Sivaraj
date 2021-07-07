@@ -892,7 +892,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
       if (isEmailExisting) {
         existingEmails.push(isEmailExisting.email);
       }
@@ -900,7 +900,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
 
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      // let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
       let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
       let link;
       if (rolesDetails.roleName == "Employee") {
