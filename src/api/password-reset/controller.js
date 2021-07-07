@@ -41,7 +41,7 @@ export const create = async({ bodymen: { body: { email, link } } }, res, next) =
           return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to send password reset mail!' })
         })
       } else {
-        return res.json({ status: "400", message: "Email not registered with ESG!" })
+        return res.status(400).json({ status: "400", message: "Email not registered with ESG!" })
       }
     })
 }
