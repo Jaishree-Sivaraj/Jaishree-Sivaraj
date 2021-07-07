@@ -16,7 +16,7 @@ import { compareSync } from 'bcrypt'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
-    .then(count => User.find(query, select, cursor)
+    .then(count => User.find(query).sort({ createdAt: -1 })
       .populate('roleId').populate({
         path: 'roleDetails.roles'
       }).populate({
