@@ -4,21 +4,39 @@ import { TaskAssignment } from '.'
 export const create = async({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
   .then(async(taskObject) => {
-    let newTaskNumber='';
-    if (taskObject.taskNumber) {
-      let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
-      newTaskNumber = Number(lastTaskNumber)+1;
+    console.log('taskObject', taskObject);
+    let newTaskNumber = '';
+    if (taskObject) {
+      if (taskObject.taskNumber) {
+        let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
+        newTaskNumber = Number(lastTaskNumber)+1;
+      } else {
+        newTaskNumber = '1';
+      }
+      body.taskNumber = 'DT' + newTaskNumber;
+      await TaskAssignment.create({ ...body, createdBy: user })
+        .then((taskAssignment) => { 
+          return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
+        })
+        .catch((error) => {
+          return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
+        })      
     } else {
-      newTaskNumber = '1';
+      if (taskObject.taskNumber) {
+        let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
+        newTaskNumber = Number(lastTaskNumber)+1;
+      } else {
+        newTaskNumber = '1';
+      }
+      body.taskNumber = 'DT' + newTaskNumber;
+      await TaskAssignment.create({ ...body, createdBy: user })
+        .then((taskAssignment) => { 
+          return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
+        })
+        .catch((error) => {
+          return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
+        })
     }
-    body.taskNumber = 'DT'+newTaskNumber;
-    await TaskAssignment.create({ ...body, createdBy: user })
-      .then((taskAssignment) => { 
-        return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
-      })
-      .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
-      })
   })
   .catch((error) => {
     return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" })
