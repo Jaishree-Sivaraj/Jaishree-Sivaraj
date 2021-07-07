@@ -5,7 +5,7 @@ let user, taskAssignment
 
 beforeEach(async () => {
   user = await User.create({ email: 'a@a.com', password: '123456' })
-  taskAssignment = await TaskAssignment.create({ createdBy: user, companyId: 'test', categoryId: 'test', groupId: 'test', revisionCode: 'test', assignedTo: 'test', year: 'test', analystSLA: 'test', taskStatus: 'test', analystId: 'test', qaId: 'test', status: 'test' })
+  taskAssignment = await TaskAssignment.create({ createdBy: user, companyId: 'test', categoryId: 'test', batchId: 'test', year: 'test', analystSLA: 'test', qaSLA: 'test', taskStatus: 'test', analystId: 'test', qaId: 'test', status: 'test' })
 })
 
 describe('view', () => {
@@ -17,11 +17,10 @@ describe('view', () => {
     expect(view.createdBy.id).toBe(user.id)
     expect(view.companyId).toBe(taskAssignment.companyId)
     expect(view.categoryId).toBe(taskAssignment.categoryId)
-    expect(view.groupId).toBe(taskAssignment.groupId)
-    expect(view.revisionCode).toBe(taskAssignment.revisionCode)
-    expect(view.assignedTo).toBe(taskAssignment.assignedTo)
+    expect(view.batchId).toBe(taskAssignment.batchId)
     expect(view.year).toBe(taskAssignment.year)
     expect(view.analystSLA).toBe(taskAssignment.analystSLA)
+    expect(view.qaSLA).toBe(taskAssignment.qaSLA)
     expect(view.taskStatus).toBe(taskAssignment.taskStatus)
     expect(view.analystId).toBe(taskAssignment.analystId)
     expect(view.qaId).toBe(taskAssignment.qaId)
@@ -38,11 +37,10 @@ describe('view', () => {
     expect(view.createdBy.id).toBe(user.id)
     expect(view.companyId).toBe(taskAssignment.companyId)
     expect(view.categoryId).toBe(taskAssignment.categoryId)
-    expect(view.groupId).toBe(taskAssignment.groupId)
-    expect(view.revisionCode).toBe(taskAssignment.revisionCode)
-    expect(view.assignedTo).toBe(taskAssignment.assignedTo)
+    expect(view.batchId).toBe(taskAssignment.batchId)
     expect(view.year).toBe(taskAssignment.year)
     expect(view.analystSLA).toBe(taskAssignment.analystSLA)
+    expect(view.qaSLA).toBe(taskAssignment.qaSLA)
     expect(view.taskStatus).toBe(taskAssignment.taskStatus)
     expect(view.analystId).toBe(taskAssignment.analystId)
     expect(view.qaId).toBe(taskAssignment.qaId)

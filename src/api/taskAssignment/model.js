@@ -6,6 +6,10 @@ const taskAssignmentSchema = new Schema({
     ref: 'User',
     required: true
   },
+  taskNumber: {
+    type: String,
+    default: 'DT1'
+  },
   companyId: {
    type: Schema.ObjectId,
     ref: 'Companies',
@@ -16,25 +20,23 @@ const taskAssignmentSchema = new Schema({
     ref: 'Categories',
     required: true
   },
-  groupId: {
+  batchId: {
    type: Schema.ObjectId,
-    ref: 'Group',
+    ref: 'Batches',
     required: true
-  },
-  revisionCode: {
-    type: String
-  },
-  assignedTo: {
-    type: String
   },
   year: {
     type: String
   },
-  analystSLA: {
-    type: String
+  analystSLADate: {
+    type: Date
+  },
+  qaSLADate: {
+    type: Date
   },
   taskStatus: {
-    type: String
+    type: String,
+    default: "Yet to work"
   },
   analystId: {
    type: Schema.ObjectId,
@@ -63,18 +65,17 @@ taskAssignmentSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      taskNumber: this.taskNumber ? this.taskNumber : null,
       companyId: this.companyId ?  this.companyId.view(full) : null,
       categoryId: this.categoryId ? this.categoryId.view(full) : null,
-      groupId: this.groupId ? this.groupId(view) : null,
-      revisionCode: this.revisionCode,
-      assignedTo: this.assignedTo,
+      batchId: this.batchId ? this.batchId.view(full) : null,
       year: this.year,
       analystSLA: this.analystSLA,
       taskStatus: this.taskStatus,
       analystId: this.analystId ? this.analystId.view(full) : null ,
       qaId: this.qaId  ? this.qaId.view(full) : null ,
       status: this.status,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
