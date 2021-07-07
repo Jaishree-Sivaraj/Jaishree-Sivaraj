@@ -914,7 +914,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
-          Please use the following link to submit your ${roleDetails.roleName} onboarding details:<br/>
+          Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
           URL: http://localhost:3000${rowObject['link']}&email=${rowObject['email']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
