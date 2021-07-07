@@ -674,9 +674,9 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
               derivedResponse = "NA";
             } else {
               numeratorResponseValue = numeratorValues[j].response.toString();
-              numeratorResponseValue = numeratorResponseValue.replace(',', '');
+              numeratorResponseValue = numeratorResponseValue.replace(/,/g, '');
               denominatorResponseValue = denominatorValues[j].response.toString();
-              denominatorResponseValue = denominatorResponseValue.replace(',', '');
+              denominatorResponseValue = denominatorResponseValue.replace(/,/g, '');
 
               derivedResponse = (Number(numeratorResponseValue) / Number(denominatorResponseValue)) * 100;
             }
@@ -727,9 +727,9 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
                 derivedResponse = "NA";
               } else {
                 numeratorResponseValue = numeratorValues[j].response.toString();
-                numeratorResponseValue = numeratorResponseValue.replace(',', '');
+                numeratorResponseValue = numeratorResponseValue.replace(/,/g, '');
                 denominatorResponseValue = denominatorValue.toString();
-                denominatorResponseValue = denominatorResponseValue.replace(',', '');
+                denominatorResponseValue = denominatorResponseValue.replace(/,/g, '');
 
                 derivedResponse = (Number(numeratorResponseValue) / Number(denominatorResponseValue)) * 100;
               }
@@ -1216,7 +1216,7 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
             if (denominatorValues[j].response == ' ' || denominatorValues[j].response == '' || denominatorValues[j].response == 'NA' || denominatorValues[j].response == '0' || denominatorValues[j].response == 0) {
               derivedResponse = 'NA';
             } else {
-              derivedResponse = (Number(numeratorValues[j].response.replace(',', '')) / Number(denominatorValues[j].response.replace(',', ''))) * 100;
+              derivedResponse = (Number(numeratorValues[j].response.replace(/,/g, '')) / Number(denominatorValues[j].response.replace(/,/g, ''))) * 100;
             }
           }
           let derivedDatapointsObject = {
