@@ -22,7 +22,7 @@ export const create = async({ user, bodymen: { body } }, res, next) => {
           return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
         })      
     } else {
-      if (taskObject.taskNumber) {
+      if (taskObject) {
         let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
         newTaskNumber = Number(lastTaskNumber)+1;
       } else {
