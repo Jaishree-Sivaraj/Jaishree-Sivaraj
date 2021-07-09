@@ -1335,7 +1335,7 @@ async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapo
           if (prev && next) {
             let prevResponse = prev.replace(/,/g, '').trim();
             let nextResponse = next.replace(/,/g, '').trim();
-            let sum = Number(prevResponse) + Number(nextResponse);
+            let sum = Number(prevResponse.replace(/ /g,'')) + Number(nextResponse.replace(/ /g,''));
             return sum.toString();
           } else {
             sumValue = 0;
