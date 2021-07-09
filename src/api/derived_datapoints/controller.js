@@ -1837,6 +1837,52 @@ export const updateForAudr002 = async ({ user, params }, res, next) => {
               const year = distinctYears[yearIndex];
               let numeratorList = await BoardMembersMatrixDataPoints.find({ companyId: nicCompanyObject.id, datapointId: "609d2c11be8b9d1b577cec91", year: year, status: true });//AUDP001
               let denominatorList = await BoardMembersMatrixDataPoints.find({ companyId: nicCompanyObject.id, datapointId: "609d2c22be8b9d1b577cecba", year: year, status: true });//BOIP004     
+              //find sum of BOIR021 in Boardmembermatrices
+              let valuesToSum = await BoardMembersMatrixDataPoints.find({ companyId: nicCompanyObject.id, datapointId: "609d2c2cbe8b9d1b577cecd3", year: year, status: true });//AUDP001
+              let percentageDenominator = await StandaloneDatapoints.findOne({ companyId: nicCompanyObject.id, datapointId: "609d2c2cbe8b9d1b577cecd4", year: year, status: true });//BOIR022
+              let sumValue = 0;
+              if (valuesToSum.length > 0) {
+                for (let sumIndex = 0; sumIndex < valuesToSum.length; sumIndex++) {
+                  const valueObject = valuesToSum[sumIndex];
+                  sumValue += valueObject.response ? Number(valueObject.response.replace(/,/g, '')) : 0;
+                }
+              }
+              if (sumValue && percentageDenominator) {
+                let derivedResponse = '';
+                let performanceResponse = '';
+                if (sumValue == '0' || sumValue == 0) {
+                  derivedResponse = '0';
+                  performanceResponse = 'Positive';
+                } else if (sumValue == ' ' || sumValue == '' || sumValue == 'NA') {
+                  derivedResponse = 'NA';
+                  performanceResponse = 'NA';
+                } else {
+                  if (percentageDenominator.response == ' ' || percentageDenominator.response == '' || percentageDenominator.response == 'NA' || percentageDenominator.response == '0' || percentageDenominator.response == 0) {
+                    derivedResponse = 'NA';
+                    performanceResponse = 'NA';
+                  } else {
+                    derivedResponse = (sumValue / Number(percentageDenominator.response.replace(/,/g, ''))) * 100;
+                    if (Number(derivedResponse) > 33) {
+                      performanceResponse = 'Negative';
+                    } else {
+                      performanceResponse = 'Positive';
+                    }
+                  }
+                }
+                await DerivedDatapoints.updateOne({ 
+                  companyId: nicCompanyObject.id, 
+                  datapointId: "609d2c28be8b9d1b577cecca", 
+                  year: year,
+                  status: true }, 
+                  {
+                    $set: {
+                      response: derivedResponse ? derivedResponse.toString() : 'NA',
+                      performanceResult: performanceResponse ? performanceResponse.toString() : 'NA'
+                    }
+                  }
+                )
+              }
+              //find BOIR022 in standalone
               let count = 0;
               if (numeratorList.length > 0 && denominatorList.length > 0) {
                 if (numeratorList.length == denominatorList.length) {
