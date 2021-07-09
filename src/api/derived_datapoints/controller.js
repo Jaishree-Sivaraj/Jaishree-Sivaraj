@@ -1474,9 +1474,9 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
             if (countOfRules[i].criteria.toLowerCase() == 'y' || countOfRules[i].criteria.toLowerCase() == 'yes') {
               for (let ix = 0; ix < denominatorList.length; ix++) {
                 for (let jx = 0; jx < numeratorList.length; jx++) {
-                  if (denominatorList[ix].dirName == numeratorList[jx].dirName) {
-                    if (denominatorList[ix].value && numeratorList[jx].value) {
-                      if ((denominatorList[ix].value.toLowerCase() == 'yes' && numeratorList[jx].value.toLowerCase() == 'yes') || (denominatorList[ix].value.toLowerCase() == 'y' && numeratorList[jx].value.toLowerCase() == 'y')) {
+                  if (denominatorList[ix].memberName == numeratorList[jx].memberName) {
+                    if (denominatorList[ix].response && numeratorList[jx].response) {
+                      if ((denominatorList[ix].response.toLowerCase() == 'yes' && numeratorList[jx].response.toLowerCase() == 'yes') || (denominatorList[ix].response.toLowerCase() == 'y' && numeratorList[jx].response.toLowerCase() == 'y')) {
                         count++;
                       }
                     }
