@@ -1823,3 +1823,67 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
     }
   }
 }
+
+export const updateForAudr002 = async ({ user, params }, res, next) => {
+  if (params.nic) {
+    let nicCompaniesList = await Companies.find({ nic: params.nic });
+    if (nicCompaniesList.length > 0) {
+      for (let nicIndex = 0; nicIndex < nicCompaniesList.length; nicIndex++) {
+        const nicCompanyObject = nicCompaniesList[nicIndex];
+        let distinctYears = await DerivedDatapoints.find({ companyId: nicCompanyObject.id, status: true }).distinct('year');
+        if (distinctYears.length > 0) {
+          for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+            try {
+              const year = distinctYears[yearIndex];
+              let numeratorList = await BoardMembersMatrixDataPoints.find({ companyId: nicCompanyObject.id, datapointId: "609d2c11be8b9d1b577cec91", year: year, status: true });//AUDP001
+              let denominatorList = await BoardMembersMatrixDataPoints.find({ companyId: nicCompanyObject.id, datapointId: "609d2c22be8b9d1b577cecba", year: year, status: true });//BOIP004     
+              let count = 0;
+              if (numeratorList.length > 0 && denominatorList.length > 0) {
+                if (numeratorList.length == denominatorList.length) {
+                  for (let ix = 0; ix < denominatorList.length; ix++) {
+                    for (let jx = 0; jx < numeratorList.length; jx++) {
+                      if (denominatorList[ix].memberName == numeratorList[jx].memberName) {
+                        if (denominatorList[ix].response && numeratorList[jx].response) {
+                          if ((denominatorList[ix].response.toLowerCase() == 'yes' && numeratorList[jx].response.toLowerCase() == 'yes') || (denominatorList[ix].response.toLowerCase() == 'y' && numeratorList[jx].response.toLowerCase() == 'y')) {
+                            count++;
+                          }
+                        }
+                      }
+                    }
+                  }
+                } else {
+                  return res.status(400).json({ status: "400", message: "AUDP001 and BOIP004 members list mistmatch!" })
+                }
+              } else {
+                return res.status(400).json({ status: "400", message: "AUDP001 and BOIP004 members list mistmatch for company - "+nicCompanyObject.companyName+"!" })
+              }
+              await DerivedDatapoints.updateOne({ 
+                companyId: nicCompanyObject.id, 
+                datapointId: "609d2c13be8b9d1b577cec94", 
+                year: year,
+                status: true }, 
+                {
+                  $set: {
+                    response: count ? count.toString() : '0',
+                    performanceResult: count ? count.toString() : '0'
+                  }
+                }
+              );              
+            } catch (error) {
+              return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update AUDR002 value for company - "+nicCompanyObject.companyName+ "!" })
+            }
+          }
+        } else {
+          return res.status(400).json({ status: "400", message: "No year present for the company"+nicCompanyObject.companyName+ ", please check!" })
+        }
+        if (nicCompaniesList.length-1 == nicIndex) {
+          return res.status(200).json({ status: "200", message: "Values of AUDR002 updated for NIC-"+params.nic })
+        }
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "NIC code invalid!" })  
+    }
+  } else {
+    return res.status(400).json({ status: "400", message: "NIC code not present!" })
+  }
+}

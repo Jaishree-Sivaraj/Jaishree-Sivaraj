@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, calculateForACompany ,jsonGeneration } from './controller'
+import { create, index, show, update, destroy, calculateForACompany ,jsonGeneration, updateForAudr002 } from './controller'
 import { schema } from './model'
 export DerivedDatapoints, { schema } from './model'
 
@@ -76,6 +76,21 @@ router.get('/generate-json/:companyId',
 router.get('/calculate/:companyId',
   token({ required: true }),
   calculateForACompany)
+
+/**
+ * @api {get} /derived_datapoints/update/audr002/:nic Update derived datapoints of AUDR002 for a NIC
+ * @apiName UpdateDerivedDatapointsForANIC
+ * @apiGroup DerivedDatapoints
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} derivedDatapoints Derived datapoints's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Derived datapoints not found.
+ * @apiError 401 user access only.
+ */
+router.get('/update/audr002/:nic',
+  token({ required: true }),
+  updateForAudr002)
 
 /**
  * @api {put} /derived_datapoints/:id Update derived datapoints
