@@ -903,9 +903,9 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
       let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
       let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
       let link;
-      if (rolesDetails.roleName == "Employee") {
+      if (rolesDetails && rolesDetails.roleName == "Employee") {
         link = `/onboard/new-user?role=Employee`
-      } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+      } else if (rolesDetails && ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative"))) {
         link = `/onboard/new-user?role=CompanyRepresentative`
       } else {
         link = `/onboard/new-user?role=ClientRepresentative`
