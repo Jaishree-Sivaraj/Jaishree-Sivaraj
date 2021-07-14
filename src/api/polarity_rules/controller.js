@@ -207,7 +207,9 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
           }
         }
       }
-
+      if (distinctYears.length-1 == yearIndex) {
+        return res.status(200).json({ message: "Percentile calculated successfully!" });      
+      }
     }
   }
   return res.status(200).json({ message: "Percentile calculated successfully!" });
