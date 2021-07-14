@@ -1,15 +1,15 @@
 import { success, notFound, authorOrAdmin } from '../../services/response/'
-import { Error } from '.'
+import { Errors } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
-  Error.create({ ...body, createdBy: user })
+  Errors.create({ ...body, createdBy: user })
     .then((error) => error.view(true))
     .then(success(res, 201))
     .catch(next)
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
-  Error.count(query)
-    .then(count => Error.find(query, select, cursor)
+  Errors.count(query)
+    .then(count => Errors.find(query, select, cursor)
       .populate('createdBy')
       .then((errors) => ({
         count,
@@ -20,7 +20,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .catch(next)
 
 export const show = ({ params }, res, next) =>
-  Error.findById(params.id)
+  Errors.findById(params.id)
     .populate('createdBy')
     .then(notFound(res))
     .then((error) => error ? error.view() : null)
@@ -28,7 +28,7 @@ export const show = ({ params }, res, next) =>
     .catch(next)
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
-  Error.findById(params.id)
+  Errors.findById(params.id)
     .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
@@ -38,7 +38,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next)
 
 export const destroy = ({ user, params }, res, next) =>
-  Error.findById(params.id)
+  Errors.findById(params.id)
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((error) => error ? error.remove() : null)
