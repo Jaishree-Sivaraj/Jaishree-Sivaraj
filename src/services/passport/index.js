@@ -72,7 +72,7 @@ passport.use('password', new LocalStrategy(
     userSchema.validate({ email, password }, (err) => {
       if (err) done(err)
     })
-    User.findOne({ email, isRoleAssigned: true }).then((user) => {
+    User.findOne({ email, isRoleAssigned: true, status: true }).then((user) => {
       if (!user) {
         done(true)
         return null
@@ -114,7 +114,7 @@ passport.use('otp', new LocalStrategy(
       if (err) done(err)
     })
 
-    User.findOne({ email, isRoleAssigned: true }).then((user) => {
+    User.findOne({ email, isRoleAssigned: true, status: true }).then((user) => {
       if (!user) {
         done(true)
         return null
