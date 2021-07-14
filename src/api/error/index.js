@@ -4,7 +4,7 @@ import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
 import { create, index, show, update, destroy } from './controller'
 import { schema } from './model'
-export Error, { schema } from './model'
+export Errors, { schema } from './model'
 
 const router = new Router()
 const { errorType, errorBucket, errorDefenition, status } = schema.tree
@@ -12,7 +12,7 @@ const { errorType, errorBucket, errorDefenition, status } = schema.tree
 /**
  * @api {post} /errors Create error
  * @apiName CreateError
- * @apiGroup Error
+ * @apiGroup Errors
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam errorType Error's errorType.
@@ -32,7 +32,7 @@ router.post('/',
 /**
  * @api {get} /errors Retrieve errors
  * @apiName RetrieveErrors
- * @apiGroup Error
+ * @apiGroup Errors
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiUse listParams
@@ -49,7 +49,7 @@ router.get('/',
 /**
  * @api {get} /errors/:id Retrieve error
  * @apiName RetrieveError
- * @apiGroup Error
+ * @apiGroup Errors
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiSuccess {Object} error Error's data.
@@ -64,7 +64,7 @@ router.get('/:id',
 /**
  * @api {put} /errors/:id Update error
  * @apiName UpdateError
- * @apiGroup Error
+ * @apiGroup Errors
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam errorType Error's errorType.
@@ -84,7 +84,7 @@ router.put('/:id',
 /**
  * @api {delete} /errors/:id Delete error
  * @apiName DeleteError
- * @apiGroup Error
+ * @apiGroup Errors
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiSuccess (Success 204) 204 No Content.

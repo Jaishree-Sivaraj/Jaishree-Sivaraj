@@ -9,7 +9,7 @@ export Datapoints, { schema } from './model'
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, status } = schema.tree
-
+const taskId = '',year = '';
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -170,7 +170,7 @@ router.get('/import-from-json/categoryId',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.get('/list/:categoryId/:companyId/:clientTaxonomyId',
+router.get('/list/:taskId',
   token({ required: true }),
   getCategorywiseDatapoints)
 

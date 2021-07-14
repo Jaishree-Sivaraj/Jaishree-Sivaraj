@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const standaloneDatapointsSchema = new Schema({
   createdBy: {
@@ -28,9 +30,6 @@ const standaloneDatapointsSchema = new Schema({
   fiscalYearEndDate: {
     type: String
   },
-  standaloneStatus: {
-    type: String
-  },
   sourceName: {
     type: String
   },
@@ -49,14 +48,9 @@ const standaloneDatapointsSchema = new Schema({
   screenShot: {
     type: String
   },
-  pdf: {
-    type: String
-  },
-  wordDoc: {
-    type: String
-  },
-  excel: {
-    type: String
+  sourceFileType: {
+    type: String,
+    default: "pdf"
   },
   filePathway: {
     type: String
@@ -64,26 +58,23 @@ const standaloneDatapointsSchema = new Schema({
   commentCalculations: {
     type: String
   },
-  dataVerification: {
-    type: String
-  },
-  errorType: {
-    type: String
-  },
-  errorComments: {
-    type: String
-  },
   internalFileSource: {
     type: String
   },
-  errorStatus: {
-    type: String
+  comments: {
+    type: Object
   },
-  analystComments: {
-    type: String
+  collectionStatus: {
+    type: Boolean,
+    default: false
   },
-  additionalComments: {
-    type: String
+  verificationStatus: {
+    type: Boolean,
+    default: false
+  },
+  hasError: {
+    type: Boolean,
+    default: false
   },
   taskId: {
     type: Schema.ObjectId,
@@ -94,14 +85,19 @@ const standaloneDatapointsSchema = new Schema({
   submittedBy: {
     type: String
   },
+  hasCorrection: {
+    type: Boolean,
+    default: false
+  },
   submittedDate: {
-    type: String
+    type: Date,
+    default: Date.now()
   },
   activeStatus: {
     type: String
   },
   lastModifiedDate: {
-    type: String
+    type: Date
   },
   modifiedBy: {
     type: String
@@ -123,7 +119,9 @@ const standaloneDatapointsSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
@@ -150,17 +148,15 @@ standaloneDatapointsSchema.methods = {
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,
-      pdf: this.pdf,
-      wordDoc: this.wordDoc,
-      excel: this.excel,
+      sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      dataVerification: this.dataVerification,
-      errorType: this.errorType,
-      errorComments: this.errorComments,
-      analystComments: this.analystComments,
+      comments: this.comments,   
+      collectionStatus: this.collectionStatus,
+      verificationStatus: this.verificationStatus,
+      hasError: this.hasError,
       internalFileSource: this.internalFileSource,
-      additionalComments: this.additionalComments,
+      hasCorrection: this.hasCorrection,
       standaradDeviation: this.standaradDeviation,
       average: this.average,
       lastModifiedDate: this.lastModifiedDate,

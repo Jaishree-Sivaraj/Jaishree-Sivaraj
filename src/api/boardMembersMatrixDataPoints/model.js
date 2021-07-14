@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const boardMembersMatrixDataPointsSchema = new Schema({
   createdBy: {
@@ -49,14 +51,9 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   screenShot: {
     type: String
   },
-  pdf: {
-    type: String
-  },
-  wordDoc: {
-    type: String
-  },
-  excel: {
-    type: String
+  sourceFileType: {
+    type: String,
+    default: "pdf"
   },
   filePathway: {
     type: String
@@ -64,26 +61,33 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   commentCalculations: {
     type: String
   },
-  dataVerification: {
-    type: String
-  },
-  errorType: {
-    type: String
-  },
-  errorComments: {
-    type: String
-  },
   internalFileSource: {
     type: String
   },
-  errorStatus: {
-    type: String
+  comments: {
+    type: Object
   },
-  analystComments: {
-    type: String
+  collectionStatus: {
+    type: Boolean,
+    default: false
   },
-  additionalComments: {
-    type: String
+  verificationStatus: {
+    type: Boolean,
+    default: false
+  },
+  hasCorrection: {
+    type: Boolean,
+    default: false
+  },
+  hasError: {
+    type: Boolean,
+    default: false
+  },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false,
+    default: null
   },
   status: {
     type: Boolean,
@@ -93,7 +97,9 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
@@ -105,6 +111,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
       companyId: this.companyId.view(full) ? this.companyId.view(full) : null,
+      taskId: this.taskId ? this.taskId.view(full) : null,
       memberName: this.memberName,
       year: this.year,
       response: this.response,
@@ -115,17 +122,15 @@ boardMembersMatrixDataPointsSchema.methods = {
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,
-      pdf: this.pdf,
-      wordDoc: this.wordDoc,
-      excel: this.excel,
+      sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      dataVerification: this.dataVerification,
-      errorType: this.errorType,
-      errorComments: this.errorComments,
-      analystComments: this.analystComments,
+      comments: this.comments,
       internalFileSource: this.internalFileSource,
-      additionalComments: this.additionalComments,
+      collectionStatus: this.collectionStatus,
+      hasCorrection: this.hasCorrection,
+      verificationStatus: this.verificationStatus,
+      hasError: this.hasError,
       memberStatus: this.memberStatus,
       status: this.status,
       createdAt: this.createdAt,

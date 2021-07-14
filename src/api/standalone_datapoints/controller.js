@@ -1,22 +1,62 @@
 import multer from 'multer'
 import XLSX from 'xlsx'
 import _ from 'lodash'
-import { getJsDateFromExcel } from 'excel-date-to-js'
+import {
+  getJsDateFromExcel
+} from 'excel-date-to-js'
 import mongo from 'mongodb'
-import { success, notFound, authorOrAdmin } from '../../services/response/'
-import { StandaloneDatapoints } from '.'
-import { Companies } from '../companies'
-import { Datapoints } from '../datapoints'
-import { ClientTaxonomy } from '../clientTaxonomy'
-import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
-import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
-import { object } from 'mongoose/lib/utils'
+import {
+  success,
+  notFound,
+  authorOrAdmin
+} from '../../services/response/'
+import {
+  StandaloneDatapoints
+} from '.'
+import {
+  Companies
+} from '../companies'
+import {
+  Datapoints
+} from '../datapoints'
+import {
+  ClientTaxonomy
+} from '../clientTaxonomy'
+import {
+  BoardMembersMatrixDataPoints
+} from '../boardMembersMatrixDataPoints'
+import {
+  KmpMatrixDataPoints
+} from '../kmpMatrixDataPoints'
+import {
+  object
+} from 'mongoose/lib/utils'
+import {
+  Errors
+} from '../error'
+import {
+  ErrorDetails
+} from '../errorDetails'
+import {
+  Categories
+} from '../categories'
+import {
+  TaskAssignment
+} from '../taskAssignment'
 
-export const create = ({ user, bodymen: { body } }, res, next) =>
-  StandaloneDatapoints.create({ ...body, createdBy: user })
-    .then((standaloneDatapoints) => standaloneDatapoints.view(true))
-    .then(success(res, 201))
-    .catch(next)
+export const create = ({
+    user,
+    bodymen: {
+      body
+    }
+  }, res, next) =>
+  StandaloneDatapoints.create({
+    ...body,
+    createdBy: user
+  })
+  .then((standaloneDatapoints) => standaloneDatapoints.view(true))
+  .then(success(res, 201))
+  .catch(next)
 
 
 var companyESG = multer.diskStorage({ //multers disk shop photos storage settings
@@ -36,10 +76,15 @@ var upload = multer({ //multer settings
     }
     callback(null, true);
   }
-}).fields([{ name: 'file', maxCount: 198 }]);
+}).fields([{
+  name: 'file',
+  maxCount: 198
+}]);
 
 function alphaToNum(alpha) {
-  var i = 0, num = 0, len = alpha.length;
+  var i = 0,
+    num = 0,
+    len = alpha.length;
   for (i; i < len; i++) {
     num = num * 26 + alpha.charCodeAt(i) - 0x40;
   }
@@ -56,10 +101,15 @@ function numToAlpha(num) {
 
 export const uploadCompanyESGFiles = async (req, res, next) => {
   const userDetail = req.user;
+  const errorDetails = [];
   try {
     upload(req, res, async function (err) {
       if (err) {
-        res.status('400').json({ status: "400", error_code: 1, err_desc: err });
+        res.status('400').json({
+          status: "400",
+          error_code: 1,
+          err_desc: err
+        });
         return;
       }
       let allFilesObject = [];
@@ -69,7 +119,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           for (let index = 0; index < req.files.file.length; index++) {
             let parsedSheetObject = [];
             const filePath = req.files.file[index].path;
-            var workbook = XLSX.readFile(filePath, { sheetStubs: false, defval: '' });
+            var workbook = XLSX.readFile(filePath, {
+              sheetStubs: false,
+              defval: ''
+            });
             var sheet_name_list = workbook.SheetNames;
 
             sheet_name_list.forEach(function (currentSheetName) {
@@ -242,6 +295,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     if (!data[row] && value) data[row] = {};
                     if (col != 'A') {
                       if (headers['A']) {
+                        console.log(data[row][headers['A']]);
                         if (data[row][headers['A']]) {
                           //take all column names in an array
                           let currentColumnIndex = allColumnNames.indexOf(col);
@@ -312,7 +366,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
           }
-          let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
+          let clientTaxonomyId = await ClientTaxonomy.findOne({
+            taxonomyName: "Acuite"
+          });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
             let categoriesToBeCheck = _.filter(allStandaloneDetails, function (object) {
@@ -330,6 +386,17 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           if (missingFiles.length < 1) {
+
+            let categoriesObject = await Categories.find({
+              status: true
+            });
+            let taskObject = await TaskAssignment.find({
+              taskStatus: "Yet to start",
+              status: true
+            });
+            let errorTypeDetails = await Errors.find({
+              status: true
+            });
 
             const structuredCompanyDetails = [];
             for (let index = 0; index < companiesToBeAdded.length; index++) {
@@ -349,11 +416,21 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 status: true,
                 createdBy: userDetail
               }
-              await Companies.updateOne({ cin: item['CIN'].replace('\r\n', '').trim() }, { $set: companyObject }, { upsert: true });
+              await Companies.updateOne({
+                cin: item['CIN'].replace('\r\n', '').trim()
+              }, {
+                $set: companyObject
+              }, {
+                upsert: true
+              });
               structuredCompanyDetails.push(companyObject);
             }
-            const datapointList = await Datapoints.find({ status: true }).populate('updatedBy').populate('keyIssueId').populate('functionId');
-            const companiesList = await Companies.find({ status: true }).populate('createdBy');
+            const datapointList = await Datapoints.find({
+              status: true
+            }).populate('updatedBy').populate('keyIssueId').populate('functionId');
+            const companiesList = await Companies.find({
+              status: true
+            }).populate('createdBy');
             let filteredBoardMemberMatrixDetails = _.filter(allBoardMemberMatrixDetails, (x) => {
               if (x) {
                 if (Object.keys(x)[0] != undefined) {
@@ -376,7 +453,37 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let responseValue;
+              let responseValue, hasError;
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                console.log(item);
+                console.log(categoriesObjectValues)
+                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                hasError = true;
+                let errorListObject = {
+                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                  dpCode: item['DP Code'] ? item['DP Code'] : '',
+                  year: item['Fiscal Year'],
+                  companyId: companyObject[0] ? companyObject[0].id : null,
+                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                  raisedBy: "",
+                  comments: [],
+                  errorLoggedDate: Date.now(),
+                  errorCaughtByRep: [],
+                  errorStatus: true,
+                  isErrorAccepted: false,
+                  isErrorRejected: false,
+                  rejectComment: "",
+                  status: true,
+                  createdBy: userDetail
+                }
+                errorDetails.push(errorListObject);
+              } else {
+                hasError = false
+              }
               if (String(item['Response']).length > 0) {
                 if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
                   if (item['Response'] == "0" || item['Response'] == 0) {
@@ -405,17 +512,15 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 publicationDate: item['Publication date'],
                 textSnippet: item['Text snippet'],
                 screenShot: item['Screenshot (in png)'],
-                pdf: item['PDF'],
-                wordDoc: item['Word Doc (.docx)'],
-                excel: item['Excel (.xlsx)'],
+                sourceFileType: 'pdf',
                 filePathway: item['File pathway'],
                 commentCalculations: item['Comments/Calculations'],
-                dataVerification: item['Data Verification'],
-                errorType: item['Error Type'],
                 internalFileSource: item['Internal file source'],
-                errorComments: item['Error Comments'],
-                analystComments: item['Analyst Comments'],
-                additionalComments: item['Additional comments'],
+                comments: [],
+                collectionStatus: false,
+                verificationStatus: false,
+                hasError: hasError,
+                hasCorrection: false,
                 performanceResult: '',
                 standaloneStatus: '',
                 taskId: null,
@@ -453,27 +558,56 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             let boardMembersList = [];
             let inactiveBoardMembersList = [];
             let kmpMembersList = [];
-            const structuredBoardMemberMatrixDetails = filteredBoardMemberMatrixDetails.map(function (item) {
+            const structuredBoardMemberMatrixDetails = filteredBoardMemberMatrixDetails.map(async function (item) {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let allKeyNamesList = Object.keys(item);
               const boardMembersNameList = _.filter(allKeyNamesList, function (keyName) {
                 let trimmedKeyName = keyName.replace(/\s/g, "").replace('\r\n', '').toLowerCase();
-                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode"
-                  && trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype"
-                  && trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate"
-                  && trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url"
-                  && trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet"
-                  && trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)"
-                  && trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)"
-                  && trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification"
-                  && trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource"
-                  && trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments"
-                  && trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20"
-                  && trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7"
-                  && trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile"
-                  && trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
+                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
+                  trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
+                  trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
+                  trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
+                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&
+                  trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
+                  trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
+                  trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
+                  trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
+                  trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
+                  trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
+                  trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
+                  trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
+                  trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
+              let hasError;
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                hasError = true;
+                let errorListObject = {
+                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                  dpCode: item['DP Code'] ? item['DP Code'] : '',
+                  year: item['Fiscal Year'],
+                  companyId: companyObject[0] ? companyObject[0].id : null,
+                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                  raisedBy: "",
+                  comments: [],
+                  errorLoggedDate: Date.now(),
+                  errorCaughtByRep: [],
+                  errorStatus: true,
+                  isErrorAccepted: false,
+                  isErrorRejected: false,
+                  rejectComment: "",
+                  status: true,
+                  createdBy: userDetail
+                }
+                errorDetails.push(errorListObject);
+              } else {
+                hasError = false
+              }
               _.forEach(boardMembersNameList, function (value) {
                 let memberDetail = {
                   memberName: value,
@@ -489,17 +623,16 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
-                  pdf: item['PDF'],
-                  wordDoc: item['Word Doc (.docx)'],
-                  excel: item['Excel (.xlsx)'],
+                  sourceFileType: 'pdf',
                   filePathway: item['File pathway'],
                   commentCalculations: item['Comments/Calculations'],
-                  dataVerification: item['Data Verification'],
-                  errorType: item['Error Type'],
                   internalFileSource: item['Internal file source'],
-                  errorComments: item['Error Comments'],
-                  analystComments: item['Analyst Comments'],
-                  additionalComments: item['Additional comments'],
+                  collectionStatus: false,
+                  verificationStatus: false,
+                  comments: [],
+                  hasError: hasError,
+                  hasCorrection: false,
+                  taskId: null,
                   memberStatus: true,
                   status: true,
                   createdBy: userDetail
@@ -512,7 +645,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     try {
                       cessaDate = getJsDateFromExcel(item[value]);
                     } catch (error) {
-                      return res.status(500).json({ status: "500", message: `Found invalid date format in ${companyObject ? companyObject.companyName : 'a company'}, please correct and try again!` })
+                      return res.status(500).json({
+                        status: "500",
+                        message: `Found invalid date format in ${companyObject ? companyObject.companyName : 'a company'}, please correct and try again!`
+                      })
                     }
                     let currentDate = new Date();
                     if (cessaDate < currentDate) {
@@ -552,27 +688,58 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
 
-            const structuredKmpMatrixDetails = filteredKmpMatrixDetails.map(function (item) {
+            const structuredKmpMatrixDetails = filteredKmpMatrixDetails.map(async function (item) {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let allKeyNamesList = Object.keys(item);
               const kmpMembersNameList = _.filter(allKeyNamesList, function (keyName) {
                 let trimmedKeyName = keyName.replace(/\s/g, "").replace('\r\n', '').toLowerCase();
-                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode"
-                  && trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype"
-                  && trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate"
-                  && trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url"
-                  && trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet"
-                  && trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)"
-                  && trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)"
-                  && trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification"
-                  && trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource"
-                  && trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments"
-                  && trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20"
-                  && trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7"
-                  && trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile"
-                  && trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
+                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
+                  trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
+                  trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
+                  trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
+                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&
+                  trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
+                  trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
+                  trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
+                  trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
+                  trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
+                  trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
+                  trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
+                  trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
+                  trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
+              let hasError;
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                console.log(item);
+                console.log(categoriesObjectValues)
+                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                hasError = true;
+                let errorListObject = {
+                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                  dpCode: item['DP Code'] ? item['DP Code'] : '',
+                  year: item['Fiscal Year'],
+                  companyId: companyObject[0] ? companyObject[0].id : null,
+                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                  raisedBy: "",
+                  comments: [],
+                  errorLoggedDate: Date.now(),
+                  errorCaughtByRep: [],
+                  errorStatus: true,
+                  isErrorAccepted: false,
+                  isErrorRejected: false,
+                  rejectComment: "",
+                  status: true,
+                  createdBy: userDetail
+                }
+                errorDetails.push(errorListObject);
+              } else {
+                hasError = false
+              }
               let currentMemberStatus;
               _.forEach(kmpMembersNameList, function (value) {
                 let memberDetail = {
@@ -590,17 +757,16 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
-                  pdf: item['PDF'],
-                  wordDoc: item['Word Doc (.docx)'],
-                  excel: item['Excel (.xlsx)'],
+                  sourceFileType: 'pdf',
                   filePathway: item['File pathway'],
                   commentCalculations: item['Comments/Calculations'],
-                  dataVerification: item['Data Verification'],
-                  errorType: item['Error Type'],
                   internalFileSource: item['Internal file source'],
-                  errorComments: item['Error Comments'],
-                  analystComments: item['Analyst Comments'],
-                  additionalComments: item['Additional comments'],
+                  collectionStatus: false,
+                  verificationStatus: false,
+                  hasCorrection: false,
+                  comments: [],
+                  hasError: hasError,
+                  taskId: null,
                   status: true,
                   createdBy: userDetail
                 };
@@ -618,10 +784,40 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
 
-            let dpToFind = await Datapoints.findOne({ code: "BOIP007" });
-            let dpMapping = [{ "BOCR013": "MACR023" }, { "BOCR014": "MACR024" }, { "BOCR015": "MACR025" }, { "BOCR016": "MACR026" }, { "BOCR018": "MACR029" }, { "BODR005": "MASR008" }, { "BOIR021": "MASR009" }, { "BOSP003": "MASP002" }, { "BOSP004": "MASP003" }, { "BOSR009": "MASR007" }];
-            let bmmDpsToFind = await Datapoints.find({ code: { $in: ["BOCR013", "BOCR014", "BOCR015", "BOCR016", "BOCR018", "BODR005", "BOIR021", "BOSP003", "BOSP004", "BOSR009"] } });
-            let kmpDpsToUpdate = await Datapoints.find({ code: { $in: ["MACR023", "MACR024", "MACR025", "MACR026", "MACR029", "MASR008", "MASR009", "MASP002", "MASP003", "MASR007"] } });
+            let dpToFind = await Datapoints.findOne({
+              code: "BOIP007"
+            });
+            let dpMapping = [{
+              "BOCR013": "MACR023"
+            }, {
+              "BOCR014": "MACR024"
+            }, {
+              "BOCR015": "MACR025"
+            }, {
+              "BOCR016": "MACR026"
+            }, {
+              "BOCR018": "MACR029"
+            }, {
+              "BODR005": "MASR008"
+            }, {
+              "BOIR021": "MASR009"
+            }, {
+              "BOSP003": "MASP002"
+            }, {
+              "BOSP004": "MASP003"
+            }, {
+              "BOSR009": "MASR007"
+            }];
+            let bmmDpsToFind = await Datapoints.find({
+              code: {
+                $in: ["BOCR013", "BOCR014", "BOCR015", "BOCR016", "BOCR018", "BODR005", "BOIR021", "BOSP003", "BOSP004", "BOSR009"]
+              }
+            });
+            let kmpDpsToUpdate = await Datapoints.find({
+              code: {
+                $in: ["MACR023", "MACR024", "MACR025", "MACR026", "MACR029", "MASR008", "MASR009", "MASP002", "MASP003", "MASR007"]
+              }
+            });
             if (dpToFind) {
               for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                 const year = distinctYears[yearIndex];
@@ -641,10 +837,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                         let kmpDatapointCode = dpMapping.find((obj) => obj[bmmDpObject.code]);
                         let matchingKmpObject = kmpDpsToUpdate.find((obj) => obj.code == kmpDatapointCode[bmmDpObject.code]);
                         let responseToUpdate = _.filter(boardMembersList, function (obj) {
-                          return obj.datapointId == bmmDpObject.id
-                            && obj.companyId == companyId
-                            && obj.year == year
-                            && obj.memberName == executiveMemberObject.memberName;
+                          return obj.datapointId == bmmDpObject.id &&
+                            obj.companyId == companyId &&
+                            obj.year == year &&
+                            obj.memberName == executiveMemberObject.memberName;
                         });
                         if (responseToUpdate.length > 0) {
                           let memberDetail = {
@@ -668,8 +864,17 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
 
             var actualDPList = _.concat(structuredStandaloneDetails, boardMembersList, kmpMembersList);
-            let missingDPList = [], expectedDPList = [], missingDatapointsDetails = [], missingDPsLength = [];
-            let standaloneDatapointsList = await Datapoints.find({ relevantForIndia: "Yes", dataCollection: "Yes", functionId: { "$ne": '609bcceb1d64cd01eeda092c' } })
+            let missingDPList = [],
+              expectedDPList = [],
+              missingDatapointsDetails = [],
+              missingDPsLength = [];
+            let standaloneDatapointsList = await Datapoints.find({
+              relevantForIndia: "Yes",
+              dataCollection: "Yes",
+              functionId: {
+                "$ne": '609bcceb1d64cd01eeda092c'
+              }
+            })
             //actualDPlist, expectedDPlist(548) 
             for (let expectedDPIndex = 0; expectedDPIndex < standaloneDatapointsList.length; expectedDPIndex++) {
               expectedDPList.push(standaloneDatapointsList[expectedDPIndex].code)
@@ -691,9 +896,17 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
             if (missingDPList.length == 0) {
               const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
-                "companyId": { $in: insertedCompanyIds },
-                "year": { $in: distinctYears }
-              }, { $set: { status: false } }, {});
+                "companyId": {
+                  $in: insertedCompanyIds
+                },
+                "year": {
+                  $in: distinctYears
+                }
+              }, {
+                $set: {
+                  status: false
+                }
+              }, {});
               await StandaloneDatapoints.insertMany(structuredStandaloneDetails)
                 .then((err, result) => {
                   if (err) {
@@ -704,9 +917,17 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 });
               //Marking existing Data as False in BoardMemberMatrixDP 
               await BoardMembersMatrixDataPoints.updateMany({
-                "companyId": { $in: insertedCompanyIds },
-                "year": { $in: distinctYears }
-              }, { $set: { status: false } }, {});
+                "companyId": {
+                  $in: insertedCompanyIds
+                },
+                "year": {
+                  $in: distinctYears
+                }
+              }, {
+                $set: {
+                  status: false
+                }
+              }, {});
               await BoardMembersMatrixDataPoints.insertMany(boardMembersList)
                 .then((err, result) => {
                   if (err) {
@@ -716,9 +937,17 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   }
                 });
               await KmpMatrixDataPoints.updateMany({
-                "companyId": { $in: insertedCompanyIds },
-                "year": { $in: distinctYears }
-              }, { $set: { status: false } }, {});
+                "companyId": {
+                  $in: insertedCompanyIds
+                },
+                "year": {
+                  $in: distinctYears
+                }
+              }, {
+                $set: {
+                  status: false
+                }
+              }, {});
               await KmpMatrixDataPoints.insertMany(kmpMembersList)
                 .then((err, result) => {
                   if (err) {
@@ -727,7 +956,19 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     //  console.log('result', result);
                   }
                 });
-              res.status(200).json({ status: "200", message: "Files upload success", companies: insertedCompanies, nicList: distinctNics });
+              await ErrorDetails.insertMany(errorDetails).then((err, result) => {
+                if (err) {
+                  console.log('error', err);
+                } else {
+                  //  console.log('result', result);
+                }
+              });
+              res.status(200).json({
+                status: "200",
+                message: "Files upload success",
+                companies: insertedCompanies,
+                nicList: distinctNics
+              });
 
             } else {
               // let missingDPcodeNames = [];
@@ -744,18 +985,32 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               //   }
               // }
               // return res.status(400).json({ message: "Missing DP Codes", CompanyName: companyNameForMissedDPs, missingDatapoints: missingDPcodeNames });
-              return res.status(400).json({ status: "400", message: "Missing DP Codes", missingDatapoints: missingDPList });
+              return res.status(400).json({
+                status: "400",
+                message: "Missing DP Codes",
+                missingDatapoints: missingDPList
+              });
             }
 
           } else {
-            return res.status(400).json({ status: "400", message: "Files Missing for below companies", missingFilesDetails: missingFiles });
+            return res.status(400).json({
+              status: "400",
+              message: "Files Missing for below companies",
+              missingFilesDetails: missingFiles
+            });
           }
         } else {
-          return res.status(400).json({ status: "400", message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company" });
+          return res.status(400).json({
+            status: "400",
+            message: "Some files are missing!, Please upload all files Environment, Social and Governance for a company"
+          });
 
         }
       } else {
-        return res.status(400).json({ status: "400", message: "No files for attached!" });
+        return res.status(400).json({
+          status: "400",
+          message: "No files for attached!"
+        });
       }
     });
   } catch (error) {
@@ -765,50 +1020,76 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
     });
   }
 }
-
-export const index = ({ querymen: { query, select, cursor } }, res, next) =>
+export const dataCollection = async ({
+  user,
+  bodymen: {
+    body
+  },
+  params
+}, res, next) => {
+  console.log(body.taskId, body.year, body.companyId, body.pillarId);
+}
+export const index = ({
+    querymen: {
+      query,
+      select,
+      cursor
+    }
+  }, res, next) =>
   StandaloneDatapoints.count(query)
-    .then(count => StandaloneDatapoints.find(query, select, cursor)
-      .populate('createdBy')
-      .populate('companyId')
-      .populate('taskId')
-      .populate('datapointId')
-      .then((standaloneDatapoints) => ({
-        count,
-        rows: standaloneDatapoints.map((standaloneDatapoints) => standaloneDatapoints.view())
-      }))
-    )
-    .then(success(res))
-    .catch(next)
-
-export const show = ({ params }, res, next) =>
-  StandaloneDatapoints.findById(params.id)
+  .then(count => StandaloneDatapoints.find(query, select, cursor)
     .populate('createdBy')
     .populate('companyId')
     .populate('taskId')
     .populate('datapointId')
-    .then(notFound(res))
-    .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.view() : null)
-    .then(success(res))
-    .catch(next)
+    .then((standaloneDatapoints) => ({
+      count,
+      rows: standaloneDatapoints.map((standaloneDatapoints) => standaloneDatapoints.view())
+    }))
+  )
+  .then(success(res))
+  .catch(next)
 
-export const update = ({ user, bodymen: { body }, params }, res, next) =>
+export const show = ({
+    params
+  }, res, next) =>
   StandaloneDatapoints.findById(params.id)
-    .populate('createdBy')
-    .populate('companyId')
-    .populate('taskId')
-    .populate('datapointId')
-    .then(notFound(res))
-    .then(authorOrAdmin(res, user, 'createdBy'))
-    .then((standaloneDatapoints) => standaloneDatapoints ? Object.assign(standaloneDatapoints, body).save() : null)
-    .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.view(true) : null)
-    .then(success(res))
-    .catch(next)
+  .populate('createdBy')
+  .populate('companyId')
+  .populate('taskId')
+  .populate('datapointId')
+  .then(notFound(res))
+  .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.view() : null)
+  .then(success(res))
+  .catch(next)
 
-export const destroy = ({ user, params }, res, next) =>
+export const update = ({
+    user,
+    bodymen: {
+      body
+    },
+    params
+  }, res, next) =>
   StandaloneDatapoints.findById(params.id)
-    .then(notFound(res))
-    .then(authorOrAdmin(res, user, 'createdBy'))
-    .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.remove() : null)
-    .then(success(res, 204))
-    .catch(next)
+  .populate('createdBy')
+  .populate('companyId')
+  .populate('taskId')
+  .populate('datapointId')
+  .then(notFound(res))
+  .then(authorOrAdmin(res, user, 'createdBy'))
+  .then((standaloneDatapoints) => standaloneDatapoints ? Object.assign(standaloneDatapoints, body).save() : null)
+  .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.view(true) : null)
+  .then(success(res))
+  .catch(next)
+
+export const destroy = ({
+    user,
+    params
+  }, res, next) =>
+
+  StandaloneDatapoints.findById(params.id)
+  .then(notFound(res))
+  .then(authorOrAdmin(res, user, 'createdBy'))
+  .then((standaloneDatapoints) => standaloneDatapoints ? standaloneDatapoints.remove() : null)
+  .then(success(res, 204))
+  .catch(next)
