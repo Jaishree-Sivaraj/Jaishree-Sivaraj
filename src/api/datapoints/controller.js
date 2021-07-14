@@ -145,19 +145,20 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
     console.log('datapointsList', datapointsList.length)
     for (let index = 0; index < datapointsList.length; index++) {
       var obj = {
-        "clientTaxonomyId": clientTaxonomyId,
-        "validationRule": datapointsList[index].validationRule,
-        "dataType": datapointsList[index].dataType,
-        "dependentCodes": datapointsList[index].dependentCodes ? JSON.parse(datapointsList[index].dependentCodes) : [],
-        "hasDependentCode": datapointsList[index].hasDependentCode,
-        "validationTypes": datapointsList[index].validationTypes ? JSON.parse(datapointsList[index].validationTypes) : [],
-        "percentileThresholdValue": datapointsList[index].percentileThresholdValue,
-        "DPCODE": datapointsList[index].DPCODE,
-        "parameters": datapointsList[index].parameters,
-        "methodName": datapointsList[index].methodName,
-        "checkCondition": datapointsList[index].checkCondition,
-        "criteria": datapointsList[index].criteria,
-        "collectionOrderNumber": datapointsList[index].collectionOrderNumber,
+        "dpType":datapointsList[index].dpType
+        // "clientTaxonomyId": clientTaxonomyId,
+        // "validationRule": datapointsList[index].validationRule,
+        // "dataType": datapointsList[index].dataType,
+        // "dependentCodes": datapointsList[index].dependentCodes ? JSON.parse(datapointsList[index].dependentCodes) : [],
+        // "hasDependentCode": datapointsList[index].hasDependentCode,
+        // "validationTypes": datapointsList[index].validationTypes ? JSON.parse(datapointsList[index].validationTypes) : [],
+        // "percentileThresholdValue": datapointsList[index].percentileThresholdValue,
+        // "DPCODE": datapointsList[index].DPCODE,
+        // "parameters": datapointsList[index].parameters,
+        // "methodName": datapointsList[index].methodName,
+        // "checkCondition": datapointsList[index].checkCondition,
+        // "criteria": datapointsList[index].criteria,
+        // "collectionOrderNumber": datapointsList[index].collectionOrderNumber,
       }
       console.log('obj', obj, index + 1);
       await Datapoints.updateOne({
