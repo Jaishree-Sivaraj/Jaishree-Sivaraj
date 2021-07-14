@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, getMyTasks } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
 const router = new Router()
-const { companyId, categoryId, groupId, revisionCode, assignedTo, year, analystSLA, taskStatus, analystId, qaId, status } = schema.tree
+const { companyId, taskNumber, categoryId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -17,12 +17,9 @@ const { companyId, categoryId, groupId, revisionCode, assignedTo, year, analystS
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Task assignment's companyId.
  * @apiParam categoryId Task assignment's categoryId.
- * @apiParam groupId Task assignment's groupId.
- * @apiParam revisionCode Task assignment's revisionCode.
- * @apiParam assignedTo Task assignment's assignedTo.
+ * @apiParam batchId Task assignment's batchId.
  * @apiParam year Task assignment's year.
  * @apiParam analystSLA Task assignment's analystSLA.
- * @apiParam taskStatus Task assignment's taskStatus.
  * @apiParam analystId Task assignment's analystId.
  * @apiParam qaId Task assignment's qaId.
  * @apiSuccess {Object} taskAssignment Task assignment's data.
@@ -32,7 +29,7 @@ const { companyId, categoryId, groupId, revisionCode, assignedTo, year, analystS
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, categoryId, groupId, revisionCode, assignedTo, year, analystSLA, taskStatus, analystId, qaId }),
+  body({ companyId, categoryId, batchId, year, analystSLA, qaSLA, analystId, qaId }),
   create)
 
 /**
@@ -51,6 +48,23 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+ * @api {get} /taskAssignments/my-tasks Retrieve my task assignments
+ * @apiName RetrieveTaskAssignments
+ * @apiGroup TaskAssignment
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of task assignments.
+ * @apiSuccess {Object[]} rows List of task assignments.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/my-tasks',
+  token({ required: true }),
+  query(),
+  getMyTasks)
 
 /**
  * @api {get} /taskAssignments/:id Retrieve task assignment
@@ -75,9 +89,7 @@ router.get('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Task assignment's companyId.
  * @apiParam categoryId Task assignment's categoryId.
- * @apiParam groupId Task assignment's groupId.
- * @apiParam revisionCode Task assignment's revisionCode.
- * @apiParam assignedTo Task assignment's assignedTo.
+ * @apiParam batchId Task assignment's batchId.
  * @apiParam year Task assignment's year.
  * @apiParam analystSLA Task assignment's analystSLA.
  * @apiParam taskStatus Task assignment's taskStatus.
@@ -91,7 +103,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ companyId, categoryId, groupId, revisionCode, assignedTo, year, analystSLA, taskStatus, analystId, qaId, status }),
+  body({ companyId, categoryId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status }),
   update)
 
 /**

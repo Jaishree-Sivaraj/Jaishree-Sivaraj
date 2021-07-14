@@ -38,6 +38,10 @@ const companiesSchema = new Schema({
   socialQAName: {
     type: String
   },
+  companyMemberDetails: {
+    type: Object,
+    default: []
+  },
   isAssignedToBatch: {
     type: Boolean,
     default: false
@@ -69,6 +73,7 @@ companiesSchema.methods = {
       cmieProwessCode: this.cmieProwessCode,
       socialAnalystName: this.socialAnalystName,
       socialQAName: this.socialQAName,
+      companyMemberDetails: this.companyMemberDetails ? this.companyMemberDetails : [],
       status: this.status,
       isAssignedToBatch: this.isAssignedToBatch ? this.isAssignedToBatch : false,
       createdAt: this.createdAt,
