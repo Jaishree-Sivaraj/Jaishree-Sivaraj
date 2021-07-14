@@ -139,7 +139,7 @@ export const includeCategoryIdsFromJson = async (req, res, next) => {
 
 export const includeExtraKeysFromJson = async (req, res, next) => {
   var clientTaxonomyId = req.params.clientTaxonomyId;
-  fs.readFile(__dirname + '/extra.json', async (err, data) => {
+  fs.readFile(__dirname + '/dpType.json', async (err, data) => {
     if (err) throw err;
     let datapointsList = JSON.parse(data);
     console.log('datapointsList', datapointsList.length)
