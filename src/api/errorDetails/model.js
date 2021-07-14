@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const errorDetailsSchema = new Schema({
   createdBy: {
@@ -6,58 +8,99 @@ const errorDetailsSchema = new Schema({
     ref: 'User',
     required: true
   },
+  categoryId: {
+    type: Schema.ObjectId,
+    ref: 'Categories',
+    required: true
+  },
+  datapointId: {
+    type: Schema.ObjectId,
+    ref: 'Datapoints',
+    required: true
+  },
+  year: {
+    type: String
+  },
+  companyId: {
+    type: Schema.ObjectId,
+    ref: 'Companies',
+    required: true
+  },
   errorTypeId: {
     type: Schema.ObjectId,
     ref: 'Error',
-    required: true
+    required: false
   },
   taskId: {
     type: Schema.ObjectId,
     ref: 'TaskAssignment',
-    required: true
+    required: false,
+    default: null
   },
-  loggedBy: {
+  raisedBy: {
     type: String
   },
   comments: {
-    type: String
+    type: Object,
+    default: []
   },
   errorLoggedDate: {
-    type: String
+    type: Date,
+    default: Date.now()
+  },
+  errorCaughtByRep: {
+    type: Object,
+    default: null
   },
   errorStatus: {
-    type: String
+    type: Boolean,
+    default: true
   },
-  standaloneId: {
-    type: Schema.ObjectId,
-    ref: 'StandaloneDatapoints',
-    required: true
+  isErrorAccepted: {
+    type: Boolean,
+    default: false
+  },
+  isErrorRejected: {
+    type: Boolean,
+    default: false
+  },
+  rejectComment: {
+    type: String
   },
   status: {
     type: Boolean,
-    default:true
+    default: true
   }
 }, {
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
 errorDetailsSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       errorTypeId: this.errorTypeId ? this.errorTypeId.view(full) : null,
       taskId: this.taskId ? this.taskId.view(full) : null,
-      loggedBy: this.loggedBy,
+      categoryId: this.categoryId ? this.categoryId.view(full) : null,
+      companyId: this.companyId ? this.companyId.view(full) : null,
+      year: this.year,
+      raisedBy: this.raisedBy,
       comments: this.comments,
+      isErrorAccepted: this.isErrorAccepted,
+      isErrorRejected: this.isErrorRejected,
+      rejectComment: this.rejectComment,
+      errorCaughtByRep: this.errorCaughtByRep,
       errorLoggedDate: this.errorLoggedDate,
       errorStatus: this.errorStatus,
-      standaloneId: this.standaloneId ? this.standaloneId.view(full) : null,
+      datapointId: this.datapointId ? this.datapointId.view(full) : null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

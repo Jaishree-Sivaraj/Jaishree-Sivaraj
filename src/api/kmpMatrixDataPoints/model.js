@@ -30,6 +30,10 @@ const kmpMatrixDataPointsSchema = new Schema({
   fiscalYearEndDate: {
     type: String
   },
+  sourceFileType: {
+    type: String,
+    default: "pdf"
+  },
   memberStatus: {
     type: Boolean
   },
@@ -51,57 +55,29 @@ const kmpMatrixDataPointsSchema = new Schema({
   screenShot: {
     type: String
   },
-  pdf: {
-    type: String
-  },
-  wordDoc: {
-    type: String
-  },
-  excel: {
-    type: String
-  },
   filePathway: {
     type: String
   },
   commentCalculations: {
     type: String
   },
-  dataVerification: {
-    type: String
-  },
-  errorType: {
-    type: String
-  },
-  errorComments: {
-    type: String
-  },
   internalFileSource: {
     type: String
   },
-  errorStatus: {
-    type: String
-  },
-  analystComments: {
-    type: String
-  },
-  additionalComments: {
-    type: String
+  comments: {
+    type: Object
   },
   collectionStatus: {
-    type: String,
-    default: 'Yet to start'
+    type: Boolean,
+    default: false
+  },
+  hasCorrection: {
+    type: Boolean,
+    default: false
   },
   verificationStatus: {
-    type: String,
-    default: 'Yet to start'
-  },
-  errorAcceptStatus: {
-    type: String,
-    default: ''
-  },
-  errorRejectComment: {
-    type: String,
-    default: ''
+    type: Boolean,
+    default: false
   },
   hasError: {
     type: Boolean,
@@ -147,19 +123,13 @@ kmpMatrixDataPointsSchema.methods = {
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,
-      pdf: this.pdf,
-      wordDoc: this.wordDoc,
-      excel: this.excel,
+      sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      dataVerification: this.dataVerification,
-      errorType: this.errorType,
-      errorComments: this.errorComments,
-      analystComments: this.analystComments,
+      comments: this.comments,
       collectionStatus: this.collectionStatus,
-      errorAcceptStatus: this.errorAcceptStatus,
+      hasCorrection: this.hasCorrection,
       verificationStatus: this.verificationStatus,
-      errorRejectComment: this.errorRejectComment,
       hasError: this.hasError,
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,

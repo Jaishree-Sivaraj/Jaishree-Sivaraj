@@ -51,14 +51,9 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   screenShot: {
     type: String
   },
-  pdf: {
-    type: String
-  },
-  wordDoc: {
-    type: String
-  },
-  excel: {
-    type: String
+  sourceFileType: {
+    type: String,
+    default: "pdf"
   },
   filePathway: {
     type: String
@@ -66,42 +61,23 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   commentCalculations: {
     type: String
   },
-  dataVerification: {
-    type: String
-  },
-  errorType: {
-    type: String
-  },
-  errorComments: {
-    type: String
-  },
   internalFileSource: {
     type: String
   },
-  errorStatus: {
-    type: String
-  },
-  analystComments: {
-    type: String
-  },
-  additionalComments: {
-    type: String
+  comments: {
+    type: Object
   },
   collectionStatus: {
-    type: String,
-    default: 'Yet to start'
+    type: Boolean,
+    default: false
   },
   verificationStatus: {
-    type: String,
-    default: 'Yet to start'
+    type: Boolean,
+    default: false
   },
-  errorAcceptStatus: {
-    type: String,
-    default: ''
-  },
-  errorRejectComment: {
-    type: String,
-    default: ''
+  hasCorrection: {
+    type: Boolean,
+    default: false
   },
   hasError: {
     type: Boolean,
@@ -146,21 +122,14 @@ boardMembersMatrixDataPointsSchema.methods = {
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,
-      pdf: this.pdf,
-      wordDoc: this.wordDoc,
-      excel: this.excel,
+      sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      dataVerification: this.dataVerification,
-      errorType: this.errorType,
-      errorComments: this.errorComments,
-      analystComments: this.analystComments,
+      comments: this.comments,
       internalFileSource: this.internalFileSource,
-      additionalComments: this.additionalComments,
       collectionStatus: this.collectionStatus,
-      errorAcceptStatus: this.errorAcceptStatus,
+      hasCorrection: this.hasCorrection,
       verificationStatus: this.verificationStatus,
-      errorRejectComment: this.errorRejectComment,
       hasError: this.hasError,
       memberStatus: this.memberStatus,
       status: this.status,

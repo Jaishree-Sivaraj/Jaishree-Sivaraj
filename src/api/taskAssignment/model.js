@@ -66,7 +66,7 @@ taskAssignmentSchema.methods = {
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       companyId: this.companyId ?  this.companyId.view(full) : null,
       categoryId: this.categoryId ? this.categoryId.view(full) : null,
-      groupId: this.groupId ? this.groupId(view) : null,
+      groupId: this.groupId ? this.groupId.view(full) : null,
       revisionCode: this.revisionCode,
       assignedTo: this.assignedTo,
       year: this.year,
