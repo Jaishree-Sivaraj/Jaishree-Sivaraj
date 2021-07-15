@@ -145,7 +145,7 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
     console.log('datapointsList', datapointsList.length)
     for (let index = 0; index < datapointsList.length; index++) {
       var obj = {
-        "dpType":datapointsList[index].dpType
+        "dpType": datapointsList[index].dpType
         // "clientTaxonomyId": clientTaxonomyId,
         // "validationRule": datapointsList[index].validationRule,
         // "dataType": datapointsList[index].dataType,
@@ -199,13 +199,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // let dpDetailsList = [];
     let currentAllStandaloneDetails = [],
       historyAllStandaloneDetails = [];
+    let keyIssuesList = [];
+
     let boardDpCodesData = {
       boardMemberList: [],
-      dpCodeData: []
+      dpCodesData: []
     };
     let kmpDpCodesData = {
       kmpMemberList: [],
-      dpCodeData: []
+      dpCodesData: []
     };
     let dpCodesData = [];
     let currentAllBoardMemberMatrixDetails = [],
@@ -291,6 +293,16 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     if (dpTypeValues.length > 0) {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
+          let keyIssuesCollection = await Datapoints.find({
+            relevantForIndia: "Yes",
+            dataCollection: 'Yes',
+            functionId: {
+              "$ne": functionId.id
+            },
+            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+            categoryId: taskDetails.categoryId,
+            status: true
+          }).populate('keyIssueId');
           let dpTypeDatapoints = await Datapoints.find({
             relevantForIndia: "Yes",
             dataCollection: 'Yes',
@@ -302,7 +314,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             dpType: dpTypeValues[dpTypeIndex],
             status: true
           }).populate('keyIssueId').populate('categoryId');
+
+          let keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
+          //console.log(keyIssueList);
+          for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
+            let keyIssues = {
+              label: keyIssueListObject[keyIssueListIndex].keyIssueId.keyIssueName,
+              value: keyIssueListObject[keyIssueListIndex].keyIssueId.id
+            }
+            keyIssuesList.push(keyIssues);
+          }
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
+            let keyIssueList = _.uniqBy(dpTypeDatapoints, 'keyIssueId');
+            console.log(keyIssueList);
             for (let currentBoardMemYearIndex = 0; currentBoardMemYearIndex < currentYear.length; currentBoardMemYearIndex++) {
               let boardNameList = {
                 year: currentYear[currentBoardMemYearIndex],
@@ -323,8 +347,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
               let boardDatapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -333,7 +357,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 fiscalYear: taskDetails.year,
                 currentData: [],
-                historicalData: []
+                historicalData: [],
+                status: ""
               }
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                 let boardMembersList = currentAllBoardMemberMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
@@ -347,6 +372,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       if (object.hasError == true) {
                         let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                         currentDatapointsObject = {
+                          status: 'Completed',
                           dpCode: dpTypeDatapoints[datapointsIndex].code,
                           dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                           fiscalYear: currentYear[currentYearIndex],
@@ -372,10 +398,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                           },
                           comments: []
                         }
-
                       } else {
-
                         currentDatapointsObject = {
+                          status: 'Completed',
                           dpCode: dpTypeDatapoints[datapointsIndex].code,
                           dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                           fiscalYear: currentYear[currentYearIndex],
@@ -395,10 +420,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                           comments: []
                         }
                       }
+                      boardDatapointsObject.status = 'Completed'
                     }
                   });
                   if (Object.keys(currentDatapointsObject).length == 0) {
                     currentDatapointsObject = {
+                      status: 'Yet to Start',
                       dpCode: dpTypeDatapoints[datapointsIndex].code,
                       dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                       fiscalYear: currentYear[currentYearIndex],
@@ -413,6 +440,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       error: {},
                       comments: []
                     }
+                    boardDatapointsObject.status = "Yet to Start"
                   }
                   boardDatapointsObject.currentData.push(currentDatapointsObject);
                 }
@@ -426,6 +454,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   _.filter(historyAllBoardMemberMatrixDetails, function (object) {
                     if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
                       historicalDatapointsObject = {
+                        status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
                         dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                         fiscalYear: historyYear[hitoryYearIndex].year,
@@ -453,7 +482,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               // mergedBoardMemberHistoryDetails = _.merge(mergedBoardMemberHistoryDetails, mergedBoardHistoryDetails);
               // boardhistoricalDatapointsIndex.push(mergedBoardMemberHistoryDetails);             
 
-              boardDpCodesData.dpCodeData.push(boardDatapointsObject);
+              boardDpCodesData.dpCodesData.push(boardDatapointsObject);
             }
           } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             for (let currentkmpMemYearIndex = 0; currentkmpMemYearIndex < currentYear.length; currentkmpMemYearIndex++) {
@@ -464,9 +493,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let kmpMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentkmpMemYearIndex]);
               let kmpMemberNameList = _.uniqBy(kmpMembersList, 'memberName');
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < kmpMemberNameList.length; kmpMemberNameListIndex++) {
-                let kmpNameValue ={
-                  label:kmpMemberNameList[kmpMemberNameListIndex].memberName,
-                  value:kmpMemberNameList[kmpMemberNameListIndex].memberName
+                let kmpNameValue = {
+                  label: kmpMemberNameList[kmpMemberNameListIndex].memberName,
+                  value: kmpMemberNameList[kmpMemberNameListIndex].memberName
                 }
                 kmpNameList.memberName.push(kmpNameValue);
               }
@@ -476,8 +505,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
               console.log(datapointsIndex);
               let kmpDatapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -486,7 +515,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 fiscalYear: taskDetails.year,
                 currentData: [],
-                historicalData: []
+                historicalData: [],
+                status: ''
               }
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                 let boardMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
@@ -499,6 +529,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       if (object.hasError == true) {
                         let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                         currentDatapointsObject = {
+                          status: 'Completed',
                           dpCode: dpTypeDatapoints[datapointsIndex].code,
                           dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                           fiscalYear: currentYear[currentYearIndex],
@@ -528,6 +559,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       } else {
 
                         currentDatapointsObject = {
+                          status: 'Completed',
                           dpCode: dpTypeDatapoints[datapointsIndex].code,
                           dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                           fiscalYear: currentYear[currentYearIndex],
@@ -547,10 +579,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                           comments: []
                         }
                       }
+                      kmpDatapointsObject.status = 'Completed'
                     }
                   });
                   if (Object.keys(currentDatapointsObject).length == 0) {
                     currentDatapointsObject = {
+                      status: 'Yet to Start',
                       dpCode: dpTypeDatapoints[datapointsIndex].code,
                       dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                       fiscalYear: currentYear[currentYearIndex],
@@ -565,6 +599,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       error: {},
                       comments: []
                     }
+                    kmpDatapointsObject.status = 'Yet to Start';
                   }
                   kmpDatapointsObject.currentData.push(currentDatapointsObject);
                   //mergedKMPCurrentDetails = _.concat(currentDatapointsObject, currentDatapointsObject);
@@ -580,6 +615,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   _.filter(historyAllKmpMatrixDetails, function (object) {
                     if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
                       historicalDatapointsObject = {
+                        status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
                         dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                         fiscalYear: historyYear[hitoryYearIndex].year,
@@ -606,7 +642,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
               }
 
-              kmpDpCodesData.dpCodeData.push(kmpDatapointsObject);
+              kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
             }
             // kmpHistoricalDatapointsIndex.push(mergedBoardHistoryDetails);
 
@@ -615,8 +651,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
               let datapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -625,7 +661,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 fiscalYear: taskDetails.year,
                 currentData: [],
-                historicalData: []
+                historicalData: [],
+                status: ''
               }
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                 let currentDatapointsObject = {};
@@ -634,6 +671,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     if (object.hasError == true) {
                       let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                       currentDatapointsObject = {
+                        status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
                         dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                         fiscalYear: currentYear[currentYearIndex],
@@ -661,8 +699,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       }
 
                     } else {
-
                       currentDatapointsObject = {
+                        status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
                         dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                         fiscalYear: currentYear[currentYearIndex],
@@ -682,10 +720,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                         comments: []
                       }
                     }
+                    datapointsObject.status = 'Completed';
                   }
                 });
                 if (Object.keys(currentDatapointsObject).length == 0) {
                   currentDatapointsObject = {
+                    status: 'Yet to Start',
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                     fiscalYear: currentYear[currentYearIndex],
@@ -699,6 +739,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     error: {},
                     comments: []
                   }
+                  datapointsObject.status = 'Yet to Start';
                 }
                 datapointsObject.currentData.push(currentDatapointsObject);
                 // mergedCurrentDetails = _.concat(currentDatapointsObject, currentDatapointsObject);
@@ -709,6 +750,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 _.filter(historyAllStandaloneDetails, function (object) {
                   if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year) {
                     historicalDatapointsObject = {
+                      status: 'Completed',
                       dpCode: dpTypeDatapoints[datapointsIndex].code,
                       dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                       fiscalYear: historyYear[hitoryYearIndex].year,
@@ -743,11 +785,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         return res.status(200).send({
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
-          dpCodeData: {
-            standalone: dpCodesData,
-            boardMatrix: boardDpCodesData,
-            kmpMatrix: kmpDpCodesData
-          }
+          keyIssuesList: keyIssuesList,
+          standalone: {
+            dpCodesData: dpCodesData
+          },
+          boardMatrix: boardDpCodesData,
+          kmpMatrix: kmpDpCodesData
+
         });
       } else {
         console.log(dpTypeValues.length);
@@ -764,11 +808,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             status: true
           }).populate('keyIssueId').populate('categoryId');
           console.log(dpTypeDatapoints.length)
+          let keyIssueListObject = _.uniqBy(dpTypeDatapoints, 'keyIssueId');
+          //console.log(keyIssueList);
+          for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
+            let keyIssues = {
+              label: keyIssueListObject[keyIssueListIndex].keyIssueId.keyIssueName,
+              value: keyIssueListObject[keyIssueListIndex].keyIssueId.id
+            }
+            keyIssuesList.push(keyIssues);
+          }
           for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
             let datapointsObject = {
-              dpcode: dpTypeDatapoints[datapointsIndex].code,
-              dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+              dpCode: dpTypeDatapoints[datapointsIndex].code,
+              dpCodeId: dpTypeDatapoints[datapointsIndex].id,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -777,7 +830,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
               fiscalYear: taskDetails.year,
               currentData: [],
-              historicalData: []
+              historicalData: [],
+              status: ''
             }
             for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let currentDatapointsObject = {};
@@ -787,6 +841,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                     console.log(errorDetailsObject[0].errorTypeId.errorType)
                     currentDatapointsObject = {
+                      status: 'Completed',
                       dpCode: dpTypeDatapoints[datapointsIndex].code,
                       dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                       fiscalYear: currentYear[currentYearIndex],
@@ -815,6 +870,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
                   } else {
                     currentDatapointsObject = {
+                      status: 'Completed',
                       dpCode: dpTypeDatapoints[datapointsIndex].code,
                       dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                       fiscalYear: currentYear[currentYearIndex],
@@ -834,10 +890,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       comments: []
                     }
                   }
+                  datapointsObject.status = 'Completed'
                 }
               });
               if (Object.keys(currentDatapointsObject).length == 0) {
                 currentDatapointsObject = {
+                  status: 'Yet to Start',
                   dpCode: dpTypeDatapoints[datapointsIndex].code,
                   dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                   fiscalYear: currentYear[currentYearIndex],
@@ -851,6 +909,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   error: {},
                   comments: []
                 }
+                datapointsObject.status = 'Yet to Start'
               }
               datapointsObject.currentData.push(currentDatapointsObject);
             }
@@ -859,6 +918,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               _.filter(historyAllStandaloneDetails, function (object) {
                 if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year) {
                   historicalDatapointsObject = {
+                    status: 'Completed',
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                     fiscalYear: historyYear[hitoryYearIndex].year,
@@ -892,7 +952,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         return res.status(200).send({
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
-          dpCodeData: dpCodesData
+          keyIssuesList: keyIssuesList,
+          standalone: {
+            dpCodesData: dpCodesData
+          }
         });
       }
     } else {
@@ -907,6 +970,163 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       message: error
     });
 
+  }
+}
+
+export const datapointDetails = async (req, res, next) => {
+  try {
+
+    let taskDetails = await TaskAssignment.findOne({
+      _id: req.params.taskId
+    }).populate('companyId');
+    let functionId = await Functions.findOne({
+      functionType: "Negative News",
+      status: true
+    });
+
+    let currentYear = taskDetails.year.split(",");
+    let dpTypeValues = await Datapoints.findOne({
+      relevantForIndia: "Yes",
+      dataCollection: 'Yes',
+      functionId: {
+        "$ne": functionId.id
+      },
+      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      categoryId: taskDetails.categoryId,
+      datapointId: req.params.datapointId,
+      status: true
+    }).populate('keyIssueId').populate('categoryId');
+    if (dpTypeValues.dptype == 'Standalone') {
+
+      let currentAllStandaloneDetails = await StandaloneDatapoints.find({
+          companyId: taskDetails.companyId.id,
+          datapointId: req.params.datapointId,
+          year: {
+            $in: currentYear
+          },
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+
+      let historyAllStandaloneDetails = await StandaloneDatapoints.find({
+          companyId: taskDetails.companyId.id,
+          datapointId: req.params.datapointId,
+          year: {
+            $nin: currentYear
+          },
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+    }
+    console.log()
+    let datapointsObject = {
+      dpcode: dpTypeValues.code,
+      dpcodeId: dpTypeValues.id,
+      companyId: taskDetails.companyId.id,
+      companyName: taskDetails.companyId.companyName,
+      keyIssueId: dpTypeValues.keyIssueId.id,
+      keyIssue: dpTypeValues.keyIssueId.keyIssueName,
+      pillarId: dpTypeValues.categoryId.id,
+      pillar: dpTypeValues.categoryId.categoryName,
+      fiscalYear: taskDetails.year,
+      currentData: [],
+      historicalData: [],
+      status: ''
+    }
+    for (let currentyearIndex = 0; currentyearIndex < currentAllStandaloneDetails.length; currentyearIndex++) {
+      let currentDatapointsObject = {};
+      _.filter(currentAllStandaloneDetails, function (object) {
+        if (object.datapointId.id == req.params.datapointId && object.year == currentYear[currentYearIndex]) {
+          if (object.hasError == true) {
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.params.datapointId && obj.year == currentYear[currentYearIndex])
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: object.screenShot,
+              response: object.response,
+              memberName: object.memberName,
+              source: {
+                url: object.url ? object.url : '',
+                sourceName: object.sourceName ? object.sourceName : '',
+                publicationDate: object.publicationDate ? object.publicationDate : ''
+              },
+              error: {
+                errorType: {
+                  label: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  value: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : ''
+                },
+                errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
+                errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
+              },
+              comments: []
+            }
+
+          } else {
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: object.screenShot,
+              response: object.response,
+              memberName: object.memberName,
+              source: {
+                url: object.url ? object.url : '',
+                sourceName: object.sourceName ? object.sourceName : '',
+                publicationDate: object.publicationDate ? object.publicationDate : ''
+              },
+              error: {},
+              comments: []
+            }
+          }
+          datapointsObject.status = 'Completed';
+        }
+      });
+      if (Object.keys(currentDatapointsObject).length == 0) {
+        currentDatapointsObject = {
+          status: 'Yet to Start',
+          dpCode: dpTypeValues.code,
+          dpCodeId: dpTypeValues.id,
+          fiscalYear: currentYear[currentYearIndex],
+          description: dpTypeValues.description,
+          dataType: dpTypeValues.dataType,
+          textSnippet: '',
+          pageNo: '',
+          screenShot: '',
+          response: '',
+          source: '',
+          error: {},
+          comments: []
+        }
+        datapointsObject.status = 'Yet to Start';
+      }
+      datapointsObject.currentData.push(currentDatapointsObject);
+    }
+
+    return res.status(200).send({
+      status: "200",
+      message: "Data collection dp codes retrieved successfully!",
+      standalone: datapointsObject
+    });
+  } catch (error) {
+
+    return res.status(500).json({
+      message: error.message
+    });
   }
 }
 

@@ -15,7 +15,7 @@ export const login = async ({ user }, res, next) => {
         let roleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
         let userDetail = await User.findOne({
           _id: user.id,
-          isRoleAssigned: true,
+          isUserActive: true,
           status: true,
           '$or': [{
             'roleDetails.roles': { '$in': [roleDetails.id] }  //
@@ -61,7 +61,7 @@ export const login = async ({ user }, res, next) => {
         } else {
           let userDetail = await User.findOne({
             _id: user.id,
-            isRoleAssigned: true,
+            isUserActive: true,
             status: true
           }).populate({ path: 'roleDetails.roles' }).
             populate({ path: 'roleDetails.primaryRole' });
@@ -87,7 +87,7 @@ export const loginOtp = async (req, res, next) => {
   sign(req.user.id)
     .then(async (token) => {
       if (req.body) {
-        let userDetail = await User.findOne({ email: req.body.email, isRoleAssigned: true, status: true }).populate({ path: 'roleDetails.roles' }).
+        let userDetail = await User.findOne({ email: req.body.email, isUserActive: true, status: true }).populate({ path: 'roleDetails.roles' }).
           populate({ path: 'roleDetails.primaryRole' });
         if (userDetail) {
           userDetail = userDetail.toObject();
@@ -100,7 +100,7 @@ export const loginOtp = async (req, res, next) => {
           }
           return res.status(200).json({ token: token, message: "OTP verified successfully!", user: userDetail });
         } else {
-          return res.status(401).json({ status: "410", message: "Invalid OTP or Email!" })
+          return res.status(401).json({ status: "401", message: "Authorization Failed!" })
         }
       } else {
         return res.status(200).json({ token: token, message: "OTP verified successfully!" });

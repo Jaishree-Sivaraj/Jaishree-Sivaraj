@@ -43,6 +43,8 @@ import onboarding from './onboarding'
 import companySources from './companySources'
 import sourceTypes from './sourceTypes'
 import batchWisePillarAssignment from './batchWisePillarAssignment'
+import companiesTasks from './companies_tasks'
+import userPillarAssignments from './user_pillar_assignments'
 
 const router = new Router()
 
@@ -114,5 +116,7 @@ router.use('/onboardings', onboarding)
 router.use('/companySources', companySources)
 router.use('/sourceTypes', sourceTypes)
 router.use('/batchWisePillarAssignments', batchWisePillarAssignment)
+router.use('/companies_tasks', companiesTasks)
+router.use('/user_pillar_assignments', userPillarAssignments)
 
 export default router
