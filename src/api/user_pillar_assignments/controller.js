@@ -7,6 +7,30 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
+export const assignPillarToUsers = async({ user, bodymen: { body } }, res, next) => {
+  if (body.user && body.user.length > 0) {
+    let pillarAssignmentList = [];
+    for (let index = 0; index < body.user.length; index++) {
+      let objectToInsert = {
+        clientTaxonomyId: body.taxonomy ? body.taxonomy.value : null,
+        primaryPillar: body.primary ? body.primary.value : null,
+        secondaryPillar: body.secondary ? body.secondary.value : null,
+        userId: body.user[index] ? body.user[index] : null,
+        status: true,
+        createdBy: user
+      }
+      pillarAssignmentList.push(objectToInsert);
+    }
+    await UserPillarAssignments.insertMany(pillarAssignmentList)
+    .then((record) => {
+      return res.status(200).json({ status: "200", message: "Pillar assignment successful!" });
+    })
+    .catch((error) => {
+      return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to assign pillar!" });
+    });
+  }
+}
+
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   UserPillarAssignments.count(query)
     .then(count => UserPillarAssignments.find(query, select, cursor)

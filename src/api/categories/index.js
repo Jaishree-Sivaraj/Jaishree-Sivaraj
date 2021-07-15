@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, getTaxonomyCategories } from './controller'
 import { schema } from './model'
 export Categories, { schema } from './model'
 
@@ -60,6 +60,21 @@ router.get('/',
 router.get('/:id',
   token({ required: true }),
   show)
+
+/**
+ * @api {get} /categories/taxonomy-pillars/:clientTaxonomyId Retrieve categories
+ * @apiName RetrieveCategories
+ * @apiGroup Categories
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} categories Categories's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Categories not found.
+ * @apiError 401 user access only.
+ */
+router.get('/taxonomy-pillars/:clientTaxonomyId',
+  token({ required: true }),
+  getTaxonomyCategories)
 
 /**
  * @api {put} /categories/:id Update categories
