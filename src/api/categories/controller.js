@@ -27,7 +27,7 @@ export const show = ({ params }, res, next) =>
 
 export const getTaxonomyCategories = ({ params }, res, next) => {
   Categories.count({ clientTaxonomyId: params.clientTaxonomyId ? params.clientTaxonomyId : null, status: true })
-    .then(count => Categories.find({ clientTaxonomyId: params.clientTaxonomyId ? params.clientTaxonomyId : null }, select, cursor)
+    .then(count => Categories.find({ clientTaxonomyId: params.clientTaxonomyId ? params.clientTaxonomyId : null })
       .then((categories) => ({
         count,
         rows: categories.map((categories) => categories.view())
