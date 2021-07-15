@@ -19,7 +19,6 @@ const { taskId, companyId, year, categoryId, status } = schema.tree
  * @apiParam companyId Companies tasks's companyId.
  * @apiParam year Companies tasks's year.
  * @apiParam categoryId Companies tasks's categoryId.
- * @apiParam status Companies tasks's status.
  * @apiSuccess {Object} companiesTasks Companies tasks's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Companies tasks not found.
@@ -27,7 +26,7 @@ const { taskId, companyId, year, categoryId, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ taskId, companyId, year, categoryId, status }),
+  body({ taskId, companyId, year, categoryId }),
   create)
 
 /**
