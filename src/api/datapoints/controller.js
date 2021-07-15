@@ -203,11 +203,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     let boardDpCodesData = {
       boardMemberList: [],
-      dpCodeData: []
+      dpCodesData: []
     };
     let kmpDpCodesData = {
       kmpMemberList: [],
-      dpCodeData: []
+      dpCodesData: []
     };
     let dpCodesData = [];
     let currentAllBoardMemberMatrixDetails = [],
@@ -314,7 +314,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             dpType: dpTypeValues[dpTypeIndex],
             status: true
           }).populate('keyIssueId').populate('categoryId');
-          
+
           let keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
           //console.log(keyIssueList);
           for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
@@ -482,7 +482,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               // mergedBoardMemberHistoryDetails = _.merge(mergedBoardMemberHistoryDetails, mergedBoardHistoryDetails);
               // boardhistoricalDatapointsIndex.push(mergedBoardMemberHistoryDetails);             
 
-              boardDpCodesData.dpCodeData.push(boardDatapointsObject);
+              boardDpCodesData.dpCodesData.push(boardDatapointsObject);
             }
           } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             for (let currentkmpMemYearIndex = 0; currentkmpMemYearIndex < currentYear.length; currentkmpMemYearIndex++) {
@@ -642,7 +642,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
               }
 
-              kmpDpCodesData.dpCodeData.push(kmpDatapointsObject);
+              kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
             }
             // kmpHistoricalDatapointsIndex.push(mergedBoardHistoryDetails);
 
@@ -785,9 +785,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         return res.status(200).send({
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
-          keyIssuesList:keyIssuesList,
+          keyIssuesList: keyIssuesList,
           dpCodeData: {
-            standalone: dpCodesData,
+            standalone: {
+              dpCodesData: dpCodesData
+            },
             boardMatrix: boardDpCodesData,
             kmpMatrix: kmpDpCodesData
           }
@@ -951,8 +953,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         return res.status(200).send({
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
-          keyIssuesList:keyIssuesList,
-          standalone: dpCodesData
+          keyIssuesList: keyIssuesList,
+          standalone: {
+            dpCodesData: dpCodesData
+          }
         });
       }
     } else {
