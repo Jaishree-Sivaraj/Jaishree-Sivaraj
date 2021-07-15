@@ -101,14 +101,18 @@ export const getMyTasks = async({ user, querymen: { query, select, cursor } }, r
   populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
   let analystTaskList = [], qaTaskList = [], clientRepTaskList = [], companyRepTaskList = [];
   let userRoles = [];
-  if (completeUserDetail && completeUserDetail.primaryRole) {
-    userRoles.push(completeUserDetail.primaryRole.roleName);
-    if (completeUserDetail.roles && completeUserDetail.roles.length > 0) {
-      for (let index = 0; index < completeUserDetail.roles.length; index++) {
-        if (completeUserDetail.roles[index]) {
-          userRoles.push(completeUserDetail.roles[index].roleName);          
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);          
+          }
         }
-      }
+      }      
+    } else {
+      return res.status(400).json({ "status": "400", message: "User role not found!" })
     }
   } else {
     return res.status(400).json({ "status": "400", message: "User role not found!" })
