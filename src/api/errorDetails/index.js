@@ -7,7 +7,7 @@ import { schema } from './model'
 export ErrorDetails, { schema } from './model'
 
 const router = new Router()
-const { errorTypeId, taskId, loggedBy, comments, errorLoggedDate, errorStatus, standaloneId, status } = schema.tree
+const { errorTypeId, taskId, categoryId, companyId, year, raisedBy, comments, isErrorAccepted, isErrorRejected, rejectComment, errorCaughtByRep, errorLoggedDate, errorStatus, datapointId, status } = schema.tree
 
 /**
  * @api {post} /errorDetails Create error details
@@ -29,7 +29,7 @@ const { errorTypeId, taskId, loggedBy, comments, errorLoggedDate, errorStatus, s
  */
 router.post('/',
   token({ required: true }),
-  body({ errorTypeId, taskId, loggedBy, comments, errorLoggedDate, errorStatus, standaloneId }),
+  body({ errorTypeId, categoryId, companyId, year, raisedBy, rejectComment, datapointId }),
   create)
 
 /**
@@ -85,7 +85,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ errorTypeId, taskId, loggedBy, comments, errorLoggedDate, errorStatus, standaloneId, status }),
+  body({ errorTypeId, taskId, categoryId, companyId, year, raisedBy, comments, isErrorAccepted, isErrorRejected, rejectComment, errorCaughtByRep, errorLoggedDate, errorStatus, datapointId, status }),
   update)
 
 /**

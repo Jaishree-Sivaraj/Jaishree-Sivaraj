@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const kmpMatrixDataPointsSchema = new Schema({
   createdBy: {
@@ -28,6 +30,10 @@ const kmpMatrixDataPointsSchema = new Schema({
   fiscalYearEndDate: {
     type: String
   },
+  sourceFileType: {
+    type: String,
+    default: "pdf"
+  },
   memberStatus: {
     type: Boolean
   },
@@ -49,41 +55,39 @@ const kmpMatrixDataPointsSchema = new Schema({
   screenShot: {
     type: String
   },
-  pdf: {
-    type: String
-  },
-  wordDoc: {
-    type: String
-  },
-  excel: {
-    type: String
-  },
   filePathway: {
     type: String
   },
   commentCalculations: {
     type: String
   },
-  dataVerification: {
-    type: String
-  },
-  errorType: {
-    type: String
-  },
-  errorComments: {
-    type: String
-  },
   internalFileSource: {
     type: String
   },
-  errorStatus: {
-    type: String
+  comments: {
+    type: Object
   },
-  analystComments: {
-    type: String
+  collectionStatus: {
+    type: Boolean,
+    default: false
   },
-  additionalComments: {
-    type: String
+  hasCorrection: {
+    type: Boolean,
+    default: false
+  },
+  verificationStatus: {
+    type: Boolean,
+    default: false
+  },
+  hasError: {
+    type: Boolean,
+    default: false
+  },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false,
+    default: null
   },
   status: {
     type: Boolean,
@@ -93,7 +97,9 @@ const kmpMatrixDataPointsSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
@@ -106,6 +112,7 @@ kmpMatrixDataPointsSchema.methods = {
       companyId: this.companyId ? this.companyId.view(full) : null,
       memberName: this.memberName,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
+      taskId: this.taskId ? this.taskId.view(full) : null,
       response: this.response,
       year: this.year,
       fiscalYearEndDate: this.fiscalYearEndDate,
@@ -116,15 +123,14 @@ kmpMatrixDataPointsSchema.methods = {
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,
-      pdf: this.pdf,
-      wordDoc: this.wordDoc,
-      excel: this.excel,
+      sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      dataVerification: this.dataVerification,
-      errorType: this.errorType,
-      errorComments: this.errorComments,
-      analystComments: this.analystComments,
+      comments: this.comments,
+      collectionStatus: this.collectionStatus,
+      hasCorrection: this.hasCorrection,
+      verificationStatus: this.verificationStatus,
+      hasError: this.hasError,
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,
       status: this.status,

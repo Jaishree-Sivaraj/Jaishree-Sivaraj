@@ -59,15 +59,25 @@ export const login = async ({ user }, res, next) => {
           });
           return res.send({ status: "200", message: "Otp sent to registered email" });
         } else {
-          userDetail = userDetail.toObject();
-          delete userDetail.password;
-          userDetail.roleDetails = {
-            "role": userDetail.roleDetails.roles.length > 0 ? userDetail.roleDetails.roles.map((rec1) => {
-              return { value: rec1._id, label: rec1.roleName }
-            }) : [],
-            "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
+          let userDetail = await User.findOne({
+            _id: user.id,
+            isRoleAssigned: true,
+            status: true
+          }).populate({ path: 'roleDetails.roles' }).
+            populate({ path: 'roleDetails.primaryRole' });
+          if (userDetail && Object.keys(userDetail).length > 0) {
+            userDetail = userDetail.toObject();
+            delete userDetail.password;
+            userDetail.roleDetails = {
+              "role": userDetail.roleDetails.roles.length > 0 ? userDetail.roleDetails.roles.map((rec1) => {
+                return { value: rec1._id, label: rec1.roleName }
+              }) : [],
+              "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
+            }               
+            return res.send({ message: "Login successful!", status: "200", token: response, user: userDetail });
+          } else {
+            return res.send({ message: "User don't have access, please contact admin!", status: "401" });
           }
-          return res.send({ token: response, user: userDetail });
         }
       }
     });
@@ -77,7 +87,7 @@ export const loginOtp = async (req, res, next) => {
   sign(req.user.id)
     .then(async (token) => {
       if (req.body) {
-        let userDetail = await User.findOne({ email: req.body.email, isRoleAssigned: true }).populate({ path: 'roleDetails.roles' }).
+        let userDetail = await User.findOne({ email: req.body.email, isRoleAssigned: true, status: true }).populate({ path: 'roleDetails.roles' }).
           populate({ path: 'roleDetails.primaryRole' });
         if (userDetail) {
           userDetail = userDetail.toObject();
@@ -90,7 +100,7 @@ export const loginOtp = async (req, res, next) => {
           }
           return res.status(200).json({ token: token, message: "OTP verified successfully!", user: userDetail });
         } else {
-          return res.status(401).json({ message: "Invalid OTP or Email!" })
+          return res.status(401).json({ status: "410", message: "Invalid OTP or Email!" })
         }
       } else {
         return res.status(200).json({ token: token, message: "OTP verified successfully!" });
