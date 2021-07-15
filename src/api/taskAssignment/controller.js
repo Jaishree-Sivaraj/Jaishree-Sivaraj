@@ -7,7 +7,7 @@ import { Categories } from '../categories'
 import { Batches } from "../batches"
 import { CompanyRepresentatives } from '../company-representatives'
 import { ClientRepresentatives } from '../client-representatives'
-
+import { CompaniesTasks } from "../companies_tasks"
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
@@ -38,10 +38,19 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
         }
         body.taskNumber = 'DT' + newTaskNumber;
         await TaskAssignment.create({ ...body, createdBy: user })
-          .then((taskAssignment) => {
-            return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
-          })
-          .catch((error) => {
+          .then(async (taskAssignment) => {
+            await CompaniesTasks.create({
+              "companyId": body.companyId,
+              "year": body.year,
+              "categoryId": body.categoryId,
+              "status": true,
+              "taskId": taskAssignment.id
+            }).then(async () => {
+              return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
+            }).catch((error) => {
+              return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create companies task!" });
+            })
+          }).catch((error) => {
             return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
           })
       }
@@ -450,6 +459,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
 
 
 export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
+  console.log('bodymen', body);
   //batchId -> Batches.findById(batchId) -> companies -> 
   //loop companiesList 
   //unassigned company list - companies_tasks.find({categoryId, year : {$in : [year]}}) if length > 0 don'y include this company else include with value and lable 
@@ -458,20 +468,34 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   //if categoryId match with roleDetals.primaryRole pilltype would be primary if match with roleDetals.roles pillType would be secondary
   //loop assignedMembers and find qa and analyst with role name 
   //each iteration of assignedMembers find in taskAssignement with for qa qaId and for analyst with analystId, taskStatus !=Collection Completed and !=Correction Completed for analyst, !=Verification Completed for qa store in activeTaskCount;
-  var batch = await Batches.Batches.findById(bodymen.batchID).populate('companiesList');
-  var unAssignedCompanyListRes = [];
-  for (let index = 0; index < batch.companiesList.length; index++) {
-    var unAssignedCompanyList = CompanyTasks.find({ categoryId: bodymen.categoryId, year: { $in: batch.years } });
-    if (unAssignedCompanyList.length === 0) {
-      unAssignedCompanyListRes = unAssignedCompanyList.map(function (rec) {
-        return { id: 0, companyName: rec.companyName }
-      })
+  var batch = await Batches.findById(body.batchId).populate('companiesList').catch();
+  if (batch && batch.companiesList.length > 0) {
+    for (let index = 0; index < batch.companiesList.length; index++) {
+      var years = '';
+      if (batch.years && batch.years.length > 0) {
+        batch.years.forEach((rec, forIndex) => {
+          if (forIndex == batch.years.length - 1) {
+            years = years + rec;
+          } else {
+            years = years + rec + ', ';
+          }
+        })
+      }
+      var unAssignedCompanyList = await CompaniesTasks.find({ categoryId: body.categoryId, year: years }).catch();
+      if (unAssignedCompanyList.length === 0) {
+        var unAssignedCompanyListRes = unAssignedCompanyList.map(function (rec, index) {
+          return { id: index, companyName: rec.companyName }
+        })
+      }
     }
   }
-  var group = Group.findById(bodymen.groupId).populate('assignedMembers');
+  var group = await Group.findById(body.groupId).populate('assignedMembers');
+  console.log('group', group);
   if (group && group.assignedMembers.length > 0) {
     for (let index = 0; index < group.assignedMembers.length; index++) {
-      var userDetails = User.findById(group.user)
+      var userDetails = User.findById(group.assignedMembers[index]._id);
+
+
     }
   }
 }

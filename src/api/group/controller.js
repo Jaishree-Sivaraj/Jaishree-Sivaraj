@@ -4,6 +4,7 @@ import { Group } from '.'
 import { User } from '../user'
 import { BatchWisePillarAssignment } from '../batchWisePillarAssignment'
 import { json } from 'body-parser'
+import { Batches } from '../batches'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -50,6 +51,11 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
         if (membersList.length > 0) {
           await User.updateMany({
             "_id": { $in: membersList }
+          }, { $set: { isAssignedToGroup: true } }, {});
+        }
+        if (batchList.length > 0) {
+          await Batches.updateMany({
+            "_id": { $in: batchList }
           }, { $set: { isAssignedToGroup: true } }, {});
         }
       })

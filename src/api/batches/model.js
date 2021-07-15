@@ -13,18 +13,22 @@ const batchesSchema = new Schema({
   },
   batchName: {
     type: String,
-    unique : true
+    unique: true
   },
   years: {
     type: []
   },
-  companiesList:[{ 
-    type : Schema.ObjectId, 
-    ref: 'Companies' 
+  companiesList: [{
+    type: Schema.ObjectId,
+    ref: 'Companies'
   }],
   status: {
     type: Boolean,
     default: true
+  },
+  isAssignedToGroup: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,
@@ -35,7 +39,7 @@ const batchesSchema = new Schema({
 })
 
 batchesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -45,6 +49,7 @@ batchesSchema.methods = {
       companiesList: this.companiesList ? this.companiesList : [],
       clientTaxonomy: this.clientTaxonomy ? this.clientTaxonomy.view(full) : null,
       status: this.status,
+      isAssignedToGroup: this.isAssignedToGroup,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
