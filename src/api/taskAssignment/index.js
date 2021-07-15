@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getMyTasks } from './controller'
+import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
@@ -65,6 +65,23 @@ router.get('/my-tasks',
   token({ required: true }),
   query(),
   getMyTasks)
+
+/**
+* @api {get} /taskAssignments/getGroupAndBatches Retrieve my task assignments
+* @apiName RetrieveTaskAssignments
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of task assignments.
+* @apiSuccess {Object[]} rows List of task assignments.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/getGroupAndBatches',
+  token({ required: true }),
+  query(),
+  getGroupAndBatches)
 
 /**
  * @api {get} /taskAssignments/:id Retrieve task assignment
