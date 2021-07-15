@@ -99,7 +99,7 @@ export const getMyTasks = async({ user, querymen: { query, select, cursor } }, r
   console.log('get my tasks');
   let completeUserDetail = await User.findOne({ _id: user.id, isRoleAssigned: true, isUserActive: true }).populate({ path: 'roleDetails.roles' }).
   populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
-  let analystTaskList = [], qaTaskList = [], clientRepTaskList = [], companyRepTaskList = [];
+  let analystCollectionTaskList = [], analystCorrectionTaskList = [], qaTaskList = [], clientRepTaskList = [], companyRepTaskList = [];
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
@@ -157,7 +157,7 @@ export const getMyTasks = async({ user, querymen: { query, select, cursor } }, r
   }
 
   if (userRoles.includes("Analyst")) {
-    await TaskAssignment.find({ analystId: completeUserDetail.id, $or: [{ taskStatus: "Yet to work" }, { taskStatus: "In Progress" }], status: true })
+    await TaskAssignment.find({ analystId: completeUserDetail.id, $or: [{ taskStatus: "Yet to work" }, { taskStatus: "In Progress" }, { taskStatus: "Verification Pending" }], status: true })
     .sort({ createdAt: -1 })
     .populate('createdBy')
     .populate('companyId')
@@ -186,7 +186,11 @@ export const getMyTasks = async({ user, querymen: { query, select, cursor } }, r
           createdBy: object.createdBy ? object.createdBy.name : null,
           createdById: object.createdBy ? object.createdBy.id : null,
         };
-        analystTaskList.push(taskObject);
+        if (taskAssignments[index].taskStatus == "Verification Pending") {
+          analystCorrectionTaskList.push(taskObject);
+        } else {
+          analystCollectionTaskList.push(taskObject);
+        }
       }
     })
     .catch((error) => {
@@ -276,7 +280,8 @@ export const getMyTasks = async({ user, querymen: { query, select, cursor } }, r
     }
   }
   let data = {
-    analystTaskList: analystTaskList ? analystTaskList : [], 
+    analystCollectionTaskList: analystCollectionTaskList ? analystCollectionTaskList : [], 
+    analystCorrectionTaskList: analystCorrectionTaskList ? analystCorrectionTaskList : [], 
     qaTaskList: qaTaskList ? qaTaskList : [], 
     clientRepTaskList: clientRepTaskList ? clientRepTaskList : [], 
     companyRepTaskList: companyRepTaskList ? companyRepTaskList : []
