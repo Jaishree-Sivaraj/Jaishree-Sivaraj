@@ -63,7 +63,8 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
       for (let index = 0; index < taskAssignments.length; index++) {
         const object = taskAssignments[index];
         let taskObject = {
-          taskId: object.taskNumber,
+          taskId: object.id,
+          taskNumber: object.taskNumber,
           pillar: object.categoryId ? object.categoryId.categoryName : null,
           pillarId: object.categoryId ? object.categoryId.id : null,
           batch: object.batchId ? object.batchId.batchName : null,
@@ -109,7 +110,8 @@ export const getMyTasks = ({ user, querymen: { query, select, cursor } }, res, n
       for (let index = 0; index < taskAssignments.length; index++) {
         const object = taskAssignments[index];
         let taskObject = {
-          taskId: object.taskNumber,
+          taskId: object.id,
+          taskNumber: object.taskNumber,
           pillar: object.categoryId ? object.categoryId.categoryName : null,
           pillarId: object.categoryId ? object.categoryId.id : null,
           batch: object.batchId ? object.batchId.batchName : null,
