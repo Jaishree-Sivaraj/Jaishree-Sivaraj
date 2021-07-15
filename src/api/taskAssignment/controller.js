@@ -4,7 +4,8 @@ import { User } from '../user'
 import { Role } from '../role'
 import { Group } from '../group'
 import { Categories } from '../categories'
-
+import { CompanyRepresentatives } from '../company-representatives'
+import { ClientRepresentatives } from '../client-representatives'
 
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -94,10 +95,27 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
     })
 }
 
-export const getMyTasks = ({ user, querymen: { query, select, cursor } }, res, next) => {
+export const getMyTasks = async({ user, querymen: { query, select, cursor } }, res, next) => {
   console.log('get my tasks');
-  let findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
-  TaskAssignment.find(findQuery)
+  let completeUserDetail = await User.findOne({ _id: user.id, isRoleAssigned: true, isUserActive: true }).populate({ path: 'roleDetails.roles' }).
+  populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+  let analystTaskList = [], qaTaskList = [], clientRepTaskList = [], companyRepTaskList = [];
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.primaryRole) {
+    userRoles.push(completeUserDetail.primaryRole.roleName);
+    if (completeUserDetail.roles && completeUserDetail.roles.length > 0) {
+      for (let index = 0; index < completeUserDetail.roles.length; index++) {
+        if (completeUserDetail.roles[index]) {
+          userRoles.push(completeUserDetail.roles[index].roleName);          
+        }
+      }
+    }
+  } else {
+    return res.status(400).json({ "status": "400", message: "User role not found!" })
+  }
+
+  if (userRoles.includes("QA")) {
+    await TaskAssignment.find({ qaId: completeUserDetail.id, $or: [{ taskStatus: "Collection Completed" }, { taskStatus: "Correction Completed" }], status: true })
     .sort({ createdAt: -1 })
     .populate('createdBy')
     .populate('companyId')
@@ -106,7 +124,6 @@ export const getMyTasks = ({ user, querymen: { query, select, cursor } }, res, n
     .populate('analystId')
     .populate('qaId')
     .then((taskAssignments) => {
-      let taskList = [];
       for (let index = 0; index < taskAssignments.length; index++) {
         const object = taskAssignments[index];
         let taskObject = {
@@ -127,18 +144,187 @@ export const getMyTasks = ({ user, querymen: { query, select, cursor } }, res, n
           createdBy: object.createdBy ? object.createdBy.name : null,
           createdById: object.createdBy ? object.createdBy.id : null,
         };
-        taskList.push(taskObject);
+        qaTaskList.push(taskObject);
       }
-      return res.status(200).json({
-        status: "200", message: "Tasks retrieved successfully!", data: {
-          count: taskList.length,
-          rows: taskList
-        }
-      })
     })
     .catch((error) => {
       return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
     })
+  }
+
+  if (userRoles.includes("Analyst")) {
+    await TaskAssignment.find({ analystId: completeUserDetail.id, $or: [{ taskStatus: "Yet to work" }, { taskStatus: "In Progress" }], status: true })
+    .sort({ createdAt: -1 })
+    .populate('createdBy')
+    .populate('companyId')
+    .populate('categoryId')
+    .populate('batchId')
+    .populate('analystId')
+    .populate('qaId')
+    .then((taskAssignments) => {
+      for (let index = 0; index < taskAssignments.length; index++) {
+        const object = taskAssignments[index];
+        let taskObject = {
+          taskId: object.id,
+          taskNumber: object.taskNumber,
+          pillar: object.categoryId ? object.categoryId.categoryName : null,
+          pillarId: object.categoryId ? object.categoryId.id : null,
+          batch: object.batchId ? object.batchId.batchName : null,
+          batchId: object.batchId ? object.batchId.id : null,
+          company: object.companyId ? object.companyId.companyName : null,
+          companyId: object.companyId ? object.companyId.id : null,
+          analyst: object.analystId ? object.analystId.name : null,
+          analystId: object.analystId ? object.analystId.id : null,
+          qa: object.qaId ? object.qaId.name : null,
+          qaId: object.qaId ? object.qaId.id : null,
+          fiscalYear: object.year,
+          taskStatus: object.taskStatus,
+          createdBy: object.createdBy ? object.createdBy.name : null,
+          createdById: object.createdBy ? object.createdBy.id : null,
+        };
+        analystTaskList.push(taskObject);
+      }
+    })
+    .catch((error) => {
+      return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+    })
+  }
+
+  if (userRoles.includes("Client Representative")) {
+    let clientRepDetail = await ClientRepresentatives.findOne({ userId: completeUserDetail.id, status: true });
+    if (clientRepDetail && clientRepDetail.CompanyName) {
+      await TaskAssignment.find({ companyId: clientRepDetail.CompanyName, taskStatus: "Verification Completed", status: true })
+      .sort({ createdAt: -1 })
+      .populate('createdBy')
+      .populate('companyId')
+      .populate('categoryId')
+      .populate('batchId')
+      .populate('analystId')
+      .populate('qaId')
+      .then((taskAssignments) => {
+        for (let index = 0; index < taskAssignments.length; index++) {
+          const object = taskAssignments[index];
+          let taskObject = {
+            taskId: object.id,
+            taskNumber: object.taskNumber,
+            pillar: object.categoryId ? object.categoryId.categoryName : null,
+            pillarId: object.categoryId ? object.categoryId.id : null,
+            batch: object.batchId ? object.batchId.batchName : null,
+            batchId: object.batchId ? object.batchId.id : null,
+            company: object.companyId ? object.companyId.companyName : null,
+            companyId: object.companyId ? object.companyId.id : null,
+            analyst: object.analystId ? object.analystId.name : null,
+            analystId: object.analystId ? object.analystId.id : null,
+            qa: object.qaId ? object.qaId.name : null,
+            qaId: object.qaId ? object.qaId.id : null,
+            fiscalYear: object.year,
+            taskStatus: object.taskStatus,
+            createdBy: object.createdBy ? object.createdBy.name : null,
+            createdById: object.createdBy ? object.createdBy.id : null,
+          };
+          clientRepTaskList.push(taskObject);
+        }
+      })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+      })      
+    }
+  }
+
+  if (userRoles.includes("Company Representative")) {
+    let companyRepDetail = await CompanyRepresentatives.findOne({ userId: completeUserDetail.id, status: true });
+    if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
+      await TaskAssignment.find({ companyId: { $in: companyRepDetail.companiesList }, taskStatus: "Verification Completed", status: true })
+      .sort({ createdAt: -1 })
+      .populate('createdBy')
+      .populate('companyId')
+      .populate('categoryId')
+      .populate('batchId')
+      .populate('analystId')
+      .populate('qaId')
+      .then((taskAssignments) => {
+        for (let index = 0; index < taskAssignments.length; index++) {
+          const object = taskAssignments[index];
+          let taskObject = {
+            taskId: object.id,
+            taskNumber: object.taskNumber,
+            pillar: object.categoryId ? object.categoryId.categoryName : null,
+            pillarId: object.categoryId ? object.categoryId.id : null,
+            batch: object.batchId ? object.batchId.batchName : null,
+            batchId: object.batchId ? object.batchId.id : null,
+            company: object.companyId ? object.companyId.companyName : null,
+            companyId: object.companyId ? object.companyId.id : null,
+            analyst: object.analystId ? object.analystId.name : null,
+            analystId: object.analystId ? object.analystId.id : null,
+            qa: object.qaId ? object.qaId.name : null,
+            qaId: object.qaId ? object.qaId.id : null,
+            fiscalYear: object.year,
+            taskStatus: object.taskStatus,
+            createdBy: object.createdBy ? object.createdBy.name : null,
+            createdById: object.createdBy ? object.createdBy.id : null,
+          };
+          companyRepTaskList.push(taskObject);
+        }
+      })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+      })      
+    }
+  }
+  let data = {
+    analystTaskList: analystTaskList ? analystTaskList : [], 
+    qaTaskList: qaTaskList ? qaTaskList : [], 
+    clientRepTaskList: clientRepTaskList ? clientRepTaskList : [], 
+    companyRepTaskList: companyRepTaskList ? companyRepTaskList : []
+  }
+  return res.status(200).json({ "status": "200", message: "Task retrieved succesfully!", data: data });
+
+  // if (user.roleDetails) {
+  //   findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
+  // }
+  // let findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
+  // TaskAssignment.find(findQuery)
+  //   .sort({ createdAt: -1 })
+  //   .populate('createdBy')
+  //   .populate('companyId')
+  //   .populate('categoryId')
+  //   .populate('batchId')
+  //   .populate('analystId')
+  //   .populate('qaId')
+  //   .then((taskAssignments) => {
+  //     let taskList = [];
+  //     for (let index = 0; index < taskAssignments.length; index++) {
+  //       const object = taskAssignments[index];
+  //       let taskObject = {
+  //         taskId: object.id,
+  //         taskNumber: object.taskNumber,
+  //         pillar: object.categoryId ? object.categoryId.categoryName : null,
+  //         pillarId: object.categoryId ? object.categoryId.id : null,
+  //         batch: object.batchId ? object.batchId.batchName : null,
+  //         batchId: object.batchId ? object.batchId.id : null,
+  //         company: object.companyId ? object.companyId.companyName : null,
+  //         companyId: object.companyId ? object.companyId.id : null,
+  //         analyst: object.analystId ? object.analystId.name : null,
+  //         analystId: object.analystId ? object.analystId.id : null,
+  //         qa: object.qaId ? object.qaId.name : null,
+  //         qaId: object.qaId ? object.qaId.id : null,
+  //         fiscalYear: object.year,
+  //         taskStatus: object.taskStatus,
+  //         createdBy: object.createdBy ? object.createdBy.name : null,
+  //         createdById: object.createdBy ? object.createdBy.id : null,
+  //       };
+  //       taskList.push(taskObject);
+  //     }
+  //     return res.status(200).json({
+  //       status: "200", message: "Tasks retrieved successfully!", data: {
+  //         count: taskList.length,
+  //         rows: taskList
+  //       }
+  //     })
+  //   })
+  //   .catch((error) => {
+  //     return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+  //   })
 }
 
 export const show = ({ params }, res, next) =>
