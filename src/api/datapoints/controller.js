@@ -347,8 +347,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
               let boardDatapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -505,8 +505,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
               console.log(datapointsIndex);
               let kmpDatapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -651,8 +651,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
               let datapointsObject = {
-                dpcode: dpTypeDatapoints[datapointsIndex].code,
-                dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -786,13 +786,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
           keyIssuesList: keyIssuesList,
-          dpCodeData: {
-            standalone: {
-              dpCodesData: dpCodesData
-            },
-            boardMatrix: boardDpCodesData,
-            kmpMatrix: kmpDpCodesData
-          }
+          standalone: {
+            dpCodesData: dpCodesData
+          },
+          boardMatrix: boardDpCodesData,
+          kmpMatrix: kmpDpCodesData
+
         });
       } else {
         console.log(dpTypeValues.length);
@@ -821,8 +820,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
             let datapointsObject = {
-              dpcode: dpTypeDatapoints[datapointsIndex].code,
-              dpcodeId: dpTypeDatapoints[datapointsIndex].id,
+              dpCode: dpTypeDatapoints[datapointsIndex].code,
+              dpCodeId: dpTypeDatapoints[datapointsIndex].id,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -971,6 +970,163 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       message: error
     });
 
+  }
+}
+
+export const datapointDetails = async (req, res, next) => {
+  try {
+
+    let taskDetails = await TaskAssignment.findOne({
+      _id: req.params.taskId
+    }).populate('companyId');
+    let functionId = await Functions.findOne({
+      functionType: "Negative News",
+      status: true
+    });
+
+    let currentYear = taskDetails.year.split(",");
+    let dpTypeValues = await Datapoints.findOne({
+      relevantForIndia: "Yes",
+      dataCollection: 'Yes',
+      functionId: {
+        "$ne": functionId.id
+      },
+      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      categoryId: taskDetails.categoryId,
+      datapointId: req.params.datapointId,
+      status: true
+    }).populate('keyIssueId').populate('categoryId');
+    if (dpTypeValues.dptype == 'Standalone') {
+
+      let currentAllStandaloneDetails = await StandaloneDatapoints.find({
+          companyId: taskDetails.companyId.id,
+          datapointId: req.params.datapointId,
+          year: {
+            $in: currentYear
+          },
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+
+      let historyAllStandaloneDetails = await StandaloneDatapoints.find({
+          companyId: taskDetails.companyId.id,
+          datapointId: req.params.datapointId,
+          year: {
+            $nin: currentYear
+          },
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+    }
+    console.log()
+    let datapointsObject = {
+      dpcode: dpTypeValues.code,
+      dpcodeId: dpTypeValues.id,
+      companyId: taskDetails.companyId.id,
+      companyName: taskDetails.companyId.companyName,
+      keyIssueId: dpTypeValues.keyIssueId.id,
+      keyIssue: dpTypeValues.keyIssueId.keyIssueName,
+      pillarId: dpTypeValues.categoryId.id,
+      pillar: dpTypeValues.categoryId.categoryName,
+      fiscalYear: taskDetails.year,
+      currentData: [],
+      historicalData: [],
+      status: ''
+    }
+    for (let currentyearIndex = 0; currentyearIndex < currentAllStandaloneDetails.length; currentyearIndex++) {
+      let currentDatapointsObject = {};
+      _.filter(currentAllStandaloneDetails, function (object) {
+        if (object.datapointId.id == req.params.datapointId && object.year == currentYear[currentYearIndex]) {
+          if (object.hasError == true) {
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.params.datapointId && obj.year == currentYear[currentYearIndex])
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: object.screenShot,
+              response: object.response,
+              memberName: object.memberName,
+              source: {
+                url: object.url ? object.url : '',
+                sourceName: object.sourceName ? object.sourceName : '',
+                publicationDate: object.publicationDate ? object.publicationDate : ''
+              },
+              error: {
+                errorType: {
+                  label: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  value: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : ''
+                },
+                errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
+                errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
+              },
+              comments: []
+            }
+
+          } else {
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: object.screenShot,
+              response: object.response,
+              memberName: object.memberName,
+              source: {
+                url: object.url ? object.url : '',
+                sourceName: object.sourceName ? object.sourceName : '',
+                publicationDate: object.publicationDate ? object.publicationDate : ''
+              },
+              error: {},
+              comments: []
+            }
+          }
+          datapointsObject.status = 'Completed';
+        }
+      });
+      if (Object.keys(currentDatapointsObject).length == 0) {
+        currentDatapointsObject = {
+          status: 'Yet to Start',
+          dpCode: dpTypeValues.code,
+          dpCodeId: dpTypeValues.id,
+          fiscalYear: currentYear[currentYearIndex],
+          description: dpTypeValues.description,
+          dataType: dpTypeValues.dataType,
+          textSnippet: '',
+          pageNo: '',
+          screenShot: '',
+          response: '',
+          source: '',
+          error: {},
+          comments: []
+        }
+        datapointsObject.status = 'Yet to Start';
+      }
+      datapointsObject.currentData.push(currentDatapointsObject);
+    }
+
+    return res.status(200).send({
+      status: "200",
+      message: "Data collection dp codes retrieved successfully!",
+      standalone: datapointsObject
+    });
+  } catch (error) {
+
+    return res.status(500).json({
+      message: error.message
+    });
   }
 }
 
