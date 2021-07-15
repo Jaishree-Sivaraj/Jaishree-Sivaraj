@@ -4,8 +4,7 @@ import { User } from '../user'
 import { Role } from '../role'
 import { Group } from '../group'
 import { Categories } from '../categories'
-
-
+import { Batches } from "../batches"
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
@@ -238,7 +237,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                 "batchYear": rec.years
               }
             })
-            resObject.assignedBatches = assignedBatches;
+            resObject.assignedBatches = assignedBatches ? assignedBatches : [];
             resArray.push(resObject);
           }
         }
@@ -246,6 +245,34 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       })
     } else {
       return res.status(200).json({ groups: [] });
+    }
+  }
+}
+
+
+export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
+  //batchId -> Batches.findById(batchId) -> companies -> 
+  //loop companiesList 
+  //unassigned company list - companies_tasks.find({categoryId, year : {$in : [year]}}) if length > 0 don'y include this company else include with value and lable 
+  //find in group by groupID and populate assignedMembers 
+  //if roleId match with roleDetals.primaryRole roleType would be primary if match with roleDetals.roles roleType would be secondary
+  //if categoryId match with roleDetals.primaryRole pilltype would be primary if match with roleDetals.roles pillType would be secondary
+  //loop assignedMembers and find qa and analyst with role name 
+  //each iteration of assignedMembers find in taskAssignement with for qa qaId and for analyst with analystId, taskStatus !=Collection Completed and !=Correction Completed for analyst, !=Verification Completed for qa store in activeTaskCount;
+  var batch = await Batches.Batches.findById(bodymen.batchID).populate('companiesList');
+  var unAssignedCompanyListRes = [];
+  for (let index = 0; index < batch.companiesList.length; index++) {
+    var unAssignedCompanyList = CompanyTasks.find({ categoryId: bodymen.categoryId, year: { $in: batch.years } });
+    if (unAssignedCompanyList.length === 0) {
+      unAssignedCompanyListRes = unAssignedCompanyList.map(function (rec) {
+        return { id: 0, companyName: rec.companyName }
+      })
+    }
+  }
+  var group = Group.findById(bodymen.groupId).populate('assignedMembers');
+  if (group && group.assignedMembers.length > 0) {
+    for (let index = 0; index < group.assignedMembers.length; index++) {
+      var userDetails = User.findById(group.user)
     }
   }
 }

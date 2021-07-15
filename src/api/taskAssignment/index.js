@@ -2,12 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches } from './controller'
+import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches, getUsers } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree
+const groupId = '';
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -136,5 +137,25 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+/**
+* @api {post} /getUsers to get 
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam batchId Task assignment's companyId.
+* @apiParam groupId Task assignment's categoryId.
+* @apiParam pillarId Task assignment's batchId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/getAllAssignedUsers',
+  token({ required: true }),
+  body({ batchId, groupId, categoryId }),
+  getUsers)
+
 
 export default router
