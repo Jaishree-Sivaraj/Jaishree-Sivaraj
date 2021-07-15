@@ -84,6 +84,47 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
     .catch(next)
 }
 
+export const getAllUnAssignedBatches = ({ querymen: { query, select, cursor } }, res, next) => {
+  
+  Batches.count({isAssignedToGroup: false, status: true})
+    .then(count => Batches.find({isAssignedToGroup: false, status: true})
+    .sort({createdAt: -1})
+      .populate('createdBy')
+      .populate('companiesList')
+      .populate('clientTaxonomy')
+      .then((batches) => {
+        let responseList = [];
+        batches.forEach(item => {
+          let yearObjects = [];
+          item.years.forEach(obj => {
+            yearObjects.push({value: obj, label: obj});
+          })
+          let companyObjects = [];
+          if (item.companiesList.length > 0) {
+            item.companiesList.forEach(obj => {
+              companyObjects.push({value: obj.id, selectedCompany: obj.companyName});
+            })            
+          }
+          let objectToPush = {
+            _id: item.id,
+            years: yearObjects,
+            batchName: item.batchName,
+            taxonomy: { value: item.clientTaxonomy.id, label: item.clientTaxonomy.taxonomyName },
+            companies: companyObjects,
+            status: true
+          }
+          responseList.push(objectToPush);
+        });
+        return ({
+          count,
+          rows: responseList
+        })
+      })
+    )
+    .then(success(res))
+    .catch(next)
+}
+
 export const show = ({ params }, res, next) =>
   Batches.findById(params.id)
     .populate('createdBy')
