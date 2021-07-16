@@ -16,6 +16,7 @@ export const login = async ({ user }, res, next) => {
         let userDetail = await User.findOne({
           _id: user.id,
           isUserActive: true,
+          isUserApproved: true,
           status: true,
           '$or': [{
             'roleDetails.roles': { '$in': [roleDetails.id] }  //
@@ -62,6 +63,7 @@ export const login = async ({ user }, res, next) => {
           let userDetail = await User.findOne({
             _id: user.id,
             isUserActive: true,
+            isUserApproved: true,
             status: true
           }).populate({ path: 'roleDetails.roles' }).
             populate({ path: 'roleDetails.primaryRole' });
@@ -87,7 +89,7 @@ export const loginOtp = async (req, res, next) => {
   sign(req.user.id)
     .then(async (token) => {
       if (req.body) {
-        let userDetail = await User.findOne({ email: req.body.email, isUserActive: true, status: true }).populate({ path: 'roleDetails.roles' }).
+        let userDetail = await User.findOne({ email: req.body.email, isUserActive: true, isUserApproved: true, status: true }).populate({ path: 'roleDetails.roles' }).
           populate({ path: 'roleDetails.primaryRole' });
         if (userDetail) {
           userDetail = userDetail.toObject();

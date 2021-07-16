@@ -6,7 +6,7 @@ import { Strategy as BearerStrategy } from 'passport-http-bearer'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 import { jwtSecret, masterKey } from '../../config'
 import User, { schema } from '../../api/user/model'
-import { WRONG_USER, MISSING_FIELDS, UNAUTH, NO_ROLES, DEACTIVATED_USER } from '../../constants/constants'
+import { WRONG_USER, MISSING_FIELDS, UNAUTH, NO_ROLES, DEACTIVATED_USER, UNAPPROVED_USER } from '../../constants/constants'
 
 export const password = () => (req, res, next) => {
   if (req.body.login) {
@@ -22,6 +22,8 @@ export const password = () => (req, res, next) => {
       return res.status(401).json({ message: WRONG_USER }).end()
     } else if (user && !user.isUserActive) {
       return res.status(401).json({ status: "401", message: DEACTIVATED_USER }).end()
+    } else if (user && !user.isUserApproved) {
+      return res.status(401).json({ status: "401", message: UNAPPROVED_USER }).end()
     }
     req.logIn(user, { session: false }, (err) => {
       if (err) return res.status(401).json({ message: UNAUTH }).end()
@@ -44,6 +46,8 @@ export const otpVerification = () => (req, res, next) => {
       return res.status(401).json({ message: UNAUTH }).end()
     } else if (user && !user.isUserActive) {
       return res.status(401).json({ status: "401", message: DEACTIVATED_USER }).end()
+    } else if (user && !user.isUserApproved) {
+      return res.status(401).json({ status: "401", message: UNAPPROVED_USER }).end()
     }
     req.logIn(user, { session: false }, (err) => {
       if (err) return res.status(401).json({ message: UNAUTH }).end()
