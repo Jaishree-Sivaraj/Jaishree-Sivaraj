@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
@@ -160,7 +160,7 @@ router.get('/import-from-json/categoryId',
   includeCategoryIdsFromJson)
 
 /**
-* @api {get} /datapoints/list/:categoryId/:companyId/:clientTaxonomyId Get categorywise datapoints
+* @api {get} /datapoints/list/:taskId Get categorywise datapoints
 * @apiName GetCategorywiseDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
@@ -173,6 +173,22 @@ router.get('/import-from-json/categoryId',
 router.get('/list/:taskId',
   token({ required: true }),
   getCategorywiseDatapoints)
+
+  /**
+  * @api {get} /datapoints/dpDetails/:taskId/:datapointId Get datapoints details
+  * @apiName datapointDetails
+  * @apiGroup Datapoints
+  * @apiPermission user
+  * @apiParam {String} access_token user access token.
+  * @apiSuccess {Object} datapoints Datapoints's data.
+  * @apiError {Object} 400 Some parameters may contain invalid values.
+  * @apiError 404 Datapoints not found.
+  * @apiError 401 user access only.
+  */
+  router.get('/dpDetails/:taskId/:datapointId',
+    token({ required: true }),
+    datapointDetails)
+
 
 /**
  * @api {put} /datapoints/:id Update datapoints

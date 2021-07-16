@@ -25,6 +25,18 @@ export const show = ({ params }, res, next) =>
     .then(success(res))
     .catch(next)
 
+export const getTaxonomyCategories = ({ params }, res, next) => {
+  Categories.count({ clientTaxonomyId: params.clientTaxonomyId ? params.clientTaxonomyId : null, status: true })
+    .then(count => Categories.find({ clientTaxonomyId: params.clientTaxonomyId ? params.clientTaxonomyId : null })
+      .then((categories) => ({
+        count,
+        rows: categories.map((categories) => categories.view())
+      }))
+    )
+    .then(success(res))
+    .catch(next)
+}
+
 export const update = ({ bodymen: { body }, params }, res, next) =>
   Categories.findById(params.id)
     .then(notFound(res))
