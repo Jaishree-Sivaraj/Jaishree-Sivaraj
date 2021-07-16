@@ -347,14 +347,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
               let boardDatapointsObject = {
-                dpCode: dpTypeValues.code,
-                dpCodeId: dpTypeValues.id,
+                dpCode: dpTypeDatapoints[datapointsIndex].code,
+                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
-                keyIssueId: dpTypeValues.keyIssueId.id,
-                keyIssue: dpTypeValues.keyIssueId.keyIssueName,
-                pillarId: dpTypeValues.categoryId.id,
-                pillar: dpTypeValues.categoryId.categoryName,
+                keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 fiscalYear: taskDetails.year,
                 currentData: [],
                 historicalData: [],
@@ -473,10 +473,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                         error: {},
                         comments: []
                       }
+                      boardDatapointsObject.historicalData.push(historicalDatapointsObject);
                     }
                   });
                   //mergedBoardHistoryDetails.push(historicalDatapointsObject);
-                  boardDatapointsObject.historicalData.push(historicalDatapointsObject);
                 }
               }
               // mergedBoardMemberHistoryDetails = _.merge(mergedBoardMemberHistoryDetails, mergedBoardHistoryDetails);
@@ -634,9 +634,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                         error: {},
                         comments: []
                       }
+                      kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
                     }
                   });
-                  kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
                   //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
                 }
 
@@ -770,10 +770,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       error: {},
                       comments: []
                     }
+                    datapointsObject.historicalData.push(historicalDatapointsObject);
                   }
                   //mergedHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
                 });
-                datapointsObject.historicalData.push(historicalDatapointsObject);
               }
               //historicalDatapointsIndex.push(mergedHistoryDetails);
 
@@ -781,6 +781,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           }
         }
+        console.log(boardDpCodesData,kmpDpCodesData,dpCodesData);
 
         return res.status(200).send({
           status: "200",
@@ -938,10 +939,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     error: {},
                     comments: []
                   }
+                  datapointsObject.historicalData.push(historicalDatapointsObject);
                 }
                 // mergedHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
               });
-              datapointsObject.historicalData.push(historicalDatapointsObject);
               //   historicalDatapoints.push(mergedHistoryDetails);
             }
             dpCodesData.push(datapointsObject);
