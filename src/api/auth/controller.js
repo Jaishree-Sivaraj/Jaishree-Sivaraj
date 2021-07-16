@@ -98,12 +98,12 @@ export const loginOtp = async (req, res, next) => {
             }) : [],
             "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
           }
-          return res.status(200).json({ token: token, message: "OTP verified successfully!", user: userDetail });
+          return res.status(200).json({ token: token, message: "Login successful!", user: userDetail });
         } else {
           return res.status(401).json({ status: "401", message: "Authorization Failed!" })
         }
       } else {
-        return res.status(200).json({ token: token, message: "OTP verified successfully!" });
+        return res.status(200).json({ token: token, message: "Login successful!" });
       }
     })
 }
