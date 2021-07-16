@@ -146,7 +146,7 @@ router.delete('/:id',
 * @apiParam {String} access_token user access token.
 * @apiParam batchId Task assignment's companyId.
 * @apiParam groupId Task assignment's categoryId.
-* @apiParam pillarId Task assignment's batchId.
+* @apiParam categoryId Task assignment's batchId.
 * @apiSuccess {Object} taskAssignment Task assignment's data.
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 404 Task assignment not found.
