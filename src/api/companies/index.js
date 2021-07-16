@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getAllNic, getAllUnAssignedCompanies, addCompanyMember, updateCompanyMember } from './controller'
+import { create, index, show, update, destroy, getAllNic, getAllUnAssignedCompanies, addCompanyMember, updateCompanyMember, uploadCompaniesFile } from './controller'
 import { schema } from './model'
 export Companies, { schema } from './model'
 
@@ -36,6 +36,21 @@ router.post('/',
   create)
 
 /**
+ * @api {post} /companies/upload-companies-file Create companies
+ * @apiName UploadCompaniesFile
+ * @apiGroup Companies
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} companies Companies's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Companies not found.
+ * @apiError 401 user access only.
+ */
+ router.post('/upload-companies-file',
+ token({ required: true }),
+ uploadCompaniesFile)
+
+  /**
  * @api {get} /companies Retrieve companies
  * @apiName RetrieveCompanies
  * @apiGroup Companies
