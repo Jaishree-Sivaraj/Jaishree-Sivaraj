@@ -17,7 +17,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
     let membersList = [];
     if (body.grpMembers && body.grpMembers.length > 0) {
       for (let grpIndex = 0; grpIndex < body.grpMembers.length; grpIndex++) {
-        const analyst = body.grpMembers[grpIndex].userDetail.value;
+        const analyst = body.grpMembers[grpIndex].userDetails ? body.grpMembers[grpIndex].userDetails.value : null;
         membersList.push(analyst);
       }
     }
@@ -101,11 +101,9 @@ export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor }
         let responseList = [];
         groups.forEach(item => {
           let memberObjects = [];
-          if (item.assignedBatches.length > 0) {
-            item.assignedMembers.forEach(obj => {
-              memberObjects.push({ value: obj.id, label: obj.name });
-            })            
-          }
+          item.assignedMembers.forEach(obj => {
+            memberObjects.push({ value: obj.id, label: obj.name });
+          })
           let objectToPush = {
             _id: item.id,
             groupName: item.groupName,
