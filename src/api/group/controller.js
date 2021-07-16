@@ -101,9 +101,11 @@ export const getGroupsOfAnAdmin = ({ params, querymen: { query, select, cursor }
         let responseList = [];
         groups.forEach(item => {
           let memberObjects = [];
-          item.assignedMembers.forEach(obj => {
-            memberObjects.push({ value: obj.id, label: obj.name });
-          })
+          if (item.assignedBatches.length > 0) {
+            item.assignedMembers.forEach(obj => {
+              memberObjects.push({ value: obj.id, label: obj.name });
+            })            
+          }
           let objectToPush = {
             _id: item.id,
             groupName: item.groupName,
