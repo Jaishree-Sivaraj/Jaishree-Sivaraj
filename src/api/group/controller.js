@@ -180,16 +180,16 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 
 export const updateGroup = async ({ user, bodymen: { body }, params }, res, next) => {
   let membersList = [];
-  if (body.assignMembers && body.assignMembers.length > 0) {
-    for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
-      const member = body.assignMembers[aindex].value;
+  if (body.grpMembers && body.grpMembers.length > 0) {
+    for (let aindex = 0; aindex < body.grpMembers.length; aindex++) {
+      const member = body.grpMembers[aindex].userDetails ? body.grpMembers[aindex].userDetails.value : null;
       membersList.push(member);
     }
   }
   let batchList = [];
-  if (body.assignBatch && body.assignBatch.length > 0) {
-    for (let bindex = 0; bindex < body.assignBatch.length; bindex++) {
-      const batch = body.assignBatch[bindex].value;
+  if (body.assignedBatches && body.assignedBatches.length > 0) {
+    for (let bindex = 0; bindex < body.assignedBatches.length; bindex++) {
+      const batch = body.assignedBatches[bindex]._id;
       batchList.push(batch);
     }
   }
