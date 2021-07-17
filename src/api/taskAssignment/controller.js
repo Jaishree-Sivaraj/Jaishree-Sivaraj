@@ -67,6 +67,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
     .populate('createdBy')
     .populate('companyId')
     .populate('categoryId')
+    .populate('groupId')
     .populate('batchId')
     .populate('analystId')
     .populate('qaId')
@@ -79,6 +80,8 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
           taskNumber: object.taskNumber,
           pillar: object.categoryId ? object.categoryId.categoryName : null,
           pillarId: object.categoryId ? object.categoryId.id : null,
+          group: object.groupId ? object.groupId.groupName : null,
+          groupId: object.groupId ? object.groupId.id : null,
           batch: object.batchId ? object.batchId.batchName : null,
           batchId: object.batchId ? object.batchId.id : null,
           company: object.companyId ? object.companyId.companyName : null,
@@ -135,6 +138,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
+      .populate('groupId')
       .populate('batchId')
       .populate('analystId')
       .populate('qaId')
@@ -146,6 +150,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
             taskNumber: object.taskNumber,
             pillar: object.categoryId ? object.categoryId.categoryName : null,
             pillarId: object.categoryId ? object.categoryId.id : null,
+            group: object.groupId ? object.groupId.groupName : null,
+            groupId: object.groupId ? object.groupId.id : null,
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
@@ -173,6 +179,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
+      .populate('groupId')
       .populate('batchId')
       .populate('analystId')
       .populate('qaId')
@@ -184,6 +191,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
             taskNumber: object.taskNumber,
             pillar: object.categoryId ? object.categoryId.categoryName : null,
             pillarId: object.categoryId ? object.categoryId.id : null,
+            group: object.groupId ? object.groupId.groupName : null,
+            groupId: object.groupId ? object.groupId.id : null,
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
@@ -217,6 +226,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
+        .populate('groupId')
         .populate('batchId')
         .populate('analystId')
         .populate('qaId')
@@ -228,6 +238,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
               taskNumber: object.taskNumber,
               pillar: object.categoryId ? object.categoryId.categoryName : null,
               pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
@@ -258,6 +270,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
+        .populate('groupId')
         .populate('batchId')
         .populate('analystId')
         .populate('qaId')
@@ -269,6 +282,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
               taskNumber: object.taskNumber,
               pillar: object.categoryId ? object.categoryId.categoryName : null,
               pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
@@ -352,6 +367,7 @@ export const show = ({ params }, res, next) =>
     .populate('createdBy')
     .populate('companyId')
     .populate('categoryId')
+    .populate('groupId')
     .populate('batchId')
     .populate('analystId')
     .populate('qaId')
@@ -365,6 +381,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .populate('createdBy')
     .populate('companyId')
     .populate('categoryId')
+    .populate('groupId')
     .populate('batchId')
     .populate('analystId')
     .populate('qaId')

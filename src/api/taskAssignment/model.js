@@ -20,6 +20,11 @@ const taskAssignmentSchema = new Schema({
     ref: 'Categories',
     required: true
   },
+  groupId: {
+   type: Schema.ObjectId,
+    ref: 'Group',
+    required: true
+  },
   batchId: {
    type: Schema.ObjectId,
     ref: 'Batches',
@@ -68,6 +73,7 @@ taskAssignmentSchema.methods = {
       taskNumber: this.taskNumber ? this.taskNumber : null,
       companyId: this.companyId ?  this.companyId.view(full) : null,
       categoryId: this.categoryId ? this.categoryId.view(full) : null,
+      groupId: this.groupId ? this.groupId.view(full) : null,
       batchId: this.batchId ? this.batchId.view(full) : null,
       year: this.year,
       analystSLA: this.analystSLA,
