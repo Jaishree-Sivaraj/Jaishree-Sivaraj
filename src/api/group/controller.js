@@ -135,13 +135,15 @@ export const show = async({ params }, res, next) => {
     .then(async(group) => {
       let batchObjects = [], groupTaxonomies = [];
       if (group) {
-        for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
-          let obj = group.batchList[batchIndex];
-          batchObjects.push({ value: obj.id, label: obj.batchName });
-          let batchDetail = await Batches.findOne({"_id": obj.id}).populate('clientTaxonomy');
-          let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
-          if(!foundObject){
-            groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
+        if (group.batchList && group.batchList.length >0) {
+          for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
+            let obj = group.batchList[batchIndex];
+            batchObjects.push({ value: obj.id, label: obj.batchName });
+            let batchDetail = await Batches.findOne({"_id": obj.id}).populate('clientTaxonomy');
+            let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
+            if(!foundObject){
+              groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
+            }          
           }          
         }
         let memberObjects = [];
