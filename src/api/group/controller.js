@@ -24,7 +24,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
     let batchList = []
     if (body.assignedBatches && body.assignedBatches.length > 0) {
       for (let batchIndex = 0; batchIndex < body.assignedBatches.length; batchIndex++) {
-        const batch = body.assignedBatches[batchIndex].id;
+        const batch = body.assignedBatches[batchIndex]._id;
         batchList.push(batch);
       }
     }
