@@ -8,7 +8,6 @@ export TaskAssignment, { schema } from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree
-const groupId = '';
 
 /**
  * @api {post} /taskAssignments Create task assignment
