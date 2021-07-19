@@ -157,8 +157,6 @@ export const uploadCompaniesFile = async (req, res, next) => {
               nicIndustry: rowObject['NIC industry'].replace(/[\\r\\n]/g,''),
               isinCode: rowObject['ISIN Code'].replace(/[\\r\\n]/g,''),
               cmieProwessCode: rowObject['CMIE/Prowess Code'],
-              socialAnalystName: rowObject['Analyst Name'].replace(/[\\r\\n]/g,''),
-              socialQAName: rowObject['QA Name'].replace(/[\\r\\n]/g,''),
               clientTaxonomyId: req.body.clientTaxonomyId,
               // socialAnalystName: rowObject['Analyst Name'].replace(/[\\r\\n]/g,''),
               // socialQAName: rowObject['QA Name'].replace(/[\\r\\n]/g,''),
