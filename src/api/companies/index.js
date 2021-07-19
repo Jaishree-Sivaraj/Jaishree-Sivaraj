@@ -23,8 +23,6 @@ const companyId = '', name = '', years = [], memberType = '';
  * @apiParam nicIndustry Companies's nicIndustry.
  * @apiParam isinCode Companies's isinCode.
  * @apiParam cmieProwessCode Companies's cmieProwessCode.
- * @apiParam socialAnalystName Companies's socialAnalystName.
- * @apiParam socialQAName Companies's socialQAName.
  * @apiSuccess {Object} companies Companies's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Companies not found.
@@ -32,7 +30,7 @@ const companyId = '', name = '', years = [], memberType = '';
  */
 router.post('/',
   token({ required: true }),
-  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName }),
+  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode }),
   create)
 
 /**
@@ -127,8 +125,6 @@ router.get('/:id',
  * @apiParam nicIndustry Companies's nicIndustry.
  * @apiParam isinCode Companies's isinCode.
  * @apiParam cmieProwessCode Companies's cmieProwessCode.
- * @apiParam socialAnalystName Companies's socialAnalystName.
- * @apiParam socialQAName Companies's socialQAName.
  * @apiParam companyMemberDetails Companies's companyMemberDetails.
  * @apiParam isAssignedToBatch Companies's isAssignedToBatch.
  * @apiParam status Companies's status.
@@ -139,7 +135,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName, companyMemberDetails, isAssignedToBatch, status }),
+  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, companyMemberDetails, isAssignedToBatch, status }),
   update)
 
 /**
