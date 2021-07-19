@@ -3,7 +3,7 @@ import { ControversyTasks } from '.'
 let controversyTasks
 
 beforeEach(async () => {
-  controversyTasks = await ControversyTasks.create({ tasknumber: 'test', companyId: 'test', analystId: 'test', slaDate: 'test', taskStatus: 'test', completedDate: 'test', status: 'test' })
+  controversyTasks = await ControversyTasks.create({ tasknumber: 'test', companyId: 'test', analystId: 'test', taskStatus: 'test', completedDate: 'test', status: 'test' })
 })
 
 describe('view', () => {
@@ -14,7 +14,6 @@ describe('view', () => {
     expect(view.tasknumber).toBe(controversyTasks.tasknumber)
     expect(view.companyId).toBe(controversyTasks.companyId)
     expect(view.analystId).toBe(controversyTasks.analystId)
-    expect(view.slaDate).toBe(controversyTasks.slaDate)
     expect(view.taskStatus).toBe(controversyTasks.taskStatus)
     expect(view.completedDate).toBe(controversyTasks.completedDate)
     expect(view.status).toBe(controversyTasks.status)
@@ -29,7 +28,6 @@ describe('view', () => {
     expect(view.tasknumber).toBe(controversyTasks.tasknumber)
     expect(view.companyId).toBe(controversyTasks.companyId)
     expect(view.analystId).toBe(controversyTasks.analystId)
-    expect(view.slaDate).toBe(controversyTasks.slaDate)
     expect(view.taskStatus).toBe(controversyTasks.taskStatus)
     expect(view.completedDate).toBe(controversyTasks.completedDate)
     expect(view.status).toBe(controversyTasks.status)

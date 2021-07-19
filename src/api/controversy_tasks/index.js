@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, controversyTask } from './controller'
+import { create, index, show, update, destroy, newControversyTask } from './controller'
 import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
 const router = new Router()
-const { tasknumber, companyId, analystId, slaDate, taskStatus, completedDate, status } = schema.tree
+const { tasknumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
 const companiesList = [];
 
 /**
@@ -19,7 +19,6 @@ const companiesList = [];
  * @apiParam tasknumber Controversy tasks's tasknumber.
  * @apiParam companyId Controversy tasks's companyId.
  * @apiParam analystId Controversy tasks's analystId.
- * @apiParam slaDate Controversy tasks's slaDate.
  * @apiParam taskStatus Controversy tasks's taskStatus.
  * @apiParam completedDate Controversy tasks's completedDate.
  * @apiParam status Controversy tasks's status.
@@ -30,7 +29,7 @@ const companiesList = [];
  */
 router.post('/',
   token({ required: true }),
-  body({ tasknumber, companyId, analystId, slaDate, taskStatus, completedDate, status }),
+  body({ tasknumber, companyId, analystId, taskStatus, completedDate, status }),
   create)
 
   /** @api {post} /controversy_tasks/new-task Create controversy tasks
@@ -45,8 +44,8 @@ router.post('/',
   */
  router.post('/new-task',
    token({ required: true }),
-   body({ companiesList, analystId, slaDate }),
-   controversyTask)
+   body({ companiesList, analystId }),
+   newControversyTask)
 
 /**
  * @api {get} /controversy_tasks Retrieve controversy tasks
@@ -89,7 +88,6 @@ router.get('/:id',
  * @apiParam tasknumber Controversy tasks's tasknumber.
  * @apiParam companyId Controversy tasks's companyId.
  * @apiParam analystId Controversy tasks's analystId.
- * @apiParam slaDate Controversy tasks's slaDate.
  * @apiParam taskStatus Controversy tasks's taskStatus.
  * @apiParam completedDate Controversy tasks's completedDate.
  * @apiParam status Controversy tasks's status.
@@ -100,7 +98,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ tasknumber, companyId, analystId, slaDate, taskStatus, completedDate, status }),
+  body({ tasknumber, companyId, analystId, taskStatus, completedDate, status }),
   update)
 
 /**

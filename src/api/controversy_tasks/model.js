@@ -15,7 +15,8 @@ const controversyTasksSchema = new Schema({
     required: true
   },
   taskStatus: {
-    type: String
+    type: String,
+    default: "Yet to work"
   },
   completedDate: {
     type: Date,
@@ -41,7 +42,6 @@ controversyTasksSchema.methods = {
       tasknumber: this.tasknumber,
       companyId: this.companyId ? this.companyId.view(full) : null,
       analystId: this.analystId ? this.analystId.view(full) : null,
-      slaDate: this.slaDate,
       taskStatus: this.taskStatus,
       completedDate: this.completedDate,
       status: this.status,
