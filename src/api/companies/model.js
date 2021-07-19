@@ -67,7 +67,7 @@ companiesSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       companyName: this.companyName,
       cin: this.cin,
       nicCode: this.nicCode,
@@ -80,6 +80,7 @@ companiesSchema.methods = {
       companyMemberDetails: this.companyMemberDetails ? this.companyMemberDetails : [],
       status: this.status,
       isAssignedToBatch: this.isAssignedToBatch ? this.isAssignedToBatch : false,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
