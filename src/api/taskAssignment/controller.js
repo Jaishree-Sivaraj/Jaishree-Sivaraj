@@ -1,16 +1,49 @@
-import { success, notFound, authorOrAdmin } from '../../services/response/'
-import { TaskAssignment } from '.'
-import { User } from '../user'
-import { Role } from '../role'
-import { Group } from '../group'
-import { Categories } from '../categories'
-import { Batches } from "../batches"
-import { CompanyRepresentatives } from '../company-representatives'
-import { ClientRepresentatives } from '../client-representatives'
-import { CompaniesTasks } from "../companies_tasks"
-
-export const create = async ({ user, bodymen: { body } }, res, next) => {
-  await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
+import {
+  success,
+  notFound,
+  authorOrAdmin
+} from '../../services/response/'
+import {
+  TaskAssignment
+} from '.'
+import {
+  User
+} from '../user'
+import {
+  Role
+} from '../role'
+import {
+  Group
+} from '../group'
+import {
+  Categories
+} from '../categories'
+import {
+  Batches
+} from "../batches"
+import {
+  CompanyRepresentatives
+} from '../company-representatives'
+import {
+  ClientRepresentatives
+} from '../client-representatives'
+import {
+  CompaniesTasks
+} from "../companies_tasks"
+import {
+  Companies
+} from '../companies'
+export const create = async ({
+  user,
+  bodymen: {
+    body
+  }
+}, res, next) => {
+  await TaskAssignment.findOne({
+      status: true
+    }).sort({
+      createdAt: -1
+    }).limit(1)
     .then(async (taskObject) => {
       console.log('taskObject', taskObject);
       let newTaskNumber = '';
@@ -22,12 +55,22 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
           newTaskNumber = '1';
         }
         body.taskNumber = 'DT' + newTaskNumber;
-        await TaskAssignment.create({ ...body, createdBy: user })
+        await TaskAssignment.create({
+            ...body,
+            createdBy: user
+          })
           .then((taskAssignment) => {
-            return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
+            return res.status(200).json({
+              status: "200",
+              message: "Task created successfully!",
+              data: taskAssignment.view(true)
+            });
           })
           .catch((error) => {
-            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to create task!"
+            });
           })
       } else {
         if (taskObject) {
@@ -37,7 +80,10 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
           newTaskNumber = '1';
         }
         body.taskNumber = 'DT' + newTaskNumber;
-        await TaskAssignment.create({ ...body, createdBy: user })
+        await TaskAssignment.create({
+            ...body,
+            createdBy: user
+          })
           .then(async (taskAssignment) => {
             await CompaniesTasks.create({
               "companyId": body.companyId,
@@ -46,23 +92,44 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
               "status": true,
               "taskId": taskAssignment.id
             }).then(async () => {
-              return res.status(200).json({ status: "200", message: "Task created successfully!", data: taskAssignment.view(true) });
+              return res.status(200).json({
+                status: "200",
+                message: "Task created successfully!",
+                data: taskAssignment.view(true)
+              });
             }).catch((error) => {
-              return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create companies task!" });
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create companies task!"
+              });
             })
           }).catch((error) => {
-            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" });
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to create task!"
+            });
           })
       }
     })
     .catch((error) => {
-      return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to create task!" })
+      return res.status(400).json({
+        status: "400",
+        message: error.message ? error.message : "Failed to create task!"
+      })
     });
 }
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) => {
+export const index = ({
+  querymen: {
+    query,
+    select,
+    cursor
+  }
+}, res, next) => {
   TaskAssignment.find(query)
-    .sort({ createdAt: -1 })
+    .sort({
+      createdAt: -1
+    })
     .populate('createdBy')
     .populate('companyId')
     .populate('categoryId')
@@ -94,22 +161,51 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
         taskList.push(taskObject);
       }
       return res.status(200).json({
-        status: "200", message: "Tasks retrieved successfully!", data: {
+        status: "200",
+        message: "Tasks retrieved successfully!",
+        data: {
           count: taskList.length,
           rows: taskList
         }
       })
     })
     .catch((error) => {
-      return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+      return res.status(400).json({
+        status: "400",
+        message: error.message ? error.message : 'Failed to retrieve tasks!'
+      });
     })
 }
 
-export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, res, next) => {
+export const getMyTasks = async ({
+  user,
+  querymen: {
+    query,
+    select,
+    cursor
+  }
+}, res, next) => {
   console.log('get my tasks');
-  let completeUserDetail = await User.findOne({ _id: user.id, isRoleAssigned: true, isUserActive: true }).populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
-  let analystCollectionTaskList = [], analystCorrectionTaskList = [], qaTaskList = [], clientRepTaskList = [], companyRepTaskList = [];
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isRoleAssigned: true,
+    isUserActive: true
+  }).populate({
+    path: 'roleDetails.roles'
+  }).
+  populate({
+    path: 'roleDetails.primaryRole'
+  }).catch((error) => {
+    return res.status(500).json({
+      "status": "500",
+      message: error.message
+    })
+  });
+  let analystCollectionTaskList = [],
+    analystCorrectionTaskList = [],
+    qaTaskList = [],
+    clientRepTaskList = [],
+    companyRepTaskList = [];
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
@@ -122,15 +218,31 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         }
       }
     } else {
-      return res.status(400).json({ "status": "400", message: "User role not found!" })
+      return res.status(400).json({
+        "status": "400",
+        message: "User role not found!"
+      })
     }
   } else {
-    return res.status(400).json({ "status": "400", message: "User role not found!" })
+    return res.status(400).json({
+      "status": "400",
+      message: "User role not found!"
+    })
   }
 
   if (userRoles.includes("QA")) {
-    await TaskAssignment.find({ qaId: completeUserDetail.id, $or: [{ taskStatus: "Collection Completed" }, { taskStatus: "Correction Completed" }], status: true })
-      .sort({ createdAt: -1 })
+    await TaskAssignment.find({
+        qaId: completeUserDetail.id,
+        $or: [{
+          taskStatus: "Collection Completed"
+        }, {
+          taskStatus: "Correction Completed"
+        }],
+        status: true
+      })
+      .sort({
+        createdAt: -1
+      })
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
@@ -162,13 +274,28 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         }
       })
       .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : 'Failed to retrieve tasks!'
+        });
       })
   }
 
   if (userRoles.includes("Analyst")) {
-    await TaskAssignment.find({ analystId: completeUserDetail.id, $or: [{ taskStatus: "Yet to work" }, { taskStatus: "In Progress" }, { taskStatus: "Verification Pending" }], status: true })
-      .sort({ createdAt: -1 })
+    await TaskAssignment.find({
+        analystId: completeUserDetail.id,
+        $or: [{
+          taskStatus: "Yet to work"
+        }, {
+          taskStatus: "In Progress"
+        }, {
+          taskStatus: "Verification Pending"
+        }],
+        status: true
+      })
+      .sort({
+        createdAt: -1
+      })
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
@@ -204,15 +331,27 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         }
       })
       .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : 'Failed to retrieve tasks!'
+        });
       })
   }
 
   if (userRoles.includes("Client Representative")) {
-    let clientRepDetail = await ClientRepresentatives.findOne({ userId: completeUserDetail.id, status: true });
+    let clientRepDetail = await ClientRepresentatives.findOne({
+      userId: completeUserDetail.id,
+      status: true
+    });
     if (clientRepDetail && clientRepDetail.CompanyName) {
-      await TaskAssignment.find({ companyId: clientRepDetail.CompanyName, taskStatus: "Verification Completed", status: true })
-        .sort({ createdAt: -1 })
+      await TaskAssignment.find({
+          companyId: clientRepDetail.CompanyName,
+          taskStatus: "Verification Completed",
+          status: true
+        })
+        .sort({
+          createdAt: -1
+        })
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
@@ -244,16 +383,30 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
           }
         })
         .catch((error) => {
-          return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : 'Failed to retrieve tasks!'
+          });
         })
     }
   }
 
   if (userRoles.includes("Company Representative")) {
-    let companyRepDetail = await CompanyRepresentatives.findOne({ userId: completeUserDetail.id, status: true });
+    let companyRepDetail = await CompanyRepresentatives.findOne({
+      userId: completeUserDetail.id,
+      status: true
+    });
     if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
-      await TaskAssignment.find({ companyId: { $in: companyRepDetail.companiesList }, taskStatus: "Verification Completed", status: true })
-        .sort({ createdAt: -1 })
+      await TaskAssignment.find({
+          companyId: {
+            $in: companyRepDetail.companiesList
+          },
+          taskStatus: "Verification Completed",
+          status: true
+        })
+        .sort({
+          createdAt: -1
+        })
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
@@ -285,7 +438,10 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
           }
         })
         .catch((error) => {
-          return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : 'Failed to retrieve tasks!'
+          });
         })
     }
   }
@@ -296,7 +452,11 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
     clientRepTaskList: clientRepTaskList ? clientRepTaskList : [],
     companyRepTaskList: companyRepTaskList ? companyRepTaskList : []
   }
-  return res.status(200).json({ "status": "200", message: "Task retrieved succesfully!", data: data });
+  return res.status(200).json({
+    "status": "200",
+    message: "Task retrieved succesfully!",
+    data: data
+  });
 
   // if (user.roleDetails) {
   //   findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
@@ -346,61 +506,112 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
   //   })
 }
 
-export const show = ({ params }, res, next) =>
+export const show = ({
+    params
+  }, res, next) =>
   TaskAssignment.findById(params.id)
-    .populate('createdBy')
-    .populate('companyId')
-    .populate('categoryId')
-    .populate('batchId')
-    .populate('analystId')
-    .populate('qaId')
-    .then(notFound(res))
-    .then((taskAssignment) => taskAssignment ? taskAssignment.view() : null)
-    .then(success(res))
-    .catch(next)
+  .populate('createdBy')
+  .populate('companyId')
+  .populate('categoryId')
+  .populate('batchId')
+  .populate('analystId')
+  .populate('qaId')
+  .then(notFound(res))
+  .then((taskAssignment) => taskAssignment ? taskAssignment.view() : null)
+  .then(success(res))
+  .catch(next)
 
-export const update = ({ user, bodymen: { body }, params }, res, next) =>
+export const update = ({
+    user,
+    bodymen: {
+      body
+    },
+    params
+  }, res, next) =>
   TaskAssignment.findById(params.id)
-    .populate('createdBy')
-    .populate('companyId')
-    .populate('categoryId')
-    .populate('batchId')
-    .populate('analystId')
-    .populate('qaId')
-    .then(notFound(res))
-    .then(authorOrAdmin(res, user, 'createdBy'))
-    .then((taskAssignment) => taskAssignment ? Object.assign(taskAssignment, body).save() : null)
-    .then((taskAssignment) => taskAssignment ? taskAssignment.view(true) : null)
-    .then(success(res))
-    .catch(next)
+  .populate('createdBy')
+  .populate('companyId')
+  .populate('categoryId')
+  .populate('batchId')
+  .populate('analystId')
+  .populate('qaId')
+  .then(notFound(res))
+  .then(authorOrAdmin(res, user, 'createdBy'))
+  .then((taskAssignment) => taskAssignment ? Object.assign(taskAssignment, body).save() : null)
+  .then((taskAssignment) => taskAssignment ? taskAssignment.view(true) : null)
+  .then(success(res))
+  .catch(next)
 
-export const destroy = ({ user, params }, res, next) =>
+export const destroy = ({
+    user,
+    params
+  }, res, next) =>
   TaskAssignment.findById(params.id)
-    .then(notFound(res))
-    .then(authorOrAdmin(res, user, 'createdBy'))
-    .then((taskAssignment) => taskAssignment ? taskAssignment.remove() : null)
-    .then(success(res, 204))
-    .catch(next)
+  .then(notFound(res))
+  .then(authorOrAdmin(res, user, 'createdBy'))
+  .then((taskAssignment) => taskAssignment ? taskAssignment.remove() : null)
+  .then(success(res, 204))
+  .catch(next)
 
 
-export const getGroupAndBatches = async ({ user, params }, res, next) => {
-  var groupRoleDetails = await Role.findOne({ roleName: "GroupAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
-  var superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+export const getGroupAndBatches = async ({
+  user,
+  params
+}, res, next) => {
+  var groupRoleDetails = await Role.findOne({
+    roleName: "GroupAdmin"
+  }).catch(() => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message
+    })
+  });
+  var superAdminRoleDetails = await Role.findOne({
+    roleName: "SuperAdmin"
+  }).catch(() => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message
+    })
+  });
   console.log("groupRoleDetails", groupRoleDetails);
   var userDetailWithGroupAdminRole = await User.findOne({
-    _id: user.id, '$or': [{
-      'roleDetails.roles': { '$in': [groupRoleDetails.id] }
-    }, { 'roleDetails.primaryRole': groupRoleDetails.id }]
-  }).populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+    _id: user.id,
+    '$or': [{
+      'roleDetails.roles': {
+        '$in': [groupRoleDetails.id]
+      }
+    }, {
+      'roleDetails.primaryRole': groupRoleDetails.id
+    }]
+  }).populate({
+    path: 'roleDetails.roles'
+  }).
+  populate({
+    path: 'roleDetails.primaryRole'
+  }).catch((error) => {
+    return res.status(500).json({
+      "status": "500",
+      message: error.message
+    })
+  });
   if (userDetailWithGroupAdminRole && Object.keys(userDetailWithGroupAdminRole).length > 0) {
     console.log('in group admin')
-    await Group.find({ groupAdmin: userDetailWithGroupAdminRole._id }).populate('assignedMembers').populate('batchList').then(async (group) => {
+    await Group.find({
+      groupAdmin: userDetailWithGroupAdminRole._id
+    }).populate('assignedMembers').populate('batchList').then(async (group) => {
       var resArray = [];
       var resObject = {};
       for (let index = 0; index < group.length; index++) {
         for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
-          var categories = await Categories.find({ clientTaxonomyId: group[index].batchList[index1].clientTaxonomy }).catch(err => { return res.status(500).json({ "status": "500", message: err.message }) })
+          var categories = await Categories.find({
+            clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
+          }).catch(err => {
+            return res.status(500).json({
+              "status": "500",
+              message: err.message
+            })
+          })
           resObject.groupName = group[index].groupName;
           resObject.groupID = group[index].id;
           var assignedBatches = group[index].batchList.map(rec => {
@@ -408,7 +619,10 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
               "batchName": rec.batchName,
               "batchID": rec._id,
               "pillars": categories.map((rec) => {
-                return { value: rec.id, label: rec.categoryName }
+                return {
+                  value: rec.id,
+                  label: rec.categoryName
+                }
               }),
               "batchYear": rec.years
             }
@@ -417,22 +631,52 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           resArray.push(resObject);
         }
       }
-      return res.status(200).json({ groups: resArray });
-    }).catch(err => { return res.status(500).json({ "status": "500", message: err.message }) })
+      return res.status(200).json({
+        groups: resArray
+      });
+    }).catch(err => {
+      return res.status(500).json({
+        "status": "500",
+        message: err.message
+      })
+    })
   } else {
     var userDetailWithSuperAdminRole = await User.findOne({
-      _id: user.id, '$or': [{
-        'roleDetails.roles': { '$in': [superAdminRoleDetails.id] }
-      }, { 'roleDetails.primaryRole': superAdminRoleDetails.id }]
-    }).populate({ path: 'roleDetails.roles' }).
-      populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+      _id: user.id,
+      '$or': [{
+        'roleDetails.roles': {
+          '$in': [superAdminRoleDetails.id]
+        }
+      }, {
+        'roleDetails.primaryRole': superAdminRoleDetails.id
+      }]
+    }).populate({
+      path: 'roleDetails.roles'
+    }).
+    populate({
+      path: 'roleDetails.primaryRole'
+    }).catch((error) => {
+      return res.status(500).json({
+        "status": "500",
+        message: error.message
+      })
+    });
     if (userDetailWithSuperAdminRole) {
-      await Group.find({ status: true }).populate('assignedMembers').populate('batchList').then(async (group) => {
+      await Group.find({
+        status: true
+      }).populate('assignedMembers').populate('batchList').then(async (group) => {
         var resArray = [];
         var resObject = {};
         for (let index = 0; index < group.length; index++) {
           for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
-            var categories = await Categories.find({ clientTaxonomyId: group[index].batchList[index1].clientTaxonomy }).catch(err => { return res.status(500).json({ "status": "500", message: err.message }) })
+            var categories = await Categories.find({
+              clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
+            }).catch(err => {
+              return res.status(500).json({
+                "status": "500",
+                message: err.message
+              })
+            })
             resObject.groupName = group[index].groupName;
             resObject.groupID = group[index].id;
             var assignedBatches = group[index].batchList.map(rec => {
@@ -440,7 +684,10 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                 "batchName": rec.batchName,
                 "batchID": rec._id,
                 "pillars": categories.map((rec) => {
-                  return { value: rec.id, label: rec.categoryName }
+                  return {
+                    value: rec.id,
+                    label: rec.categoryName
+                  }
                 }),
                 "batchYear": rec.years
               }
@@ -449,16 +696,25 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resArray.push(resObject);
           }
         }
-        return res.status(200).json({ groups: resArray });
+        return res.status(200).json({
+          groups: resArray
+        });
       })
     } else {
-      return res.status(200).json({ groups: [] });
+      return res.status(200).json({
+        groups: []
+      });
     }
   }
 }
 
 
-export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
+export const getUsers = async ({
+  user,
+  bodymen: {
+    body
+  }
+}, res, next) => {
   console.log('bodymen', body);
   //batchId -> Batches.findById(batchId) -> companies -> 
   //loop companiesList 
@@ -481,10 +737,16 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           }
         })
       }
-      var unAssignedCompanyList = await CompaniesTasks.find({ categoryId: body.categoryId, year: years }).catch();
+      var unAssignedCompanyList = await CompaniesTasks.find({
+        categoryId: body.categoryId,
+        year: years
+      }).catch();
       if (unAssignedCompanyList.length === 0) {
         var unAssignedCompanyListRes = unAssignedCompanyList.map(function (rec, index) {
-          return { id: index, companyName: rec.companyName }
+          return {
+            id: index,
+            companyName: rec.companyName
+          }
         })
       }
     }
@@ -497,6 +759,57 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 
 
     }
+  }
+}
+
+export const updateCompanyStatus = async ({
+  user,
+  bodymen: {
+    body
+  }
+}, res, next) => {
+  try {    
+  console.log(body.companyId, body.year);
+  let companyDetails = await Companies.findOne({
+    companyId: body.companyId,
+    status: true
+  });
+  let categoriesLength = await Categories.find({
+    clientTaxonomyId: companyDetails.clientTaxonomyId,
+    status:true
+  });
+  let taskDetails = await TaskAssignment.find({
+    companyId: body.companyId,
+    year: body.year,
+    taskStatus:'Completed'
+  });
+  if (categoriesLength.length == taskDetails.length ) {
+    await TaskAssignment.updateOne({
+      companyId: body.companyId,
+      year: body.year
+    }, {
+      $set: {
+        overAllCompanyTaskStatus: true
+      }
+    });
+  } else {
+    await TaskAssignment.updateOne({
+      companyId: body.companyId,
+      year: body.year
+    }, {
+      $set: {
+        overAllCompanyTaskStatus: false
+      }
+    })
+  }
+  return res.status(200).json({
+    message: "Company Status update succesfully!",
+  });
+  } catch (error) {    
+    return res.status(500).json({
+      status: "500",
+      message: error.message
+    })
   }
 }
 

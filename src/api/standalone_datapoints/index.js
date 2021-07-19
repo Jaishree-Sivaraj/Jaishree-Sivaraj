@@ -1,13 +1,52 @@
-import { Router } from 'express'
-import { middleware as query } from 'querymen'
-import { middleware as body } from 'bodymen'
-import { token } from '../../services/passport'
-import { create, index, show, update, destroy, uploadCompanyESGFiles } from './controller'
-import { schema } from './model'
-export StandaloneDatapoints, { schema } from './model'
+import {
+  Router
+} from 'express'
+import {
+  middleware as query
+} from 'querymen'
+import {
+  middleware as body
+} from 'bodymen'
+import {
+  token
+} from '../../services/passport'
+import {
+  create,
+  index,
+  show,
+  update,
+  destroy,
+  uploadCompanyESGFiles,
+  dataCollection
+} from './controller'
+import {
+  schema
+} from './model'
+export StandaloneDatapoints, {
+  schema
+}
+from './model'
 
 const router = new Router()
-const { companyId, datapointId, performanceResult, response, year, fiscalYearEndDate, standaloneStatus, taskId, submittedBy, submittedDate, activeStatus, lastModifiedDate, modifiedBy, isSubmitted, status } = schema.tree
+const {
+  companyId,
+  datapointId,
+  performanceResult,
+  response,
+  year,
+  fiscalYearEndDate,
+  standaloneStatus,
+  taskId,
+  submittedBy,
+  submittedDate,
+  activeStatus,
+  lastModifiedDate,
+  modifiedBy,
+  isSubmitted,
+  status
+} = schema.tree
+const currentData = [],historicalData=[];
+const dpCodeId = '';
 
 /**
  * @api {post} /standalone_datapoints Create standalone datapoints
@@ -35,8 +74,25 @@ const { companyId, datapointId, performanceResult, response, year, fiscalYearEnd
  * @apiError 401 user access only.
  */
 router.post('/',
-  token({ required: true }),
-  body({ companyId, datapointId, performanceResult, response, year, fiscalYearEndDate, standaloneStatus, taskId, submittedBy, submittedDate, activeStatus, lastModifiedDate, modifiedBy, isSubmitted }),
+  token({
+    required: true
+  }),
+  body({
+    companyId,
+    datapointId,
+    performanceResult,
+    response,
+    year,
+    fiscalYearEndDate,
+    standaloneStatus,
+    taskId,
+    submittedBy,
+    submittedDate,
+    activeStatus,
+    lastModifiedDate,
+    modifiedBy,
+    isSubmitted
+  }),
   create)
 
 /**
@@ -51,9 +107,29 @@ router.post('/',
  * @apiError 401 user access only.
  */
 router.post('/upload-company-esg',
-  token({ required: false }),
+  token({
+    required: false
+  }),
   query(),
   uploadCompanyESGFiles)
+
+/**
+ * @api {post} /standalone_datapoints/saveDatapointDetails Save DataPoint Details
+ * @apiName UploadCompanyESGFiles
+ * @apiGroup StandaloneDatapoints
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} upload company esg files StandaloneDatapoints's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 StandaloneDatapoints not found.
+ * @apiError 401 user access only.
+ */
+router.post('/saveDatapointDetails',
+  token({
+    required: true
+  }),
+  body({companyId,currentData,dpCodeId}),
+  dataCollection)
 
 /**
  * @api {get} /standalone_datapoints Retrieve standalone datapoints
@@ -68,7 +144,9 @@ router.post('/upload-company-esg',
  * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: true }),
+  token({
+    required: true
+  }),
   query(),
   index)
 
@@ -84,7 +162,9 @@ router.get('/',
  * @apiError 401 user access only.
  */
 router.get('/:id',
-  token({ required: true }),
+  token({
+    required: true
+  }),
   show)
 
 /**
@@ -114,8 +194,26 @@ router.get('/:id',
  * @apiError 401 user access only.
  */
 router.put('/:id',
-  token({ required: true }),
-  body({ companyId, datapointId, performanceResult, response, year, fiscalYearEndDate, standaloneStatus, taskId, submittedBy, submittedDate, activeStatus, lastModifiedDate, modifiedBy, isSubmitted, status }),
+  token({
+    required: true
+  }),
+  body({
+    companyId,
+    datapointId,
+    performanceResult,
+    response,
+    year,
+    fiscalYearEndDate,
+    standaloneStatus,
+    taskId,
+    submittedBy,
+    submittedDate,
+    activeStatus,
+    lastModifiedDate,
+    modifiedBy,
+    isSubmitted,
+    status
+  }),
   update)
 
 /**
@@ -129,7 +227,9 @@ router.put('/:id',
  * @apiError 401 user access only.
  */
 router.delete('/:id',
-  token({ required: true }),
+  token({
+    required: true
+  }),
   destroy)
 
 export default router

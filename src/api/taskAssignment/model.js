@@ -1,4 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, {
+  Schema
+} from 'mongoose'
 
 const taskAssignmentSchema = new Schema({
   createdBy: {
@@ -11,7 +13,7 @@ const taskAssignmentSchema = new Schema({
     default: 'DT1'
   },
   companyId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Companies',
     required: true
   },
@@ -21,7 +23,7 @@ const taskAssignmentSchema = new Schema({
     required: true
   },
   batchId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Batches',
     required: true
   },
@@ -39,14 +41,18 @@ const taskAssignmentSchema = new Schema({
     default: "Yet to work"
   },
   analystId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'User',
     required: true
   },
   qaId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'User',
     required: true
+  },
+  overAllCompanyTaskStatus: {
+    type: Boolean,
+    default: false
   },
   status: {
     type: Boolean,
@@ -56,24 +62,27 @@ const taskAssignmentSchema = new Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (obj, ret) => { delete ret._id }
+    transform: (obj, ret) => {
+      delete ret._id
+    }
   }
 })
 
 taskAssignmentSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       taskNumber: this.taskNumber ? this.taskNumber : null,
-      companyId: this.companyId ?  this.companyId.view(full) : null,
+      companyId: this.companyId ? this.companyId.view(full) : null,
       categoryId: this.categoryId ? this.categoryId.view(full) : null,
       batchId: this.batchId ? this.batchId.view(full) : null,
       year: this.year,
       analystSLA: this.analystSLA,
       taskStatus: this.taskStatus,
-      analystId: this.analystId ? this.analystId.view(full) : null ,
-      qaId: this.qaId  ? this.qaId.view(full) : null ,
+      overAllCompanyTaskStatus: this.overAllCompanyTaskStatus,
+      analystId: this.analystId ? this.analystId.view(full) : null,
+      qaId: this.qaId ? this.qaId.view(full) : null,
       status: this.status,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
