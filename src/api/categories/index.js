@@ -8,6 +8,7 @@ export Categories, { schema } from './model'
 
 const router = new Router()
 const { categoryName, categoryCode, categoryDescription, status, clientTaxonomyId } = schema.tree
+const groupId = '';
 
 /**
  * @api {post} /categories Create categories
@@ -62,7 +63,7 @@ router.get('/:id',
   show)
 
 /**
- * @api {get} /categories/taxonomy-pillars/:clientTaxonomyId Retrieve categories
+ * @api {post} /categories/taxonomy-pillars Retrieve categories
  * @apiName RetrieveCategories
  * @apiGroup Categories
  * @apiPermission user
@@ -72,8 +73,9 @@ router.get('/:id',
  * @apiError 404 Categories not found.
  * @apiError 401 user access only.
  */
-router.get('/taxonomy-pillars/:clientTaxonomyId',
+router.post('/taxonomy-pillars',
   token({ required: true }),
+  body({ clientTaxonomyId, groupId }),
   getTaxonomyCategories)
 
 /**
