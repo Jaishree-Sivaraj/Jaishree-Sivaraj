@@ -40,6 +40,8 @@ export const getTaxonomyCategories = async({ bodymen: { body }, params }, res, n
           console.log('groupMembers', groupMembers);
           await UserPillarAssignments.find({clientTaxonomyId: body.clientTaxonomyId, status: true})
           .populate('userId')
+          .populate('primaryPillar')
+          .populate('secondaryPillar')
           .then((pillarAssignedUsers) => {
             let unAssignedUsers = [];
             if (pillarAssignedUsers && Object.keys(pillarAssignedUsers).length>0) {
@@ -52,13 +54,17 @@ export const getTaxonomyCategories = async({ bodymen: { body }, params }, res, n
                     unAssignedUsers.push({ 
                       value: groupMembers[gIndex].id, 
                       label: groupMembers[gIndex].name, 
-                      isPillarAssigned: false
+                      isPillarAssigned: false,
+                      primaryPillar: null,
+                      secondaryPillar: null
                     });
                   } else {
                     unAssignedUsers.push({ 
                       value: groupMembers[gIndex].id, 
                       label: groupMembers[gIndex].name, 
-                      isPillarAssigned: true
+                      isPillarAssigned: true,
+                      primaryPillar: foundUser.primaryPillar,
+                      secondaryPillar: foundUser.secondaryPillar
                     });
                   }                   
                 }
