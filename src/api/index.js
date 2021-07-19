@@ -45,6 +45,9 @@ import sourceTypes from './sourceTypes'
 import batchWisePillarAssignment from './batchWisePillarAssignment'
 import companiesTasks from './companies_tasks'
 import userPillarAssignments from './user_pillar_assignments'
+import controversyTasks from './controversy_tasks'
+import controversyTaskHistories from './controversy_task_histories'
+import taskHistories from './task_histories'
 
 const router = new Router()
 
@@ -118,5 +121,8 @@ router.use('/sourceTypes', sourceTypes)
 router.use('/batchWisePillarAssignments', batchWisePillarAssignment)
 router.use('/companies_tasks', companiesTasks)
 router.use('/user_pillar_assignments', userPillarAssignments)
+router.use('/controversy_tasks', controversyTasks)
+router.use('/controversy_task_histories', controversyTaskHistories)
+router.use('/task_histories', taskHistories)
 
 export default router
