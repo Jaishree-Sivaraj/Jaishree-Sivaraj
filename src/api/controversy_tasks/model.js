@@ -11,7 +11,7 @@ const controversyTasksSchema = new Schema({
   },
   analystId: {
     type: Schema.ObjectId,
-    ref: 'Users',
+    ref: 'User',
     required: true
   },
   taskStatus: {

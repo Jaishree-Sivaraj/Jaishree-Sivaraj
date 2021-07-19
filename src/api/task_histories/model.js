@@ -32,7 +32,7 @@ const taskHistoriesSchema = new Schema({
   },
   createdBy: {
     type: Schema.ObjectId,
-    ref: 'Users',
+    ref: 'User',
     required: false
   }
 }, {

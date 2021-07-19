@@ -13,7 +13,7 @@ const controversyTaskHistoriesSchema = new Schema({
   },
   analystId: {
     type: Schema.ObjectId,
-    ref: 'Users',
+    ref: 'User',
     required: true
   },
   stage: {
@@ -25,7 +25,7 @@ const controversyTaskHistoriesSchema = new Schema({
   },
   createdBy: {
     type: Schema.ObjectId,
-    ref: 'Users',
+    ref: 'User',
     default: false
   }
 }, {
