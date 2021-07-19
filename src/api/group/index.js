@@ -127,10 +127,10 @@ router.put('/:id',
  * @apiGroup Group
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam groupName Group's groupName.
- * @apiParam groupAdmin Group's groupAdmin.
- * @apiParam assignBatch Group's assignBatch.
- * @apiParam assignMembers Group's assignMembers.
+ * @apiParam grpName Group's grpName.
+ * @apiParam grpAdmin Group's grpAdmin.
+ * @apiParam assignedBatches Group's assignedBatches.
+ * @apiParam grpMembers Group's grpMembers.
  * @apiParam status Group's status.
  * @apiSuccess {Object} group Group's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -139,7 +139,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ groupName, admin, assignBatch, assignMembers, status }),
+  body({ grpName, grpAdmin, grpMembers, assignedBatches }),
   updateGroup)
 
 /**

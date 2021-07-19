@@ -16,6 +16,7 @@ export const login = async ({ user }, res, next) => {
         let userDetail = await User.findOne({
           _id: user.id,
           isUserActive: true,
+          isUserApproved: true,
           status: true,
           '$or': [{
             'roleDetails.roles': { '$in': [roleDetails.id] }  //
@@ -62,6 +63,7 @@ export const login = async ({ user }, res, next) => {
           let userDetail = await User.findOne({
             _id: user.id,
             isUserActive: true,
+            isUserApproved: true,
             status: true
           }).populate({ path: 'roleDetails.roles' }).
             populate({ path: 'roleDetails.primaryRole' });
@@ -87,7 +89,7 @@ export const loginOtp = async (req, res, next) => {
   sign(req.user.id)
     .then(async (token) => {
       if (req.body) {
-        let userDetail = await User.findOne({ email: req.body.email, isUserActive: true, status: true }).populate({ path: 'roleDetails.roles' }).
+        let userDetail = await User.findOne({ email: req.body.email, isUserActive: true, isUserApproved: true, status: true }).populate({ path: 'roleDetails.roles' }).
           populate({ path: 'roleDetails.primaryRole' });
         if (userDetail) {
           userDetail = userDetail.toObject();
@@ -98,12 +100,12 @@ export const loginOtp = async (req, res, next) => {
             }) : [],
             "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
           }
-          return res.status(200).json({ token: token, message: "OTP verified successfully!", user: userDetail });
+          return res.status(200).json({ token: token, message: "Login successful!", user: userDetail });
         } else {
           return res.status(401).json({ status: "401", message: "Authorization Failed!" })
         }
       } else {
-        return res.status(200).json({ token: token, message: "OTP verified successfully!" });
+        return res.status(200).json({ token: token, message: "Login successful!" });
       }
     })
 }

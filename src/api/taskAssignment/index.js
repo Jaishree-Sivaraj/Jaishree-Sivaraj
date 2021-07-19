@@ -30,20 +30,7 @@ export TaskAssignment, {
 from './model'
 
 const router = new Router()
-const {
-  companyId,
-  taskNumber,
-  categoryId,
-  batchId,
-  year,
-  analystSLA,
-  qaSLA,
-  taskStatus,
-  analystId,
-  qaId,
-  status
-} = schema.tree
-const groupId = '';
+const { companyId, taskNumber, categoryId, groupId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -53,6 +40,7 @@ const groupId = '';
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Task assignment's companyId.
  * @apiParam categoryId Task assignment's categoryId.
+ * @apiParam groupId Task assignment's groupId.
  * @apiParam batchId Task assignment's batchId.
  * @apiParam year Task assignment's year.
  * @apiParam analystSLA Task assignment's analystSLA.
@@ -64,19 +52,8 @@ const groupId = '';
  * @apiError 401 user access only.
  */
 router.post('/',
-  token({
-    required: true
-  }),
-  body({
-    companyId,
-    categoryId,
-    batchId,
-    year,
-    analystSLA,
-    qaSLA,
-    analystId,
-    qaId
-  }),
+  token({ required: true }),
+  body({ companyId, categoryId, groupId, batchId, year, analystSLA, qaSLA, analystId, qaId }),
   create)
 
 /**
@@ -232,19 +209,19 @@ router.delete('/:id',
   destroy)
 
 /**
- * @api {post} /getUsers to get 
- * @apiName CreateTaskAssignment
- * @apiGroup TaskAssignment
- * @apiPermission user
- * @apiParam {String} access_token user access token.
- * @apiParam batchId Task assignment's companyId.
- * @apiParam groupId Task assignment's categoryId.
- * @apiParam categoryId Task assignment's batchId.
- * @apiSuccess {Object} taskAssignment Task assignment's data.
- * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 404 Task assignment not found.
- * @apiError 401 user access only.
- */
+* @api {post} /getUsers to get 
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam batchId Task assignment's batchId.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam categoryId Task assignment's categoryId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
 router.post('/getAllAssignedUsers',
   token({
     required: true

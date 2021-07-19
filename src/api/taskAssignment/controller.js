@@ -1,49 +1,17 @@
-import {
-  success,
-  notFound,
-  authorOrAdmin
-} from '../../services/response/'
-import {
-  TaskAssignment
-} from '.'
-import {
-  User
-} from '../user'
-import {
-  Role
-} from '../role'
-import {
-  Group
-} from '../group'
-import {
-  Categories
-} from '../categories'
-import {
-  Batches
-} from "../batches"
-import {
-  CompanyRepresentatives
-} from '../company-representatives'
-import {
-  ClientRepresentatives
-} from '../client-representatives'
-import {
-  CompaniesTasks
-} from "../companies_tasks"
-import {
-  Companies
-} from '../companies'
-export const create = async ({
-  user,
-  bodymen: {
-    body
-  }
-}, res, next) => {
-  await TaskAssignment.findOne({
-      status: true
-    }).sort({
-      createdAt: -1
-    }).limit(1)
+import { success, notFound, authorOrAdmin } from '../../services/response/'
+import { TaskAssignment } from '.'
+import { User } from '../user'
+import { Role } from '../role'
+import { Group } from '../group'
+import { Categories } from '../categories'
+import { Batches } from "../batches"
+import { CompanyRepresentatives } from '../company-representatives'
+import { ClientRepresentatives } from '../client-representatives'
+import { CompaniesTasks } from "../companies_tasks"
+import { UserPillarAssignments } from "../user_pillar_assignments"
+
+export const create = async ({ user, bodymen: { body } }, res, next) => {
+  await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
     .then(async (taskObject) => {
       console.log('taskObject', taskObject);
       let newTaskNumber = '';
@@ -133,6 +101,7 @@ export const index = ({
     .populate('createdBy')
     .populate('companyId')
     .populate('categoryId')
+    .populate('groupId')
     .populate('batchId')
     .populate('analystId')
     .populate('qaId')
@@ -145,6 +114,8 @@ export const index = ({
           taskNumber: object.taskNumber,
           pillar: object.categoryId ? object.categoryId.categoryName : null,
           pillarId: object.categoryId ? object.categoryId.id : null,
+          group: object.groupId ? object.groupId.groupName : null,
+          groupId: object.groupId ? object.groupId.id : null,
           batch: object.batchId ? object.batchId.batchName : null,
           batchId: object.batchId ? object.batchId.id : null,
           company: object.companyId ? object.companyId.companyName : null,
@@ -246,6 +217,7 @@ export const getMyTasks = async ({
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
+      .populate('groupId')
       .populate('batchId')
       .populate('analystId')
       .populate('qaId')
@@ -257,6 +229,8 @@ export const getMyTasks = async ({
             taskNumber: object.taskNumber,
             pillar: object.categoryId ? object.categoryId.categoryName : null,
             pillarId: object.categoryId ? object.categoryId.id : null,
+            group: object.groupId ? object.groupId.groupName : null,
+            groupId: object.groupId ? object.groupId.id : null,
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
@@ -299,6 +273,7 @@ export const getMyTasks = async ({
       .populate('createdBy')
       .populate('companyId')
       .populate('categoryId')
+      .populate('groupId')
       .populate('batchId')
       .populate('analystId')
       .populate('qaId')
@@ -310,6 +285,8 @@ export const getMyTasks = async ({
             taskNumber: object.taskNumber,
             pillar: object.categoryId ? object.categoryId.categoryName : null,
             pillarId: object.categoryId ? object.categoryId.id : null,
+            group: object.groupId ? object.groupId.groupName : null,
+            groupId: object.groupId ? object.groupId.id : null,
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
@@ -355,6 +332,7 @@ export const getMyTasks = async ({
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
+        .populate('groupId')
         .populate('batchId')
         .populate('analystId')
         .populate('qaId')
@@ -366,6 +344,8 @@ export const getMyTasks = async ({
               taskNumber: object.taskNumber,
               pillar: object.categoryId ? object.categoryId.categoryName : null,
               pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
@@ -410,6 +390,7 @@ export const getMyTasks = async ({
         .populate('createdBy')
         .populate('companyId')
         .populate('categoryId')
+        .populate('groupId')
         .populate('batchId')
         .populate('analystId')
         .populate('qaId')
@@ -421,6 +402,8 @@ export const getMyTasks = async ({
               taskNumber: object.taskNumber,
               pillar: object.categoryId ? object.categoryId.categoryName : null,
               pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
@@ -510,16 +493,17 @@ export const show = ({
     params
   }, res, next) =>
   TaskAssignment.findById(params.id)
-  .populate('createdBy')
-  .populate('companyId')
-  .populate('categoryId')
-  .populate('batchId')
-  .populate('analystId')
-  .populate('qaId')
-  .then(notFound(res))
-  .then((taskAssignment) => taskAssignment ? taskAssignment.view() : null)
-  .then(success(res))
-  .catch(next)
+    .populate('createdBy')
+    .populate('companyId')
+    .populate('categoryId')
+    .populate('groupId')
+    .populate('batchId')
+    .populate('analystId')
+    .populate('qaId')
+    .then(notFound(res))
+    .then((taskAssignment) => taskAssignment ? taskAssignment.view() : null)
+    .then(success(res))
+    .catch(next)
 
 export const update = ({
     user,
@@ -529,18 +513,19 @@ export const update = ({
     params
   }, res, next) =>
   TaskAssignment.findById(params.id)
-  .populate('createdBy')
-  .populate('companyId')
-  .populate('categoryId')
-  .populate('batchId')
-  .populate('analystId')
-  .populate('qaId')
-  .then(notFound(res))
-  .then(authorOrAdmin(res, user, 'createdBy'))
-  .then((taskAssignment) => taskAssignment ? Object.assign(taskAssignment, body).save() : null)
-  .then((taskAssignment) => taskAssignment ? taskAssignment.view(true) : null)
-  .then(success(res))
-  .catch(next)
+    .populate('createdBy')
+    .populate('companyId')
+    .populate('categoryId')
+    .populate('groupId')
+    .populate('batchId')
+    .populate('analystId')
+    .populate('qaId')
+    .then(notFound(res))
+    .then(authorOrAdmin(res, user, 'createdBy'))
+    .then((taskAssignment) => taskAssignment ? Object.assign(taskAssignment, body).save() : null)
+    .then((taskAssignment) => taskAssignment ? taskAssignment.view(true) : null)
+    .then(success(res))
+    .catch(next)
 
 export const destroy = ({
     user,
@@ -724,6 +709,7 @@ export const getUsers = async ({
   //if categoryId match with roleDetals.primaryRole pilltype would be primary if match with roleDetals.roles pillType would be secondary
   //loop assignedMembers and find qa and analyst with role name 
   //each iteration of assignedMembers find in taskAssignement with for qa qaId and for analyst with analystId, taskStatus !=Collection Completed and !=Correction Completed for analyst, !=Verification Completed for qa store in activeTaskCount;
+  var resObj = {};
   var batch = await Batches.findById(body.batchId).populate('companiesList').catch();
   if (batch && batch.companiesList.length > 0) {
     for (let index = 0; index < batch.companiesList.length; index++) {
@@ -748,17 +734,69 @@ export const getUsers = async ({
             companyName: rec.companyName
           }
         })
+      } else {
+        var unAssignedCompanyListRes = [];
       }
     }
+    resObj["companies"] = unAssignedCompanyListRes;
   }
-  var group = await Group.findById(body.groupId).populate('assignedMembers');
-  console.log('group', group);
+  var group = await Group.findById(body.groupId).populate('assignedMembers').populate({ path: 'assignedMembers.roleDetails' });
+  var roleDetails = await Role.find({ roleName: { $in: ['QA', 'Analyst'] } });
+  console.log('roleDetails', roleDetails);
+  console.log('group', JSON.stringify(group, null, 3));
+  var qa = [], analyst = [];
   if (group && group.assignedMembers.length > 0) {
     for (let index = 0; index < group.assignedMembers.length; index++) {
-      var userDetails = User.findById(group.assignedMembers[index]._id);
-
-
+      var qaId = roleDetails.find(rec => {
+        return rec.roleName === 'QA';
+      })
+      var analystId = roleDetails.find(rec => {
+        return rec.roleName === 'Analyst';
+      })
+      var qaObject = {};
+      var analystObject = {};
+      var userPillar = await UserPillarAssignments.findOne({
+        clientTaxonomyId: batch.clientTaxonomy,
+        userId: group.assignedMembers[index].id,
+        '$or': [{
+          'secondaryPillar': { '$in': [body.categoryId] }
+        }, { 'primaryPillar': body.categoryId }]
+      }).populate('primaryPillar').populate('secondaryPillar');
+      if (userPillar && Object.keys(userPillar).length > 0) {
+        if (userPillar.primaryPillar.id === body.categoryId) {
+          qaObject.primaryPillar = true;
+          analystObject.primaryPillar = true;
+        } else {
+          qaObject.primaryPillar = false;
+          analystObject.primaryPillar = false;
+        }
+        if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId) {
+          qaObject.id = group.assignedMembers[index].id;
+          qaObject.name = group.assignedMembers[index].name;
+          qaObject.primaryRole = true;
+          qa.push(qaObject);
+        } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId) > -1) {
+          qaObject.id = group.assignedMembers[index].id;
+          qaObject.name = group.assignedMembers[index].name;
+          qaObject.primaryRole = false;
+          qa.push(qaObject);
+        }
+        if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId) {
+          analystObject.id = group.assignedMembers[index].id;
+          analystObject.name = group.assignedMembers[index].name;
+          analystObject.primaryRole = true;
+          analyst.push(analystObject);
+        } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId) > -1) {
+          analystObject.id = group.assignedMembers[index].id;
+          analystObject.name = group.assignedMembers[index].name;
+          analystObject.primaryRole = false;
+          analyst.push(analystObject);
+        }
+      }
     }
+    resObj["Qadata"] = qa;
+    resObj["Analystdata"] = analyst;
+    res.status(200).json({ data: resObj });
   }
 }
 
