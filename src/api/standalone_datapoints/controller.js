@@ -1027,7 +1027,115 @@ export const dataCollection = async ({
   },
   params
 }, res, next) => {
-  console.log(body.taskId, body.year, body.companyId, body.pillarId);
+  try {
+
+    console.log(body.companyId,user);
+    let dpCodesDetails = body.currentData;
+    let dpTypeValue = await Datapoints.findOne({
+      _id: body.dpCodeId,
+      status: true
+    });
+    if (dpTypeValue.dpType == 'Standalone') {
+      let standaloneDpDetails = dpCodesDetails.map(function (item) {
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'],
+          status: true,
+          createdBy:user
+        }
+      })
+      console.log(standaloneDpDetails);
+      await StandaloneDatapoints.insertMany(standaloneDpDetails)
+        .then((err, result) => {
+          if (err) {
+            console.log('error', err);
+          } else {
+            //  console.log('result', result);
+          }
+        });
+
+      res.status('200').json({
+        message: "Data inserted Successfully"
+      });
+    } else if (dpTypeValue.dpType == 'Board Matrix') {
+      let boardMemberDatapoints = dpCodesDetails.map(function (item) {
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'],
+          memberName: item['memberName'],
+          memberStatus: true,
+          status: true,
+          createdBy:user
+        }
+      });
+      await BoardMembersMatrixDataPoints.insertMany(boardMemberDatapoints)
+        .then((err, result) => {
+          if (err) {
+            console.log('error', err);
+          } else {
+            //  console.log('result', result);
+          }
+        });
+      res.status('200').json({
+        message: "Data inserted Successfully"
+      });
+    } else if (dpTypeValue.dpType == 'KMP Matrix') {
+      let kmpMemberDatapoints = dpCodesDetails.map(function (item) {
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'],
+          memberName: item['memberName'],
+          memberStatus: true,
+          status: true,
+          createdBy:user
+        }
+      });
+
+      await KmpMatrixDataPoints.insertMany(kmpMemberDatapoints)
+        .then((err, result) => {
+          if (err) {
+            console.log('error', err);
+          } else {
+            //  console.log('result', result);
+          }
+        });
+
+      res.status('200').json({
+        message: "Data inserted Successfully"
+      });
+    }
+
+  } catch (error) {
+
+    return res.status(500).json({
+      message: error.message,
+      status: 500
+    });
+  }
 }
 export const index = ({
     querymen: {

@@ -33,10 +33,14 @@ const companiesSchema = new Schema({
     type: String
   },
   socialAnalystName: {
-    type: String
+    type: String,
+    required: false,
+    default: null
   },
   socialQAName: {
-    type: String
+    type: String,
+    required: false,
+    default: null
   },
   companyMemberDetails: {
     type: Object,
@@ -71,8 +75,8 @@ companiesSchema.methods = {
       nicIndustry: this.nicIndustry,
       isinCode: this.isinCode,
       cmieProwessCode: this.cmieProwessCode,
-      socialAnalystName: this.socialAnalystName,
-      socialQAName: this.socialQAName,
+      socialAnalystName: this.socialAnalystName ? this.socialAnalystName : '',
+      socialQAName: this.socialQAName ? this.socialQAName : '',
       companyMemberDetails: this.companyMemberDetails ? this.companyMemberDetails : [],
       status: this.status,
       isAssignedToBatch: this.isAssignedToBatch ? this.isAssignedToBatch : false,

@@ -160,6 +160,8 @@ export const uploadCompaniesFile = async (req, res, next) => {
               socialAnalystName: rowObject['Analyst Name'].replace(/[\\r\\n]/g,''),
               socialQAName: rowObject['QA Name'].replace(/[\\r\\n]/g,''),
               clientTaxonomyId: req.body.clientTaxonomyId,
+              // socialAnalystName: rowObject['Analyst Name'].replace(/[\\r\\n]/g,''),
+              // socialQAName: rowObject['QA Name'].replace(/[\\r\\n]/g,''),
               status: true,
               createdBy: userDetail
             }

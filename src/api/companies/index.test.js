@@ -20,7 +20,7 @@ beforeEach(async () => {
 test('POST /companies 201 (user)', async () => {
   const { status, body } = await request(app())
     .post(`${apiRoot}`)
-    .send({ access_token: userSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', status: 'test' })
+    .send({ access_token: userSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', status: 'test' })
   expect(status).toBe(201)
   expect(typeof body).toEqual('object')
   expect(body.companyName).toEqual('test')
@@ -30,8 +30,6 @@ test('POST /companies 201 (user)', async () => {
   expect(body.nicIndustry).toEqual('test')
   expect(body.isinCode).toEqual('test')
   expect(body.cmieProwessCode).toEqual('test')
-  expect(body.socialAnalystName).toEqual('test')
-  expect(body.socialQAName).toEqual('test')
   expect(body.status).toEqual('test')
   expect(typeof body.createdBy).toEqual('object')
 })
@@ -84,7 +82,7 @@ test('GET /companies/:id 404 (user)', async () => {
 test('PUT /companies/:id 200 (user)', async () => {
   const { status, body } = await request(app())
     .put(`${apiRoot}/${companies.id}`)
-    .send({ access_token: userSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', status: 'test' })
+    .send({ access_token: userSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', status: 'test' })
   expect(status).toBe(200)
   expect(typeof body).toEqual('object')
   expect(body.id).toEqual(companies.id)
@@ -95,8 +93,6 @@ test('PUT /companies/:id 200 (user)', async () => {
   expect(body.nicIndustry).toEqual('test')
   expect(body.isinCode).toEqual('test')
   expect(body.cmieProwessCode).toEqual('test')
-  expect(body.socialAnalystName).toEqual('test')
-  expect(body.socialQAName).toEqual('test')
   expect(body.status).toEqual('test')
   expect(typeof body.createdBy).toEqual('object')
 })
@@ -104,7 +100,7 @@ test('PUT /companies/:id 200 (user)', async () => {
 test('PUT /companies/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .put(`${apiRoot}/${companies.id}`)
-    .send({ access_token: anotherSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', status: 'test' })
+    .send({ access_token: anotherSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', status: 'test' })
   expect(status).toBe(401)
 })
 
@@ -117,7 +113,7 @@ test('PUT /companies/:id 401', async () => {
 test('PUT /companies/:id 404 (user)', async () => {
   const { status } = await request(app())
     .put(apiRoot + '/123456789098765432123456')
-    .send({ access_token: anotherSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', status: 'test' })
+    .send({ access_token: anotherSession, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', status: 'test' })
   expect(status).toBe(404)
 })
 

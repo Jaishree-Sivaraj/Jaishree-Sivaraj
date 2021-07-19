@@ -5,7 +5,7 @@ let user, companies
 
 beforeEach(async () => {
   user = await User.create({ email: 'a@a.com', password: '123456' })
-  companies = await Companies.create({ createdBy: user, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', status: 'test' })
+  companies = await Companies.create({ createdBy: user, companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', status: 'test' })
 })
 
 describe('view', () => {
@@ -22,8 +22,6 @@ describe('view', () => {
     expect(view.nicIndustry).toBe(companies.nicIndustry)
     expect(view.isinCode).toBe(companies.isinCode)
     expect(view.cmieProwessCode).toBe(companies.cmieProwessCode)
-    expect(view.socialAnalystName).toBe(companies.socialAnalystName)
-    expect(view.socialQAName).toBe(companies.socialQAName)
     expect(view.status).toBe(companies.status)
     expect(view.createdAt).toBeTruthy()
     expect(view.updatedAt).toBeTruthy()
@@ -42,8 +40,6 @@ describe('view', () => {
     expect(view.nicIndustry).toBe(companies.nicIndustry)
     expect(view.isinCode).toBe(companies.isinCode)
     expect(view.cmieProwessCode).toBe(companies.cmieProwessCode)
-    expect(view.socialAnalystName).toBe(companies.socialAnalystName)
-    expect(view.socialQAName).toBe(companies.socialQAName)
     expect(view.status).toBe(companies.status)
     expect(view.createdAt).toBeTruthy()
     expect(view.updatedAt).toBeTruthy()

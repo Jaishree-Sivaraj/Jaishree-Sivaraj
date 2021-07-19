@@ -24,7 +24,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
     let batchList = []
     if (body.assignedBatches && body.assignedBatches.length > 0) {
       for (let batchIndex = 0; batchIndex < body.assignedBatches.length; batchIndex++) {
-        const batch = body.assignedBatches[batchIndex].id;
+        const batch = body.assignedBatches[batchIndex]._id;
         batchList.push(batch);
       }
     }
@@ -135,14 +135,18 @@ export const show = async({ params }, res, next) => {
     .then(async(group) => {
       let batchObjects = [], groupTaxonomies = [];
       if (group) {
-        for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
-          let obj = group.batchList[batchIndex];
-          batchObjects.push({ value: obj.id, label: obj.batchName });
-          let batchDetail = await Batches.findOne({"_id": obj.id}).populate('clientTaxonomy');
-          let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
-          if(!foundObject){
-            groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
-          }          
+        if (group.batchList && group.batchList.length >0) {
+          for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
+            let obj = group.batchList[batchIndex];
+            if (obj && Object.keys(obj).length > 0) {
+              batchObjects.push({ value: obj._id, label: obj.batchName });
+              let batchDetail = await Batches.findOne({"_id": obj._id}).populate('clientTaxonomy');
+              let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
+              if(!foundObject){
+                groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
+              }              
+            }
+          }        
         }
         let memberObjects = [];
         group.assignedMembers.forEach(obj => {
@@ -178,16 +182,16 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 
 export const updateGroup = async ({ user, bodymen: { body }, params }, res, next) => {
   let membersList = [];
-  if (body.assignMembers && body.assignMembers.length > 0) {
-    for (let aindex = 0; aindex < body.assignMembers.length; aindex++) {
-      const member = body.assignMembers[aindex].value;
+  if (body.grpMembers && body.grpMembers.length > 0) {
+    for (let aindex = 0; aindex < body.grpMembers.length; aindex++) {
+      const member = body.grpMembers[aindex].userDetails ? body.grpMembers[aindex].userDetails.value : null;
       membersList.push(member);
     }
   }
   let batchList = [];
-  if (body.assignBatch && body.assignBatch.length > 0) {
-    for (let bindex = 0; bindex < body.assignBatch.length; bindex++) {
-      const batch = body.assignBatch[bindex].value;
+  if (body.assignedBatches && body.assignedBatches.length > 0) {
+    for (let bindex = 0; bindex < body.assignedBatches.length; bindex++) {
+      const batch = body.assignedBatches[bindex]._id;
       batchList.push(batch);
     }
   }

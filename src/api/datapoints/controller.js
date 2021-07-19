@@ -328,10 +328,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let keyIssueList = _.uniqBy(dpTypeDatapoints, 'keyIssueId');
             console.log(keyIssueList);
             for (let currentBoardMemYearIndex = 0; currentBoardMemYearIndex < currentYear.length; currentBoardMemYearIndex++) {
-              let boardNameList = {
-                year: currentYear[currentBoardMemYearIndex],
-                memberName: []
-              }
+              // let boardNameList = {
+              //   year: currentYear[currentBoardMemYearIndex],
+              //   memberName: []
+              // }
               let boardMembersList = currentAllBoardMemberMatrixDetails.filter(obj => obj.year == currentYear[currentBoardMemYearIndex]);
               let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
               for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < boardMemberNameList.length; boardMemberNameListIndex++) {
@@ -339,36 +339,38 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   label: boardMemberNameList[boardMemberNameListIndex].memberName,
                   value: boardMemberNameList[boardMemberNameListIndex].memberName
                 }
-                boardNameList.memberName.push(boardNameValue);
+                boardDpCodesData.boardMemberList.push(boardNameValue);
               }
-              boardDpCodesData.boardMemberList.push(boardNameList);
 
             }
-            for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
 
-              let boardDatapointsObject = {
-                dpCode: dpTypeDatapoints[datapointsIndex].code,
-                dpCodeId: dpTypeDatapoints[datapointsIndex].id,
-                companyId: taskDetails.companyId.id,
-                companyName: taskDetails.companyId.companyName,
-                keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
-                keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
-                pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
-                fiscalYear: taskDetails.year,
-                currentData: [],
-                historicalData: [],
-                status: ""
-              }
-              for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                let boardMembersList = currentAllBoardMemberMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
-                let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
-                console.log(boardMemberNameList.length)
-                for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
-                  let ss = boardMemberNameList[boarMemberListIndex].memberName;
+            for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+              for (let boarMemberListIndex = 0; boarMemberListIndex < boardDpCodesData.boardMemberList.length; boarMemberListIndex++) {
+
+                let boardDatapointsObject = {
+                  dpCode: dpTypeDatapoints[datapointsIndex].code,
+                  dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                  companyId: taskDetails.companyId.id,
+                  companyName: taskDetails.companyId.companyName,
+                  keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                  keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                  pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                  pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                  fiscalYear: taskDetails.year,
+                  memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
+                  currentData: [],
+                  historicalData: [],
+                  status: ""
+                }
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  // let boardMembersList = currentAllBoardMemberMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
+                  // let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+                  // console.log(boardMemberNameList.length)
+                  // for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+                  //  let ss = boardMemberNameList[boarMemberListIndex].memberName;
                   let currentDatapointsObject = {};
                   _.filter(currentAllBoardMemberMatrixDetails, function (object) {
-                    if (object.datapointId.id == dpTypeValues.id && object.year == currentYear[currentYearIndex] && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == boardDpCodesData.boardMemberList[boarMemberListIndex].label) {
                       if (object.hasError == true) {
                         let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                         currentDatapointsObject = {
@@ -431,7 +433,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       fiscalYear: currentYear[currentYearIndex],
                       description: dpTypeDatapoints[datapointsIndex].description,
                       dataType: dpTypeDatapoints[datapointsIndex].dataType,
-                      memberName: boardMemberNameList[boarMemberListIndex].memberName,
+                      memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
                       textSnippet: '',
                       pageNo: '',
                       screenShot: '',
@@ -443,16 +445,16 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     boardDatapointsObject.status = "Yet to Start"
                   }
                   boardDatapointsObject.currentData.push(currentDatapointsObject);
+                  //}
                 }
-              }
-              for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
-                let boardMembersList = historyAllBoardMemberMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
-                let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
-                for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+                for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
+                  // let boardMembersList = historyAllBoardMemberMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
+                  // let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+                  // for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
 
                   let historicalDatapointsObject = {};
                   _.filter(historyAllBoardMemberMatrixDetails, function (object) {
-                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardDpCodesData.boardMemberList[boarMemberListIndex].label) {
                       historicalDatapointsObject = {
                         status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
@@ -477,19 +479,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                   });
                   //mergedBoardHistoryDetails.push(historicalDatapointsObject);
+                  // }
                 }
-              }
-              // mergedBoardMemberHistoryDetails = _.merge(mergedBoardMemberHistoryDetails, mergedBoardHistoryDetails);
-              // boardhistoricalDatapointsIndex.push(mergedBoardMemberHistoryDetails);             
+                // mergedBoardMemberHistoryDetails = _.merge(mergedBoardMemberHistoryDetails, mergedBoardHistoryDetails);
+                // boardhistoricalDatapointsIndex.push(mergedBoardMemberHistoryDetails);             
 
-              boardDpCodesData.dpCodesData.push(boardDatapointsObject);
+                boardDpCodesData.dpCodesData.push(boardDatapointsObject);
+              }
             }
           } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             for (let currentkmpMemYearIndex = 0; currentkmpMemYearIndex < currentYear.length; currentkmpMemYearIndex++) {
-              let kmpNameList = {
-                year: currentYear[currentkmpMemYearIndex],
-                memberName: []
-              }
+              // let kmpNameList = {
+              //   year: currentYear[currentkmpMemYearIndex],
+              //   memberName: []
+              // }
               let kmpMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentkmpMemYearIndex]);
               let kmpMemberNameList = _.uniqBy(kmpMembersList, 'memberName');
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < kmpMemberNameList.length; kmpMemberNameListIndex++) {
@@ -497,13 +500,16 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   label: kmpMemberNameList[kmpMemberNameListIndex].memberName,
                   value: kmpMemberNameList[kmpMemberNameListIndex].memberName
                 }
-                kmpNameList.memberName.push(kmpNameValue);
+                // kmpNameList.memberName.push(kmpNameValue);
+                
+              kmpDpCodesData.kmpMemberList.push(kmpNameValue);
               }
-              kmpDpCodesData.kmpMemberList.push(kmpNameList);
 
             }
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
               console.log(datapointsIndex);
+              for (let kmpMemberListIndex = 0; kmpMemberListIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberListIndex++) {
+              
               let kmpDatapointsObject = {
                 dpCode: dpTypeDatapoints[datapointsIndex].code,
                 dpCodeId: dpTypeDatapoints[datapointsIndex].id,
@@ -514,18 +520,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 fiscalYear: taskDetails.year,
+                memberName:kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
                 currentData: [],
                 historicalData: [],
                 status: ''
               }
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                let boardMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
-                let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+                // let boardMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
+                // let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
 
-                for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+               // for (let boarMemberListIndex = 0; boarMemberListIndex < kmpDpCodesData.kmpMemberList.length; boarMemberListIndex++) {
                   let currentDatapointsObject = {};
                   _.filter(currentAllKmpMatrixDetails, function (object) {
-                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label) {
                       if (object.hasError == true) {
                         let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeDatapoints[datapointsIndex].id && obj.year == currentYear[currentYearIndex])
                         currentDatapointsObject = {
@@ -590,7 +597,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       fiscalYear: currentYear[currentYearIndex],
                       description: dpTypeDatapoints[datapointsIndex].description,
                       dataType: dpTypeDatapoints[datapointsIndex].dataType,
-                      memberName: boardMemberNameList[boarMemberListIndex].memberName,
+                      memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
                       textSnippet: '',
                       pageNo: '',
                       screenShot: '',
@@ -603,17 +610,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                   kmpDatapointsObject.currentData.push(currentDatapointsObject);
                   //mergedKMPCurrentDetails = _.concat(currentDatapointsObject, currentDatapointsObject);
-                }
+                //}
               }
               // kmpCurrentDatapointsIndex.push(mergedBoardCurrentDetails)
               for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
-                let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
-                let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
-                for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+                // let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
+                // let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+                // for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
 
                   let historicalDatapointsObject = {};
                   _.filter(historyAllKmpMatrixDetails, function (object) {
-                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+                    if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == historyYear[hitoryYearIndex].year && object.memberName == kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label) {
                       historicalDatapointsObject = {
                         status: 'Completed',
                         dpCode: dpTypeDatapoints[datapointsIndex].code,
@@ -638,11 +645,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                   });
                   //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
-                }
+                //}
 
               }
-
               kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+
+            }
             }
             // kmpHistoricalDatapointsIndex.push(mergedBoardHistoryDetails);
 
@@ -781,7 +789,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           }
         }
-        console.log(boardDpCodesData,kmpDpCodesData,dpCodesData);
+        console.log(boardDpCodesData, kmpDpCodesData, dpCodesData);
 
         return res.status(200).send({
           status: "200",
@@ -1188,7 +1196,7 @@ export const datapointDetails = async (req, res, next) => {
         .populate('companyId')
         .populate('taskId');
       let historyYear = _.uniqBy(historyAllBoardMemberMatrixDetails, 'year');
-      
+
       let boardDatapointsObject = {
         dpCode: dpTypeValues.code,
         dpCodeId: dpTypeValues.id,
@@ -1318,102 +1326,158 @@ export const datapointDetails = async (req, res, next) => {
           });
           boardDatapointsObject.historicalData.push(historicalDatapointsObject);
         }
-      }  
+      }
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
         BoardMatrix: boardDatapointsObject
       });
-    } else if(dpTypeValues.dpType == 'KMP Matrix'){
-      
-   let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      companyId: taskDetails.companyId.id,
-      year: {
-        "$in": currentYear
-      },
-      memberStatus: true,
-      status: true
-    }).populate('createdBy')
-    .populate('datapointId')
-    .populate('companyId')
-    .populate('taskId');
-  let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      companyId: taskDetails.companyId.id,
-      year: {
-        "$nin": currentYear
-      },
-      memberStatus: true,
-      status: true
-    }).populate('createdBy')
-    .populate('datapointId')
-    .populate('companyId')
-    .populate('taskId');
-    
-    let historyYear = _.uniqBy(historyAllKmpMatrixDetails, 'year');
-    let kmpDatapointsObject = {
-      dpCode: dpTypeValues.code,
-      dpCodeId: dpTypeValues.id,
-      companyId: taskDetails.companyId.id,
-      companyName: taskDetails.companyId.companyName,
-      keyIssueId: dpTypeValues.keyIssueId.id,
-      keyIssue: dpTypeValues.keyIssueId.keyIssueName,
-      pillarId: dpTypeValues.categoryId.id,
-      pillar: dpTypeValues.categoryId.categoryName,
-      fiscalYear: taskDetails.year,
-      currentData: [],
-      historicalData: [],
-      status: ''
-    }
-    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-      let boardMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
-      let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+    } else if (dpTypeValues.dpType == 'KMP Matrix') {
 
-      for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
-        let currentDatapointsObject = {};
-        _.filter(currentAllKmpMatrixDetails, function (object) {
-          if (object.datapointId.id == dpTypeValues.id && object.year == currentYear[currentYearIndex] && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
-            if (object.hasError == true) {
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
-              currentDatapointsObject = {
-                status: 'Completed',
-                dpCode: dpTypeValues.code,
-                dpCodeId: dpTypeValues.id,
-                fiscalYear: currentYear[currentYearIndex],
-                description: dpTypeValues.description,
-                dataType: dpTypeValues.dataType,
-                textSnippet: object.textSnippet,
-                pageNo: object.pageNumber,
-                screenShot: object.screenShot,
-                response: object.response,
-                memberName: object.memberName,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: object.sourceName ? object.sourceName : '',
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
-                error: {
-                  errorType: {
-                    label: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
-                    value: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : ''
+      let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
+          companyId: taskDetails.companyId.id,
+          year: {
+            "$in": currentYear
+          },
+          memberStatus: true,
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+      let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
+          companyId: taskDetails.companyId.id,
+          year: {
+            "$nin": currentYear
+          },
+          memberStatus: true,
+          status: true
+        }).populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId')
+        .populate('taskId');
+
+      let historyYear = _.uniqBy(historyAllKmpMatrixDetails, 'year');
+      let kmpDatapointsObject = {
+        dpCode: dpTypeValues.code,
+        dpCodeId: dpTypeValues.id,
+        companyId: taskDetails.companyId.id,
+        companyName: taskDetails.companyId.companyName,
+        keyIssueId: dpTypeValues.keyIssueId.id,
+        keyIssue: dpTypeValues.keyIssueId.keyIssueName,
+        pillarId: dpTypeValues.categoryId.id,
+        pillar: dpTypeValues.categoryId.categoryName,
+        fiscalYear: taskDetails.year,
+        currentData: [],
+        historicalData: [],
+        status: ''
+      }
+      for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+        let boardMembersList = currentAllKmpMatrixDetails.filter(obj => obj.year == currentYear[currentYearIndex]);
+        let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+
+        for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+          let currentDatapointsObject = {};
+          _.filter(currentAllKmpMatrixDetails, function (object) {
+            if (object.datapointId.id == dpTypeValues.id && object.year == currentYear[currentYearIndex] && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+              if (object.hasError == true) {
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
+                currentDatapointsObject = {
+                  status: 'Completed',
+                  dpCode: dpTypeValues.code,
+                  dpCodeId: dpTypeValues.id,
+                  fiscalYear: currentYear[currentYearIndex],
+                  description: dpTypeValues.description,
+                  dataType: dpTypeValues.dataType,
+                  textSnippet: object.textSnippet,
+                  pageNo: object.pageNumber,
+                  screenShot: object.screenShot,
+                  response: object.response,
+                  memberName: object.memberName,
+                  source: {
+                    url: object.url ? object.url : '',
+                    sourceName: object.sourceName ? object.sourceName : '',
+                    publicationDate: object.publicationDate ? object.publicationDate : ''
                   },
-                  errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
-                  errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
-                },
-                comments: []
+                  error: {
+                    errorType: {
+                      label: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                      value: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : ''
+                    },
+                    errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
+                    errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
+                  },
+                  comments: []
+                }
+              } else {
+                currentDatapointsObject = {
+                  status: 'Completed',
+                  dpCode: dpTypeValues.code,
+                  dpCodeId: dpTypeValues.id,
+                  fiscalYear: currentYear[currentYearIndex],
+                  description: dpTypeValues.description,
+                  dataType: dpTypeValues.dataType,
+                  textSnippet: object.textSnippet,
+                  pageNo: object.pageNumber,
+                  screenShot: object.screenShot,
+                  response: object.response,
+                  memberName: object.memberName,
+                  source: {
+                    url: object.url ? object.url : '',
+                    sourceName: object.sourceName ? object.sourceName : '',
+                    publicationDate: object.publicationDate ? object.publicationDate : ''
+                  },
+                  error: {},
+                  comments: []
+                }
               }
-            } else {
-              currentDatapointsObject = {
+              kmpDatapointsObject.status = 'Completed'
+            }
+          });
+          if (Object.keys(currentDatapointsObject).length == 0) {
+            currentDatapointsObject = {
+              status: 'Yet to Start',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              memberName: boardMemberNameList[boarMemberListIndex].memberName,
+              textSnippet: '',
+              pageNo: '',
+              screenShot: '',
+              response: '',
+              source: '',
+              error: {},
+              comments: []
+            }
+            kmpDatapointsObject.status = 'Yet to Start';
+          }
+          kmpDatapointsObject.currentData.push(currentDatapointsObject);
+          //mergedKMPCurrentDetails = _.concat(currentDatapointsObject, currentDatapointsObject);
+        }
+      }
+      // kmpCurrentDatapointsIndex.push(mergedBoardCurrentDetails)
+      for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
+        let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
+        let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+        for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+
+          let historicalDatapointsObject = {};
+          _.filter(historyAllKmpMatrixDetails, function (object) {
+            if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+              historicalDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
                 dpCodeId: dpTypeValues.id,
-                fiscalYear: currentYear[currentYearIndex],
+                fiscalYear: historyYear[hitoryYearIndex].year,
                 description: dpTypeValues.description,
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
                 screenShot: object.screenShot,
-                response: object.response,
                 memberName: object.memberName,
+                response: object.response,
                 source: {
                   url: object.url ? object.url : '',
                   sourceName: object.sourceName ? object.sourceName : '',
@@ -1423,73 +1487,17 @@ export const datapointDetails = async (req, res, next) => {
                 comments: []
               }
             }
-            kmpDatapointsObject.status = 'Completed'
-          }
-        });
-        if (Object.keys(currentDatapointsObject).length == 0) {
-          currentDatapointsObject = {
-            status: 'Yet to Start',
-            dpCode: dpTypeValues.code,
-            dpCodeId: dpTypeValues.id,
-            fiscalYear: currentYear[currentYearIndex],
-            description: dpTypeValues.description,
-            dataType: dpTypeValues.dataType,
-            memberName: boardMemberNameList[boarMemberListIndex].memberName,
-            textSnippet: '',
-            pageNo: '',
-            screenShot: '',
-            response: '',
-            source: '',
-            error: {},
-            comments: []
-          }
-          kmpDatapointsObject.status = 'Yet to Start';
+          });
+          kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
+          //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
         }
-        kmpDatapointsObject.currentData.push(currentDatapointsObject);
-        //mergedKMPCurrentDetails = _.concat(currentDatapointsObject, currentDatapointsObject);
-      }
-    }
-    // kmpCurrentDatapointsIndex.push(mergedBoardCurrentDetails)
-    for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
-      let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
-      let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
-      for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
 
-        let historicalDatapointsObject = {};
-        _.filter(historyAllKmpMatrixDetails, function (object) {
-          if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
-            historicalDatapointsObject = {
-              status: 'Completed',
-              dpCode: dpTypeValues.code,
-              dpCodeId: dpTypeValues.id,
-              fiscalYear: historyYear[hitoryYearIndex].year,
-              description: dpTypeValues.description,
-              dataType: dpTypeValues.dataType,
-              textSnippet: object.textSnippet,
-              pageNo: object.pageNumber,
-              screenShot: object.screenShot,
-              memberName: object.memberName,
-              response: object.response,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: object.sourceName ? object.sourceName : '',
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
-              error: {},
-              comments: []
-            }
-          }
-        });
-        kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
-        //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
       }
-
-    }
-    return res.status(200).send({
-      status: "200",
-      message: "Data collection dp codes retrieved successfully!",
-      KMPMatrix: kmpDatapointsObject
-    });
+      return res.status(200).send({
+        status: "200",
+        message: "Data collection dp codes retrieved successfully!",
+        KMPMatrix: kmpDatapointsObject
+      });
     }
 
 
