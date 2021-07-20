@@ -67,7 +67,6 @@ companiesSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       companyName: this.companyName,
       cin: this.cin,
       nicCode: this.nicCode,
@@ -78,6 +77,7 @@ companiesSchema.methods = {
       socialAnalystName: this.socialAnalystName ? this.socialAnalystName : '',
       socialQAName: this.socialQAName ? this.socialQAName : '',
       companyMemberDetails: this.companyMemberDetails ? this.companyMemberDetails : [],
+      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       status: this.status,
       isAssignedToBatch: this.isAssignedToBatch ? this.isAssignedToBatch : false,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
