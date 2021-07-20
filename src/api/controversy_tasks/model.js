@@ -25,6 +25,11 @@ const controversyTasksSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  createdBy: {
+    type: Schema.ObjectId,
+    ref: 'User',
+    required: true
   }
 }, {
   timestamps: true,
@@ -45,6 +50,7 @@ controversyTasksSchema.methods = {
       taskStatus: this.taskStatus,
       completedDate: this.completedDate,
       status: this.status,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
