@@ -774,7 +774,7 @@ export const getUsers = async ({
         console.log('before qa', group.assignedMembers[index].roleDetails.primaryRole, qaId._id);
         if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId._id) {
           console.log('in if qaId')
-          var activeTaskCount = TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
+          var activeTaskCount = await TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
           console.log('activeTaskCount qa', activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
@@ -783,7 +783,7 @@ export const getUsers = async ({
           qa.push(qaObject);
         } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId._id) > -1) {
           console.log('in else if qaId')
-          var activeTaskCount = TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
+          var activeTaskCount = await TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
           console.log('activeTaskCount qa', activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
@@ -794,7 +794,7 @@ export const getUsers = async ({
         console.log('before analyst', group.assignedMembers[index].roleDetails.primaryRole, analystId._id);
         if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId._id) {
           console.log('in if anylysy');
-          var activeTaskCount = TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
+          var activeTaskCount = await TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
           console.log('activeTaskCount analyst', activeTaskCount)
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
@@ -803,7 +803,7 @@ export const getUsers = async ({
           analyst.push(analystObject);
         } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1) {
           console.log('in else if anylysy')
-          var activeTaskCount = TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
+          var activeTaskCount = await TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
           console.log('activeTaskCount analyst', activeTaskCount);
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
