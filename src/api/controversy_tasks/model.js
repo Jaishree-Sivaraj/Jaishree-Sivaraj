@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 
 const controversyTasksSchema = new Schema({
-  tasknumber: {
+  taskNumber: {
     type: String
   },
   companyId: {
@@ -44,7 +44,7 @@ controversyTasksSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      tasknumber: this.tasknumber,
+      taskNumber: this.taskNumber,
       companyId: this.companyId ? this.companyId.view(full) : null,
       analystId: this.analystId ? this.analystId.view(full) : null,
       taskStatus: this.taskStatus,

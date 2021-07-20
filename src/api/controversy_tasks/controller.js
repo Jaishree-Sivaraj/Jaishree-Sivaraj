@@ -113,7 +113,7 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
     .then(async (taskObject) => {
       let controversyTaskDetails = [], newTaskNumber, taskNumber;
       if (taskObject) {
-        let lastTaskNumber = taskObject.tasknumber.split('DT')[1];
+        let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
         newTaskNumber = Number(lastTaskNumber) + 1;
       } else {
         newTaskNumber = 1;
@@ -121,7 +121,7 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
       for (let index = 0; index < body.companiesList.length; index++) {
         taskNumber = 'DT' + newTaskNumber;
         let controversyObject = {
-          tasknumber: taskNumber,
+          taskNumber: taskNumber,
           companyId: body.companiesList[index],
           analystId: body.analystId,
           taskStatus: 'Yet to Work',
