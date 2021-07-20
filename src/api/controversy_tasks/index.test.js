@@ -14,7 +14,7 @@ beforeEach(async () => {
   const admin = await User.create({ email: 'c@c.com', password: '123456', role: 'admin' })
   userSession = signSync(user.id)
   adminSession = signSync(admin.id)
-  controversyTasks = await ControversyTasks.create({})
+  controversyTasks = await ControversyTasks.create({ createdBy: user })
 })
 
 test('POST /controversy_tasks 201 (admin)', async () => {
@@ -29,6 +29,7 @@ test('POST /controversy_tasks 201 (admin)', async () => {
   expect(body.taskStatus).toEqual('test')
   expect(body.completedDate).toEqual('test')
   expect(body.status).toEqual('test')
+  expect(typeof body.createdBy).toEqual('object')
 })
 
 test('POST /controversy_tasks 401 (user)', async () => {
@@ -51,6 +52,7 @@ test('GET /controversy_tasks 200 (admin)', async () => {
   expect(status).toBe(200)
   expect(Array.isArray(body.rows)).toBe(true)
   expect(Number.isNaN(body.count)).toBe(false)
+  expect(typeof body.rows[0].createdBy).toEqual('object')
 })
 
 test('GET /controversy_tasks 401 (user)', async () => {
@@ -73,6 +75,7 @@ test('GET /controversy_tasks/:id 200 (admin)', async () => {
   expect(status).toBe(200)
   expect(typeof body).toEqual('object')
   expect(body.id).toEqual(controversyTasks.id)
+  expect(typeof body.createdBy).toEqual('object')
 })
 
 test('GET /controversy_tasks/:id 401 (user)', async () => {
@@ -108,6 +111,7 @@ test('PUT /controversy_tasks/:id 200 (admin)', async () => {
   expect(body.taskStatus).toEqual('test')
   expect(body.completedDate).toEqual('test')
   expect(body.status).toEqual('test')
+  expect(typeof body.createdBy).toEqual('object')
 })
 
 test('PUT /controversy_tasks/:id 401 (user)', async () => {

@@ -23,6 +23,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
   Companies.count(query)
     .then(count => Companies.find(query)
       .populate('createdBy')
+      .populate('clientTaxonomyId')
       .then((companies) => ({
         count,
         rows: companies.map((companies) => companies.view())
@@ -32,10 +33,11 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
     .catch(next)
 }
 
-export const getAllUnAssignedCompanies = ({ querymen: { query, select, cursor } }, res, next) => {
-  Companies.count({ isAssignedToBatch: false })
-    .then(count => Companies.find({ isAssignedToBatch: false })
+export const getAllUnAssignedCompanies = ({ querymen: { query, select, cursor }, params }, res, next) => {
+  Companies.count({ isAssignedToBatch: false, clientTaxonomyId: params.clientTaxonomyId })
+    .then(count => Companies.find({ isAssignedToBatch: false, clientTaxonomyId: params.clientTaxonomyId })
       .populate('createdBy')
+      .populate('clientTaxonomyId')
       .then((companies) => ({
         count,
         rows: companies.map((companies) => companies.view())
@@ -48,6 +50,7 @@ export const getAllUnAssignedCompanies = ({ querymen: { query, select, cursor } 
 export const getAllNic = ({ querymen: { query, select, cursor } }, res, next) =>
   Companies.distinct('nic')
     .populate('createdBy')
+    .populate('clientTaxonomyId')
     .then((companies) => ({
       rows: companies
     })
@@ -58,6 +61,7 @@ export const getAllNic = ({ querymen: { query, select, cursor } }, res, next) =>
 export const show = ({ params }, res, next) =>
   Companies.findById(params.id)
     .populate('createdBy')
+    .populate('clientTaxonomyId')
     .then(notFound(res))
     .then((companies) => companies ? companies.view() : null)
     .then(success(res))
@@ -66,6 +70,7 @@ export const show = ({ params }, res, next) =>
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Companies.findById(params.id)
     .populate('createdBy')
+    .populate('clientTaxonomyId')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((companies) => companies ? Object.assign(companies, body).save() : null)
@@ -76,6 +81,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const addCompanyMember = async ({ user, bodymen: { body }, params }, res, next) => {
   if (body.companyId) {
     await Companies.findById(body.companyId).populate('createdBy')
+    .populate('clientTaxonomyId')
       .then(async (companyObject) => {
         if (companyObject) {
           if (body.years && body.years.length > 0) {
@@ -108,6 +114,7 @@ export const addCompanyMember = async ({ user, bodymen: { body }, params }, res,
 export const updateCompanyMember = async ({ user, bodymen: { body }, params }, res, next) => {
   if (body.companyId) {
     await Companies.findById(body.companyId).populate('createdBy')
+    .populate('clientTaxonomyId')
       .then(async (companyObject) => {
         if (companyObject) {
           await Companies.updateOne({ _id: companyObject.id }, { $set: { companyMemberDetails: body.companyMemberDetails } })
@@ -158,8 +165,6 @@ export const uploadCompaniesFile = async (req, res, next) => {
               isinCode: rowObject['ISIN Code'].replace(/[\\r\\n]/g,''),
               cmieProwessCode: rowObject['CMIE/Prowess Code'],
               clientTaxonomyId: req.body.clientTaxonomyId,
-              // socialAnalystName: rowObject['Analyst Name'].replace(/[\\r\\n]/g,''),
-              // socialQAName: rowObject['QA Name'].replace(/[\\r\\n]/g,''),
               status: true,
               createdBy: userDetail
             }

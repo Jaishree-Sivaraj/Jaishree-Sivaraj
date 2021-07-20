@@ -9,7 +9,7 @@ export Group, { schema } from './model'
 const router = new Router()
 const { groupName, groupAdmin, batchList, assignedMembers, status } = schema.tree
 const admin = {}, assignMembers = [], assignBatch = [];
-const grpName = '',grpAdmin = {}, grpMembers = [], assignedBatches = [];
+const groupId = '', grpName = '',grpAdmin = {}, grpMembers = [], assignedBatches = [];
 
 /**
  * @api {post} /groups Create group
@@ -37,10 +37,11 @@ router.post('/',
  * @apiGroup Group
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam groupName Group's groupName.
- * @apiParam admin Group's admin.
- * @apiParam assignMembers Group's assignMembers.
- * @apiParam assignBatch Group's assignBatch.
+ * @apiParam groupId Group's groupId.
+ * @apiParam grpName Group's grpName.
+ * @apiParam grpAdmin Group's grpAdmin.
+ * @apiParam grpMembers Group's grpMembers.
+ * @apiParam assignedBatches Group's assignedBatches.
  * @apiSuccess {Object} group Group's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Group not found.
@@ -48,7 +49,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ grpName,grpAdmin, grpMembers, assignedBatches}),
+  body({ groupId, grpName,grpAdmin, grpMembers, assignedBatches }),
   createGroup)
 
 /**
