@@ -586,8 +586,8 @@ export const getGroupAndBatches = async ({
       groupAdmin: userDetailWithGroupAdminRole._id
     }).populate('assignedMembers').populate('batchList').then(async (group) => {
       var resArray = [];
-      var resObject = {};
       for (let index = 0; index < group.length; index++) {
+        var resObject = {};
         for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
           var categories = await Categories.find({
             clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
@@ -613,8 +613,8 @@ export const getGroupAndBatches = async ({
             }
           })
           resObject.assignedBatches = assignedBatches;
-          resArray.push(resObject);
         }
+        resArray.push(resObject);
       }
       return res.status(200).json({
         groups: resArray
@@ -651,8 +651,8 @@ export const getGroupAndBatches = async ({
         status: true
       }).populate('assignedMembers').populate('batchList').then(async (group) => {
         var resArray = [];
-        var resObject = {};
         for (let index = 0; index < group.length; index++) {
+          var resObject = {};
           for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
             var categories = await Categories.find({
               clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
@@ -678,8 +678,8 @@ export const getGroupAndBatches = async ({
               }
             })
             resObject.assignedBatches = assignedBatches ? assignedBatches : [];
-            resArray.push(resObject);
           }
+          resArray.push(resObject);
         }
         return res.status(200).json({
           groups: resArray
