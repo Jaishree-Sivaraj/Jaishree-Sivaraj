@@ -322,6 +322,9 @@ export const getMyTasks = async ({
       },
       status: true
     })
+    .populate('companyId')
+    .populate('analystId')
+    .populate('createdBy')
     .then((controversyTasks) => {
       if (controversyTasks && controversyTasks.length > 0) {
         for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
