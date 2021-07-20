@@ -13,8 +13,8 @@ const { taskId, companyId, categoryId, submittedByName, stage, comment, status, 
  * @api {post} /task_histories Create task histories
  * @apiName CreateTaskHistories
  * @apiGroup TaskHistories
- * @apiPermission admin
- * @apiParam {String} access_token admin access token.
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
  * @apiParam taskId Task histories's taskId.
  * @apiParam companyId Task histories's companyId.
  * @apiParam categoryId Task histories's categoryId.
@@ -26,10 +26,10 @@ const { taskId, companyId, categoryId, submittedByName, stage, comment, status, 
  * @apiSuccess {Object} taskHistories Task histories's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Task histories not found.
- * @apiError 401 admin access only.
+ * @apiError 401 user access only.
  */
 router.post('/',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   body({ taskId, companyId, categoryId, submittedByName, stage, comment, status, createdBy }),
   create)
 
@@ -37,16 +37,16 @@ router.post('/',
  * @api {get} /task_histories Retrieve task histories
  * @apiName RetrieveTaskHistories
  * @apiGroup TaskHistories
- * @apiPermission admin
- * @apiParam {String} access_token admin access token.
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
  * @apiUse listParams
  * @apiSuccess {Number} count Total amount of task histories.
  * @apiSuccess {Object[]} rows List of task histories.
  * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 401 admin access only.
+ * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   query(),
   index)
 
@@ -54,23 +54,23 @@ router.get('/',
  * @api {get} /task_histories/:id Retrieve task histories
  * @apiName RetrieveTaskHistories
  * @apiGroup TaskHistories
- * @apiPermission admin
- * @apiParam {String} access_token admin access token.
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
  * @apiSuccess {Object} taskHistories Task histories's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Task histories not found.
- * @apiError 401 admin access only.
+ * @apiError 401 user access only.
  */
 router.get('/:id',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   show)
 
 /**
  * @api {put} /task_histories/:id Update task histories
  * @apiName UpdateTaskHistories
  * @apiGroup TaskHistories
- * @apiPermission admin
- * @apiParam {String} access_token admin access token.
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
  * @apiParam taskId Task histories's taskId.
  * @apiParam companyId Task histories's companyId.
  * @apiParam categoryId Task histories's categoryId.
@@ -82,10 +82,10 @@ router.get('/:id',
  * @apiSuccess {Object} taskHistories Task histories's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Task histories not found.
- * @apiError 401 admin access only.
+ * @apiError 401 user access only.
  */
 router.put('/:id',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   body({ taskId, companyId, categoryId, submittedByName, stage, comment, status, createdBy }),
   update)
 
@@ -93,14 +93,14 @@ router.put('/:id',
  * @api {delete} /task_histories/:id Delete task histories
  * @apiName DeleteTaskHistories
  * @apiGroup TaskHistories
- * @apiPermission admin
- * @apiParam {String} access_token admin access token.
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
  * @apiSuccess (Success 204) 204 No Content.
  * @apiError 404 Task histories not found.
- * @apiError 401 admin access only.
+ * @apiError 401 user access only.
  */
 router.delete('/:id',
-  token({ required: true, roles: ['admin'] }),
+  token({ required: true }),
   destroy)
 
 export default router
