@@ -774,29 +774,41 @@ export const getUsers = async ({
         console.log('before qa', group.assignedMembers[index].roleDetails.primaryRole, qaId._id);
         if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId._id) {
           console.log('in if qaId')
+          var activeTaskCount = TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
+          console.log('activeTaskCount qa', activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = true;
+          qaObject.activeTaskCount = activeTaskCount.length;
           qa.push(qaObject);
         } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId._id) > -1) {
           console.log('in else if qaId')
+          var activeTaskCount = TaskAssignment.find({ qaId: group.assignedMembers[index].id }, { taskStatus: { $ne: "Verification Completed" } });
+          console.log('activeTaskCount qa', activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = false;
+          qaObject.activeTaskCount = activeTaskCount.length;
           qa.push(qaObject);
         }
         console.log('before analyst', group.assignedMembers[index].roleDetails.primaryRole, analystId._id);
         if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId._id) {
-          console.log('in if anylysy')
+          console.log('in if anylysy');
+          var activeTaskCount = TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
+          console.log('activeTaskCount analyst', activeTaskCount)
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = true;
+          analystObject.activeTaskCount = activeTaskCount.length;
           analyst.push(analystObject);
         } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1) {
           console.log('in else if anylysy')
+          var activeTaskCount = TaskAssignment.find({ analystId: group.assignedMembers[index].id }, { taskStatus: { $nin: ["Collection Completed", "Correction Completed"] } });
+          console.log('activeTaskCount analyst', activeTaskCount);
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = false;
+          analystObject.activeTaskCount = activeTaskCount.length;
           analyst.push(analystObject);
         }
       }
