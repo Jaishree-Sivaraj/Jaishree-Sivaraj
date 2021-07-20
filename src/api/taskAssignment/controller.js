@@ -771,23 +771,29 @@ export const getUsers = async ({
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
+        console.log('before qa', group.assignedMembers[index].roleDetails.primaryRole, qaId);
         if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId) {
+          console.log('in if qaId')
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = true;
           qa.push(qaObject);
         } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId) > -1) {
+          console.log('in else if qaId')
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = false;
           qa.push(qaObject);
         }
+        console.log('before analyst', group.assignedMembers[index].roleDetails.primaryRole, analystId);
         if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId) {
+          console.log('in if anylysy')
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = true;
           analyst.push(analystObject);
         } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId) > -1) {
+          console.log('in else if anylysy')
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = false;
