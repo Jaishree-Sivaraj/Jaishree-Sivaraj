@@ -7,7 +7,7 @@ import { schema } from './model'
 export Controversy, { schema } from './model'
 
 const router = new Router()
-const { datapointId, companyId, year, controversyDetails, submittedDate, response,status } = schema.tree
+const { datapointId, companyId, year, controversyDetails, comments, submittedDate, response,status } = schema.tree
 
 /**
  * @api {post} /controversies Create controversy
@@ -19,6 +19,7 @@ const { datapointId, companyId, year, controversyDetails, submittedDate, respons
  * @apiParam companyId Controversy's companyId.
  * @apiParam year Controversy's year.
  * @apiParam controversyDetails Controversy's controversyDetails.
+ * @apiParam comments Controversy's comments.
  * @apiParam submittedDate Controversy's submittedDate.
  * @apiParam response Controversy's response.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -28,7 +29,7 @@ const { datapointId, companyId, year, controversyDetails, submittedDate, respons
  */
 router.post('/',
   token({ required: true }),
-  body({ datapointId, companyId, year, controversyDetails, submittedDate, response }),
+  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response }),
   create)
 
 /**
@@ -104,6 +105,7 @@ router.get('/json/:companyId',
  * @apiParam companyId Controversy's companyId.
  * @apiParam year Controversy's year.
  * @apiParam controversyDetails Controversy's controversyDetails.
+ * @apiParam comments Controversy's comments.
  * @apiParam submittedDate Controversy's submittedDate.
  * @apiParam response Controversy's response.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -113,7 +115,7 @@ router.get('/json/:companyId',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ datapointId, companyId, year, controversyDetails, submittedDate, response ,status}),
+  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response ,status}),
   update)
 
 /**

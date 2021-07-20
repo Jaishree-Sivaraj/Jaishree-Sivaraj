@@ -178,6 +178,7 @@ export const uploadControversies = async (req, res, next) => {
                     response: allFilesObject[index][rowIndex]['Response'] ? allFilesObject[index][rowIndex]['Response'].toString() : '',
                     responseValue: responseValue,
                     controversyDetails: controversyList,
+                    comments: [],
                     submittedDate: new Date(),
                     status: true,
                     createdBy: userDetail
