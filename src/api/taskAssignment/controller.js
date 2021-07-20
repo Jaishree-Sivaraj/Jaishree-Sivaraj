@@ -759,11 +759,15 @@ export const getUsers = async ({
           'secondaryPillar': { '$in': [body.categoryId] }
         }, { 'primaryPillar': body.categoryId }]
       }).populate('primaryPillar').populate('secondaryPillar');
+      console.log('userPillar', JSON.stringify(userPillar, null, 3))
       if (userPillar && Object.keys(userPillar).length > 0) {
+        console.log('in userpillar first if');
         if (userPillar.primaryPillar.id === body.categoryId) {
+          console.log('in userpillar second if');
           qaObject.primaryPillar = true;
           analystObject.primaryPillar = true;
         } else {
+          console.log('in userpillar second else');
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
@@ -790,6 +794,7 @@ export const getUsers = async ({
           analyst.push(analystObject);
         }
       }
+      console.log('in else');
     }
     resObj["qaData"] = qa;
     resObj["analystData"] = analyst;
