@@ -588,6 +588,9 @@ export const getGroupAndBatches = async ({
       var resArray = [];
       for (let index = 0; index < group.length; index++) {
         var resObject = {};
+        resObject.groupName = group[index].groupName;
+        resObject.groupID = group[index].id;
+        resObject.assignedBatches = [];
         for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
           var categories = await Categories.find({
             clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
@@ -597,8 +600,6 @@ export const getGroupAndBatches = async ({
               message: err.message
             })
           })
-          resObject.groupName = group[index].groupName;
-          resObject.groupID = group[index].id;
           var assignedBatches = group[index].batchList.map(rec => {
             return {
               "batchName": rec.batchName,
@@ -612,7 +613,7 @@ export const getGroupAndBatches = async ({
               "batchYear": rec.years
             }
           })
-          resObject.assignedBatches = assignedBatches;
+          resObject.assignedBatches = assignedBatches ? assignedBatches : [];
         }
         resArray.push(resObject);
       }
@@ -653,6 +654,9 @@ export const getGroupAndBatches = async ({
         var resArray = [];
         for (let index = 0; index < group.length; index++) {
           var resObject = {};
+          resObject.groupName = group[index].groupName;
+          resObject.groupID = group[index].id;
+          resObject.assignedBatches = [];
           for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
             var categories = await Categories.find({
               clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
@@ -662,8 +666,6 @@ export const getGroupAndBatches = async ({
                 message: err.message
               })
             })
-            resObject.groupName = group[index].groupName;
-            resObject.groupID = group[index].id;
             var assignedBatches = group[index].batchList.map(rec => {
               return {
                 "batchName": rec.batchName,
