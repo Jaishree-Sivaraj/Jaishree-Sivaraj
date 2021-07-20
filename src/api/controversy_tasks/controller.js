@@ -80,7 +80,7 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
       } else {
         newTaskNumber = 1;
       }
-      for (let index = 0; index <= body.companiesList.length; index++) {
+      for (let index = 0; index < body.companiesList.length; index++) {
         taskNumber = 'DT' + newTaskNumber;
         let controversyObject = {
           tasknumber: taskNumber,
