@@ -9,6 +9,7 @@ import { CompanyRepresentatives } from '../company-representatives'
 import { ClientRepresentatives } from '../client-representatives'
 import { CompaniesTasks } from "../companies_tasks"
 import { UserPillarAssignments } from "../user_pillar_assignments"
+import { ControversyTasks } from '../controversy_tasks'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
@@ -176,7 +177,8 @@ export const getMyTasks = async ({
     analystCorrectionTaskList = [],
     qaTaskList = [],
     clientRepTaskList = [],
-    companyRepTaskList = [];
+    companyRepTaskList = [],
+    controversyTaskList = [];
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
@@ -313,6 +315,32 @@ export const getMyTasks = async ({
           message: error.message ? error.message : 'Failed to retrieve tasks!'
         });
       })
+    await ControversyTasks.find({
+      analystId: completeUserDetail.id,
+      taskStatus: {
+        $ne: "Completed"
+      },
+      status: true
+    })
+    .then((controversyTasks) => {
+      if (controversyTasks && controversyTasks.length > 0) {
+        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let object = {};
+          object.taskNumber = controversyTasks[cIndex].taskNumber;
+          object.taskId = controversyTasks[cIndex].id;
+          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+          object.company= controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+          object.status = controversyTasks[cIndex].status;
+          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          if (controversyTasks[cIndex] && object) {
+            controversyTaskList.push(object);
+          }
+        }
+      }      
+    })
   }
 
   if (userRoles.includes("Client Representative")) {
@@ -433,7 +461,8 @@ export const getMyTasks = async ({
     analystCorrectionTaskList: analystCorrectionTaskList ? analystCorrectionTaskList : [],
     qaTaskList: qaTaskList ? qaTaskList : [],
     clientRepTaskList: clientRepTaskList ? clientRepTaskList : [],
-    companyRepTaskList: companyRepTaskList ? companyRepTaskList : []
+    companyRepTaskList: companyRepTaskList ? companyRepTaskList : [],
+    controversyTaskList: controversyTaskList ? controversyTaskList : []
   }
   return res.status(200).json({
     "status": "200",
