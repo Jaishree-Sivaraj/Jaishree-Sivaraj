@@ -24,9 +24,9 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
         }
         body.taskNumber = 'DT' + newTaskNumber;
         await TaskAssignment.create({
-            ...body,
-            createdBy: user
-          })
+          ...body,
+          createdBy: user
+        })
           .then((taskAssignment) => {
             return res.status(200).json({
               status: "200",
@@ -49,9 +49,9 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
         }
         body.taskNumber = 'DT' + newTaskNumber;
         await TaskAssignment.create({
-            ...body,
-            createdBy: user
-          })
+          ...body,
+          createdBy: user
+        })
           .then(async (taskAssignment) => {
             await CompaniesTasks.create({
               "companyId": body.companyId,
@@ -164,14 +164,14 @@ export const getMyTasks = async ({
   }).populate({
     path: 'roleDetails.roles'
   }).
-  populate({
-    path: 'roleDetails.primaryRole'
-  }).catch((error) => {
-    return res.status(500).json({
-      "status": "500",
-      message: error.message
-    })
-  });
+    populate({
+      path: 'roleDetails.primaryRole'
+    }).catch((error) => {
+      return res.status(500).json({
+        "status": "500",
+        message: error.message
+      })
+    });
   let analystCollectionTaskList = [],
     analystCorrectionTaskList = [],
     qaTaskList = [],
@@ -203,14 +203,14 @@ export const getMyTasks = async ({
 
   if (userRoles.includes("QA")) {
     await TaskAssignment.find({
-        qaId: completeUserDetail.id,
-        $or: [{
-          taskStatus: "Collection Completed"
-        }, {
-          taskStatus: "Correction Completed"
-        }],
-        status: true
-      })
+      qaId: completeUserDetail.id,
+      $or: [{
+        taskStatus: "Collection Completed"
+      }, {
+        taskStatus: "Correction Completed"
+      }],
+      status: true
+    })
       .sort({
         createdAt: -1
       })
@@ -257,16 +257,16 @@ export const getMyTasks = async ({
 
   if (userRoles.includes("Analyst")) {
     await TaskAssignment.find({
-        analystId: completeUserDetail.id,
-        $or: [{
-          taskStatus: "Yet to work"
-        }, {
-          taskStatus: "In Progress"
-        }, {
-          taskStatus: "Verification Pending"
-        }],
-        status: true
-      })
+      analystId: completeUserDetail.id,
+      $or: [{
+        taskStatus: "Yet to work"
+      }, {
+        taskStatus: "In Progress"
+      }, {
+        taskStatus: "Verification Pending"
+      }],
+      status: true
+    })
       .sort({
         createdAt: -1
       })
@@ -322,10 +322,10 @@ export const getMyTasks = async ({
     });
     if (clientRepDetail && clientRepDetail.CompanyName) {
       await TaskAssignment.find({
-          companyId: clientRepDetail.CompanyName,
-          taskStatus: "Verification Completed",
-          status: true
-        })
+        companyId: clientRepDetail.CompanyName,
+        taskStatus: "Verification Completed",
+        status: true
+      })
         .sort({
           createdAt: -1
         })
@@ -378,12 +378,12 @@ export const getMyTasks = async ({
     });
     if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
       await TaskAssignment.find({
-          companyId: {
-            $in: companyRepDetail.companiesList
-          },
-          taskStatus: "Verification Completed",
-          status: true
-        })
+        companyId: {
+          $in: companyRepDetail.companiesList
+        },
+        taskStatus: "Verification Completed",
+        status: true
+      })
         .sort({
           createdAt: -1
         })
@@ -490,8 +490,8 @@ export const getMyTasks = async ({
 }
 
 export const show = ({
-    params
-  }, res, next) =>
+  params
+}, res, next) =>
   TaskAssignment.findById(params.id)
     .populate('createdBy')
     .populate('companyId')
@@ -506,12 +506,12 @@ export const show = ({
     .catch(next)
 
 export const update = ({
-    user,
-    bodymen: {
-      body
-    },
-    params
-  }, res, next) =>
+  user,
+  bodymen: {
+    body
+  },
+  params
+}, res, next) =>
   TaskAssignment.findById(params.id)
     .populate('createdBy')
     .populate('companyId')
@@ -528,15 +528,15 @@ export const update = ({
     .catch(next)
 
 export const destroy = ({
-    user,
-    params
-  }, res, next) =>
+  user,
+  params
+}, res, next) =>
   TaskAssignment.findById(params.id)
-  .then(notFound(res))
-  .then(authorOrAdmin(res, user, 'createdBy'))
-  .then((taskAssignment) => taskAssignment ? taskAssignment.remove() : null)
-  .then(success(res, 204))
-  .catch(next)
+    .then(notFound(res))
+    .then(authorOrAdmin(res, user, 'createdBy'))
+    .then((taskAssignment) => taskAssignment ? taskAssignment.remove() : null)
+    .then(success(res, 204))
+    .catch(next)
 
 
 export const getGroupAndBatches = async ({
@@ -572,14 +572,14 @@ export const getGroupAndBatches = async ({
   }).populate({
     path: 'roleDetails.roles'
   }).
-  populate({
-    path: 'roleDetails.primaryRole'
-  }).catch((error) => {
-    return res.status(500).json({
-      "status": "500",
-      message: error.message
-    })
-  });
+    populate({
+      path: 'roleDetails.primaryRole'
+    }).catch((error) => {
+      return res.status(500).json({
+        "status": "500",
+        message: error.message
+      })
+    });
   if (userDetailWithGroupAdminRole && Object.keys(userDetailWithGroupAdminRole).length > 0) {
     console.log('in group admin')
     await Group.find({
@@ -639,14 +639,14 @@ export const getGroupAndBatches = async ({
     }).populate({
       path: 'roleDetails.roles'
     }).
-    populate({
-      path: 'roleDetails.primaryRole'
-    }).catch((error) => {
-      return res.status(500).json({
-        "status": "500",
-        message: error.message
-      })
-    });
+      populate({
+        path: 'roleDetails.primaryRole'
+      }).catch((error) => {
+        return res.status(500).json({
+          "status": "500",
+          message: error.message
+        })
+      });
     if (userDetailWithSuperAdminRole) {
       await Group.find({
         status: true
@@ -714,6 +714,7 @@ export const getUsers = async ({
   var resObj = {};
   var batch = await Batches.findById(body.batchId).populate('companiesList').catch();
   if (batch && batch.companiesList.length > 0) {
+    var unAssignedCompanyList = [];
     for (let index = 0; index < batch.companiesList.length; index++) {
       var years = '';
       if (batch.years && batch.years.length > 0) {
@@ -725,22 +726,16 @@ export const getUsers = async ({
           }
         })
       }
-      var unAssignedCompanyList = await CompaniesTasks.find({
+      var assignedCompanyList = await CompaniesTasks.find({
         categoryId: body.categoryId,
-        year: years
-      }).catch();
-      if (unAssignedCompanyList.length === 0) {
-        var unAssignedCompanyListRes = unAssignedCompanyList.map(function (rec, index) {
-          return {
-            id: index,
-            companyName: rec.companyName
-          }
-        })
-      } else {
-        var unAssignedCompanyListRes = [];
+        year: years,
+        companyId: batch.companiesList[index].id,
+      }).populate('companyId')
+      if (assignedCompanyList.length === 0) {
+        unAssignedCompanyList.push({ id: batch.companiesList[index].id, companyName: batch.companiesList[index].companyName });
       }
     }
-    resObj["companies"] = unAssignedCompanyListRes;
+    resObj["companies"] = unAssignedCompanyList;
   }
   var group = await Group.findById(body.groupId).populate('assignedMembers').populate({ path: 'assignedMembers.roleDetails' });
   var roleDetails = await Role.find({ roleName: { $in: ['QA', 'Analyst'] } });
@@ -796,8 +791,8 @@ export const getUsers = async ({
         }
       }
     }
-    resObj["Qadata"] = qa;
-    resObj["Analystdata"] = analyst;
+    resObj["qaData"] = qa;
+    resObj["analystData"] = analyst;
     res.status(200).json({ data: resObj });
   }
 }
@@ -808,44 +803,44 @@ export const updateCompanyStatus = async ({
     body
   }
 }, res, next) => {
-  try {    
-  console.log(body.companyId, body.year);
-  let companyDetails = await Companies.findOne({
-    companyId: body.companyId,
-    status: true
-  });
-  let categoriesLength = await Categories.find({
-    clientTaxonomyId: companyDetails.clientTaxonomyId,
-    status:true
-  });
-  let taskDetails = await TaskAssignment.find({
-    companyId: body.companyId,
-    year: body.year,
-    taskStatus:'Completed'
-  });
-  if (categoriesLength.length == taskDetails.length ) {
-    await TaskAssignment.updateOne({
+  try {
+    console.log(body.companyId, body.year);
+    let companyDetails = await Companies.findOne({
       companyId: body.companyId,
-      year: body.year
-    }, {
-      $set: {
-        overAllCompanyTaskStatus: true
-      }
+      status: true
     });
-  } else {
-    await TaskAssignment.updateOne({
+    let categoriesLength = await Categories.find({
+      clientTaxonomyId: companyDetails.clientTaxonomyId,
+      status: true
+    });
+    let taskDetails = await TaskAssignment.find({
       companyId: body.companyId,
-      year: body.year
-    }, {
-      $set: {
-        overAllCompanyTaskStatus: false
-      }
-    })
-  }
-  return res.status(200).json({
-    message: "Company Status update succesfully!",
-  });
-  } catch (error) {    
+      year: body.year,
+      taskStatus: 'Completed'
+    });
+    if (categoriesLength.length == taskDetails.length) {
+      await TaskAssignment.updateOne({
+        companyId: body.companyId,
+        year: body.year
+      }, {
+        $set: {
+          overAllCompanyTaskStatus: true
+        }
+      });
+    } else {
+      await TaskAssignment.updateOne({
+        companyId: body.companyId,
+        year: body.year
+      }, {
+        $set: {
+          overAllCompanyTaskStatus: false
+        }
+      })
+    }
+    return res.status(200).json({
+      message: "Company Status update succesfully!",
+    });
+  } catch (error) {
     return res.status(500).json({
       status: "500",
       message: error.message
