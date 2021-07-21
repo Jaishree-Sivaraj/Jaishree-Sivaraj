@@ -110,11 +110,11 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
     qaId: body.qa.value,
     createdBy: user
   }
+  var taskArray = [];
   for (let index = 0; index < body.company.length; index++) {
     taskObject.companyId = body.company[index].id;
     await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
       .then(async (taskObjectCreated) => {
-        console.log('taskObjectCreated', taskObjectCreated);
         let newTaskNumber = '';
         if (taskObjectCreated) {
           if (taskObjectCreated.taskNumber) {
@@ -124,16 +124,9 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
             newTaskNumber = '1';
           }
           taskObject.taskNumber = 'DT' + newTaskNumber;
-          console.log('taskObject', taskObject);
           await TaskAssignment.create(taskObject).then((taskAssignment) => {
-            console.log("taskAssignment", taskAssignment);
-            return res.status(200).json({
-              status: "200",
-              message: "Task created successfully!",
-              data: taskAssignment.view(true)
-            });
+            taskArray.push(taskAssignment.view(true));
           }).catch((error) => {
-            console.log('error', error);
             return res.status(400).json({
               status: "400",
               message: error.message ? error.message : "Failed to create task!"
@@ -156,11 +149,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
                 "status": true,
                 "taskId": taskAssignment.id
               }).then(async () => {
-                return res.status(200).json({
-                  status: "200",
-                  message: "Task created successfully!",
-                  data: taskAssignment.view(true)
-                });
+                taskArray.push(taskAssignment.view(true));
               }).catch((error) => {
                 return res.status(400).json({
                   status: "400",
@@ -181,6 +170,11 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
         })
       });
   }
+  res.status(200).json({
+    status: "200",
+    message: "Task created successfully!",
+    data: taskArray
+  });
 }
 
 export const index = ({
@@ -417,28 +411,28 @@ export const getMyTasks = async ({
       },
       status: true
     })
-    .populate('companyId')
-    .populate('analystId')
-    .populate('createdBy')
-    .then((controversyTasks) => {
-      if (controversyTasks && controversyTasks.length > 0) {
-        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-          let object = {};
-          object.taskNumber = controversyTasks[cIndex].taskNumber;
-          object.taskId = controversyTasks[cIndex].id;
-          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-          object.company= controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-          object.status = controversyTasks[cIndex].status;
-          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-          if (controversyTasks[cIndex] && object) {
-            controversyTaskList.push(object);
+      .populate('companyId')
+      .populate('analystId')
+      .populate('createdBy')
+      .then((controversyTasks) => {
+        if (controversyTasks && controversyTasks.length > 0) {
+          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let object = {};
+            object.taskNumber = controversyTasks[cIndex].taskNumber;
+            object.taskId = controversyTasks[cIndex].id;
+            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+            object.status = controversyTasks[cIndex].status;
+            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+            if (controversyTasks[cIndex] && object) {
+              controversyTaskList.push(object);
+            }
           }
         }
-      }      
-    })
+      })
   }
 
   if (userRoles.includes("Client Representative")) {
