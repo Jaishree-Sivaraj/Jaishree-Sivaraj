@@ -20,7 +20,8 @@ import {
   getGroupAndBatches,
   getUsers,
   updateCompanyStatus,
-  createTask
+  createTask,
+  getQaAndAnalystFromGrp
 } from './controller'
 import {
   schema
@@ -81,6 +82,24 @@ router.post('/create',
   token({ required: true }),
   body({ groupId, batchId, year, pillar, company, analyst, qa, analystSla, qaSla }),
   createTask)
+
+/**
+* @api {post} /taskAssignments Create task assignment
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam batchId Task assignment's batchId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/getQaAndAnalyst',
+  token({ required: true }),
+  body({ groupId, batchId }),
+  getQaAndAnalystFromGrp)
 
 /**
  * @api {get} /taskAssignments Retrieve task assignments

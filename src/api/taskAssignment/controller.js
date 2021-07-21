@@ -153,6 +153,29 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
   });
 }
 
+export const getQaAndAnalystFromGrp = async ({ user, bodymen: { body } }, res, next) => {
+  var { batchId, groupId } = body;
+  var qaRoleDetails = await Role.findOne({ roleName: 'QA' }).catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var analystRoleDetails = await Role.findOne({ roleName: 'Analyst' }).catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var allGrpsWithAssignedQAMembers = await Group.findOne({ _id: groupId, batchList: { $in: [batchId] } }).populate('assignedMembers').populate('assignedMembers.roleDetails').catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var qa = [], analyst = [];
+  for (let index = 0; index < allGrpsWithAssignedQAMembers.assignedMembers.length; index++) {
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("primaryRole") && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === qaRoleDetails._id) || (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("roles") && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)) {
+      qa.push({ value: allGrpsWithAssignedQAMembers.assignedMembers[index].id, label: allGrpsWithAssignedQAMembers.assignedMembers[index].name })
+    } if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === analystRoleDetails._id) || (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)) {
+      analyst.push({ value: allGrpsWithAssignedQAMembers.assignedMembers[index].id, label: allGrpsWithAssignedQAMembers.assignedMembers[index].name })
+    }
+  }
+  res.status(200).json({ message: 'Fetched qa and analyst successfully', status: '200', data: { qa, analyst } })
+}
+
+
 export const index = ({
   querymen: {
     query,
