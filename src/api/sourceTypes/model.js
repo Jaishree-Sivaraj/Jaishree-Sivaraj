@@ -4,6 +4,12 @@ const sourceTypesSchema = new Schema({
   typeName: {
     type: String
   },
+  sourceSubTypeId: {
+    type: Schema.ObjectId,
+    ref: 'SourceSubTypes',
+    required: false,
+    default: null
+  },
   isMultiYear: {
     type: Boolean
   },
@@ -25,6 +31,7 @@ sourceTypesSchema.methods = {
       // simple view
       id: this.id,
       typeName: this.typeName,
+      sourceSubTypeId: this.sourceSubTypeId ? this.sourceSubTypeId.view(full) : null,
       duration: this.duration,
       status: this.status,
       createdAt: this.createdAt,
