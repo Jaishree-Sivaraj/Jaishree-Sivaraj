@@ -20,6 +20,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const show = ({ params }, res, next) =>
   SourceTypes.findById(params.id)
+    .populate('sourceSubTypeId')
     .then(notFound(res))
     .then((sourceTypes) => sourceTypes ? sourceTypes.view() : null)
     .then(success(res))
@@ -27,6 +28,7 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ bodymen: { body }, params }, res, next) =>
   SourceTypes.findById(params.id)
+    .populate('sourceSubTypeId')
     .then(notFound(res))
     .then((sourceTypes) => sourceTypes ? Object.assign(sourceTypes, body).save() : null)
     .then((sourceTypes) => sourceTypes ? sourceTypes.view(true) : null)
