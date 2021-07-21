@@ -87,6 +87,101 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
     });
 }
 
+
+export const createTask = async ({ user, bodymen: { body } }, res, next) => {
+  console.log('in create task', typeof body.year);
+  var years = '';
+  body.year.forEach((rec, forIndex) => {
+    if (forIndex == body.year.length - 1) {
+      years = years + rec.value;
+    } else {
+      years = years + rec.value + ', ';
+    }
+  })
+  var taskObject = {
+    categoryId: body.pillar.value,
+    groupId: body.groupId,
+    batchId: body.batchId,
+    year: years,
+    analystSLADate: body.analystSla,
+    qaSLADate: body.qaSla,
+    analystId: body.analyst.value,
+    qaId: body.qa.value,
+    createdBy: user
+  }
+  for (let index = 0; index < body.company.length; index++) {
+    taskObject.companyId = body.company[index].id;
+    await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
+      .then(async (taskObjectCreated) => {
+        console.log('taskObjectCreated', taskObjectCreated);
+        let newTaskNumber = '';
+        if (taskObjectCreated) {
+          if (taskObjectCreated.taskNumber) {
+            let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
+            newTaskNumber = Number(lastTaskNumber) + 1;
+          } else {
+            newTaskNumber = '1';
+          }
+          taskObject.taskNumber = 'DT' + newTaskNumber;
+          console.log('taskObject', taskObject);
+          await TaskAssignment.create(taskObject).then((taskAssignment) => {
+            console.log("taskAssignment", taskAssignment);
+            return res.status(200).json({
+              status: "200",
+              message: "Task created successfully!",
+              data: taskAssignment.view(true)
+            });
+          }).catch((error) => {
+            console.log('error', error);
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to create task!"
+            });
+          })
+        } else {
+          if (taskObjectCreated) {
+            let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
+            newTaskNumber = Number(lastTaskNumber) + 1;
+          } else {
+            newTaskNumber = '1';
+          }
+          taskObject.taskNumber = 'DT' + newTaskNumber;
+          await TaskAssignment.create(taskObject)
+            .then(async (taskAssignment) => {
+              await CompaniesTasks.create({
+                "companyId": taskObject.companyId,
+                "year": taskObject.year,
+                "categoryId": taskObject.categoryId,
+                "status": true,
+                "taskId": taskAssignment.id
+              }).then(async () => {
+                return res.status(200).json({
+                  status: "200",
+                  message: "Task created successfully!",
+                  data: taskAssignment.view(true)
+                });
+              }).catch((error) => {
+                return res.status(400).json({
+                  status: "400",
+                  message: error.message ? error.message : "Failed to create companies task!"
+                });
+              })
+            }).catch((error) => {
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create task!"
+              });
+            })
+        }
+      }).catch((error) => {
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : "Failed to create task!"
+        })
+      });
+  }
+}
+
 export const index = ({
   querymen: {
     query,
