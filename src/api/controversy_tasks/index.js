@@ -7,7 +7,7 @@ import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
 const router = new Router()
-const { tasknumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
+const { taskNumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
 const companiesList = [];
 
 /**
@@ -16,7 +16,7 @@ const companiesList = [];
  * @apiGroup ControversyTasks
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam tasknumber Controversy tasks's tasknumber.
+ * @apiParam taskNumber Controversy tasks's taskNumber.
  * @apiParam companyId Controversy tasks's companyId.
  * @apiParam analystId Controversy tasks's analystId.
  * @apiParam taskStatus Controversy tasks's taskStatus.
@@ -29,7 +29,7 @@ const companiesList = [];
  */
 router.post('/',
   token({ required: true }),
-  body({ tasknumber, companyId, analystId, taskStatus, completedDate, status }),
+  body({ taskNumber, companyId, analystId, taskStatus, completedDate, status }),
   create)
 
   /** @api {post} /controversy_tasks/new-task Create controversy tasks
@@ -85,7 +85,7 @@ router.get('/:id',
  * @apiGroup ControversyTasks
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam tasknumber Controversy tasks's tasknumber.
+ * @apiParam taskNumber Controversy tasks's taskNumber.
  * @apiParam companyId Controversy tasks's companyId.
  * @apiParam analystId Controversy tasks's analystId.
  * @apiParam taskStatus Controversy tasks's taskStatus.
@@ -98,7 +98,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ tasknumber, companyId, analystId, taskStatus, completedDate, status }),
+  body({ taskNumber, companyId, analystId, taskStatus, completedDate, status }),
   update)
 
 /**

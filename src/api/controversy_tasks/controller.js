@@ -1,6 +1,7 @@
 import { success, notFound } from '../../services/response/'
 import { Companies } from '../companies'
 import { User } from '../user'
+import { Datapoints } from '../datapoints'
 import { ControversyTasks } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -40,15 +41,52 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
       })
 }
 
-export const show = ({ params }, res, next) =>
-  ControversyTasks.findById(params.id)
-  .populate('companyId')
-  .populate('analystId')
-  .populate('createdBy')
-    .then(notFound(res))
-    .then((controversyTasks) => controversyTasks ? controversyTasks.view() : null)
-    .then(success(res))
-    .catch(next)
+export const show = async({ params }, res, next) => {
+  try {
+    await ControversyTasks.findById(params.id)
+    .populate('companyId')
+    .populate('analystId')
+    .populate('createdBy')
+      .then(async(controversyTasks) => {
+        if (controversyTasks) {
+          let controversyObject = {
+            taskNumber: controversyTasks.taskNumber,
+            taskId: controversyTasks.id,
+            companyName: controversyTasks.companyId.companyName,
+            companyId: controversyTasks.companyId.id,
+            dpCodesList: []
+          }
+          await Datapoints.find({
+            "relevantForIndia" : "Yes", 
+            "functionId" : "609bcceb1d64cd01eeda092c", 
+            status: true})
+            .populate('keyIssueId')
+            .then((datapoints) => {
+              if (datapoints.length > 0) {
+                for (let index = 0; index < datapoints.length; index++) {
+                  let objectToPush = {
+                    dpCode: datapoints[index].code,
+                    dpCodeId: datapoints[index].id,
+                    keyIssueName: datapoints[index].keyIssueId.keyIssueName,
+                    keyIssueId: datapoints[index].keyIssueId.id
+                  };
+                  controversyObject.dpCodesList.push(objectToPush);
+                }
+                return res.status(200).json({ status: "200", message: "Retrieved datapoints successfully!", data: controversyObject });
+              } else {
+                return res.status(500).json({ status: "500", message: "No controversy datapoints found!" });
+              }
+            })
+            .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to get controvery datapoints!' }) });
+        } else {
+          return res.status(500).json({ status: "500", message: "Controversy Task not found!" });
+        }
+      })
+      .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Controversy task not found!' }) });    
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : 'Controversy task not found!' })
+  }
+}
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   ControversyTasks.findById(params.id)
@@ -75,15 +113,15 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
     .then(async (taskObject) => {
       let controversyTaskDetails = [], newTaskNumber, taskNumber;
       if (taskObject) {
-        let lastTaskNumber = taskObject.tasknumber.split('DT')[1];
+        let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
         newTaskNumber = Number(lastTaskNumber) + 1;
       } else {
         newTaskNumber = 1;
       }
-      for (let index = 0; index <= body.companiesList.length; index++) {
+      for (let index = 0; index < body.companiesList.length; index++) {
         taskNumber = 'DT' + newTaskNumber;
         let controversyObject = {
-          tasknumber: taskNumber,
+          taskNumber: taskNumber,
           companyId: body.companiesList[index],
           analystId: body.analystId,
           taskStatus: 'Yet to Work',

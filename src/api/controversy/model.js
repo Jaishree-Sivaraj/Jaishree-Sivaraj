@@ -23,6 +23,10 @@ const controversySchema = new Schema({
     type: Object,
     default: []
   },
+  comments: {
+    type: Object,
+    default: []
+  },
   response: {
     type: String
   },
@@ -53,6 +57,7 @@ controversySchema.methods = {
       year: this.year,
       response: this.response,
       controversyDetails: this.controversyDetails ? this.controversyDetails : [],
+      comments: this.comments ? this.comments : [],
       status: this.status,
       submittedDate: this.submittedDate ? this.submittedDate : '',
       createdAt: this.createdAt,
