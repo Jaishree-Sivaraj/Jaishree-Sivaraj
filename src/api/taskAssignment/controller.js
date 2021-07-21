@@ -42,13 +42,7 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
             });
           })
       } else {
-        if (taskObject) {
-          let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
-          newTaskNumber = Number(lastTaskNumber) + 1;
-        } else {
-          newTaskNumber = '1';
-        }
-        body.taskNumber = 'DT' + newTaskNumber;
+        body.taskNumber = 'DT1';
         await TaskAssignment.create({
           ...body,
           createdBy: user
@@ -113,56 +107,38 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
   var taskArray = [];
   for (let index = 0; index < body.company.length; index++) {
     taskObject.companyId = body.company[index].id;
+    taskObject.taskNumber = 'DT1';
     await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
       .then(async (taskObjectCreated) => {
         let newTaskNumber = '';
-        if (taskObjectCreated) {
-          if (taskObjectCreated.taskNumber) {
-            let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
-            newTaskNumber = Number(lastTaskNumber) + 1;
-          } else {
-            newTaskNumber = '1';
-          }
+        if (taskObjectCreated && taskObjectCreated.taskNumber) {
+          let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
+          newTaskNumber = Number(lastTaskNumber) + 1;
           taskObject.taskNumber = 'DT' + newTaskNumber;
-          await TaskAssignment.create(taskObject).then((taskAssignment) => {
-            taskArray.push(taskAssignment.view(true));
+        }
+        await TaskAssignment.create(taskObject)
+          .then(async (taskAssignment) => {
+            await CompaniesTasks.create({
+              "companyId": taskObject.companyId,
+              "year": taskObject.year,
+              "categoryId": taskObject.categoryId,
+              "status": true,
+              "taskId": taskAssignment.id,
+              "createdBy": taskObject.createdBy
+            }).then(async () => {
+              taskArray.push(taskAssignment.view(true));
+            }).catch((error) => {
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create companies task!"
+              });
+            })
           }).catch((error) => {
             return res.status(400).json({
               status: "400",
               message: error.message ? error.message : "Failed to create task!"
             });
           })
-        } else {
-          if (taskObjectCreated) {
-            let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
-            newTaskNumber = Number(lastTaskNumber) + 1;
-          } else {
-            newTaskNumber = '1';
-          }
-          taskObject.taskNumber = 'DT' + newTaskNumber;
-          await TaskAssignment.create(taskObject)
-            .then(async (taskAssignment) => {
-              await CompaniesTasks.create({
-                "companyId": taskObject.companyId,
-                "year": taskObject.year,
-                "categoryId": taskObject.categoryId,
-                "status": true,
-                "taskId": taskAssignment.id
-              }).then(async () => {
-                taskArray.push(taskAssignment.view(true));
-              }).catch((error) => {
-                return res.status(400).json({
-                  status: "400",
-                  message: error.message ? error.message : "Failed to create companies task!"
-                });
-              })
-            }).catch((error) => {
-              return res.status(400).json({
-                status: "400",
-                message: error.message ? error.message : "Failed to create task!"
-              });
-            })
-        }
       }).catch((error) => {
         return res.status(400).json({
           status: "400",
