@@ -42,13 +42,7 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
             });
           })
       } else {
-        if (taskObject) {
-          let lastTaskNumber = taskObject.taskNumber.split('DT')[1];
-          newTaskNumber = Number(lastTaskNumber) + 1;
-        } else {
-          newTaskNumber = '1';
-        }
-        body.taskNumber = 'DT' + newTaskNumber;
+        body.taskNumber = 'DT1';
         await TaskAssignment.create({
           ...body,
           createdBy: user
@@ -87,6 +81,100 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
       })
     });
 }
+
+
+export const createTask = async ({ user, bodymen: { body } }, res, next) => {
+  console.log('in create task', typeof body.year);
+  var years = '';
+  body.year.forEach((rec, forIndex) => {
+    if (forIndex == body.year.length - 1) {
+      years = years + rec.value;
+    } else {
+      years = years + rec.value + ', ';
+    }
+  })
+  var taskObject = {
+    categoryId: body.pillar.value,
+    groupId: body.groupId,
+    batchId: body.batchId,
+    year: years,
+    analystSLADate: body.analystSla,
+    qaSLADate: body.qaSla,
+    analystId: body.analyst.value,
+    qaId: body.qa.value,
+    createdBy: user
+  }
+  var taskArray = [];
+  for (let index = 0; index < body.company.length; index++) {
+    taskObject.companyId = body.company[index].id;
+    taskObject.taskNumber = 'DT1';
+    await TaskAssignment.findOne({ status: true }).sort({ createdAt: -1 }).limit(1)
+      .then(async (taskObjectCreated) => {
+        let newTaskNumber = '';
+        if (taskObjectCreated && taskObjectCreated.taskNumber) {
+          let lastTaskNumber = taskObjectCreated.taskNumber.split('DT')[1];
+          newTaskNumber = Number(lastTaskNumber) + 1;
+          taskObject.taskNumber = 'DT' + newTaskNumber;
+        }
+        await TaskAssignment.create(taskObject)
+          .then(async (taskAssignment) => {
+            await CompaniesTasks.create({
+              "companyId": taskObject.companyId,
+              "year": taskObject.year,
+              "categoryId": taskObject.categoryId,
+              "status": true,
+              "taskId": taskAssignment.id,
+              "createdBy": taskObject.createdBy
+            }).then(async () => {
+              taskArray.push(taskAssignment.view(true));
+            }).catch((error) => {
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create companies task!"
+              });
+            })
+          }).catch((error) => {
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to create task!"
+            });
+          })
+      }).catch((error) => {
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : "Failed to create task!"
+        })
+      });
+  }
+  res.status(200).json({
+    status: "200",
+    message: "Task created successfully!",
+    data: taskArray
+  });
+}
+
+export const getQaAndAnalystFromGrp = async ({ user, bodymen: { body } }, res, next) => {
+  var { batchId, groupId } = body;
+  var qaRoleDetails = await Role.findOne({ roleName: 'QA' }).catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var analystRoleDetails = await Role.findOne({ roleName: 'Analyst' }).catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var allGrpsWithAssignedQAMembers = await Group.findOne({ _id: groupId, batchList: { $in: [batchId] } }).populate('assignedMembers').populate('assignedMembers.roleDetails').catch((error) => {
+    return res.status(500).json({ "status": "500", message: error.message })
+  });
+  var qa = [], analyst = [];
+  for (let index = 0; index < allGrpsWithAssignedQAMembers.assignedMembers.length; index++) {
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("primaryRole") && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === qaRoleDetails._id) || (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("roles") && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)) {
+      qa.push({ value: allGrpsWithAssignedQAMembers.assignedMembers[index].id, label: allGrpsWithAssignedQAMembers.assignedMembers[index].name })
+    } if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === analystRoleDetails._id) || (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles && allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)) {
+      analyst.push({ value: allGrpsWithAssignedQAMembers.assignedMembers[index].id, label: allGrpsWithAssignedQAMembers.assignedMembers[index].name })
+    }
+  }
+  res.status(200).json({ message: 'Fetched qa and analyst successfully', status: '200', data: { qa, analyst } })
+}
+
 
 export const index = ({
   querymen: {
@@ -322,28 +410,28 @@ export const getMyTasks = async ({
       },
       status: true
     })
-    .populate('companyId')
-    .populate('analystId')
-    .populate('createdBy')
-    .then((controversyTasks) => {
-      if (controversyTasks && controversyTasks.length > 0) {
-        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-          let object = {};
-          object.taskNumber = controversyTasks[cIndex].taskNumber;
-          object.taskId = controversyTasks[cIndex].id;
-          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-          object.company= controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-          object.status = controversyTasks[cIndex].status;
-          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-          if (controversyTasks[cIndex] && object) {
-            controversyTaskList.push(object);
+      .populate('companyId')
+      .populate('analystId')
+      .populate('createdBy')
+      .then((controversyTasks) => {
+        if (controversyTasks && controversyTasks.length > 0) {
+          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let object = {};
+            object.taskNumber = controversyTasks[cIndex].taskNumber;
+            object.taskId = controversyTasks[cIndex].id;
+            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+            object.status = controversyTasks[cIndex].status;
+            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+            if (controversyTasks[cIndex] && object) {
+              controversyTaskList.push(object);
+            }
           }
         }
-      }      
-    })
+      })
   }
 
   if (userRoles.includes("Client Representative")) {

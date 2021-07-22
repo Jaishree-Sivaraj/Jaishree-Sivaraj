@@ -1,24 +1,16 @@
 import mongoose, { Schema } from 'mongoose'
 
-const sourceTypesSchema = new Schema({
-  typeName: {
+const sourceSubTypesSchema = new Schema({
+  subTypeName: {
+    type: String,
+    required: true
+  },
+  description: {
     type: String
-  },
-  sourceSubTypeId: {
-    type: Schema.ObjectId,
-    ref: 'SourceSubTypes',
-    required: false,
-    default: null
-  },
-  isMultiYear: {
-    type: Boolean
-  },
-  isMultiSource: {
-    type: Boolean
   },
   status: {
     type: Boolean,
-    default:true
+    default: true
   }
 }, {
   timestamps: true,
@@ -28,14 +20,13 @@ const sourceTypesSchema = new Schema({
   }
 })
 
-sourceTypesSchema.methods = {
+sourceSubTypesSchema.methods = {
   view (full) {
     const view = {
       // simple view
       id: this.id,
-      typeName: this.typeName,
-      sourceSubTypeId: this.sourceSubTypeId ? this.sourceSubTypeId.view(full) : null,
-      duration: this.duration,
+      subTypeName: this.subTypeName,
+      description: this.description,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
@@ -48,7 +39,7 @@ sourceTypesSchema.methods = {
   }
 }
 
-const model = mongoose.model('SourceTypes', sourceTypesSchema)
+const model = mongoose.model('SourceSubTypes', sourceSubTypesSchema)
 
 export const schema = model.schema
 export default model
