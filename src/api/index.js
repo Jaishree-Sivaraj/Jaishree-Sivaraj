@@ -48,6 +48,7 @@ import userPillarAssignments from './user_pillar_assignments'
 import controversyTasks from './controversy_tasks'
 import controversyTaskHistories from './controversy_task_histories'
 import taskHistories from './task_histories'
+import sourceSubTypes from './source_sub_types'
 
 const router = new Router()
 
@@ -124,5 +125,6 @@ router.use('/user_pillar_assignments', userPillarAssignments)
 router.use('/controversy_tasks', controversyTasks)
 router.use('/controversy_task_histories', controversyTaskHistories)
 router.use('/task_histories', taskHistories)
+router.use('/source_sub_types', sourceSubTypes)
 
 export default router

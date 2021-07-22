@@ -1,5 +1,6 @@
 import { success, notFound } from '../../services/response/'
 import { SourceTypes } from '.'
+import {SourceSubTypes} from '../source_sub_types' 
 
 export const create = ({ bodymen: { body } }, res, next) =>
   SourceTypes.create(body)
@@ -7,16 +8,42 @@ export const create = ({ bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) =>
-  SourceTypes.count(query)
-    .then(count => SourceTypes.find(query, select, cursor)
-      .then((sourceTypes) => ({
-        count,
-        rows: sourceTypes.map((sourceTypes) => sourceTypes.view())
-      }))
+export const index = async({ querymen: { query, select, cursor } }, res, next) =>
+  await SourceTypes.find({status: true})
+    .populate('sourceSubTypeId')
+      .then(async(sourceTypes) => {
+        if (sourceTypes && sourceTypes.length > 0) {
+          let sourceTypesList = [];
+          for (let index = 0; index < sourceTypes.length; index++) {
+            let sourceTypeObject = {
+              value: sourceTypes[index].id,
+              label: sourceTypes[index].typeName,
+              isMultiYear: sourceTypes[index].isMultiYear,
+              isMultiSource: sourceTypes[index].isMultiSource,
+              subSourceTypes: []
+            }
+            if (sourceTypes[index].typeName == 'Policy documents') {
+              await SourceSubTypes.find({status: true})
+              .then((allSubTypes) => {
+                if (allSubTypes && allSubTypes.length > 0) {
+                  for (let sIndex = 0; sIndex < allSubTypes.length; sIndex++) {
+                    let subSourceObject = {
+                      value : allSubTypes[sIndex].id,
+                      label : allSubTypes[sIndex].subTypeName
+                    }
+                    sourceTypeObject.subSourceTypes.push(subSourceObject);
+                  }
+                }
+              })
+              .catch((error) => { return res.status(500).json({ status: "500", message: "Sub sourcetype not found!" }); });
+            }
+            sourceTypesList.push(sourceTypeObject);
+          }
+          return res.status(200).json({ status: "200", message: "Source types retrieved successfully!", data: sourceTypesList });
+        }
+      }
     )
-    .then(success(res))
-    .catch(next)
+    .catch((error) => { return res.status(500).json({ status: "500", message: "Failed to retrieve source types!" }); })
 
 export const show = ({ params }, res, next) =>
   SourceTypes.findById(params.id)

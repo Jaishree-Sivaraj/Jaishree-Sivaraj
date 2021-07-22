@@ -13,6 +13,9 @@ const sourceTypesSchema = new Schema({
   isMultiYear: {
     type: Boolean
   },
+  isMultiSource: {
+    type: Boolean
+  },
   status: {
     type: Boolean,
     default:true
