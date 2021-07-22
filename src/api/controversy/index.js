@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, uploadControversies, generateJson } from './controller'
+import { create, index, show, update, destroy, uploadControversies, generateJson, fetchDatapointControversy } from './controller'
 import { schema } from './model'
 export Controversy, { schema } from './model'
 
 const router = new Router()
-const { datapointId, companyId, year, controversyDetails, comments, submittedDate, response,status } = schema.tree
+const { controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response,status } = schema.tree
 
 /**
  * @api {post} /controversies Create controversy
@@ -94,6 +94,21 @@ router.get('/:id',
 router.get('/json/:companyId',
   token({ required: true }),
   generateJson)
+
+/**
+ * @api {get} /controversies/fetch/:companyId/:datapointId Fetch Controversy for a datapoint
+ * @apiName FetchDatapointControversies
+ * @apiGroup Controversy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} controversy Controversy's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Controversy not found.
+ * @apiError 401 user access only.
+ */
+router.get('/fetch/:companyId/:datapointId',
+  token({ required: true }),
+  fetchDatapointControversy)
 
 /**
  * @api {put} /controversies/:id Update controversy

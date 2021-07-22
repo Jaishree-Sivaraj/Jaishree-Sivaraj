@@ -453,8 +453,15 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let responseValue, hasError;
+              let responseValue, hasError, taskID;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              if (item['Category'].replace('\r\n', '').toLowerCase() == 'social') {
+                taskID = '60e7f2d7084b82171c5f48ca';
+              } else if (item['Category'].replace('\r\n', '').toLowerCase() == 'environmental') {
+                taskID = '60e7fdbd934e45057cb231b5';
+              } else {
+                taskID = '60ebdbf47818180854f0fa21'
+              }
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 console.log(item);
                 console.log(categoriesObjectValues)
@@ -484,6 +491,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               } else {
                 hasError = false
               }
+
               if (String(item['Response']).length > 0) {
                 if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
                   if (item['Response'] == "0" || item['Response'] == 0) {
@@ -523,7 +531,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 hasCorrection: false,
                 performanceResult: '',
                 standaloneStatus: '',
-                taskId: null,
+                taskId: taskID,
                 submittedBy: '',
                 submittedDate: '',
                 standaradDeviation: '',
@@ -632,7 +640,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   comments: [],
                   hasError: hasError,
                   hasCorrection: false,
-                  taskId: null,
+                  taskId: '60ebdbf47818180854f0fa21',
                   memberStatus: true,
                   status: true,
                   createdBy: userDetail
@@ -766,7 +774,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   hasCorrection: false,
                   comments: [],
                   hasError: hasError,
-                  taskId: null,
+                  taskId: '60ebdbf47818180854f0fa21',
                   status: true,
                   createdBy: userDetail
                 };
@@ -894,7 +902,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            if (missingDPList.length == 0) {
+            if (missingDPList.length != 0) {
               const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds
@@ -1029,7 +1037,7 @@ export const dataCollection = async ({
 }, res, next) => {
   try {
 
-    console.log(body.companyId,user);
+    console.log(body.companyId, user);
     let dpCodesDetails = body.currentData;
     let dpTypeValue = await Datapoints.findOne({
       _id: body.dpCodeId,
@@ -1049,7 +1057,7 @@ export const dataCollection = async ({
           url: item.source['url'],
           sourceName: item.source['sourceName'],
           status: true,
-          createdBy:user
+          createdBy: user
         }
       })
       console.log(standaloneDpDetails);
@@ -1081,7 +1089,7 @@ export const dataCollection = async ({
           memberName: item['memberName'],
           memberStatus: true,
           status: true,
-          createdBy:user
+          createdBy: user
         }
       });
       await BoardMembersMatrixDataPoints.insertMany(boardMemberDatapoints)
@@ -1111,7 +1119,7 @@ export const dataCollection = async ({
           memberName: item['memberName'],
           memberStatus: true,
           status: true,
-          createdBy:user
+          createdBy: user
         }
       });
 

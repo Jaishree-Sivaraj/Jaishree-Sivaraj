@@ -117,6 +117,9 @@ const datapointsSchema = new Schema({
   },
   collectionOrderNumber: {
     type: Number
+  },
+  isPriority: {
+    type: String
   }
 }, {
   timestamps: true,
@@ -146,6 +149,7 @@ datapointsSchema.methods = {
       reference: this.reference,
       industryRelevant: this.industryRelevant,
       unit: this.unit,
+      isPriority:this.isPriority,
       signal: this.signal,
       percentile: this.percentile,
       finalUnit: this.finalUnit,

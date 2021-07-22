@@ -11,10 +11,37 @@ const boardMembersSchema = new Schema({
     ref: 'Companies',
     required: true
   },
-  boardMemberName: {
+  BOSP004: {
+    //boardMemberName
     type: String
   },
-  year: {
+  startDate: {
+    type: String
+  },
+  endDate: {
+    type: String
+  },
+  endDateTimeStamp: {
+    type: Number,
+    default:0
+  },
+  dob: {
+    type: String
+  },
+  BODR005: {
+    //gender
+    type: String
+  },
+  BODP001: {
+    //nationality
+    type: String
+  },
+  BOSP005: {
+    //IndustryExperience
+    type: String
+  },
+  BOSP006: {
+    //FinanicalExpertise
     type: String
   },
   memberStatus: {
@@ -39,8 +66,15 @@ boardMembersSchema.methods = {
       id: this.id,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       companyId: this.companyId ? this.companyId.view(full) : null,
-      boardMemberName: this.boardMemberName,
-      year: this.year,
+      BOSP004: this.BOSP004,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      endDateTimeStamp: this.endDateTimeStamp,
+      dob: this.dob,
+      BODR005: this.BODR005,
+      BODP001: this.BODP001,
+      BOSP005: this.BOSP005,
+      BOSP006: this.BOSP006,
       memberStatus: this.memberStatus,
       status: this.status,
       createdAt: this.createdAt,

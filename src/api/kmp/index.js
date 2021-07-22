@@ -7,7 +7,7 @@ import { schema } from './model'
 export Kmp, { schema } from './model'
 
 const router = new Router()
-const { companyId, kmpMemberName, memberStatus, year, status } = schema.tree
+const { companyId, MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus, status } = schema.tree
 
 /**
  * @api {post} /kmp Create kmp
@@ -16,9 +16,12 @@ const { companyId, kmpMemberName, memberStatus, year, status } = schema.tree
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Kmp's companyId.
- * @apiParam kmpMemberName Kmp's kmpMemberName.
- * @apiParam memberStatus Kmp's memberStatus.
- * @apiParam year Kmp's year.
+ * @apiParam MASP003 Kmp's kmpMemberName.
+ * @apiParam startDate Kmp's startDate.
+ * @apiParam endDate Kmp's endDate.
+ * @apiParam endDateTimeStamp Kmp's endDateTimeStamp.
+ * @apiParam dob Kmp's dob.
+ * @apiParam MASR008 Kmp's gender.
  * @apiSuccess {Object} kmp Kmp's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Kmp not found.
@@ -26,7 +29,7 @@ const { companyId, kmpMemberName, memberStatus, year, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, kmpMemberName, memberStatus, year }),
+  body({ companyId,  MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus}),
   create)
 
 /**
@@ -68,9 +71,12 @@ router.get('/:id',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Kmp's companyId.
- * @apiParam kmpMemberName Kmp's kmpMemberName.
- * @apiParam memberStatus Kmp's memberStatus.
- * @apiParam year Kmp's year.
+ * @apiParam MASP003 Kmp's kmpMemberName.
+ * @apiParam startDate Kmp's startDate.
+ * @apiParam endDate Kmp's endDate.
+ * @apiParam endDateTimeStamp Kmp's endDateTimeStamp.
+ * @apiParam dob Kmp's dob.
+ * @apiParam MASR008 Kmp's gender.
  * @apiParam status Kmp's status.
  * @apiSuccess {Object} kmp Kmp's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -79,7 +85,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ companyId, kmpMemberName, memberStatus, year, status }),
+  body({ companyId,  MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus, status }),
   update)
 
 /**
