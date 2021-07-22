@@ -212,6 +212,8 @@ export const index = ({
           analyst: object.analystId ? object.analystId.name : null,
           analystId: object.analystId ? object.analystId.id : null,
           qa: object.qaId ? object.qaId.name : null,
+          analystSLA: object.analystSLADate ? object.analystSLADate : null,
+          qaSLA: object.qaSLADate ? object.qaSLADate : null,
           qaId: object.qaId ? object.qaId.id : null,
           fiscalYear: object.year,
           taskStatus: object.taskStatus,
