@@ -325,3 +325,85 @@ export const generateJson = async ({ params, user }, res, next) => {
     return res.status(500).json({ message: "Failed to fetch details", data: [] });
   }
 }
+
+export const fetchDatapointControversy = async ({ params, user }, res, next) => {
+  if (params.companyId && params.datapointId) {
+    await Datapoints.findById(params.datapointId)
+    .populate('categoryId')
+    .populate('keyIssueId')
+    .populate('functionId')
+    .then(async(datapointDetail) => {
+      let responseObject = {
+        dpCode : datapointDetail.code,
+        dpCodeId : datapointDetail.id,
+        indicator : datapointDetail.name,
+        keyIssue : datapointDetail.keyIssueId.keyIssueName,
+        responseList : ['Very High', 'High', 'Medium', 'Low', 'No'],
+        dataType : datapointDetail.dataType,
+        avgResponse : '',
+        controversyList : []
+      };
+      await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, status: true })
+      .populate('createdBy')
+      .populate('companyId')
+      .populate('datapointId')
+      .then((controversyList) => {
+        if (controversyList && controversyList.length > 0) {
+          let responseValue = 0, responseList = [0];
+          for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
+            let controversyObject = {};
+            controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
+            controversyObject.dpCode = datapointDetail.code;
+            controversyObject.dpCodeId = datapointDetail.id;
+            controversyObject.description = datapointDetail.description;
+            controversyObject.dataType = datapointDetail.dataType;
+            controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';
+            controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
+            controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
+            controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
+            if (controversyObject.response == 'Very High') {
+              responseValue = 4;
+            } else if (controversyObject.response == 'High') {
+              responseValue = 3;
+            } else if (controversyObject.response == 'Medium') {
+              responseValue = 2;
+            } else if (controversyObject.response == 'Low') {
+              responseValue = 1;
+            } else {
+              responseValue = 0;
+            }
+            responseList.push(responseValue);
+            controversyObject.source = {
+              sourceName : controversyList[cIndex].sourceName ? controversyList[cIndex].sourceName : '',
+              url : controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
+              publicationDate : controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
+            }
+            controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : [];
+            responseObject.controversyList.push(controversyObject);
+          }
+          let greatestResponseValue = responseList.sort((a,b)=>a-b)[responseList.length - 1];
+          if (greatestResponseValue == 4) {
+            responseObject.avgResponse = 'Very High';
+          } else if (greatestResponseValue == 3) {
+            responseObject.avgResponse = 'High';
+          } else if (greatestResponseValue == 2) {
+            responseObject.avgResponse = 'Medium';
+          } else if (greatestResponseValue == 1) {
+            responseObject.avgResponse = 'Low';
+          } else {
+            responseObject.avgResponse = '';
+          }
+          return res.status(200).json({ status: "200", message: "Datapoint Controversies retrieved successfully!", data: responseObject });
+        } else {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" });
+        }
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" })
+      })
+    })
+    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoint not found!' }) })
+  } else {
+    return res.status(404).json({ status: "404", message: "Controversy not found for the company and dpcode!" })
+  }
+}
