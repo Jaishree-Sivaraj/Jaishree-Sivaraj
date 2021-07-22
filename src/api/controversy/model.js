@@ -9,6 +9,11 @@ const controversySchema = new Schema({
   controversyNumber: {
     type: String
   },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'ControversyTasks',
+    required: false
+  },
   datapointId: {
     type: Schema.ObjectId,
     ref: 'Datapoints',
@@ -20,7 +25,8 @@ const controversySchema = new Schema({
     required: true
   },
   year: {
-    type: String
+    type: String,
+    default: ''
   },
   controversyDetails: {
     type: Object,
@@ -76,6 +82,7 @@ controversySchema.methods = {
       // simple view
       id: this.id,
       controversyNumber: this.controversyNumber ? this.controversyNumber : '-',
+      taskId: this.taskId ? this.taskId.view(full) : null ,
       datapointId: this.datapointId ? this.datapointId.view(full) : null ,
       companyId: this.companyId ? this.companyId.view(full) : null,
       year: this.year,
@@ -90,7 +97,7 @@ controversySchema.methods = {
       publicationDate: this.publicationDate ? this.publicationDate : '',
       comments: this.comments ? this.comments : [],
       status: this.status,
-      submittedDate: this.submittedDate ? this.submittedDate : '',
+      submittedDate: this.submittedDate ? this.submittedDate : null,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

@@ -2,12 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, uploadControversies, generateJson, fetchDatapointControversy } from './controller'
+import { create, index, show, update, destroy, uploadControversies, generateJson, fetchDatapointControversy, addNewControversy } from './controller'
 import { schema } from './model'
 export Controversy, { schema } from './model'
 
 const router = new Router()
-const { controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response,status } = schema.tree
+const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response,status } = schema.tree
+const dpCodeId = '', source = {}, pageNo = '';
 
 /**
  * @api {post} /controversies Create controversy
@@ -47,6 +48,31 @@ router.post('/',
  token({ required: true }),
  query(),
  uploadControversies)
+
+/**
+ * @api {post} /controversies/add/new-controversy Add New controversy
+ * @apiName AddNewControversy
+ * @apiGroup Controversy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam dpCodeId Controversy's dpCodeId.
+ * @apiParam companyId Controversy's companyId.
+ * @apiParam taskId Controversy's taskId.
+ * @apiParam source Controversy's source.
+ * @apiParam response Controversy's response.
+ * @apiParam textSnippet Controversy's textSnippet.
+ * @apiParam screenShot Controversy's screenShot.
+ * @apiParam pageNo Controversy's pageNo.
+ * @apiParam comments Controversy's comments.
+ * @apiSuccess {Object} controversy Controversy's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Controversy not found.
+ * @apiError 401 user access only.
+ */
+router.post('/add/new-controversy',
+token({ required: true }),
+body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments }),
+addNewControversy)
 
 /**
  * @api {get} /controversies Retrieve controversies
