@@ -502,7 +502,7 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
 }
 
 export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) => {
-  let filterQuery = { "status": true };
+  let filterQuery = { "status": true, "userType": { $ne: "SuperAdmin" } };
   if (body.filters.length > 0) {
     for (let index = 0; index < body.filters.length; index++) {
       let filterWith = body.filters[index].filterWith;
