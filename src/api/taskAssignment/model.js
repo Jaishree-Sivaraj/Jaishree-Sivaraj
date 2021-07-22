@@ -23,7 +23,7 @@ const taskAssignmentSchema = new Schema({
     required: true
   },
   groupId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Group',
     required: true
   },
@@ -84,7 +84,8 @@ taskAssignmentSchema.methods = {
       groupId: this.groupId ? this.groupId.view(full) : null,
       batchId: this.batchId ? this.batchId.view(full) : null,
       year: this.year,
-      analystSLA: this.analystSLA,
+      analystSLA: this.analystSLADate ? this.analystSLADate : null,
+      qaSLADate: this.qaSLADate ? this.qaSLADate : null,
       taskStatus: this.taskStatus,
       overAllCompanyTaskStatus: this.overAllCompanyTaskStatus,
       analystId: this.analystId ? this.analystId.view(full) : null,
