@@ -6,13 +6,16 @@ const controversySchema = new Schema({
     ref: 'User',
     required: true
   },
+  controversyNumber: {
+    type: String
+  },
   datapointId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Datapoints',
     required: true
   },
   companyId: {
-   type: Schema.ObjectId,
+    type: Schema.ObjectId,
     ref: 'Companies',
     required: true
   },
@@ -20,6 +23,31 @@ const controversySchema = new Schema({
     type: String
   },
   controversyDetails: {
+    type: Object,
+    default: []
+  },
+  pageNumber: {
+    type: String
+  },
+  sourceName: {
+    type: String
+  },
+  sourceURL: {
+    type: String
+  },
+  textSnippet: {
+    type: String
+  },
+  screenShot: {
+    type: String
+  },
+  sourcePublicationDate: {
+    type: String
+  },
+  publicationDate: {
+    type: String
+  },
+  comments: {
     type: Object,
     default: []
   },
@@ -47,14 +75,23 @@ controversySchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      controversyNumber: this.controversyNumber ? this.controversyNumber : '-',
       datapointId: this.datapointId ? this.datapointId.view(full) : null ,
       companyId: this.companyId ? this.companyId.view(full) : null,
       year: this.year,
       response: this.response,
       controversyDetails: this.controversyDetails ? this.controversyDetails : [],
+      pageNumber: this.pageNumber ? this.pageNumber : '',
+      sourceName: this.sourceName ? this.sourceName : '',
+      sourceURL: this.sourceURL ? this.sourceURL : '',
+      textSnippet: this.textSnippet ? this.textSnippet : '',
+      screenShot: this.screenShot ? this.screenShot : '',
+      sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
+      publicationDate: this.publicationDate ? this.publicationDate : '',
+      comments: this.comments ? this.comments : [],
       status: this.status,
       submittedDate: this.submittedDate ? this.submittedDate : '',
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

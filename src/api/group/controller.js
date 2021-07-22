@@ -35,23 +35,58 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
       batchList: batchList,
       status: true
     }
-    await Group.create({ ...groupObject, createdBy: user })
-      .then(async (group) => {
-        if (membersList.length > 0) {
-          await User.updateMany({
-            "_id": { $in: membersList }
-          }, { $set: { isAssignedToGroup: true } }, {});
+    if (body.groupId != '' || body.groupId != null) {
+      await Group.create({ ...groupObject, createdBy: user })
+        .then(async (group) => {
+          if (membersList.length > 0) {
+            await User.updateMany({
+              "_id": { $in: membersList }
+            }, { $set: { isAssignedToGroup: true } }, {});
+          }
+          if (batchList.length > 0) {
+            await Batches.updateMany({
+              "_id": { $in: batchList }
+            }, { $set: { isAssignedToGroup: true } }, {});
+          }
+        })
+        .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) });
+    } else {
+      //before updating the group details marked all group member's and batch's isAssignedToGroup as false bcz some group members might be removed
+      await Group.findById(body.groupId).then(async(groupDetail) => {
+        if (groupDetail) {
+          console.log('groupDetail.assignedMembers', groupDetail.assignedMembers);
+          if (groupDetail.assignedMembers.length > 0) {
+            await User.updateMany({
+              "_id": { $in: groupDetail.assignedMembers }
+            }, { $set: { isAssignedToGroup: false } }, {});
+          }
+          if (groupDetail.batchList.length > 0) {
+            await Batches.updateMany({
+              "_id": { $in: groupDetail.batchList }
+            }, { $set: { isAssignedToGroup: false } }, {});
+          }
         }
-        if (batchList.length > 0) {
-          await Batches.updateMany({
-            "_id": { $in: batchList }
-          }, { $set: { isAssignedToGroup: true } }, {});
-        }
-      })
+      }).catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Group not found!'}) });
+
+      await Group.update({ _id: body.groupId },{ $set: { ...groupObject, createdBy: user } })
+        .then(async (group) => {
+          if (membersList.length > 0) {
+            await User.updateMany({
+              "_id": { $in: membersList }
+            }, { $set: { isAssignedToGroup: true } }, {});
+          }
+          if (batchList.length > 0) {
+            await Batches.updateMany({
+              "_id": { $in: batchList }
+            }, { $set: { isAssignedToGroup: true } }, {});
+          }
+        })
+        .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to update group!'}) });
+    }
     res.status(200).json({ status: "200", message: "Group Created Successfully" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create Group!" });
   }
 }
 

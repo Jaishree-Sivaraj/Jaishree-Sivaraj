@@ -7,7 +7,7 @@ import { schema } from './model'
 export Companies, { schema } from './model'
 
 const router = new Router()
-const { companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName, companyMemberDetails, isAssignedToBatch, status } = schema.tree
+const { clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName, companyMemberDetails, isAssignedToBatch, status } = schema.tree
 const companyId = '', name = '', years = [], memberType = '';
 
 /**
@@ -16,6 +16,7 @@ const companyId = '', name = '', years = [], memberType = '';
  * @apiGroup Companies
  * @apiPermission user
  * @apiParam {String} access_token user access token.
+ * @apiParam clientTaxonomyId Companies's clientTaxonomyId.
  * @apiParam companyName Companies's companyName.
  * @apiParam cin Companies's cin.
  * @apiParam nicCode Companies's nicCode.
@@ -30,7 +31,7 @@ const companyId = '', name = '', years = [], memberType = '';
  */
 router.post('/',
   token({ required: true }),
-  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode }),
+  body({ clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode }),
   create)
 
 /**
@@ -81,8 +82,8 @@ query(),
 getAllNic)
 
 /**
-* @api {get} /companies/all/unassigned Retrieve All unassingned companies 
-* @apiName Retrieve All Unassigned Companies
+* @api {get} /companies/all/unassigned/:clientTaxonomyId Retrieve All unassingned companies of taxonomy
+* @apiName Retrieve All Unassigned Companies Of Taxonomy
 * @apiGroup Companies
 * @apiPermission user
 * @apiParam {String} access_token user access token.
@@ -92,7 +93,7 @@ getAllNic)
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/all/unassigned',
+router.get('/all/unassigned/:clientTaxonomyId',
 token({ required: true }),
 query(),
 getAllUnAssignedCompanies)
@@ -118,6 +119,7 @@ router.get('/:id',
  * @apiGroup Companies
  * @apiPermission user
  * @apiParam {String} access_token user access token.
+ * @apiParam clientTaxonomyId Companies's clientTaxonomyId.
  * @apiParam companyName Companies's companyName.
  * @apiParam cin Companies's cin.
  * @apiParam nicCode Companies's nicCode.
@@ -135,7 +137,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, companyMemberDetails, isAssignedToBatch, status }),
+  body({ clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, companyMemberDetails, isAssignedToBatch, status }),
   update)
 
 /**

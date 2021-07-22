@@ -11,10 +11,18 @@ export const assignPillarToUsers = async({ user, bodymen: { body } }, res, next)
   if (body.user && body.user.length > 0) {
     let pillarAssignmentList = [];
     for (let index = 0; index < body.user.length; index++) {
+      let secondaryPillarList = [];
+      if (body.secondary.length > 0) {
+        for (let sIndex = 0; sIndex < body.secondary.length; sIndex++) {
+          if (body.secondary[sIndex].value) {
+            secondaryPillarList.push(body.secondary[sIndex].value);            
+          }
+        }
+      }
       let objectToInsert = {
         clientTaxonomyId: body.taxonomy ? body.taxonomy.value : null,
         primaryPillar: body.primary ? body.primary.value : null,
-        secondaryPillar: body.secondary ? body.secondary.value : null,
+        secondaryPillar: secondaryPillarList,
         userId: body.user[index] ? body.user[index] : null,
         status: true,
         createdBy: user

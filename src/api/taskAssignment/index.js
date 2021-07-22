@@ -19,7 +19,9 @@ import {
   getMyTasks,
   getGroupAndBatches,
   getUsers,
-  updateCompanyStatus
+  updateCompanyStatus,
+  createTask,
+  getQaAndAnalystFromGrp
 } from './controller'
 import {
   schema
@@ -30,7 +32,8 @@ export TaskAssignment, {
 from './model'
 
 const router = new Router()
-const { companyId, taskNumber, categoryId, groupId, batchId, year, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree
+const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [];
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -55,6 +58,48 @@ router.post('/',
   token({ required: true }),
   body({ companyId, categoryId, groupId, batchId, year, analystSLA, qaSLA, analystId, qaId }),
   create)
+
+/**
+* @api {post} /taskAssignments Create task assignment
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam companyId Task assignment's companyId.
+* @apiParam categoryId Task assignment's categoryId.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam batchId Task assignment's batchId.
+* @apiParam year Task assignment's year.
+* @apiParam analystSLA Task assignment's analystSLA.
+* @apiParam analystId Task assignment's analystId.
+* @apiParam qaId Task assignment's qaId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/create',
+  token({ required: true }),
+  body({ groupId, batchId, year, pillar, company, analyst, qa, analystSla, qaSla }),
+  createTask)
+
+/**
+* @api {post} /taskAssignments Create task assignment
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam batchId Task assignment's batchId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/getQaAndAnalyst',
+  token({ required: true }),
+  body({ groupId, batchId }),
+  getQaAndAnalystFromGrp)
 
 /**
  * @api {get} /taskAssignments Retrieve task assignments
