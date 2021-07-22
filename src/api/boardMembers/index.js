@@ -7,7 +7,7 @@ import { schema } from './model'
 export BoardMembers, { schema } from './model'
 
 const router = new Router()
-const { companyId, boardMemberName, year, memberStatus, status } = schema.tree
+const { companyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus, status } = schema.tree
 
 /**
  * @api {post} /boardMembers Create board members
@@ -16,9 +16,14 @@ const { companyId, boardMemberName, year, memberStatus, status } = schema.tree
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Board members's companyId.
- * @apiParam boardMemberName Board members's boardMemberName.
- * @apiParam year Board members's year.
- * @apiParam memberStatus Board members's memberStatus.
+ * @apiParam BOSP004 Board members's name.
+ * @apiParam startDate Board members's startDate.
+ * @apiParam dob Board members's dob.
+ * @apiParam BODR005 Board members's Gender.
+ * @apiParam BODP001 Board members's Nationality.
+ * @apiParam BOSP005 Board members's IndustryExperience.
+ * @apiParam BOSP006 Board members's FinanicialExpertise.
+ * @apiParam endDateTimeStamp EndDate TimeStamp
  * @apiSuccess {Object} boardMembers Board members's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Board members not found.
@@ -26,7 +31,7 @@ const { companyId, boardMemberName, year, memberStatus, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, boardMemberName, year, memberStatus }),
+  body({ companyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus }),
   create)
 
 /**
@@ -68,10 +73,14 @@ router.get('/:id',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam companyId Board members's companyId.
- * @apiParam boardMemberName Board members's boardMemberName.
- * @apiParam year Board members's year.
- * @apiParam memberStatus Board members's memberStatus.
- * @apiParam status Board members's status.
+ * @apiParam BOSP004 Board members's name.
+ * @apiParam startDate Board members's startDate.
+ * @apiParam dob Board members's dob.
+ * @apiParam BODR005 Board members's Gender.
+ * @apiParam BODP001 Board members's Nationality.
+ * @apiParam BOSP005 Board members's IndustryExperience.
+ * @apiParam BOSP006 Board members's FinanicialExpertise.
+ * @apiParam endDateTimeStamp EndDate TimeStamp
  * @apiSuccess {Object} boardMembers Board members's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Board members not found.
@@ -79,7 +88,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ companyId, boardMemberName, year, memberStatus, status }),
+  body({ companyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus, status }),
   update)
 
 /**

@@ -11,13 +11,28 @@ const kmpSchema = new Schema({
     ref: 'Companies',
     required: true
   },
-  kmpMemberName: {
+  MASP003: {
+    //kmpmemberName
     type: String
   },
   memberStatus: {
     type: String
   },
-  year: {
+  dob: {
+    type: String
+  },
+  startDate: {
+    type: String
+  },
+  endDate: {
+    type: String
+  },
+  endDateTimeStamp: {
+    type: Number,
+    default:0
+  },
+  MASR008: {
+    //gender
     type: String
   },
   status: {
@@ -39,9 +54,12 @@ kmpSchema.methods = {
       id: this.id,
       createdBy: this.createdBy ? this.createdBy.view(full) : null ,
       companyId: this.companyId ? this.companyId.view(full) :null ,
-      kmpMemberName: this.kmpMemberName,
+      MASP003: this.MASP003,
+      MASR008: this.MASR008,
       memberStatus: this.memberStatus,
-      year: this.year,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      endDateTimeStamp: this.endDateTimeStamp,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
