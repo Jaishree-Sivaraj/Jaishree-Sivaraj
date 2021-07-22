@@ -15,6 +15,50 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
+export const addNewControversy = async({ user, bodymen: { body }, res, next }) => {
+  console.log('addNewControversy function called!');
+  try {
+    if (body) {
+      let lastControversy = await Controversy.findOne({status: true}).sort({createdAt: -1}).limit(1);
+      let newTaskNumber = '';
+      if (lastControversy && Object.keys(lastControversy).length > 0) {
+        let lastTaskNumber = lastControversy.controversyNumber ? lastControversy.controversyNumber.split('CON')[1] : '1';
+        newTaskNumber = 'CON'+String(Number(lastTaskNumber)+1);
+      } else {
+        newTaskNumber = 'CON1';
+      }
+      let controversyObject = {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        controversyNumber: newTaskNumber,
+        sourceName: body.source.sourceName,
+        sourceURL: body.source.url,
+        sourcePublicationDate: body.source.publicationDate,
+        publicationDate: '',
+        response: body.response,
+        textSnippet: body.textSnippet,
+        pageNumber: body.pageNo,
+        screenShot: body.screenShot,
+        comments: body.comments,
+        controversyDetails: [],
+        submittedDate: Date.now(),
+        status: true,
+        createdBy: user
+      };
+      await Controversy.create(controversyObject)
+      .then((controversyDetail) => {
+        return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
+      })
+    }    
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
+  }
+}
+
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Controversy.count(query)
     .then(count => Controversy.find(query, select, cursor)
