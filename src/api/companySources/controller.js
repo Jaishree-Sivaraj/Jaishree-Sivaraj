@@ -22,7 +22,6 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   CompanySources.count(query)
     .then(count => CompanySources.find(query, select, cursor)
-      //.populate('sourceTypeId')  
       .then((companySources) => ({
         count,
         rows: companySources.map((companySources) => companySources.view())
@@ -31,13 +30,23 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const show = ({ params }, res, next) =>
-  CompanySources.findById(params.id)
-    .populate('sourceTypeId')
-    .then(notFound(res))
-    .then((companySources) => companySources ? companySources.view() : null)
-    .then(success(res))
-    .catch(next)
+// export const show = ({ params }, res, next) =>
+//   CompanySources.findById(params.id)
+//     .populate('companyId')
+//     .then(notFound(res))
+//     .then((companySources) => companySources ? companySources.view() : null)
+//     console.log();
+
+export const show = async ({params}, res,next) =>{
+  let sourceDetails, companySourceDetails = [];
+  sourceDetails = await CompanySources.find({"status": true});
+  companySourceDetails = await sourceDetails.find((object) => params.id == object.companyId);
+  if (companySourceDetails) {
+    res.status(200).json({status: ("200"), message: "data retrieved Sucessfully", data: companySourceDetails});
+  }else{
+    res.status(400).json({status: ("400"), message: "no data present for the companyId..!"});
+  }
+}
 
 export const update = ({ bodymen: { body }, params }, res, next) =>
   CompanySources.findById(params.id)
