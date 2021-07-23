@@ -339,6 +339,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                     fiscalYear: taskDetails.year,
                     memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
+                    memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
                     status: "Yet to Start"
                   }
                   
@@ -377,6 +378,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                     fiscalYear: taskDetails.year,
                     memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
+                    memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
                     status: 'Yet to Start'
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
