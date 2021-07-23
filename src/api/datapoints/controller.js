@@ -531,6 +531,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
             keyIssuesList: keyIssuesList,
+            priorityDpCodes:priorityDpCodes,
             standalone: {
               dpCodesData: dpCodesData
             }
