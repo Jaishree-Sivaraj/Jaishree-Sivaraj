@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { create, index, show, update, destroy, getDocumentsByCompanyId } from './controller'
+import { create, index, show, update, destroy, getDocumentsByCompanyId, uploadCompanySource } from './controller'
 import { schema } from './model'
 export CompanySources, { schema } from './model'
 
 const router = new Router()
-const { sourceTypeId, sourceUrl, sourceFile, publicationDate, companyId } = schema.tree
+const { sourceTypeId, url, sourceFile, publicationDate, companyId, sourcePDF, isMultiYear, isMultiSource, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName } = schema.tree
 
 /**
  * @api {post} /companySources Create company sources
@@ -21,8 +21,25 @@ const { sourceTypeId, sourceUrl, sourceFile, publicationDate, companyId } = sche
  * @apiError 404 Company sources not found.
  */
 router.post('/',
-  body({ sourceTypeId, sourceUrl, sourceFile, publicationDate, companyId }),
+  body({ sourceTypeId, url, sourceFile, publicationDate, companyId }),
   create)
+
+
+/**
+ * @api {post} /companySources/uploadCompanySource Create company sources
+ * @apiName CreateCompanySources
+ * @apiGroup CompanySources
+ * @apiParam sourceTypeId Company sources's sourceTypeId.
+ * @apiParam sourceUrl Company sources's sourceUrl.
+ * @apiParam sourceFile Company sources's sourceFile.
+ * @apiParam publicationDate Company sources's publicationDate.
+ * @apiSuccess {Object} companySources Company sources's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Company sources not found.
+ */
+ router.post('/uploadCompanySource',
+ body({ companyId, sourceTypeId, publicationDate, sourcePDF, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName }),
+ uploadCompanySource)
 
 
 /**
@@ -73,7 +90,7 @@ router.get('/:id',
  * @apiError 404 Company sources not found.
  */
 router.put('/:id',
-  body({ sourceTypeId, sourceUrl, sourceFile, publicationDate }),
+  body({ sourceTypeId, url, sourceFile, publicationDate }),
   update)
 
 /**
