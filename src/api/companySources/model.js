@@ -1,25 +1,55 @@
 import mongoose, { Schema } from 'mongoose'
 
 const companySourcesSchema = new Schema({
+  companyId: {
+    type: Schema.ObjectId,
+    ref: 'Companies',
+    required: true
+  },
   sourceTypeId: {
     type: Schema.ObjectId,
     ref: 'SourceTypes',
-    required: true
+    required: false,
+    default: null
+  },
+  isMultiYear: {
+    type: Boolean,
+    default: false
+  },
+  isMultiSource: {
+    type: Boolean,
+    default: false
   },
   sourceUrl: {
     type: String
   },
+  sourceSubTypeId: {
+    type: Schema.ObjectId,
+    ref: 'SourceSubTypes',
+    default: null
+  },
   sourceFile: {
-    type: Buffer
+    type: String
   },
   publicationDate: {
-    type: Date
+    type: Date,
+    default: null
   },
-  companyId: {
-    type: Schema.ObjectId,
-    ref: 'Companies',
-    required: false
+  fiscalYear: {
+    type: String
   },
+  newSourceTypeName: {
+    type: String,
+    default: null
+  },
+  newSubSourceTypeName: {
+    type: String,
+    default: null
+  },
+  status: {
+    type: String,
+    default: true
+  }
 }, {
   timestamps: true,
   toJSON: {
@@ -33,11 +63,16 @@ companySourcesSchema.methods = {
     const view = {
       // simple view
       id: this.id,
+      companyId: this.companyId ? this.companyId.view(full) : this.companyId,
       sourceTypeId: this.sourceTypeId ? this.sourceTypeId.view(full) : null,
-      companyId: this.companyId ? this.companyId.view(full) : null,
+      isMultiYear: this.isMultiYear,
+      isMultiSource: this.isMultiSource,
       sourceUrl: this.sourceUrl,
-      sourceFile: this.sourceFile.toString('base64'),
+      sourceFile: this.sourceFile,
       publicationDate: this.publicationDate,
+      fiscalYear: this.fiscalYear,
+      newSourceTypeName: this.newSourceTypeName,
+      newSubSourceTypeName: this.newSubSourceTypeName,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

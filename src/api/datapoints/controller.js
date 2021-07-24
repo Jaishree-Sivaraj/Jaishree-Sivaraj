@@ -339,6 +339,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                     fiscalYear: taskDetails.year,
                     memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
+                    memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
                     status: "Yet to Start"
                   }
                   
@@ -377,6 +378,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                     fiscalYear: taskDetails.year,
                     memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
+                    memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
                     status: 'Yet to Start'
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -529,6 +531,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
             keyIssuesList: keyIssuesList,
+            priorityDpCodes:priorityDpCodes,
             standalone: {
               dpCodesData: dpCodesData
             }
@@ -1708,7 +1711,6 @@ export const datapointDetails = async (req, res, next) => {
       let currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
-          memberName:req.body.memberName,
           memberStatus: true,
           status: true
         }).populate('createdBy')
@@ -1731,14 +1733,13 @@ export const datapointDetails = async (req, res, next) => {
         historicalData: [],
         status: ""
       }
-      for (let currentYearIndex = 0; currentYearIndex < currentYearValues.length; currentYearIndex++) {
+      for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(currentAllBoardMemberMatrixDetails, function (object) {
-            if (object.datapointId.id == req.body.datapointId,object.year == currentYearValues[currentYearIndex].year && object.memberName == req.body.memberName) {
+            if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.memberName == req.body.memberName) {
               console.log(object)
               if (object.hasError == true) {
-
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYearValues[currentYearIndex].year)
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
                 currentDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1796,7 +1797,7 @@ export const datapointDetails = async (req, res, next) => {
               status: 'Yet to Start',
               dpCode: dpTypeValues.code,
               dpCodeId: dpTypeValues.id,
-              fiscalYear: currentYearValues[currentYearIndex].year,
+              fiscalYear: currentYear[currentYearIndex],
               description: dpTypeValues.description,
               dataType: dpTypeValues.dataType,
               memberName: req.body.memberName,
@@ -1854,7 +1855,7 @@ export const datapointDetails = async (req, res, next) => {
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
-          memberName:req.body.memberName,
+          memberName: req.body.memberName,
           year: {
             "$nin": currentYear
           },
@@ -1867,7 +1868,6 @@ export const datapointDetails = async (req, res, next) => {
 
       let historyYear = _.uniqBy(historyAllKmpMatrixDetails, 'year');
       let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-          memberName:req.body.memberName,
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
           memberStatus: true,
@@ -1876,7 +1876,7 @@ export const datapointDetails = async (req, res, next) => {
         .populate('datapointId')
         .populate('companyId')
         .populate('taskId');
-        let currentYearValues = _.uniqBy(currentAllKmpMatrixDetails, 'year');
+        //let currentYearValues = _.uniqBy(currentAllKmpMatrixDetails, 'year');
 
       let kmpDatapointsObject = {
         dpCode: dpTypeValues.code,
@@ -1892,12 +1892,12 @@ export const datapointDetails = async (req, res, next) => {
         historicalData: [],
         status: ''
       }
-      for (let currentYearIndex = 0; currentYearIndex < currentYearValues.length; currentYearIndex++) {
+      for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(currentAllKmpMatrixDetails, function (object) {
-            if (object.datapointId.id == dpTypeValues.id && object.year == currentYearValues[currentYearIndex].year && object.memberName == req.body.memberName) {
+            if (object.datapointId.id == dpTypeValues.id && object.year == currentYear[currentYearIndex] && object.memberName == req.body.memberName) {
               if (object.hasError == true) {
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex].year)
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
                 currentDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1955,7 +1955,7 @@ export const datapointDetails = async (req, res, next) => {
               status: 'Yet to Start',
               dpCode: dpTypeValues.code,
               dpCodeId: dpTypeValues.id,
-              fiscalYear: currentYear[currentYearIndex].year,
+              fiscalYear: currentYear[currentYearIndex],
               description: dpTypeValues.description,
               dataType: dpTypeValues.dataType,
               memberName: req.body.memberName,
