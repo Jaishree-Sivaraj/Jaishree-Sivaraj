@@ -79,7 +79,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   let fileUrl = path.join(__dirname, "uploads", fileName)
   await fs.writeFile(fileUrl, converted, error => {
     if (error) {
-      res.status(400).json({ status: ("400"), message: "Unable to write the file" });
+      //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
     }
   });
   let companySourceDetails = {
@@ -97,10 +97,9 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   } 
   let sourceDetails = await CompanySources.find({"status": true});
   let isCompanyExisting = await sourceDetails.find(object => (companySourceDetails.companyId == object.companyId));
-  console.log(isCompanyExisting);
   if (isCompanyExisting) {
         await CompanySources.updateOne({ companyId: companySourceDetails.companyId }, { $set: companySourceDetails }, { upsert: true })
-          res.status(200).json({status: ("200"), message: "data updated sucessfully...", data: companySourceDetails})
+          .then((res.status(200).json({ status: ("200"), message: "data updated sucessfully...!", data: companySourceDetails })))
   }else{
     await CompanySources.create(companySourceDetails)
       .then((res.status(200).json({ status: ("200"), message: 'data saved sucessfully', data: companySourceDetails })))
