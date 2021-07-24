@@ -63,11 +63,16 @@ companySourcesSchema.methods = {
     const view = {
       // simple view
       id: this.id,
+      companyId: this.companyId ? this.companyId.view(full) : this.companyId,
       sourceTypeId: this.sourceTypeId ? this.sourceTypeId.view(full) : null,
-      companyId: this.companyId ? this.companyId.view(full) : null,
+      isMultiYear: this.isMultiYear,
+      isMultiSource: this.isMultiSource,
       sourceUrl: this.sourceUrl,
-      sourceFile: this.sourceFile.toString('base64'),
+      sourceFile: this.sourceFile,
       publicationDate: this.publicationDate,
+      fiscalYear: this.fiscalYear,
+      newSourceTypeName: this.newSourceTypeName,
+      newSubSourceTypeName: this.newSubSourceTypeName,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
