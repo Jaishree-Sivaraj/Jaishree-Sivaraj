@@ -100,7 +100,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   console.log(isCompanyExisting);
   if (isCompanyExisting) {
         await CompanySources.updateOne({ companyId: companySourceDetails.companyId }, { $set: companySourceDetails }, { upsert: true })
-          .then((res.status(200).json({status: ("200"), message: "data updated sucessfully...", data: companySourceDetails})))
+          .then((res.status(200).json({status: ("200"), message: "data updated sucessfully..."})))
           .catch((error) => {
             return res.status(400).json({
               status: "400",
