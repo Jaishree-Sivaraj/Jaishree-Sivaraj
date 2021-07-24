@@ -5,7 +5,7 @@ let user, taskSlaLog
 
 beforeEach(async () => {
   user = await User.create({ email: 'a@a.com', password: '123456' })
-  taskSlaLog = await TaskSlaLog.create({ createdBy: user, taskId: 'test', currentDate: 'test', preferedDate: 'test', loggedBy: 'test', taskStatus: 'test', status: 'test' })
+  taskSlaLog = await TaskSlaLog.create({ createdBy: user, taskId: 'test', currentDate: 'test', preferedDate: 'test', requestedBy: 'test', isAccepted: 'test', status: 'test' })
 })
 
 describe('view', () => {
@@ -18,8 +18,8 @@ describe('view', () => {
     expect(view.taskId).toBe(taskSlaLog.taskId)
     expect(view.currentDate).toBe(taskSlaLog.currentDate)
     expect(view.preferedDate).toBe(taskSlaLog.preferedDate)
-    expect(view.loggedBy).toBe(taskSlaLog.loggedBy)
-    expect(view.taskStatus).toBe(taskSlaLog.taskStatus)
+    expect(view.requestedBy).toBe(taskSlaLog.requestedBy)
+    expect(view.isAccepted).toBe(taskSlaLog.isAccepted)
     expect(view.status).toBe(taskSlaLog.status)
     expect(view.createdAt).toBeTruthy()
     expect(view.updatedAt).toBeTruthy()
@@ -34,8 +34,8 @@ describe('view', () => {
     expect(view.taskId).toBe(taskSlaLog.taskId)
     expect(view.currentDate).toBe(taskSlaLog.currentDate)
     expect(view.preferedDate).toBe(taskSlaLog.preferedDate)
-    expect(view.loggedBy).toBe(taskSlaLog.loggedBy)
-    expect(view.taskStatus).toBe(taskSlaLog.taskStatus)
+    expect(view.requestedBy).toBe(taskSlaLog.requestedBy)
+    expect(view.isAccepted).toBe(taskSlaLog.isAccepted)
     expect(view.status).toBe(taskSlaLog.status)
     expect(view.createdAt).toBeTruthy()
     expect(view.updatedAt).toBeTruthy()

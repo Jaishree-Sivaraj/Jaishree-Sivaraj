@@ -7,7 +7,7 @@ import { schema } from './model'
 export TaskSlaLog, { schema } from './model'
 
 const router = new Router()
-const { taskId, currentDate, preferedDate, loggedBy, taskStatus, status } = schema.tree
+const { taskId, currentDate, preferedDate, requestedBy, isAccepted, status } = schema.tree
 
 /**
  * @api {post} /taskSlaLogs Create task sla log
@@ -18,8 +18,8 @@ const { taskId, currentDate, preferedDate, loggedBy, taskStatus, status } = sche
  * @apiParam taskId Task sla log's taskId.
  * @apiParam currentDate Task sla log's currentDate.
  * @apiParam preferedDate Task sla log's preferedDate.
- * @apiParam loggedBy Task sla log's loggedBy.
- * @apiParam taskStatus Task sla log's taskStatus.
+ * @apiParam requestedBy Task sla log's requestedBy.
+ * @apiParam isAccepted Task sla log's isAccepted.
  * @apiSuccess {Object} taskSlaLog Task sla log's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Task sla log not found.
@@ -27,7 +27,7 @@ const { taskId, currentDate, preferedDate, loggedBy, taskStatus, status } = sche
  */
 router.post('/',
   token({ required: true }),
-  body({ taskId, currentDate, preferedDate, loggedBy, taskStatus }),
+  body({ taskId, currentDate, preferedDate, requestedBy, isAccepted }),
   create)
 
 /**
@@ -71,8 +71,8 @@ router.get('/:id',
  * @apiParam taskId Task sla log's taskId.
  * @apiParam currentDate Task sla log's currentDate.
  * @apiParam preferedDate Task sla log's preferedDate.
- * @apiParam loggedBy Task sla log's loggedBy.
- * @apiParam taskStatus Task sla log's taskStatus.
+ * @apiParam requestedBy Task sla log's requestedBy.
+ * @apiParam isAccepted Task sla log's isAccepted.
  * @apiParam status Task sla log's status.
  * @apiSuccess {Object} taskSlaLog Task sla log's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -81,7 +81,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ taskId, currentDate, preferedDate, loggedBy, taskStatus, status }),
+  body({ taskId, currentDate, preferedDate, requestedBy, isAccepted, status }),
   update)
 
 /**
