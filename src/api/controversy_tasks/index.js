@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, newControversyTask } from './controller'
+import { create, index, show, update, destroy, newControversyTask, getMyPendingTasks } from './controller'
 import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
@@ -78,6 +78,23 @@ router.get('/',
 router.get('/:id',
   token({ required: true }),
   show)
+
+/**
+ * @api {get} /controversy_tasks/my/pending-tasks Retrieve my pending controversy tasks
+ * @apiName RetrieveMyPendingControversyTasks
+ * @apiGroup ControversyTasks
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of controversy tasks.
+ * @apiSuccess {Object[]} rows List of controversy tasks.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/my/pending-tasks',
+  token({ required: true }),
+  query(),
+  getMyPendingTasks)
 
 /**
  * @api {put} /controversy_tasks/:id Update controversy tasks
