@@ -94,7 +94,22 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     fiscalYear: body.fiscalYear,
     newSourceTypeName: body.newSourceTypeName,
     newSubSourceTypeName: body.newSubSourceTypeName
-  }
+  } 
+  let sourceDetails = await CompanySources.find({"status": true});
+  let isCompanyExisting = await sourceDetails.find(object => (companySourceDetails.companyId == object.companyId));
+  console.log(isCompanyExisting);
+  if (isCompanyExisting) {
+        await CompanySources.updateOne({ companyId: companySourceDetails.companyId }, { $set: companySourceDetails }, { upsert: true })
+          .then((res.status(200).json({status: ("200"), message: "data updated sucessfully..."})))
+          .catch((error) => {
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to update companyId source details" + companySourceDetails.companyId
+            })
+          });
+  
+  }else{
     await CompanySources.create(companySourceDetails)
       .then((res.status(200).json({ status: ("200"), message: 'data saved sucessfully', data: companySourceDetails })))
+  }
 }
