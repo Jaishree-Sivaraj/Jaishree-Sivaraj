@@ -43,8 +43,6 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
 
 export const getMyPendingTasks = async({ user, querymen: { query, select, cursor } }, res, next) => {
   let findQuery = {};
-  console.log('user.userType', user.userType);
-  console.log('user', user);
   if(user.userType == 'SuperAdmin' || user.userType == 'SubAdmin'){
     findQuery = { taskStatus : { $ne: 'Completed' }, status: true };
   } else {
