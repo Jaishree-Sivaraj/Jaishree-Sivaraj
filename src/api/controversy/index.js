@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, uploadControversies, generateJson, fetchDatapointControversy, addNewControversy } from './controller'
+import { create, index, show, update, destroy, uploadControversies, generateJson, fetchDatapointControversy, addNewControversy, updateControversy } from './controller'
 import { schema } from './model'
 export Controversy, { schema } from './model'
 
@@ -158,6 +158,29 @@ router.put('/:id',
   token({ required: true }),
   body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response ,status}),
   update)
+
+/**
+ * @api {put} /controversies/update/:id Update controversy from UI
+ * @apiName UpdateControversyFromUI
+ * @apiGroup Controversy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam datapointId Controversy's datapointId.
+ * @apiParam companyId Controversy's companyId.
+ * @apiParam year Controversy's year.
+ * @apiParam controversyDetails Controversy's controversyDetails.
+ * @apiParam comments Controversy's comments.
+ * @apiParam submittedDate Controversy's submittedDate.
+ * @apiParam response Controversy's response.
+ * @apiSuccess {Object} controversy Controversy's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Controversy not found.
+ * @apiError 401 user access only.
+ */
+router.put('/update/:id',
+  token({ required: true }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments }),
+  updateControversy)
 
 /**
  * @api {delete} /controversies/:id Delete controversy
