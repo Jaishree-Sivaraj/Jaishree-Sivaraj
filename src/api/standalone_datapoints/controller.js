@@ -367,7 +367,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({
-            taxonomyName: "Acuite"
+            taxonomyName: "B-Taxonomy"
           });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
@@ -453,7 +453,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
               let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let responseValue, hasError, taskID;
+              let responseValue, hasError;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
