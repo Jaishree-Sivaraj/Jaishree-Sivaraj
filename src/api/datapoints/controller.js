@@ -234,7 +234,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    let historyYear = _.uniqBy(historyAllStandaloneDetails, 'year');
     currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
         taskId: req.body.taskId,
         year: {
@@ -580,7 +579,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         });
       }
     } else if(taskDetails.taskStatus == 'Correction') {
-      console.log(taskDetails.taskStatus == 'Collection' );
+      console.log(taskDetails.taskStatus == 'Collection' ,"               ............. ", dpTypeValues);
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {          
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
