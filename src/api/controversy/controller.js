@@ -416,6 +416,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
         dpCode : datapointDetail.code,
         dpCodeId : datapointDetail.id,
         indicator : datapointDetail.name,
+        description : datapointDetail.description,
         keyIssue : datapointDetail.keyIssueId.keyIssueName,
         responseList : ['Very High', 'High', 'Medium', 'Low', 'No'],
         dataType : datapointDetail.dataType,
@@ -435,6 +436,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
             controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
             controversyObject.dpCode = datapointDetail.code;
             controversyObject.dpCodeId = datapointDetail.id;
+            controversyObject.indicator = datapointDetail.indicator;
             controversyObject.description = datapointDetail.description;
             controversyObject.dataType = datapointDetail.dataType;
             controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';
