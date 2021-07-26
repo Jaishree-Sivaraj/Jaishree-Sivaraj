@@ -3,6 +3,8 @@ import { CompanySources } from '.'
 import { result } from 'lodash'
 var fs=require("fs")
 var path=require("path")
+import { SourceSubTypes} from '../source_sub_types'
+import { SourceTypes} from '../sourceTypes'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   CompanySources.create({ ...body, createdBy: user })
@@ -10,14 +12,6 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-// var storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//       cb(null, '../uploads/sources')
-//   },
-//   filename: (req, file, cb) => {
-//       cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-//   }
-// });
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   CompanySources.count(query)
@@ -70,38 +64,63 @@ export const getDocumentsByCompanyId = ({ params }, res, next) =>
   }).catch(next)
 
 export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
-  // const convertedPdf = Buffer.from(body.sourcePDF.toString('utf-8'), 'base64');data:application/pdf;base64
-  // convertedWorkbook = read(body.sourcePDF.replace(/^data:application\/pdf;base64,/, ""));
-  var buf = Buffer.from(body.sourcePDF, 'base64');
-  let converted = buf.toString();
-  // console.log("Converted",converted);
+  const convertedPdf = Buffer.from(body.sourcePDF.split('data:application/pdf;base64,')[1], 'base64');
   let fileName = "file" + Date.now() + ".pdf";
   let fileUrl = path.join(__dirname, "uploads", fileName)
-  await fs.writeFile(fileUrl, converted, error => {
+  await fs.writeFile(fileUrl, convertedPdf, error => {
     if (error) {
       //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
+    } else {
+      console.log("File Stored Sucessfully");
     }
   });
+  let sourceDetails = {
+    newSourceTypeName: body.newSourceTypeName,
+    newSubSourceTypeName: body.newSubSourceTypeName
+  }
+  let newSubSourceTypeId, newSourceTypeId;
+  if (sourceDetails.newSubSourceTypeName != "null") {
+    let subTypeName = body.newSubSourceTypeName;
+    await SourceSubTypes.create({ subTypeName: subTypeName })
+      .then(async (response) => {
+        if (response) {
+          newSubSourceTypeId = response.id;
+        }
+      })
+      .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+  }
+
+  if (sourceDetails.newSourceTypeName != 'null') {
+    let sourceObject = {
+      typeName: body.newSourceTypeName,
+      subSourceTypeId: newSubSourceTypeId,
+      isMultiYear: body.isMultiYear,
+      isMultiSource: body.isMultiSource
+    }
+    await SourceTypes.create(sourceObject)
+      .then(async (sourceResponse) => {
+        if (sourceResponse) {
+          newSourceTypeId = sourceResponse.id;
+        }
+      })
+  }
+  if (body.sourceSubTypeId) {
+    newSubSourceTypeId = body.sourceSubTypeId;
+  }
+
   let companySourceDetails = {
     companyId: body.companyId,
-    sourceTypeId: body.sourceTypeId,
+    sourceTypeId: newSourceTypeId,
     isMultiYear: body.isMultiYear,
     isMultiSource: body.isMultiSource,
     sourceUrl: body.url,
-    sourceSubTypeId: body.sourceSubTypeId,
+    sourceSubTypeId: newSubSourceTypeId,
     sourceFile: fileUrl,
     publicationDate: body.publicationDate,
-    fiscalYear: body.fiscalYear,
-    newSourceTypeName: body.newSourceTypeName,
-    newSubSourceTypeName: body.newSubSourceTypeName
-  } 
-  let sourceDetails = await CompanySources.find({"status": true});
-  let isCompanyExisting = await sourceDetails.find(object => (companySourceDetails.companyId == object.companyId));
-  if (isCompanyExisting) {
-        await CompanySources.updateOne({ companyId: companySourceDetails.companyId }, { $set: companySourceDetails }, { upsert: true })
-          .then((res.status(200).json({ status: ("200"), message: "data updated sucessfully...!", data: companySourceDetails })))
-  }else{
-    await CompanySources.create(companySourceDetails)
-      .then((res.status(200).json({ status: ("200"), message: 'data saved sucessfully', data: companySourceDetails })))
+    fiscalYear: body.fiscalYear
   }
+  await CompanySources.create(companySourceDetails)
+    .then((detail) => {
+      res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
+    });
 }
