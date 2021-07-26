@@ -180,7 +180,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+     // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId,
       status: true
     }).distinct('dpType');
