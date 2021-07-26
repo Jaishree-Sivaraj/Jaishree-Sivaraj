@@ -12,18 +12,31 @@ export const login = async ({ user }, res, next) => {
     .then(async (response) => {
       console.log('user ' + user)
       if (user) {
-        let roleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
-        let userDetail = await User.findOne({
+        let superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+        let adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+        let userDetailType1 = await User.findOne({
           _id: user.id,
           isUserActive: true,
           isUserApproved: true,
           status: true,
           '$or': [{
-            'roleDetails.roles': { '$in': [roleDetails.id] }  //
-          }, { 'roleDetails.primaryRole': roleDetails.id }]
+            'roleDetails.roles': { '$in': [superAdminRoleDetails.id] }
+          }, { 'roleDetails.primaryRole': superAdminRoleDetails.id }]
         }).populate({ path: 'roleDetails.roles' }).
           populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
-        if (userDetail) {
+          
+        let userDetailType2 = await User.findOne({
+          _id: user.id,
+          isUserActive: true,
+          isUserApproved: true,
+          status: true,
+          '$or': [{
+            'roleDetails.roles': { '$in': [adminRoleDetails.id] }
+          }, { 'roleDetails.primaryRole': adminRoleDetails.id }]
+        }).populate({ path: 'roleDetails.roles' }).
+          populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+
+        if (userDetailType1 || userDetailType2) {
           //Generating 4 digit random number for OTP
           let otpNumber = Math.floor(1000 + Math.random() * 9000);
           //update the otp value in user data

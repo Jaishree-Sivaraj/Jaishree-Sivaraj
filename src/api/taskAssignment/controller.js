@@ -681,6 +681,14 @@ export const getGroupAndBatches = async ({
       message: error.message
     })
   });
+  var adminRoleDetails = await Role.findOne({
+    roleName: "Admin"
+  }).catch(() => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message
+    })
+  });
   console.log("groupRoleDetails", groupRoleDetails);
   var userDetailWithGroupAdminRole = await User.findOne({
     _id: user.id,
@@ -753,10 +761,10 @@ export const getGroupAndBatches = async ({
       _id: user.id,
       '$or': [{
         'roleDetails.roles': {
-          '$in': [superAdminRoleDetails.id]
+          '$in': [superAdminRoleDetails.id, adminRoleDetails ? adminRoleDetails.id : null]
         }
       }, {
-        'roleDetails.primaryRole': superAdminRoleDetails.id
+        'roleDetails.primaryRole': { '$or': [ superAdminRoleDetails.id, adminRoleDetails ? adminRoleDetails.id : null ] }
       }]
     }).populate({
       path: 'roleDetails.roles'
