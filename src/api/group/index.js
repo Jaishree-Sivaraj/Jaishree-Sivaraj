@@ -87,8 +87,8 @@ router.get('/my-groups/:groupAdmin',
   getGroupsOfAnAdmin)
 
 /**
- * @api {get} /groups/:id Retrieve group
- * @apiName RetrieveGroup
+ * @api {get} /groups/:id Retrieve group by id
+ * @apiName RetrieveGroupById
  * @apiGroup Group
  * @apiPermission user
  * @apiParam {String} access_token user access token.

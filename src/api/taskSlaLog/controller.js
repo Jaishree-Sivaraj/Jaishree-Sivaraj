@@ -10,8 +10,8 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   TaskSlaLog.count(query)
     .then(count => TaskSlaLog.find(query, select, cursor)
-      .populate('createdBy')
-      .populate('taskId')
+    .populate('taskId')
+    .populate('createdBy')
       .then((taskSlaLogs) => ({
         count,
         rows: taskSlaLogs.map((taskSlaLog) => taskSlaLog.view())
@@ -22,8 +22,8 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const show = ({ params }, res, next) =>
   TaskSlaLog.findById(params.id)
-    .populate('createdBy')
-    .populate('taskId')
+  .populate('taskId')
+  .populate('createdBy')
     .then(notFound(res))
     .then((taskSlaLog) => taskSlaLog ? taskSlaLog.view() : null)
     .then(success(res))
@@ -31,8 +31,8 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   TaskSlaLog.findById(params.id)
-    .populate('createdBy')
-    .populate('taskId')
+  .populate('taskId')
+  .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((taskSlaLog) => taskSlaLog ? Object.assign(taskSlaLog, body).save() : null)
