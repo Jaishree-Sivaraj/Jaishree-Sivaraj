@@ -38,14 +38,6 @@ const companySourcesSchema = new Schema({
   fiscalYear: {
     type: String
   },
-  newSourceTypeName: {
-    type: String,
-    default: null
-  },
-  newSubSourceTypeName: {
-    type: String,
-    default: null
-  },
   status: {
     type: String,
     default: true

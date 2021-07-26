@@ -6,14 +6,14 @@ import { schema } from './model'
 export CompanySources, { schema } from './model'
 
 const router = new Router()
-const { sourceTypeId, url, sourceFile, publicationDate, companyId, sourcePDF, isMultiYear, isMultiSource, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName } = schema.tree
+const { sourceTypeId, url, sourceFile, publicationDate, companyId, isMultiYear, isMultiSource, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF } = schema.tree
 
 /**
  * @api {post} /companySources Create company sources
  * @apiName CreateCompanySources
  * @apiGroup CompanySources
  * @apiParam sourceTypeId Company sources's sourceTypeId.
- * @apiParam sourceUrl Company sources's sourceUrl.
+ * @apiParam sourceurl Company sources's sourceurl.
  * @apiParam sourceFile Company sources's sourceFile.
  * @apiParam publicationDate Company sources's publicationDate.
  * @apiSuccess {Object} companySources Company sources's data.
@@ -29,16 +29,22 @@ router.post('/',
  * @api {post} /companySources/uploadCompanySource Create company sources
  * @apiName CreateCompanySources
  * @apiGroup CompanySources
+ * @apiParam companyId Company sources's companyId.
  * @apiParam sourceTypeId Company sources's sourceTypeId.
- * @apiParam sourceUrl Company sources's sourceUrl.
- * @apiParam sourceFile Company sources's sourceFile.
  * @apiParam publicationDate Company sources's publicationDate.
+ * @apiParam isMultiYear Company sources's isMultiYear.
+ * @apiParam isMultiSource Company sources's isMultiSource.
+ * @apiParam url Company sources's url.
+ * @apiParam sourceFile Company sources's sourceFile.
+ * @apiParam sourcePDF Company sources's sourcePDF.
+ * @apiParam subSourceTypeId Company sources's subSourceTypeId.
+ * @apiParam fiscalYear Company sources's fiscalYear.
  * @apiSuccess {Object} companySources Company sources's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Company sources not found.
  */
  router.post('/uploadCompanySource',
- body({ companyId, sourceTypeId, publicationDate, sourcePDF, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName }),
+ body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF }),
  uploadCompanySource)
 
 
@@ -82,7 +88,7 @@ router.get('/:id',
  * @apiName UpdateCompanySources
  * @apiGroup CompanySources
  * @apiParam sourceTypeId Company sources's sourceTypeId.
- * @apiParam sourceUrl Company sources's sourceUrl.
+ * @apiParam sourceurl Company sources's sourceurl.
  * @apiParam sourceFile Company sources's sourceFile.
  * @apiParam publicationDate Company sources's publicationDate.
  * @apiSuccess {Object} companySources Company sources's data.
