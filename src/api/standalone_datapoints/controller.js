@@ -455,17 +455,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue, hasError, taskID;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
-              if (item['Category'].replace('\r\n', '').toLowerCase() == 'social') {
-                taskID = '60e7f2d7084b82171c5f48ca';
-              } else if (item['Category'].replace('\r\n', '').toLowerCase() == 'environmental') {
-                taskID = '60e7fdbd934e45057cb231b5';
-              } else {
-                taskID = '60ebdbf47818180854f0fa21'
-              }
+              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 console.log(item);
                 console.log(categoriesObjectValues)
-                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -531,7 +524,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 hasCorrection: false,
                 performanceResult: '',
                 standaloneStatus: '',
-                taskId: taskID,
+                taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
                 submittedBy: '',
                 submittedDate: '',
                 standaradDeviation: '',
@@ -640,7 +633,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   comments: [],
                   hasError: hasError,
                   hasCorrection: false,
-                  taskId: '60ebdbf47818180854f0fa21',
+                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
                   memberStatus: true,
                   status: true,
                   createdBy: userDetail
@@ -774,7 +767,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   hasCorrection: false,
                   comments: [],
                   hasError: hasError,
-                  taskId: '60ebdbf47818180854f0fa21',
+                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
                   status: true,
                   createdBy: userDetail
                 };

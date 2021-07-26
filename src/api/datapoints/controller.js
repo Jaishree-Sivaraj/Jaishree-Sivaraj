@@ -705,15 +705,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
                   kmpDatapointsObject.memberName = object.label;
                   kmpDatapointsObject.memberId = object.value; 
+                  kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
+                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                 }
               })
-              let memberIndex = kmpDpCodesData.dpCodesData.findIndex((obj) => obj.dpCodeId == errorkmpDatapoints[errorDpIndex].datapointId.id && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName && !obj.fiscalYear.includes(errorkmpDatapoints[errorDpIndex].year))
-              if(memberIndex > 0){
-                kmpDpCodesData.dpCodesData[memberIndex].fiscalYear = kmpDpCodesData.dpCodesData[memberIndex].fiscalYear + ','+ errorkmpDatapoints[errorDpIndex].year;
-              } else{
-                kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
-              kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-              }
+              // let memberIndex = kmpDpCodesData.dpCodesData.findIndex((obj) => obj.dpCodeId == errorkmpDatapoints[errorDpIndex].datapointId.id && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName && obj.fiscalYear.includes(errorkmpDatapoints[errorDpIndex].year))
+              // if(memberIndex >= 0){
+              //   kmpDpCodesData.dpCodesData[memberIndex].fiscalYear = kmpDpCodesData.dpCodesData[memberIndex].fiscalYear + ','+ errorkmpDatapoints[errorDpIndex].year;
+              // } else{
+              // kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
+              // kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+              // }
             //}
             }
           } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
@@ -835,6 +837,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
               taskId: req.params.taskId,
+              year:{
+                $in:currentYear
+              },
               hasCorrection: true,              
               status: true
             }).populate([{
@@ -853,14 +858,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                     keyIssue: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                    pillarId: errorboardDatapoints[errorDpIndex].datapointId.categoryId.id,
-                    pillar: errorboardDatapoints[errorDpIndex].datapointId.categoryId.categoryName,
                     fiscalYear: errorboardDatapoints[errorDpIndex].year,
                     memberName: object.label,
                     memberId: object.value
                   }
                   boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-
                 }
               })
             }
@@ -895,6 +897,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
             let errorkmpDatapoints = await BoardMembersMatrixDataPoints.find({
               taskId: req.params.taskId,
+              companyId: taskDetails.companyId.id,
+              year:{
+                $in:currentYear
+              },
               hasCorrection: true,
               status: true
             }).populate([{
@@ -913,21 +919,21 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                     keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                    pillarId: errorkmpDatapoints[errorDpIndex].datapointId.categoryId.id,
-                    pillar: errorkmpDatapoints[errorDpIndex].datapointId.categoryId.categoryName,
                     fiscalYear: errorkmpDatapoints[errorDpIndex].year,
                     memberName: object.label,
                     memberId: object.value
                   }
                   kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-
                 }
               });
             }
-          } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
+          } else if(dpTypeValues[dpTypeIndex] == 'Standalone') {
 
             let errorDatapoints = await StandaloneDatapoints.find({
               taskId: req.params.taskId,
+              year:{
+                $in:currentYear
+              },
               hasCorrection: true,
               status: true
             }).populate([{
@@ -945,12 +951,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                 keyIssue: errorDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                pillarId: errorDatapoints[errorDpIndex].datapointId.categoryId.id,
-                pillar: errorDatapoints[errorDpIndex].datapointId.categoryId.categoryName,
-                fiscalYear: errorDatapoints[errorDpIndex].year,
-                currentData: [],
-                historicalData: [],
-                status: ''
+                fiscalYear: errorDatapoints[errorDpIndex].year
               }
               dpCodesData.push(datapointsObject);
             }
@@ -969,6 +970,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
             taskId: req.params.taskId,
+            companyId:taskDetails.companyId.id,
             hasError: true,
             status: true
           }).populate([{
@@ -986,81 +988,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               companyName: taskDetails.companyId.companyName,
               keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
               keyIssue: errorDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-              pillarId: errorDatapoints[errorDpIndex].datapointId.categoryId.id,
-              pillar: errorDatapoints[errorDpIndex].datapointId.categoryId.categoryName,
-              fiscalYear: taskDetails.year,
-              currentData: [],
-              historicalData: [],
-              status: ''
-            }
-            for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-              let currentDatapointsObject = {};
-              _.filter(errorDatapoints, function (object) {
-                if (object.datapointId.id == errorDatapoints[errorDpIndex].datapointId.id && object.year == currentYear[currentYearIndex] && object.hasCorrection == true) {
-
-                  let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == errorDatapoints[errorDpIndex].datapointId.id && obj.year == currentYear[currentYearIndex])
-                  currentDatapointsObject = {
-                    status: 'Completed',
-                    dpCode: errorDatapoints[errorDpIndex].datapointId.code,
-                    dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-                    fiscalYear: currentYear[currentYearIndex],
-                    description: errorDatapoints[errorDpIndex].datapointId.description,
-                    dataType: errorDatapoints[errorDpIndex].datapointId.dataType,
-                    textSnippet: object.textSnippet,
-                    pageNo: object.pageNumber,
-                    screenShot: object.screenShot,
-                    response: object.response,
-                    memberName: object.memberName,
-                    hasCorrection: object.hasCorrection,
-                    source: {
-                      url: object.url ? object.url : '',
-                      sourceName: object.sourceName ? object.sourceName : '',
-                      publicationDate: object.publicationDate ? object.publicationDate : ''
-                    },
-                    error: {
-                      errorType: {
-                        label: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
-                        value: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : ''
-                      },
-                      errorComments: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
-                      errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
-                    },
-                    comments: []
-                  }
-                  datapointsObject.currentData.push(currentDatapointsObject);
-                }
-              })
-
-            }
-
-            for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
-              let historicalDatapointsObject = {};
-              _.filter(errorDatapoints, function (object) {
-                if (object.datapointId.id == errorDatapoints[errorDpIndex].datapointId.id && object.year == historyYear[hitoryYearIndex].year) {
-                  historicalDatapointsObject = {
-                    status: 'Completed',
-                    dpCode: errorDatapoints[errorDpIndex].datapointId.code,
-                    dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-                    fiscalYear: historyYear[hitoryYearIndex].year,
-                    description: errorDatapoints[errorDpIndex].datapointId.description,
-                    dataType: errorDatapoints[errorDpIndex].datapointId.dataType,
-                    textSnippet: object.textSnippet,
-                    pageNo: object.pageNumber,
-                    screenShot: object.screenShot,
-                    response: object.response,
-                    standaradDeviation: object.standaradDeviation,
-                    average: object.average,
-                    source: {
-                      url: object.url ? object.url : '',
-                      sourceName: object.sourceName ? object.sourceName : '',
-                      publicationDate: object.publicationDate ? object.publicationDate : ''
-                    },
-                    error: {},
-                    comments: []
-                  }
-                  datapointsObject.historicalData.push(historicalDatapointsObject);
-                }
-              });
+              fiscalYear: errorDatapoints[errorDpIndex].year,
             }
             dpCodesData.push(datapointsObject);
 
