@@ -391,7 +391,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               status: true
             });
             let taskObject = await TaskAssignment.find({
-              taskStatus: "Yet to start",
               status: true
             });
             let errorTypeDetails = await Errors.find({
