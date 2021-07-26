@@ -42,8 +42,20 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
 }
 
 export const getMyPendingTasks = async({ user, querymen: { query, select, cursor } }, res, next) => {
+  let userTypeDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true,
+    isUserApproved: true,
+    status: true,
+    '$or': [{
+      'roleDetails.roles': { '$in': [userTypeDetail.id] }
+    }, { 'roleDetails.primaryRole': userTypeDetail.id }]
+  })
+  .populate({ path: 'roleDetails.roles' })
+  .populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+
   let findQuery = {};
-  if(user.userType == 'SuperAdmin' || user.userType == 'SubAdmin'){
+  if(user.userType == 'SuperAdmin' || userTypeDetail || Object.keys(userTypeDetail).length > 0){
     findQuery = { taskStatus : { $ne: 'Completed' }, status: true };
   } else {
     findQuery = { analystId: user, taskStatus : { $ne: 'Completed' }, status: true };
