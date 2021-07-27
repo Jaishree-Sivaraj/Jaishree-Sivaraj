@@ -367,7 +367,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({
-            taxonomyName: "B-Taxonomy"
+            taxonomyName: "Acuite"
           });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
@@ -956,6 +956,18 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     //  console.log('result', result);
                   }
                 });
+                await ErrorDetails.updateMany({
+                  "companyId": {
+                    $in: insertedCompanyIds
+                  },
+                  "year": {
+                    $in: distinctYears
+                  }
+                }, {
+                  $set: {
+                    status: false
+                  }
+                }, {});
               await ErrorDetails.insertMany(errorDetails).then((err, result) => {
                 if (err) {
                   console.log('error', err);
