@@ -753,9 +753,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       status: "500", message: error.message,
     });
   });
-  var adminRoleDetails = await Role.findOne({
-    roleName: "Admin",
-  }).catch(() => {
+  var adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => {
     return res.status(500).json({
       status: "500",
       message: error.message,
@@ -767,13 +765,13 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
     '$or': [
       {
         "roleDetails.roles": {
-          $in: [groupRoleDetails.id],
-        },
+          '$in': [groupRoleDetails.id],
+        }
       },
       {
         "roleDetails.primaryRole": groupRoleDetails.id,
-      },
-    ],
+      }
+    ]
   }).populate({
     path: "roleDetails.roles",
   }).populate({
@@ -808,7 +806,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             }).catch((err) => {
               return res.status(500).json({
                 status: "500",
-                message: err.message,
+                message: err.message
               });
             });
             var assignedBatches = group[index].batchList.map((rec) => {
@@ -818,10 +816,10 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                 pillars: categories.map((rec) => {
                   return {
                     value: rec.id,
-                    label: rec.categoryName,
+                    label: rec.categoryName
                   };
                 }),
-                batchYear: rec.years,
+                batchYear: rec.years
               };
             });
             resObject.assignedBatches = assignedBatches ? assignedBatches : [];
@@ -829,13 +827,13 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           resArray.push(resObject);
         }
         return res.status(200).json({
-          groups: resArray,
+          groups: resArray
         });
       })
       .catch((err) => {
         return res.status(500).json({
           status: "500",
-          message: err.message,
+          message: err.message
         });
       });
   } else {
@@ -846,27 +844,27 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           "roleDetails.roles": {
             $in: [
               superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null,
-            ],
-          },
+              adminRoleDetails ? adminRoleDetails.id : null
+            ]
+          }
         },
         {
           "roleDetails.primaryRole": {
             $or: [
               superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null,
-            ],
-          },
-        },
-      ],
+              adminRoleDetails ? adminRoleDetails.id : null
+            ]
+          }
+        }
+      ]
     }).populate({
-      path: "roleDetails.roles",
+      path: "roleDetails.roles"
     }).populate({
-      path: "roleDetails.primaryRole",
+      path: "roleDetails.primaryRole"
     }).catch((error) => {
       return res.status(500).json({
         status: "500",
-        message: error.message,
+        message: error.message
       });
     });
     console.log('userDetailWithSuperAdminRole', userDetailWithSuperAdminRole);
@@ -882,17 +880,13 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resObject.groupName = group[index].groupName;
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
-            for (
-              let index1 = 0;
-              index1 < group[index].batchList.length;
-              index1++
-            ) {
+            for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
               var categories = await Categories.find({
                 clientTaxonomyId: group[index].batchList[index1].clientTaxonomy,
               }).catch((err) => {
                 return res.status(500).json({
                   status: "500",
-                  message: err.message,
+                  message: err.message
                 });
               });
               var assignedBatches = group[index].batchList.map((rec) => {
@@ -902,10 +896,10 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                   pillars: categories.map((rec) => {
                     return {
                       value: rec.id,
-                      label: rec.categoryName,
+                      label: rec.categoryName
                     };
                   }),
-                  batchYear: rec.years,
+                  batchYear: rec.years
                 };
               });
               resObject.assignedBatches = assignedBatches
@@ -915,12 +909,12 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resArray.push(resObject);
           }
           return res.status(200).json({
-            groups: resArray,
+            groups: resArray
           });
         });
     } else {
       return res.status(200).json({
-        groups: [],
+        groups: []
       });
     }
   }
