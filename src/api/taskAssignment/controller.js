@@ -764,7 +764,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
   console.log("groupRoleDetails", groupRoleDetails);
   var userDetailWithGroupAdminRole = await User.findOne({
     _id: user.id,
-    $or: [
+    '$or': [
       {
         "roleDetails.roles": {
           $in: [groupRoleDetails.id],
@@ -774,28 +774,22 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
         "roleDetails.primaryRole": groupRoleDetails.id,
       },
     ],
-  })
-    .populate({
-      path: "roleDetails.roles",
-    })
-    .populate({
-      path: "roleDetails.primaryRole",
-    })
-    .catch((error) => {
-      return res.status(500).json({
-        status: "500",
-        message: error.message,
-      });
+  }).populate({
+    path: "roleDetails.roles",
+  }).populate({
+    path: "roleDetails.primaryRole",
+  }).catch((error) => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message,
     });
-  if (
-    userDetailWithGroupAdminRole &&
-    Object.keys(userDetailWithGroupAdminRole).length > 0
-  ) {
+  });
+  console.log('userDetailWithGroupAdminRole', userDetailWithGroupAdminRole);
+  if (userDetailWithGroupAdminRole && Object.keys(userDetailWithGroupAdminRole).length > 0) {
     console.log("in group admin");
     await Group.find({
       groupAdmin: userDetailWithGroupAdminRole._id,
-    })
-      .populate("assignedMembers")
+    }).populate("assignedMembers")
       .populate("batchList")
       .then(async (group) => {
         var resArray = [];
@@ -847,7 +841,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
   } else {
     var userDetailWithSuperAdminRole = await User.findOne({
       _id: user.id,
-      $or: [
+      '$or': [
         {
           "roleDetails.roles": {
             $in: [
@@ -865,24 +859,21 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           },
         },
       ],
-    })
-      .populate({
-        path: "roleDetails.roles",
-      })
-      .populate({
-        path: "roleDetails.primaryRole",
-      })
-      .catch((error) => {
-        return res.status(500).json({
-          status: "500",
-          message: error.message,
-        });
+    }).populate({
+      path: "roleDetails.roles",
+    }).populate({
+      path: "roleDetails.primaryRole",
+    }).catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
       });
+    });
+    console.log('userDetailWithSuperAdminRole', userDetailWithSuperAdminRole);
     if (userDetailWithSuperAdminRole) {
       await Group.find({
         status: true,
-      })
-        .populate("assignedMembers")
+      }).populate("assignedMembers")
         .populate("batchList")
         .then(async (group) => {
           var resArray = [];
