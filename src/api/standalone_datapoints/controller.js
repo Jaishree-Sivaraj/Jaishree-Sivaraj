@@ -367,7 +367,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({
-            taxonomyName: "A-Taxonomy"
+            taxonomyName: "Acuite"
           });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
@@ -580,9 +580,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
+              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -710,11 +710,11 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
+              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 console.log(item);
                 console.log(categoriesObjectValues)
-                let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -770,6 +770,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   status: true,
                   createdBy: userDetail
                 };
+                console.log(kmpMembersList, memberDetail)
                 kmpMembersList.push(memberDetail);
               });
 
