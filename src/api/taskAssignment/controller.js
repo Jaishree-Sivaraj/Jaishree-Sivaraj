@@ -849,12 +849,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           }
         },
         {
-          "roleDetails.primaryRole": {
-            '$or': [
-              superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null
-            ]
-          }
+          "roleDetails.primaryRole": superAdminRoleDetails.id
         }
       ]
     }).populate({
