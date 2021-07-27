@@ -6,6 +6,7 @@ import { BatchWisePillarAssignment } from '../batchWisePillarAssignment'
 import { json } from 'body-parser'
 import { Batches } from '../batches'
 import { Categories } from '../categories'
+import { UserPillarAssignments } from '../user_pillar_assignments'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -175,8 +176,8 @@ export const show = async({ params }, res, next) => {
           for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
             let obj = group.batchList[batchIndex];
             if (obj && Object.keys(obj).length > 0) {
-              batchObjects.push({ value: obj._id, label: obj.batchName });
               let batchDetail = await Batches.findOne({"_id": obj._id}).populate('clientTaxonomy');
+              batchObjects.push({ value: obj._id, label: obj.batchName, taxonomy:{ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName } });
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
@@ -192,18 +193,80 @@ export const show = async({ params }, res, next) => {
             }
           }        
         }
-        let memberObjects = [];
-        group.assignedMembers.forEach(obj => {
-          memberObjects.push({ value: obj.id, label: obj.name });
-        })
+        let admin = {};
+        let adminDetail = await User.findById(group.groupAdmin ? group.groupAdmin.id : null)
+        .populate({ path: 'roleDetails.roles' })
+        .populate({ path: 'roleDetails.primaryRole' });
+        if (adminDetail) {
+          admin = {
+            userDetails: {
+              value: group.groupAdmin.id,
+              label: adminDetail.name,
+            },
+            roleDetails: {
+              role: adminDetail.roleDetails.roles.map((rec) => {
+                return { value: rec.id, label: rec.roleName }
+              }),
+              primaryRole: { value: adminDetail.roleDetails.primaryRole ? adminDetail.roleDetails.primaryRole.id : null, label: adminDetail.roleDetails.primaryRole ? adminDetail.roleDetails.primaryRole.roleName : null }
+            }
+          };
+        }
+        let memberObjects = [], membersForPillar = [];
+        for (let amIndex = 0; amIndex < group.assignedMembers.length; amIndex++) {
+          const obj = group.assignedMembers[amIndex];
+          let member = {}, pillarMember = {};
+          let memberDetail = await User.findById(obj ? obj.id : null)
+          .populate({ path: 'roleDetails.roles' })
+          .populate({ path: 'roleDetails.primaryRole' });
+          if (memberDetail) {
+            member = {
+              userDetails: {
+                value: obj.id,
+                label: memberDetail.name,
+              },
+              roleDetails: {
+                role: memberDetail.roleDetails.roles.map((rec) => {
+                  return { value: rec.id, label: rec.roleName }
+                }),
+                primaryRole: { value: memberDetail.roleDetails.primaryRole ? memberDetail.roleDetails.primaryRole.id : null, label: memberDetail.roleDetails.primaryRole ? memberDetail.roleDetails.primaryRole.roleName : null }
+              }
+            };
+            memberObjects.push(member)
+            let pillarDetail = await UserPillarAssignments.findOne({ userId: obj.id, status: true })
+            .populate('userId')
+            .populate('primaryPillar')
+            .populate('secondaryPillar')
+            if (pillarDetail) {
+              pillarMember = {
+                value: obj.id,
+                label: obj.name,
+                isPillarAssigned: true,
+                primaryPillar: pillarDetail.primaryPillar,
+                secondaryPillar: pillarDetail.secondaryPillar
+              }
+            } else {
+              pillarMember = {
+                value: obj.id,
+                label: obj.name,
+                isPillarAssigned: false,
+                primaryPillar: {},
+                secondaryPillar: []
+              }
+            }
+            membersForPillar.push(pillarMember);
+          } else {
+            memberObjects.push({ userDetails: { value: obj.id, label: obj.name } });
+          }
+        }
         let responseObject = {
           _id: group.id,
           groupName: group.groupName,
           assignBatch: batchObjects,
-          assignMembers: memberObjects,
+          memberforgrpEdit: memberObjects,
+          memberForPillar: membersForPillar,
           taxonomyList: groupTaxonomies ? groupTaxonomies : [],
           pillarList: pillarList,
-          admin: { value: group.groupAdmin.id, label: group.groupAdmin.name }
+          admin: admin
         }
         return res.status(200).json({ status: "200", message: "Retrieved group successfully!", data: responseObject });
       } else {
