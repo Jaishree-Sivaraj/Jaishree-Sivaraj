@@ -736,6 +736,21 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next);
 
+
+export const updateSlaDates = ({ user, bodymen: { body }, params }, res, next) => {
+  TaskAssignment.updateOne({ _id: params.id }, { $set: body.taskDetails }).then(function (updatedRecord) {
+    res.send({
+      status: 200,
+      message: 'Task updated successfully'
+    })
+  }).catch((err) => {
+    return res.status(500).json({
+      status: "500",
+      message: err.message
+    });
+  });
+}
+
 export const destroy = ({ user, params }, res, next) =>
   TaskAssignment.findById(params.id)
     .then(notFound(res))
