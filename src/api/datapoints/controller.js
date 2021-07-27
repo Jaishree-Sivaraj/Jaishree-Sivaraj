@@ -586,6 +586,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
+              year:{
+                $in:currentYear
+              },
               hasError: true,              
               status: true
             }).populate([{
@@ -647,11 +650,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           } else if(dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
-            console.log(dpTypeValues[dpTypeIndex]);
-           
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
+              year:{
+                $in:currentYear
+              },
               hasError: true,
               status: true
             }).populate([{
@@ -696,7 +700,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   companyName: taskDetails.companyId.companyName,
                   keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                   keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                  fiscalYear: '',
+                  fiscalYear: [],
                   memberName: '',
                   memberId: ''
                 }
@@ -704,7 +708,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
                   kmpDatapointsObject.memberName = object.label;
                   kmpDatapointsObject.memberId = object.value; 
-                  kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
+                  kmpDatapointsObject.fiscalYear.push(errorkmpDatapoints[errorDpIndex].year);                    
                   kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                 }
               })
