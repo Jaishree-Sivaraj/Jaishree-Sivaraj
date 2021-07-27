@@ -15,8 +15,7 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const addNewControversy = async({ user, bodymen: { body }, res, next }) => {
-  console.log('addNewControversy function called!');
+export const addNewControversy = async({ user, bodymen: { body } }, res, next) => {
   try {
     if (body) {
       let lastControversy = await Controversy.findOne({status: true}).sort({createdAt: -1}).limit(1);
@@ -56,6 +55,42 @@ export const addNewControversy = async({ user, bodymen: { body }, res, next }) =
     }    
   } catch (error) {
     return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
+  }
+}
+
+export const updateControversy = async({ user, bodymen: { body }, params }, res, next) => {
+  try {
+    if (body) {
+      let controversyObject = {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        sourceName: body.source.sourceName,
+        sourceURL: body.source.url,
+        sourcePublicationDate: body.source.publicationDate,
+        publicationDate: '',
+        response: body.response,
+        textSnippet: body.textSnippet,
+        pageNumber: body.pageNo,
+        screenShot: body.screenShot,
+        comments: body.comments,
+        controversyDetails: [],
+        submittedDate: Date.now(),
+        status: true,
+        createdBy: user
+      };
+      await Controversy.updateOne({ _id: params.id}, { $set: controversyObject })
+      .then((controversyDetail) => {
+        return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update controversy!' });
+      })
+    } else {
+      return res.status(400).json({ status: "400", message: "Some fields are missing!" });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update controversy!' });
   }
 }
 
@@ -381,6 +416,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
         dpCode : datapointDetail.code,
         dpCodeId : datapointDetail.id,
         indicator : datapointDetail.name,
+        description : datapointDetail.description,
         keyIssue : datapointDetail.keyIssueId.keyIssueName,
         responseList : ['Very High', 'High', 'Medium', 'Low', 'No'],
         dataType : datapointDetail.dataType,
@@ -396,9 +432,11 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           let responseValue = 0, responseList = [0];
           for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
             let controversyObject = {};
+            controversyObject.id = controversyList[cIndex].id;
             controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
             controversyObject.dpCode = datapointDetail.code;
             controversyObject.dpCodeId = datapointDetail.id;
+            controversyObject.indicator = datapointDetail.indicator;
             controversyObject.description = datapointDetail.description;
             controversyObject.dataType = datapointDetail.dataType;
             controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';

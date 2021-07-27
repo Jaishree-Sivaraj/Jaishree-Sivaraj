@@ -745,16 +745,16 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next);
 
 export const getGroupAndBatches = async ({ user, params }, res, next) => {
-  var groupRoleDetails = await Role.findOne({
-    roleName: "GroupAdmin",
-  }).catch(() => {
+  var groupRoleDetails = await Role.findOne({ roleName: "GroupAdmin" }).catch(() => {
+    return res.status(500).json({ status: "500", message: error.message, });
+  });
+  var superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => {
     return res.status(500).json({
-      status: "500",
-      message: error.message,
+      status: "500", message: error.message,
     });
   });
-  var superAdminRoleDetails = await Role.findOne({
-    roleName: "SuperAdmin",
+  var adminRoleDetails = await Role.findOne({
+    roleName: "Admin",
   }).catch(() => {
     return res.status(500).json({
       status: "500",
@@ -782,13 +782,11 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       path: "roleDetails.primaryRole",
     })
     .catch((error) => {
-      console.log("err", error);
       return res.status(500).json({
         status: "500",
         message: error.message,
       });
     });
-  console.log("userDetailWithGroupAdminRole", userDetailWithGroupAdminRole);
   if (
     userDetailWithGroupAdminRole &&
     Object.keys(userDetailWithGroupAdminRole).length > 0
@@ -852,11 +850,19 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       $or: [
         {
           "roleDetails.roles": {
-            $in: [superAdminRoleDetails.id],
+            $in: [
+              superAdminRoleDetails.id,
+              adminRoleDetails ? adminRoleDetails.id : null,
+            ],
           },
         },
         {
-          "roleDetails.primaryRole": superAdminRoleDetails.id,
+          "roleDetails.primaryRole": {
+            $or: [
+              superAdminRoleDetails.id,
+              adminRoleDetails ? adminRoleDetails.id : null,
+            ],
+          },
         },
       ],
     })
@@ -867,13 +873,11 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
         path: "roleDetails.primaryRole",
       })
       .catch((error) => {
-        console.log(error);
         return res.status(500).json({
           status: "500",
           message: error.message,
         });
       });
-    console.log("userDetailWithSuperAdminRole", userDetailWithSuperAdminRole);
     if (userDetailWithSuperAdminRole) {
       await Group.find({
         status: true,

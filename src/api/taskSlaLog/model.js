@@ -17,11 +17,12 @@ const taskSlaLogSchema = new Schema({
   preferedDate: {
     type: String
   },
-  loggedBy: {
+  requestedBy: {
     type: String
   },
-  taskStatus: {
-    type: String
+  isAccepted: {
+    type: Boolean,
+    default: false
   },
   status: {
     type: String
@@ -39,13 +40,13 @@ taskSlaLogSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       taskId: this.taskId ? this.taskId.view(full) : null ,
       currentDate: this.currentDate,
       preferedDate: this.preferedDate,
-      loggedBy: this.loggedBy,
-      taskStatus: this.taskStatus,
+      requestedBy: this.requestedBy,
+      isAccepted: this.isAccepted,
       status: this.status,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

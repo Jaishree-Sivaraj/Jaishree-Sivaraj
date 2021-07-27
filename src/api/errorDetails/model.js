@@ -21,6 +21,9 @@ const errorDetailsSchema = new Schema({
   year: {
     type: String
   },
+  memberName: {
+    type: String
+  },
   companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',

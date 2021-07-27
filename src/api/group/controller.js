@@ -5,6 +5,7 @@ import { User } from '../user'
 import { BatchWisePillarAssignment } from '../batchWisePillarAssignment'
 import { json } from 'body-parser'
 import { Batches } from '../batches'
+import { Categories } from '../categories'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Group.create({ ...body, createdBy: user })
@@ -168,7 +169,7 @@ export const show = async({ params }, res, next) => {
     .populate('batchList')
     .populate('assignedMembers')
     .then(async(group) => {
-      let batchObjects = [], groupTaxonomies = [];
+      let batchObjects = [], groupTaxonomies = [], pillarList = [];
       if (group) {
         if (group.batchList && group.batchList.length >0) {
           for (let batchIndex = 0; batchIndex < group.batchList.length; batchIndex++) {
@@ -179,6 +180,14 @@ export const show = async({ params }, res, next) => {
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
+                await Categories.find({ clientTaxonomyId: batchDetail.clientTaxonomy.id, status: true })
+                .then((categories) => {
+                  if (categories && categories.length > 0) {
+                    for (let cIndex = 0; cIndex < categories.length; cIndex++) {
+                      pillarList.push({ value: categories[cIndex].id, label: categories[cIndex].categoryName });
+                    }
+                  }
+                });
               }              
             }
           }        
@@ -193,6 +202,7 @@ export const show = async({ params }, res, next) => {
           assignBatch: batchObjects,
           assignMembers: memberObjects,
           taxonomyList: groupTaxonomies ? groupTaxonomies : [],
+          pillarList: pillarList,
           admin: { value: group.groupAdmin.id, label: group.groupAdmin.name }
         }
         return res.status(200).json({ status: "200", message: "Retrieved group successfully!", data: responseObject });

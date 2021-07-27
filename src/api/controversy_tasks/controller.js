@@ -41,6 +41,55 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
       })
 }
 
+export const getMyPendingTasks = async({ user, querymen: { query, select, cursor } }, res, next) => {
+  let userTypeDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true,
+    isUserApproved: true,
+    status: true,
+    '$or': [{
+      'roleDetails.roles': { '$in': [userTypeDetail.id] }
+    }, { 'roleDetails.primaryRole': userTypeDetail.id }]
+  })
+  .populate({ path: 'roleDetails.roles' })
+  .populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+
+  let findQuery = {};
+  if(user.userType == 'SuperAdmin' || userTypeDetail || Object.keys(userTypeDetail).length > 0){
+    findQuery = { taskStatus : { $ne: 'Completed' }, status: true };
+  } else {
+    findQuery = { analystId: user, taskStatus : { $ne: 'Completed' }, status: true };
+  }
+  await ControversyTasks.find(findQuery)
+  .populate('companyId')
+  .populate('analystId')
+  .populate('createdBy')
+    .then((controversyTasks) => {
+      let controversyTasksList = [];
+      if (controversyTasks && controversyTasks.length > 0) {
+        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let object = {};
+          object.taskNumber = controversyTasks[cIndex].taskNumber;
+          object.taskId = controversyTasks[cIndex].id;
+          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+          object.company= controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+          object.status = controversyTasks[cIndex].status;
+          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          if (controversyTasks[cIndex] && object) {
+            controversyTasksList.push(object);
+          }
+        }
+      }
+      return res.status(200).json({ status: "200", message: "Controversy pending tasks retrieved successfully!", count: controversyTasks.length, rows: controversyTasksList })
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+    })
+}
+
 export const show = async({ params }, res, next) => {
   try {
     await ControversyTasks.findById(params.id)

@@ -36,6 +36,20 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
                 }
               })
               .catch((error) => { return res.status(500).json({ status: "500", message: "Sub sourcetype not found!" }); });
+            }else if (sourceTypes[index].typeName == 'Webpages' || sourceTypes[index].typeName == 'News' || sourceTypes[index].typeName == 'Press release' || sourceTypes[index].typeName == 'Meeting Notice & Vote results') {
+              await SourceSubTypes.find({subTypeName: "Others"})
+              .then((allSubTypes) => {
+                if (allSubTypes && allSubTypes.length > 0) {
+                  for (let sIndex = 0; sIndex < allSubTypes.length; sIndex++) {
+                    let subSourceObject = {
+                      value : allSubTypes[sIndex].id,
+                      label : allSubTypes[sIndex].subTypeName
+                    }
+                    sourceTypeObject.subSourceTypes.push(subSourceObject);
+                  }
+                }
+              })
+              .catch((error) => { return res.status(500).json({ status: "500", message: "Sub sourcetype not found!" }); });
             }
             sourceTypesList.push(sourceTypeObject);
           }
