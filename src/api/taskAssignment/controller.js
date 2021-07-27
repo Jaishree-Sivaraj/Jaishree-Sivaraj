@@ -773,9 +773,9 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       }
     ]
   }).populate({
-    path: "roleDetails.roles",
+    path: "roleDetails.roles"
   }).populate({
-    path: "roleDetails.primaryRole",
+    path: "roleDetails.primaryRole"
   }).catch((error) => {
     return res.status(500).json({
       status: "500",
@@ -842,7 +842,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       '$or': [
         {
           "roleDetails.roles": {
-            $in: [
+            '$in': [
               superAdminRoleDetails.id,
               adminRoleDetails ? adminRoleDetails.id : null
             ]
@@ -850,7 +850,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
         },
         {
           "roleDetails.primaryRole": {
-            $or: [
+            '$or': [
               superAdminRoleDetails.id,
               adminRoleDetails ? adminRoleDetails.id : null
             ]
