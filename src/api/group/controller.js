@@ -196,7 +196,10 @@ export const show = async({ params }, res, next) => {
         let admin = {};
         let adminDetail = await User.findById(group.groupAdmin ? group.groupAdmin.id : null)
         .populate({ path: 'roleDetails.roles' })
-        .populate({ path: 'roleDetails.primaryRole' });
+        .populate({ path: 'roleDetails.primaryRole' })
+        .catch((error) => {
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Group admin not found!"})
+        });
         if (adminDetail) {
           admin = {
             userDetails: {
@@ -236,6 +239,9 @@ export const show = async({ params }, res, next) => {
             .populate('userId')
             .populate('primaryPillar')
             .populate('secondaryPillar')
+            .catch((error) => {
+              return res.status(500).json({status: "500", message: error.message ? error.message : "Pillar assignment not found!"})
+            });
             if (pillarDetail) {
               pillarMember = {
                 value: obj.id,
