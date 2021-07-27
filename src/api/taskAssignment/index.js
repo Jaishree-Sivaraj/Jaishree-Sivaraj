@@ -34,7 +34,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {};
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '';
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -200,6 +200,28 @@ router.put('/updateCompanyStatus',
   }),
   updateCompanyStatus)
 /**
+* @api {put} /taskAssignments Update task assignment
+* @apiName UpdateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam taskDetails Task assignment's qaId.
+* @apiParam taskId Task assignment's status.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.put('/updateSlaDates',
+  token({
+    required: true
+  }),
+  body({
+    taskDetails,
+    taskId,
+  }),
+  updateSlaDates)
+/**
  * @api {put} /taskAssignments/:id Update task assignment
  * @apiName UpdateTaskAssignment
  * @apiGroup TaskAssignment
@@ -237,35 +259,6 @@ router.put('/:id',
   }),
   update)
 
-
-/**
-* @api {put} /taskAssignments/:id Update task assignment
-* @apiName UpdateTaskAssignment
-* @apiGroup TaskAssignment
-* @apiPermission user
-* @apiParam {String} access_token user access token.
-* @apiParam companyId Task assignment's companyId.
-* @apiParam categoryId Task assignment's categoryId.
-* @apiParam batchId Task assignment's batchId.
-* @apiParam year Task assignment's year.
-* @apiParam analystSLA Task assignment's analystSLA.
-* @apiParam taskStatus Task assignment's taskStatus.
-* @apiParam analystId Task assignment's analystId.
-* @apiParam qaId Task assignment's qaId.
-* @apiParam status Task assignment's status.
-* @apiSuccess {Object} taskAssignment Task assignment's data.
-* @apiError {Object} 400 Some parameters may contain invalid values.
-* @apiError 404 Task assignment not found.
-* @apiError 401 user access only.
-*/
-router.put('/updateSlaDates/:id',
-  token({
-    required: true
-  }),
-  body({
-    taskDetails
-  }),
-  updateSlaDates)
 
 
 /**

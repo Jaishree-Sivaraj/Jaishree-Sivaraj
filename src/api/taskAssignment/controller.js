@@ -738,7 +738,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 
 
 export const updateSlaDates = ({ user, bodymen: { body }, params }, res, next) => {
-  TaskAssignment.updateOne({ _id: params.id }, { $set: body.taskDetails }).then(function (updatedRecord) {
+  TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then(function (updatedRecord) {
     res.send({
       status: 200,
       message: 'Task updated successfully'
