@@ -956,18 +956,18 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     //  console.log('result', result);
                   }
                 });
-                await ErrorDetails.updateMany({
-                  "companyId": {
-                    $in: insertedCompanyIds
-                  },
-                  "year": {
-                    $in: distinctYears
-                  }
-                }, {
-                  $set: {
-                    status: false
-                  }
-                }, {});
+                // await ErrorDetails.updateMany({
+                //   "companyId": {
+                //     $in: insertedCompanyIds
+                //   },
+                //   "year": {
+                //     $in: distinctYears
+                //   }
+                // }, {
+                //   $set: {
+                //     status: false
+                //   }
+                // }, {});
               await ErrorDetails.insertMany(errorDetails).then((err, result) => {
                 if (err) {
                   console.log('error', err);
