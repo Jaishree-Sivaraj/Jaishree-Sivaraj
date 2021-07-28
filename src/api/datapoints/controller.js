@@ -381,7 +381,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
                 let kmpNameValue = {
-                  label: mergeKmpMemberList[kmpMemberNameListIndex].BOSP004,
+                  label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
                   value: mergeKmpMemberList[kmpMemberNameListIndex].id,
                   year: currentYear[currentYearIndex]
                 }
