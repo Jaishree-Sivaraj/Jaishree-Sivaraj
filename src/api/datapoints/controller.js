@@ -634,7 +634,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                 keyIssue: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                fiscalYear: [],
+                fiscalYear: "",
                 memberName: "",
                 memberId: ""
               }
@@ -643,7 +643,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   if(object.label == errorboardDatapoints[errorDpIndex].memberName && object.year.includes(errorboardDatapoints[errorDpIndex].year)){
                     boardDatapointsObject.memberName = object.label
                     boardDatapointsObject.memberId = object.value
-                    boardDatapointsObject.fiscalYear.push(errorboardDatapoints[errorDpIndex].year)                  
+                    boardDatapointsObject.fiscalYear = errorboardDatapoints[errorDpIndex].year;                  
                     boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                   }
                 });                
@@ -700,7 +700,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   companyName: taskDetails.companyId.companyName,
                   keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                   keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                  fiscalYear: [],
+                  fiscalYear: '',
                   memberName: '',
                   memberId: ''
                 }
@@ -708,7 +708,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
                   kmpDatapointsObject.memberName = object.label;
                   kmpDatapointsObject.memberId = object.value; 
-                  kmpDatapointsObject.fiscalYear.push(errorkmpDatapoints[errorDpIndex].year);                    
+                  kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
                   kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                 }
               })
