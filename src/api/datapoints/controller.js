@@ -805,7 +805,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
       }
-    } else if (taskDetails.taskStatus == 'Verfication') {
+    } else if (taskDetails.taskStatus == 'Verification') {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
