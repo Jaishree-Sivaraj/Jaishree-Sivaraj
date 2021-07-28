@@ -1866,7 +1866,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
             let historicalDatapointsObject = {};
             _.filter(historyAllKmpMatrixDetails, function (object) {
-              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
                 historicalDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
