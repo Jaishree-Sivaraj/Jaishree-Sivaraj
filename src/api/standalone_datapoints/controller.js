@@ -520,7 +520,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 collectionStatus: false,
                 verificationStatus: false,
                 hasError: hasError,
-                hasCorrection: false,
+                hasCorrection: true,
                 performanceResult: '',
                 standaloneStatus: '',
                 taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
@@ -580,8 +580,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
@@ -631,7 +631,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   verificationStatus: false,
                   comments: [],
                   hasError: hasError,
-                  hasCorrection: false,
+                  hasCorrection: true,
                   taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
                   memberStatus: true,
                   status: true,
@@ -710,8 +710,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 console.log(item);
                 console.log(categoriesObjectValues)
@@ -763,13 +763,13 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   internalFileSource: item['Internal file source'],
                   collectionStatus: false,
                   verificationStatus: false,
-                  hasCorrection: false,
+                  hasCorrection: true,
                   comments: [],
                   hasError: hasError,
                   taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
                   status: true,
                   createdBy: userDetail
-                };
+                }
                 console.log(kmpMembersList, memberDetail)
                 kmpMembersList.push(memberDetail);
               });

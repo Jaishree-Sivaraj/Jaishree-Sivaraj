@@ -634,7 +634,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                 keyIssue: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                fiscalYear: [],
+                fiscalYear: "",
                 memberName: "",
                 memberId: ""
               }
@@ -643,7 +643,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   if(object.label == errorboardDatapoints[errorDpIndex].memberName && object.year.includes(errorboardDatapoints[errorDpIndex].year)){
                     boardDatapointsObject.memberName = object.label
                     boardDatapointsObject.memberId = object.value
-                    boardDatapointsObject.fiscalYear.push(errorboardDatapoints[errorDpIndex].year)                  
+                    boardDatapointsObject.fiscalYear = errorboardDatapoints[errorDpIndex].year;                  
                     boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                   }
                 });                
@@ -700,7 +700,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   companyName: taskDetails.companyId.companyName,
                   keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
                   keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                  fiscalYear: [],
+                  fiscalYear: '',
                   memberName: '',
                   memberId: ''
                 }
@@ -708,7 +708,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
                   kmpDatapointsObject.memberName = object.label;
                   kmpDatapointsObject.memberId = object.value; 
-                  kmpDatapointsObject.fiscalYear.push(errorkmpDatapoints[errorDpIndex].year);                    
+                  kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
                   kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                 }
               })
@@ -805,7 +805,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
       }
-    } else if (taskDetails.taskStatus == 'Verfication') {
+    } else if (taskDetails.taskStatus == 'Verification') {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
@@ -1540,6 +1540,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = req.body.year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1580,7 +1581,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1680,7 +1681,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1789,7 +1790,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true
@@ -1866,7 +1867,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
             let historicalDatapointsObject = {};
             _.filter(historyAllKmpMatrixDetails, function (object) {
-              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
                 historicalDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1915,6 +1916,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1956,7 +1958,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2048,7 +2050,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2151,7 +2153,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true

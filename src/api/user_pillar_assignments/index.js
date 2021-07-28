@@ -8,7 +8,7 @@ export UserPillarAssignments, { schema } from './model'
 
 const router = new Router()
 const { clientTaxonomyId, primaryPillar, secondaryPillar, userId, status } = schema.tree
-const taxonomy = {}, primary = {}, secondary = {}, user = []
+const primary = {}, secondary = {}, user = []
 
 /**
  * @api {post} /user_pillar_assignments Create user pillar assignments
@@ -16,7 +16,6 @@ const taxonomy = {}, primary = {}, secondary = {}, user = []
  * @apiGroup UserPillarAssignments
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam clientTaxonomyId User pillar assignments's clientTaxonomyId.
  * @apiParam primaryPillar User pillar assignments's primaryPillar.
  * @apiParam secondaryPillar User pillar assignments's secondaryPillar.
  * @apiParam userId User pillar assignments's userId.
@@ -27,7 +26,7 @@ const taxonomy = {}, primary = {}, secondary = {}, user = []
  */
 router.post('/',
   token({ required: true }),
-  body({ clientTaxonomyId, primaryPillar, secondaryPillar, userId }),
+  body({ primaryPillar, secondaryPillar, userId }),
   create)
 
 /**
@@ -36,7 +35,6 @@ router.post('/',
  * @apiGroup UserPillarAssignments
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam clientTaxonomyId User pillar assignments's clientTaxonomyId.
  * @apiParam primaryPillar User pillar assignments's primaryPillar.
  * @apiParam secondaryPillar User pillar assignments's secondaryPillar.
  * @apiParam userId User pillar assignments's userId.
@@ -47,7 +45,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ taxonomy, primary, secondary, user }),
+  body({ primary, secondary, user }),
   assignPillarToUsers)
 
 /**
@@ -88,7 +86,6 @@ router.get('/:id',
  * @apiGroup UserPillarAssignments
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam clientTaxonomyId User pillar assignments's clientTaxonomyId.
  * @apiParam primaryPillar User pillar assignments's primaryPillar.
  * @apiParam secondaryPillar User pillar assignments's secondaryPillar.
  * @apiParam userId User pillar assignments's userId.
@@ -100,7 +97,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ clientTaxonomyId, primaryPillar, secondaryPillar, userId, status }),
+  body({ primaryPillar, secondaryPillar, userId, status }),
   update)
 
 /**
