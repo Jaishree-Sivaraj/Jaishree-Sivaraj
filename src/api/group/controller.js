@@ -232,7 +232,8 @@ export const show = async({ params }, res, next) => {
                   return { value: rec.id, label: rec.roleName }
                 }),
                 primaryRole: { value: memberDetail.roleDetails.primaryRole ? memberDetail.roleDetails.primaryRole.id : null, label: memberDetail.roleDetails.primaryRole ? memberDetail.roleDetails.primaryRole.roleName : null }
-              }
+              },
+              isAssignedToGroup: true
             };
             memberObjects.push(member)
             let pillarDetail = await UserPillarAssignments.findOne({ userId: obj.id, status: true })
@@ -263,6 +264,41 @@ export const show = async({ params }, res, next) => {
           } else {
             memberObjects.push({ userDetails: { value: obj.id, label: obj.name } });
           }
+        }
+        let allAnalystAndQaMembers = await User.find({
+          isUserApproved: true,
+          isAssignedToGroup: false,
+          isRoleAssigned: true,
+          isUserActive: true,
+          userType: "Employee",
+          status: true
+        }).populate({ path: 'roleDetails.roles' })
+        .populate({ path: 'roleDetails.primaryRole' })
+        .catch((error) => {
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Group admin not found!"})
+        });
+        if (allAnalystAndQaMembers && allAnalystAndQaMembers.length > 0) {
+          for (let uIndex = 0; uIndex < allAnalystAndQaMembers.length; uIndex++) {
+            const obj = allAnalystAndQaMembers[uIndex];
+            let member = {};
+            if (obj) {
+              member = {
+                userDetails: {
+                  value: obj.id,
+                  label: obj.name,
+                },
+                roleDetails: {
+                  role: obj.roleDetails.roles.map((rec) => {
+                    return { value: rec.id, label: rec.roleName }
+                  }),
+                  primaryRole: { value: obj.roleDetails.primaryRole ? obj.roleDetails.primaryRole.id : null, label: obj.roleDetails.primaryRole ? obj.roleDetails.primaryRole.roleName : null }
+                },
+                isAssignedToGroup: false
+              };
+              memberObjects.push(member)
+            }
+            
+          }          
         }
         let responseObject = {
           _id: group.id,
