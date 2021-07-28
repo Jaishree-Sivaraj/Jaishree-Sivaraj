@@ -93,7 +93,6 @@ export const getMyPendingTasks = async ({ user, querymen: { query, select, curso
 }
 
 export const companiesAndAnalyst = async ({ params }, res, next) => {
-  console.log('companiesAndAnalyst', params)
   var allCompanies = await Companies.find({ clientTaxonomyId: params.taxonomyId, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message }) });
   var unassignedCompanies = [];
   if (allCompanies && allCompanies.length > 0) {
@@ -123,7 +122,6 @@ export const companiesAndAnalyst = async ({ params }, res, next) => {
     }
     analyst.push(analystObject);
   }
-  console.log('Analyst', analyst);
   return res.status(200).json({ analystData: analyst, companies: unassignedCompanies });
 }
 
