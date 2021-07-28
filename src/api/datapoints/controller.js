@@ -1540,6 +1540,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = req.body.year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1580,7 +1581,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1680,7 +1681,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1789,7 +1790,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true
@@ -1915,6 +1916,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1956,7 +1958,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2048,7 +2050,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2151,7 +2153,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true
