@@ -839,7 +839,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
-              taskId: req.params.taskId,
+              companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
               },
@@ -932,7 +932,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           } else if(dpTypeValues[dpTypeIndex] == 'Standalone') {
 
             let errorDatapoints = await StandaloneDatapoints.find({
-              taskId: req.params.taskId,
+              companyId:taskDetails.companyId.id,
               year:{
                 $in:currentYear
               },
@@ -971,8 +971,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       } else {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
-            taskId: req.params.taskId,
+            // taskId: req.params.taskId,
             companyId:taskDetails.companyId.id,
+            year:{
+              $in:currentYear
+            },
             hasError: true,
             status: true
           }).populate([{
@@ -1037,7 +1040,7 @@ export const datapointDetails = async (req, res, next) => {
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+     // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId,
       _id: req.body.datapointId,
       status: true
@@ -1922,7 +1925,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId,
       _id: req.body.datapointId,
       status: true
@@ -1941,7 +1944,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     }).populate('errorTypeId');
     if (req.body.memberType == 'Standalone') {
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
-          taskId:req.body.taskId,
+          companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           hasCorrection: true,
           year: {
@@ -2058,8 +2061,8 @@ export const collectionDatapointDetails = async(req,res,next) =>{
         .populate('taskId');
       let historyYear = _.uniqBy(historyAllBoardMemberMatrixDetails, 'year');
       let currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-          taskId: req.body.taskId,
-          datapointId: req.body.datapointId,          
+         companyId: taskDetails.companyId.id,
+         datapointId: req.body.datapointId,          
           memberName:req.body.memberName,
           hasCorrection:true,
           memberStatus: true,
@@ -2163,7 +2166,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
 
       let historyYear = _.uniqBy(historyAllKmpMatrixDetails, 'year');
       let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-          taskId: req.body.taskId,
+          companyId: taskDetails.companyId.id,
           datapointId:req.body.datapointId,
           hasCorrection:true,
           memberName: req.body.memberName,
