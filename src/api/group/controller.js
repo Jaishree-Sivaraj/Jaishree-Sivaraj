@@ -177,7 +177,7 @@ export const show = async({ params }, res, next) => {
             let obj = group.batchList[batchIndex];
             if (obj && Object.keys(obj).length > 0) {
               let batchDetail = await Batches.findOne({"_id": obj._id}).populate('clientTaxonomy');
-              batchObjects.push({ value: obj._id, label: obj.batchName, taxonomy:{ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName }, isAssignedToGroup: false });
+              batchObjects.push({ value: obj._id, label: obj.batchName, taxonomy:{ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName }, isAssignedToGroup: true });
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
