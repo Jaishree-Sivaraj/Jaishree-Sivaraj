@@ -289,7 +289,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+              //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
               categoryId: taskDetails.categoryId,
               status: true
             }).populate('keyIssueId');
@@ -299,7 +299,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+             // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
               categoryId: taskDetails.categoryId,
               dpType: dpTypeValues[dpTypeIndex],
               status: true
@@ -381,7 +381,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
                 let kmpNameValue = {
-                  label: mergeKmpMemberList[kmpMemberNameListIndex].BOSP004,
+                  label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
                   value: mergeKmpMemberList[kmpMemberNameListIndex].id,
                   year: currentYear[currentYearIndex]
                 }
@@ -805,7 +805,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
       }
-    } else if (taskDetails.taskStatus == 'Verfication') {
+    } else if (taskDetails.taskStatus == 'Verification') {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
@@ -876,7 +876,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
               let kmpMemberGt = await Kmp.find({companyId: taskDetails.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
-              console.log(1614709800 ,  yearTimeStamp)
               let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
 
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -1540,6 +1539,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = req.body.year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1580,7 +1580,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1680,7 +1680,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -1789,7 +1789,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true
@@ -1866,7 +1866,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       for (let hitoryYearIndex = 0; hitoryYearIndex < historyYear.length; hitoryYearIndex++) {
             let historicalDatapointsObject = {};
             _.filter(historyAllKmpMatrixDetails, function (object) {
-              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
                 historicalDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1915,6 +1915,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     });
 
     let currentYear = year.split(",");
+    let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
       relevantForIndia: "Yes",
       dataCollection: 'Yes',
@@ -1956,7 +1957,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
-            $nin: currentYear
+            $nin: taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2048,7 +2049,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           status: true
         }).populate('createdBy')
@@ -2151,7 +2152,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           companyId: taskDetails.companyId.id,
           memberName: req.body.memberName,
           year: {
-            "$nin": currentYear
+            "$nin": taskDetailsYear
           },
           memberStatus: true,
           status: true
