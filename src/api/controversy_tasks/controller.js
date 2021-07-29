@@ -203,12 +203,12 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
       } else {
         newTaskNumber = 1;
       }
-      for (let index = 0; index < body.companiesList.length; index++) {
+      for (let index = 0; index < body.company.length; index++) {
         taskNumber = 'DT' + newTaskNumber;
         let controversyObject = {
           taskNumber: taskNumber,
-          companyId: body.companiesList[index],
-          analystId: body.analystId,
+          companyId: body.company[index].id ? body.company[index].id : null,
+          analystId: body.analyst.value ? body.analyst.value : null,
           taskStatus: 'Yet to Work',
           status: true,
           createdBy: user

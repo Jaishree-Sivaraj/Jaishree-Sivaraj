@@ -8,7 +8,7 @@ export ControversyTasks, { schema } from './model'
 
 const router = new Router()
 const { taskNumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
-const companiesList = [];
+const analyst = {}, company = [];
 
 /**
  * @api {post} /controversy_tasks Create controversy tasks
@@ -37,6 +37,8 @@ router.post('/',
 * @apiGroup ControversyTasks
 * @apiPermission user
 * @apiParam {String} access_token user access token.
+* @apiParam analyst Controversy tasks's analyst.
+* @apiParam company Controversy tasks's company.
 * @apiSuccess {Object} controversyTasks Controversy tasks's data.
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 404 Controversy tasks not found.
@@ -44,7 +46,7 @@ router.post('/',
 */
 router.post('/new-task',
   token({ required: true }),
-  body({ companiesList, analystId }),
+  body({ analyst, company }),
   newControversyTask)
 
 /**
