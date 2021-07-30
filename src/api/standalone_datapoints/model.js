@@ -114,6 +114,9 @@ const standaloneDatapointsSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -162,6 +165,7 @@ standaloneDatapointsSchema.methods = {
       lastModifiedDate: this.lastModifiedDate,
       modifiedBy: this.modifiedBy,
       isSubmitted: this.isSubmitted,
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

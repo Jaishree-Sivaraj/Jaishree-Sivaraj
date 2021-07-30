@@ -92,6 +92,9 @@ const kmpMatrixDataPointsSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -133,6 +136,7 @@ kmpMatrixDataPointsSchema.methods = {
       hasError: this.hasError,
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
