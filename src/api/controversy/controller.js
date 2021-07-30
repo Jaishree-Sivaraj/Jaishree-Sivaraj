@@ -215,7 +215,7 @@ export const uploadControversies = async (req, res, next) => {
               let controversyList = [], responseValue = 0, controversyObject = {};
               let element = allFilesObject[index][rowIndex];
               if (allFilesObject[index][rowIndex]['Response']) {
-                if (allFilesObject[index][rowIndex]['Response'].length > 2) {
+                if (allFilesObject[index][rowIndex]['Response'].length >= 2) {
                   let currentSourcePublicationDate = '';
                   let sourcePublicationDate;
                   if (allFilesObject[index][rowIndex]['Source Publication Date'].toString().includes("/")) {
@@ -249,6 +249,8 @@ export const uploadControversies = async (req, res, next) => {
                     responseValue = 3;
                   } else if (allFilesObject[index][rowIndex]['Response'] == "Very high") {
                     responseValue = 4;
+                  } else {
+                    responseValue = 0;
                   }
                   controversyObject = {
                     companyId: currentCompanyName,
