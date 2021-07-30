@@ -11,6 +11,11 @@ const boardMembersSchema = new Schema({
     ref: 'Companies',
     required: true
   },
+  clientTaxonomyId: {
+    type: Schema.ObjectId,
+    ref: 'ClientTaxonomy',
+    required: true
+  },
   BOSP004: {
     //boardMemberName
     type: String
