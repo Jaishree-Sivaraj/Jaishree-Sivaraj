@@ -7,7 +7,7 @@ import { schema } from './model'
 export BoardMembersMatrixDataPoints, { schema } from './model'
 
 const router = new Router()
-const { datapointId, companyId, memberName, year, response, fiscalYearEndDate, memberStatus, status } = schema.tree
+const { datapointId, companyId, memberName, year, response, fiscalYearEndDate, memberStatus, additionalDetails, status } = schema.tree
 
 /**
  * @api {post} /boardMembersMatrixDataPoints Create board members matrix data points
