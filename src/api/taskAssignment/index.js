@@ -21,7 +21,8 @@ import {
   getUsers,
   updateCompanyStatus,
   createTask,
-  getQaAndAnalystFromGrp
+  getQaAndAnalystFromGrp,
+  updateSlaDates
 } from './controller'
 import {
   schema
@@ -33,7 +34,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [];
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '';
 
 /**
  * @api {post} /taskAssignments Create task assignment
@@ -199,6 +200,28 @@ router.put('/updateCompanyStatus',
   }),
   updateCompanyStatus)
 /**
+* @api {put} /taskAssignments Update task assignment
+* @apiName UpdateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam taskDetails Task assignment's qaId.
+* @apiParam taskId Task assignment's status.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.put('/updateSlaDates',
+  token({
+    required: true
+  }),
+  body({
+    taskDetails,
+    taskId,
+  }),
+  updateSlaDates)
+/**
  * @api {put} /taskAssignments/:id Update task assignment
  * @apiName UpdateTaskAssignment
  * @apiGroup TaskAssignment
@@ -235,6 +258,7 @@ router.put('/:id',
     status
   }),
   update)
+
 
 
 /**

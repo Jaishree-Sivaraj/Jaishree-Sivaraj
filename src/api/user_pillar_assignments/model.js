@@ -6,11 +6,11 @@ const userPillarAssignmentsSchema = new Schema({
     ref: 'User',
     required: true
   },
-  clientTaxonomyId: {
-    type: Schema.ObjectId,
-    ref: 'ClientTaxonomy',
-    required: true
-  },
+  // clientTaxonomyId: {
+  //   type: Schema.ObjectId,
+  //   ref: 'ClientTaxonomy',
+  //   required: false
+  // },
   primaryPillar: {
     type: Schema.ObjectId,
     ref: 'Categories',
@@ -42,11 +42,11 @@ userPillarAssignmentsSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       primaryPillar: this.primaryPillar ? this.primaryPillar.view(full) : null,
       secondaryPillar: this.secondaryPillar ? this.secondaryPillar.view(full) : null,
       userId: this.userId ? this.userId.view(full) : null,
       status: this.status,
+      // clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

@@ -736,6 +736,21 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next);
 
+
+export const updateSlaDates = ({ user, bodymen: { body }, params }, res, next) => {
+  TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then(function (updatedRecord) {
+    res.send({
+      status: 200,
+      message: 'Task updated successfully'
+    })
+  }).catch((err) => {
+    return res.status(500).json({
+      status: "500",
+      message: err.message
+    });
+  });
+}
+
 export const destroy = ({ user, params }, res, next) =>
   TaskAssignment.findById(params.id)
     .then(notFound(res))
@@ -773,13 +788,13 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       }
     ]
   }).populate({
-    path: "roleDetails.roles",
+    path: "roleDetails.roles"
   }).populate({
-    path: "roleDetails.primaryRole",
+    path: "roleDetails.primaryRole"
   }).catch((error) => {
     return res.status(500).json({
       status: "500",
-      message: error.message,
+      message: error.message
     });
   });
   console.log('userDetailWithGroupAdminRole', userDetailWithGroupAdminRole);
@@ -842,19 +857,21 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       '$or': [
         {
           "roleDetails.roles": {
-            $in: [
+            '$in': [
               superAdminRoleDetails.id,
               adminRoleDetails ? adminRoleDetails.id : null
             ]
           }
         },
         {
-          "roleDetails.primaryRole": {
-            $or: [
-              superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null
-            ]
-          }
+          '$or': [
+            {
+              "roleDetails.primaryRole": superAdminRoleDetails ? superAdminRoleDetails.id : null
+            },
+            {
+              "roleDetails.primaryRole": adminRoleDetails ? adminRoleDetails.id : null
+            }
+          ]
         }
       ]
     }).populate({
@@ -882,7 +899,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resObject.assignedBatches = [];
             for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
               var categories = await Categories.find({
-                clientTaxonomyId: group[index].batchList[index1].clientTaxonomy,
+                clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
               }).catch((err) => {
                 return res.status(500).json({
                   status: "500",
@@ -902,9 +919,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                   batchYear: rec.years
                 };
               });
-              resObject.assignedBatches = assignedBatches
-                ? assignedBatches
-                : [];
+              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
             }
             resArray.push(resObject);
           }

@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, newControversyTask, getMyPendingTasks } from './controller'
+import { create, index, show, update, destroy, newControversyTask, getMyPendingTasks, companiesAndAnalyst } from './controller'
 import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
 const router = new Router()
 const { taskNumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
-const companiesList = [];
+const analyst = {}, company = [];
 
 /**
  * @api {post} /controversy_tasks Create controversy tasks
@@ -32,20 +32,22 @@ router.post('/',
   body({ taskNumber, companyId, analystId, taskStatus, completedDate, status }),
   create)
 
-  /** @api {post} /controversy_tasks/new-task Create controversy tasks
-  * @apiName CreateControversyTasks
-  * @apiGroup ControversyTasks
-  * @apiPermission user
-  * @apiParam {String} access_token user access token.
-  * @apiSuccess {Object} controversyTasks Controversy tasks's data.
-  * @apiError {Object} 400 Some parameters may contain invalid values.
-  * @apiError 404 Controversy tasks not found.
-  * @apiError 401 user access only.
-  */
- router.post('/new-task',
-   token({ required: true }),
-   body({ companiesList, analystId }),
-   newControversyTask)
+/** @api {post} /controversy_tasks/new-task Create controversy tasks
+* @apiName CreateControversyTasks
+* @apiGroup ControversyTasks
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam analyst Controversy tasks's analyst.
+* @apiParam company Controversy tasks's company.
+* @apiSuccess {Object} controversyTasks Controversy tasks's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Controversy tasks not found.
+* @apiError 401 user access only.
+*/
+router.post('/new-task',
+  token({ required: true }),
+  body({ analyst, company }),
+  newControversyTask)
 
 /**
  * @api {get} /controversy_tasks Retrieve controversy tasks
@@ -95,6 +97,22 @@ router.get('/my/pending-tasks',
   token({ required: true }),
   query(),
   getMyPendingTasks)
+
+/**
+* @api {get} /controversy_tasks/fetch_new_task_data/:taxonomyId Retrieve my pending controversy tasks
+* @apiName RetrieveMyPendingControversyTasks
+* @apiGroup ControversyTasks
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of controversy tasks.
+* @apiSuccess {Object[]} rows List of controversy tasks.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/fetch_new_task_data/:taxonomyId',
+  token({ required: true }),
+  companiesAndAnalyst)
 
 /**
  * @api {put} /controversy_tasks/:id Update controversy tasks
