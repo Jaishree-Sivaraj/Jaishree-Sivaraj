@@ -37,7 +37,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
       batchList: batchList,
       status: true
     }
-    if (body.groupId != '' || body.groupId != null) {
+    if (body.groupId == '' || body.groupId == null || !body.groupId) {
       await Group.create({ ...groupObject, createdBy: user })
         .then(async (group) => {
           if (membersList.length > 0) {
@@ -50,6 +50,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
               "_id": { $in: batchList }
             }, { $set: { isAssignedToGroup: true } }, {});
           }
+          res.status(200).json({ status: "200", message: "Group Created Successfully" });
         })
         .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) });
     } else {
@@ -82,10 +83,10 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
               "_id": { $in: batchList }
             }, { $set: { isAssignedToGroup: true } }, {});
           }
+          res.status(200).json({ status: "200", message: "Group updated Successfully" });
         })
         .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to update group!'}) });
     }
-    res.status(200).json({ status: "200", message: "Group Created Successfully" });
 
   } catch (error) {
     res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create Group!" });
