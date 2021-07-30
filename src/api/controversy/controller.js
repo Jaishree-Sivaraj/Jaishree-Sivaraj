@@ -204,7 +204,7 @@ export const uploadControversies = async (req, res, next) => {
               cmieProwessCode: allFilesObject[index][0]['CMIE/Prowess Code'],
               socialAnalystName: allFilesObject[index][0]['Analyst Name'],
               socialQAName: allFilesObject[index][0]['QA Name'],
-              clientTaxonomyId: clientTaxonomyId._id,
+              clientTaxonomyId: clientTaxonomyId.id,
               status: true,
               createdBy: userDetail
             }
