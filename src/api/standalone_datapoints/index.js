@@ -43,6 +43,7 @@ const {
   lastModifiedDate,
   modifiedBy,
   isSubmitted,
+  additionalDetails,
   status
 } = schema.tree
 const currentData = [],historicalData=[];

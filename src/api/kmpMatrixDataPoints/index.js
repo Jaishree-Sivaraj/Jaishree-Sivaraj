@@ -7,7 +7,7 @@ import { schema } from './model'
 export KmpMatrixDataPoints, { schema } from './model'
 
 const router = new Router()
-const { companyId, memberName, datapointId, response, year, fiscalYearEndDate, memberStatus, status } = schema.tree
+const { companyId, memberName, datapointId, response, year, fiscalYearEndDate, memberStatus, additionalDetails, status } = schema.tree
 
 /**
  * @api {post} /kmpMatrixDataPoints Create kmp matrix data points

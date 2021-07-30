@@ -120,6 +120,9 @@ const datapointsSchema = new Schema({
   },
   isPriority: {
     type: String
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -163,6 +166,7 @@ datapointsSchema.methods = {
       percentileThresholdValue: this.percentileThresholdValue,
       dpType: this.dpType,
       dpStatus: this.dpStatus,
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

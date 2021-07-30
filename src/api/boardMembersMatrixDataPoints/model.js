@@ -92,6 +92,9 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -132,6 +135,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       verificationStatus: this.verificationStatus,
       hasError: this.hasError,
       memberStatus: this.memberStatus,
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

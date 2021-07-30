@@ -7,7 +7,7 @@ import { schema } from './model'
 export DerivedDatapoints, { schema } from './model'
 
 const router = new Router()
-const { companyId, datapointId, response, performanceResult, memberName, activeStatus, dpStatus, year, fiscalYearEndDate, lastModifiedDate, status } = schema.tree
+const { companyId, datapointId, response, performanceResult, memberName, activeStatus, dpStatus, year, fiscalYearEndDate, lastModifiedDate, additionalDetails, status } = schema.tree
 
 /**
  * @api {post} /derived_datapoints Create derived datapoints
