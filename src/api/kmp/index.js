@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy,updateEndDate, activeMemberlist } from './controller'
 import { schema } from './model'
 export Kmp, { schema } from './model'
 
 const router = new Router()
-const { companyId, MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus, status } = schema.tree
-
+const { companyId, MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus,clientTaxonomyId, status } = schema.tree
+let memberName = "", gender = "";
 /**
  * @api {post} /kmp Create kmp
  * @apiName CreateKmp
@@ -29,8 +29,48 @@ const { companyId, MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, m
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId,  MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus}),
+  body({ companyId,  memberName, startDate, endDate, endDateTimeStamp, dob,gender, memberStatus,clientTaxonomyId}),
   create)
+  
+/**
+ * @api {post} /kmp Create kmp
+ * @apiName CreateKmp
+ * @apiGroup Kmp
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam companyId Kmp's companyId.
+ * @apiParam MASP003 Kmp's kmpMemberName.
+ * @apiParam startDate Kmp's startDate.
+ * @apiParam endDate Kmp's endDate.
+ * @apiParam endDateTimeStamp Kmp's endDateTimeStamp.
+ * @apiParam dob Kmp's dob.
+ * @apiParam MASR008 Kmp's gender.
+ * @apiSuccess {Object} kmp Kmp's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Kmp not found.
+ * @apiError 401 user access only.
+ */
+router.post('/deleteKmpMembers',
+token({ required: true }),
+body({ companyId, memberName , endDate}),
+updateEndDate)
+
+/**
+ * @api {get} /kmp/activeKmpMembers/:companyId Retrieve kmps
+ * @apiName RetrieveKmps
+ * @apiGroup Kmp
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of kmps.
+ * @apiSuccess {Object[]} rows List of kmps.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+ router.get('/activeKmpMembers/:companyId',
+ token({ required: true }),
+ query(),
+ activeMemberlist)
 
 /**
  * @api {get} /kmp Retrieve kmps
