@@ -3,13 +3,11 @@ import mongoose, { Schema } from 'mongoose'
 const categoriesSchema = new Schema({
   categoryName: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   categoryCode: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   categoryDescription: {
     type: String,

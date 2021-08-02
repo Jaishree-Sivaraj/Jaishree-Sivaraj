@@ -3,12 +3,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, errorDatapointDetails, collectionDatapointDetails } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, errorDatapointDetails, collectionDatapointDetails, uploadNewTaxonomyDatapoints } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, status } = schema.tree
+const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status } = schema.tree
 const taskId = '',year = '', datapointId = '', memberType = '', memberName = '';
 /**
  * @api {post} /datapoints Create datapoints
@@ -79,7 +79,7 @@ var uploadDatapoints = multer({ //multer settings
 router.post('/upload',
   token({ required: true }),
   uploadDatapoints.single('file'),
-  uploadTaxonomyDatapoints)
+  uploadNewTaxonomyDatapoints)
 
 /**
  * @api {get} /datapoints Retrieve datapoints

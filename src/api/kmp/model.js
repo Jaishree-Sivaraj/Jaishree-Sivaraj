@@ -6,6 +6,11 @@ const kmpSchema = new Schema({
     ref: 'User',
     required: true
   },
+  clientTaxonomyId: {
+    type: Schema.ObjectId,
+    ref: 'ClientTaxonomy',
+    required: true
+  },
   companyId: {
    type: Schema.ObjectId,
     ref: 'Companies',

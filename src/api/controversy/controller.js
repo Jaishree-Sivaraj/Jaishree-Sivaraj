@@ -191,7 +191,7 @@ export const uploadControversies = async (req, res, next) => {
       let companyDetails = [], controversyDetails = [];
       if (allFilesObject.length > 0) {
         let currentCompanyName;
-        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
+        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "A-Taxonomy" });
         for (let index = 0; index < allFilesObject.length; index++) {
           console.log(allFilesObject[index].length);
           console.log(allFilesObject[index]);
@@ -206,7 +206,7 @@ export const uploadControversies = async (req, res, next) => {
               cmieProwessCode: allFilesObject[index][0]['CMIE/Prowess Code'],
               socialAnalystName: allFilesObject[index][0]['Analyst Name'],
               socialQAName: allFilesObject[index][0]['QA Name'],
-              clientTaxonomyId: clientTaxonomyId._id,
+              clientTaxonomyId: clientTaxonomyId.id,
               status: true,
               createdBy: userDetail
             }
@@ -217,7 +217,7 @@ export const uploadControversies = async (req, res, next) => {
               let controversyList = [], responseValue = 0, controversyObject = {};
               let element = allFilesObject[index][rowIndex];
               if (allFilesObject[index][rowIndex]['Response']) {
-                if (allFilesObject[index][rowIndex]['Response'].length > 2) {
+                if (allFilesObject[index][rowIndex]['Response'].length >= 2) {
                   let currentSourcePublicationDate = '';
                   let sourcePublicationDate;
                   if (allFilesObject[index][rowIndex]['Source Publication Date'].toString().includes("/")) {
@@ -251,6 +251,8 @@ export const uploadControversies = async (req, res, next) => {
                     responseValue = 3;
                   } else if (allFilesObject[index][rowIndex]['Response'] == "Very high") {
                     responseValue = 4;
+                  } else {
+                    responseValue = 0;
                   }
                   controversyObject = {
                     companyId: currentCompanyName,

@@ -1,65 +1,28 @@
 import _ from 'lodash'
 import XLSX from 'xlsx'
 import * as fs from 'fs'
-import {
-  success,
-  notFound,
-  authorOrAdmin
-} from '../../services/response/'
-import {
-  Datapoints
-} from '.'
-import {
-  StandaloneDatapoints
-} from '../standalone_datapoints'
-import {
-  BoardMembersMatrixDataPoints
-} from '../boardMembersMatrixDataPoints'
-import {
-  KmpMatrixDataPoints
-} from '../kmpMatrixDataPoints'
-import {
-  ClientTaxonomy
-} from '../clientTaxonomy'
-import {
-  Categories
-} from '../categories'
-import {
-  KeyIssues
-} from '../key_issues'
-import {
-  Functions
-} from '../functions'
-import {
-  TaskAssignment
-} from '../taskAssignment'
-import {
-  ErrorDetails
-} from '../errorDetails'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
+import { Datapoints } from '.'
+import { StandaloneDatapoints } from '../standalone_datapoints'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
+import { ClientTaxonomy } from '../clientTaxonomy'
+import { Categories } from '../categories'
+import { Themes } from '../themes'
+import { KeyIssues } from '../key_issues'
+import { Functions } from '../functions'
+import { TaskAssignment } from '../taskAssignment'
+import { ErrorDetails } from '../errorDetails'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp'
 
-export const create = ({
-    user,
-    bodymen: {
-      body
-    }
-  }, res, next) =>
-  Datapoints.create({
-    ...body,
-    updatedBy: user
-  })
+export const create = ({ user, bodymen: { body } }, res, next) =>
+  Datapoints.create({ ...body, updatedBy: user })
   .then((datapoints) => datapoints.view(true))
   .then(success(res, 201))
   .catch(next)
 
-export const index = ({
-    querymen: {
-      query,
-      select,
-      cursor
-    }
-  }, res, next) =>
+export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Datapoints.count(query)
   .then(count => Datapoints.find(query, select, cursor)
     .populate('updatedBy')
@@ -74,9 +37,7 @@ export const index = ({
   .then(success(res))
   .catch(next)
 
-export const show = ({
-    params
-  }, res, next) =>
+export const show = ({ params }, res, next) =>
   Datapoints.findById(params.id)
   .populate('updatedBy')
   .populate('categoryId')
@@ -289,7 +250,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+              //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
               categoryId: taskDetails.categoryId,
               status: true
             }).populate('keyIssueId');
@@ -299,7 +260,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+             // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
               categoryId: taskDetails.categoryId,
               dpType: dpTypeValues[dpTypeIndex],
               status: true
@@ -381,7 +342,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
                 let kmpNameValue = {
-                  label: mergeKmpMemberList[kmpMemberNameListIndex].BOSP004,
+                  label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
                   value: mergeKmpMemberList[kmpMemberNameListIndex].id,
                   year: currentYear[currentYearIndex]
                 }
@@ -839,7 +800,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
-              taskId: req.params.taskId,
+              companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
               },
@@ -876,7 +837,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
               let kmpMemberGt = await Kmp.find({companyId: taskDetails.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
-              console.log(1614709800 ,  yearTimeStamp)
               let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
 
               for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -933,7 +893,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           } else if(dpTypeValues[dpTypeIndex] == 'Standalone') {
 
             let errorDatapoints = await StandaloneDatapoints.find({
-              taskId: req.params.taskId,
+              companyId:taskDetails.companyId.id,
               year:{
                 $in:currentYear
               },
@@ -972,8 +932,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       } else {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
-            taskId: req.params.taskId,
+            // taskId: req.params.taskId,
             companyId:taskDetails.companyId.id,
+            year:{
+              $in:currentYear
+            },
             hasError: true,
             status: true
           }).populate([{
@@ -1038,7 +1001,7 @@ export const datapointDetails = async (req, res, next) => {
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+     // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId,
       _id: req.body.datapointId,
       status: true
@@ -1923,7 +1886,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId,
       _id: req.body.datapointId,
       status: true
@@ -1942,7 +1905,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     }).populate('errorTypeId');
     if (req.body.memberType == 'Standalone') {
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
-          taskId:req.body.taskId,
+          companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           hasCorrection: true,
           year: {
@@ -2059,8 +2022,8 @@ export const collectionDatapointDetails = async(req,res,next) =>{
         .populate('taskId');
       let historyYear = _.uniqBy(historyAllBoardMemberMatrixDetails, 'year');
       let currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-          taskId: req.body.taskId,
-          datapointId: req.body.datapointId,          
+         companyId: taskDetails.companyId.id,
+         datapointId: req.body.datapointId,          
           memberName:req.body.memberName,
           hasCorrection:true,
           memberStatus: true,
@@ -2164,7 +2127,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
 
       let historyYear = _.uniqBy(historyAllKmpMatrixDetails, 'year');
       let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-          taskId: req.body.taskId,
+          companyId: taskDetails.companyId.id,
           datapointId:req.body.datapointId,
           hasCorrection:true,
           memberName: req.body.memberName,
@@ -2284,23 +2247,8 @@ export const uploadTaxonomyDatapoints = async (req, res, next) => {
           })
         }
       });
-      let newDatapoints = [],
-        headerNameList = [];
-      let allCategories = [],
-        allKeyIssues = [],
-        allFunctions = [];
-      allCategories = await Categories.find({
-        status: true
-      });
-      allKeyIssues = await KeyIssues.find({
-        status: true
-      });
-      allFunctions = await Functions.find({
-        status: true
-      });
-      await ClientTaxonomy.findOne({
-          _id: req.body.clientTaxonomyId
-        })
+      let newDatapoints = [], headerNameList = [];
+      await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
         .populate('fields.id')
         .then((clientTaxonomies) => {
           if (clientTaxonomies) {
@@ -2440,13 +2388,305 @@ async function storeDatapointsFile(onboardingBase64Image, folderName) {
   })
 }
 
-export const update = ({
-    user,
-    bodymen: {
-      body
-    },
-    params
-  }, res, next) =>
+export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
+  if (req.body.clientTaxonomyId && req.file) {
+    try {
+      let allSheetsObject = [];
+      const filePath = req.file.path;
+      var workbook = XLSX.readFile(filePath, {
+        sheetStubs: false,
+        defval: ''
+      });
+      var sheet_name_list = workbook.SheetNames;
+      sheet_name_list.forEach(function (currentSheetName) {
+        var worksheet = workbook.Sheets[currentSheetName];
+        try {
+          var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, {
+            defval: " "
+          });
+          allSheetsObject.push(sheetAsJson);
+        } catch (error) {
+          return res.status(400).json({
+            message: error.message
+          })
+        }
+      });
+      let newDatapoints = [], masterLevelMandatoryNamesList = [], masterLevelOptionalNamesList = [], additionalFieldNamesList = [];
+      let newCategoriesList = [], newThemesList = [], newKeyIssuesList = [], newFunctionsList = [];
+      await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
+        .then((clientTaxonomies) => {
+          if (clientTaxonomies) {
+            for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
+              const fieldNameObject = clientTaxonomies.fields[nameIndex];
+              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static") {
+                masterLevelMandatoryNamesList.push({
+                  "name": fieldNameObject.name ? fieldNameObject.name : '',
+                  "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
+                });
+              } else {
+                if (
+                  fieldNameObject.fieldName == 'unit' ||
+                  fieldNameObject.fieldName == 'polarity' ||
+                  fieldNameObject.fieldName == 'polarity' ||
+                  fieldNameObject.fieldName == 'normalizedBy' ||
+                  fieldNameObject.fieldName == 'weighted' ||
+                  fieldNameObject.fieldName == 'reference' ||
+                  fieldNameObject.fieldName == 'dataCollectionGuide' ||
+                  fieldNameObject.fieldName == 'industryRelevant'
+                ) {
+                  masterLevelOptionalNamesList.push({
+                    "name": fieldNameObject.name ? fieldNameObject.name : '',
+                    "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
+                  });
+                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static") {
+                  additionalFieldNamesList.push({
+                    "name": fieldNameObject.name ? fieldNameObject.name : '',
+                    "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
+                  });
+                }
+              }
+            }
+          }
+        });
+      if (allSheetsObject.length > 0) {
+        for (let objIndex = 0; objIndex < allSheetsObject.length; objIndex++) {
+          const rowObjects = allSheetsObject[objIndex];
+          if (rowObjects.length > 0) {
+            for (let rindex = 0; rindex < rowObjects.length; rindex++) {
+              let newDpObjectToPush = {};
+              newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
+              newDpObjectToPush["additionalDetails"] = {};
+              newDpObjectToPush["createdAt"] = Date.now();
+              newDpObjectToPush["updatedAt"] = Date.now();
+              newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
+              let newCategoryObject = {
+                clientTaxonomyId: req.body.clientTaxonomyId ? req.body.clientTaxonomyId : null,
+                categoryName: '',
+                categoryCode: '',
+                categoryDescription: '',
+                status: true
+              };
+              let newThemeObject = {
+                categoryId: '',
+                themeName: '',
+                themeCode: '',
+                themeDescription: '',
+                status: true
+              };
+              let newKeyIssueObject = {
+                themeId: '',
+                keyIssueName: '',
+                keyIssueCode: '',
+                keyIssueDescription: '',
+                status: true
+              };
+              let newFunctionObject = {
+                functionType: '',
+                status: true
+              };
+              const rowObject = rowObjects[rindex];
+              for (let mlmIndex = 0; mlmIndex < masterLevelMandatoryNamesList.length; mlmIndex++) {
+                const headerObject = masterLevelMandatoryNamesList[mlmIndex];
+                if (headerObject.fieldName == "categoryName") {
+                  newDpObjectToPush.categoryId = rowObject[headerObject.name];
+                  newCategoryObject.categoryName = rowObject[headerObject.name];
+                  newThemeObject.categoryId = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "categoryCode") {
+                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                  newCategoryObject.categoryCode = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "themeName") {
+                  newDpObjectToPush.themeId = rowObject[headerObject.name];
+                  newThemeObject.themeName = rowObject[headerObject.name];
+                  newKeyIssueObject.themeId = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "themeCode") {
+                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                  newThemeObject.themeCode = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "keyIssueName") {
+                  newDpObjectToPush.keyIssueId = rowObject[headerObject.name];
+                  newKeyIssueObject.keyIssueName = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "keyIssueCode") {
+                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                  newKeyIssueObject.keyIssueCode = rowObject[headerObject.name];
+                } else if (headerObject.fieldName == "functionType") {
+                  newDpObjectToPush.functionId = rowObject[headerObject.name];
+                  newFunctionObject.functionType = rowObject[headerObject.name];
+                } else {
+                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                }
+              }
+              for (let mloIndex = 0; mloIndex < masterLevelOptionalNamesList.length; mloIndex++) {
+                const headerObject = masterLevelOptionalNamesList[mloIndex];
+                newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
+              }
+              for (let addFieldIndex = 0; addFieldIndex < additionalFieldNamesList.length; addFieldIndex++) {
+                const headerObject = additionalFieldNamesList[addFieldIndex];
+                newDpObjectToPush["additionalDetails"][headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
+              }
+              newDatapoints.push(newDpObjectToPush);
+              newCategoriesList.push(newCategoryObject);
+              newThemesList.push(newThemeObject);
+              newKeyIssuesList.push(newKeyIssueObject);
+              newFunctionsList.push(newFunctionObject);
+            }
+            let uniqCategories = _.uniqBy(newCategoriesList, 'categoryName');
+            let uniqThemes = _.uniqBy(newThemesList, 'themeName');
+            let uniqKeyIssues = _.uniqBy(newKeyIssuesList, 'keyIssueName');
+            let uniqFunctions = _.uniqBy(newFunctionsList, 'functionType');
+            if (uniqCategories.length > 0) {
+              for (let unqCatIndex = 0; unqCatIndex < uniqCategories.length; unqCatIndex++) {
+                uniqCategories[unqCatIndex].createdAt = Date.now();
+                uniqCategories[unqCatIndex].updatedAt = Date.now();
+                await Categories.updateOne({
+                  clientTaxonomyId: req.body.clientTaxonomyId,
+                  categoryName: uniqCategories[unqCatIndex].categoryName ? uniqCategories[unqCatIndex].categoryName : '',
+                  status: true
+                }, { $set: uniqCategories[unqCatIndex] }, { upsert: true })
+                .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new category!' }) });
+              }
+            }
+            let newlyCreatedCategories = await Categories.find({ clientTaxonomyId: req.body.clientTaxonomyId, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Categories not found!' }) });
+            if (newlyCreatedCategories.length > 0) {
+              for (let newCatIndex = 0; newCatIndex < newlyCreatedCategories.length; newCatIndex++) {
+                uniqThemes.find(obj => {
+                  if(obj.categoryId === newlyCreatedCategories[newCatIndex].categoryName){
+                    obj.categoryId = newlyCreatedCategories[newCatIndex].id
+                  }
+                });
+                newDatapoints.find(obj => {
+                  if(obj.categoryId === newlyCreatedCategories[newCatIndex].categoryName){
+                    obj.categoryId = newlyCreatedCategories[newCatIndex].id;
+                  }
+                });
+              }
+              if (uniqThemes.length > 0) {
+                for (let unqThmIndex = 0; unqThmIndex < uniqThemes.length; unqThmIndex++) {
+                  uniqThemes[unqThmIndex].createdAt = Date.now();
+                  uniqThemes[unqThmIndex].updatedAt = Date.now();              
+                  await Themes.updateOne({
+                    categoryId: uniqThemes[unqThmIndex].categoryId,
+                    themeName: uniqThemes[unqThmIndex].themeName ? uniqThemes[unqThmIndex].themeName : '',
+                    status: true
+                  }, { $set: uniqThemes[unqThmIndex] }, { upsert: true })
+                  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new theme!' }) });
+                }
+              }
+              for (let newCatIndex = 0; newCatIndex < newlyCreatedCategories.length; newCatIndex++) {
+                uniqThemes.find(obj => {
+                  if(obj.categoryId === newlyCreatedCategories[newCatIndex].categoryName){
+                    obj.categoryId = newlyCreatedCategories[newCatIndex].id;
+                  }
+                });
+                for (let newThemeIndex = 0; newThemeIndex < uniqThemes.length; newThemeIndex++) {
+                  let themeDetail = await Themes.findOne({ categoryId: newlyCreatedCategories[newCatIndex].id, themeName: uniqThemes[newThemeIndex].themeName, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Theme not found!' }) });
+                  uniqKeyIssues.find(obj => {
+                    if(newlyCreatedCategories[newCatIndex].id === uniqThemes[newThemeIndex].categoryId && obj.themeId === uniqThemes[newThemeIndex].themeName){
+                      obj.themeId = themeDetail ? themeDetail.id : null;
+                    }
+                  });
+                  newDatapoints.find(obj => {
+                    if(obj.themeId === uniqThemes[newThemeIndex].themeName){
+                      obj.themeId = themeDetail ? themeDetail.id : null;
+                    }
+                  });
+                }
+              }
+              
+              if (uniqKeyIssues.length > 0) {
+                for (let unqKeyIndex = 0; unqKeyIndex < uniqKeyIssues.length; unqKeyIndex++) {
+                  uniqKeyIssues[unqKeyIndex].createdAt = Date.now();
+                  uniqKeyIssues[unqKeyIndex].updatedAt = Date.now();
+                  await KeyIssues.updateOne({
+                    themeId: uniqKeyIssues[unqKeyIndex].themeId,
+                    keyIssueName: uniqKeyIssues[unqKeyIndex].keyIssueName ? uniqKeyIssues[unqKeyIndex].keyIssueName : '',
+                    status: true
+                  }, { $set: uniqKeyIssues[unqKeyIndex] }, { upsert: true })
+                  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new key issue!' }) });
+                }
+              }
+              
+              for (let newCatIndex = 0; newCatIndex < newlyCreatedCategories.length; newCatIndex++) {
+                for (let newThemeIndex = 0; newThemeIndex < uniqThemes.length; newThemeIndex++) {
+                  for (let newKeyIssueIndex = 0; newKeyIssueIndex < uniqKeyIssues.length; newKeyIssueIndex++) {
+                    let keyIssueDetail = await KeyIssues.findOne({ themeId: uniqKeyIssues[newKeyIssueIndex].themeId, keyIssueName: uniqKeyIssues[newKeyIssueIndex].keyIssueName, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Key Issue not found!' }) });
+                    newDatapoints.find(obj => {
+                      if(obj.keyIssueId === uniqKeyIssues[newKeyIssueIndex].keyIssueName){
+                        obj.keyIssueId = keyIssueDetail ? keyIssueDetail.id : null;
+                      }
+                    });
+                  }
+                }
+              }
+              if (uniqFunctions.length > 0) {
+                for (let fIndex = 0; fIndex < uniqFunctions.length; fIndex++) {
+                  uniqFunctions[fIndex].createdAt = Date.now();
+                  uniqFunctions[fIndex].updatedAt = Date.now();
+                  await Functions.updateOne({
+                    functionType: uniqFunctions[fIndex].functionType ? uniqFunctions[fIndex].functionType : '',
+                    status: true
+                  }, { $set: uniqFunctions[fIndex] }, { upsert: true })
+                  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new function!' }) });
+                }
+              }
+              for (let newCatIndex = 0; newCatIndex < newlyCreatedCategories.length; newCatIndex++) {
+                for (let newFunctionIndex = 0; newFunctionIndex < uniqFunctions.length; newFunctionIndex++) {
+                  let functionDetail = await Functions.findOne({ functionType: uniqFunctions[newFunctionIndex].functionType, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Function not found!' }) });
+                  newDatapoints.find(obj => {
+                    if(obj.functionId === uniqFunctions[newFunctionIndex].functionType){
+                      obj.functionId = functionDetail ? functionDetail.id : null;
+                    }
+                  });
+                }
+              }
+            }
+              
+            if (newDatapoints.length > 0) {
+              for (let unqCatIndex = 0; unqCatIndex < newDatapoints.length; unqCatIndex++) {
+                await Datapoints.updateOne({
+                  clientTaxonomyId: req.body.clientTaxonomyId,
+                  categoryId: newDatapoints[unqCatIndex].categoryId,
+                  keyIssueId: newDatapoints[unqCatIndex].keyIssueId,
+                  functionId: newDatapoints[unqCatIndex].functionId,
+                  code: newDatapoints[unqCatIndex].code ? newDatapoints[unqCatIndex].code : '',
+                  status: true
+                }, { $set: newDatapoints[unqCatIndex] }, { upsert: true })
+                .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new datapoint!' }) });
+              }
+            }
+            return res.status(200).json({
+              status: "200",
+              message: "Datapoint uploaded successfully!",
+              data: newDatapoints
+            });
+          } else {
+            return res.status(400).json({
+              status: "400",
+              message: "No values present in the uploaded file, please check!"
+            });
+          }
+        }
+      } else {
+        return res.status(400).json({
+          status: "400",
+          message: "No values present in the uploaded file, please check!"
+        });
+      }
+    } catch (error) {
+      console.log('error', error);
+      console.log('error.message', error.message);
+      return res.status(500).json({
+        status: "500",
+        message: error.message
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "Missing fields in payload"
+    });
+  }
+}
+
+export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Datapoints.findById(params.id)
   .populate('updatedBy')
   .populate('categoryId')
@@ -2459,10 +2699,7 @@ export const update = ({
   .then(success(res))
   .catch(next)
 
-export const destroy = ({
-    user,
-    params
-  }, res, next) =>
+export const destroy = ({ user, params }, res, next) =>
   Datapoints.findById(params.id)
   .then(notFound(res))
   .then(authorOrAdmin(res, user, 'updatedBy'))

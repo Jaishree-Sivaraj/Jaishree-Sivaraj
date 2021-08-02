@@ -55,6 +55,9 @@ const derivedDatapointsSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -82,6 +85,7 @@ derivedDatapointsSchema.methods = {
       average:this.average,
       fiscalYearEndDate: this.fiscalYearEndDate,
       lastModifiedDate: this.lastModifiedDate,
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

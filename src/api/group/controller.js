@@ -37,7 +37,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
       batchList: batchList,
       status: true
     }
-    if (body.groupId != '' || body.groupId != null) {
+    if (body.groupId == '' || body.groupId == null || !body.groupId) {
       await Group.create({ ...groupObject, createdBy: user })
         .then(async (group) => {
           if (membersList.length > 0) {
@@ -50,6 +50,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
               "_id": { $in: batchList }
             }, { $set: { isAssignedToGroup: true } }, {});
           }
+          res.status(200).json({ status: "200", message: "Group Created Successfully" });
         })
         .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) });
     } else {
@@ -82,10 +83,10 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
               "_id": { $in: batchList }
             }, { $set: { isAssignedToGroup: true } }, {});
           }
+          res.status(200).json({ status: "200", message: "Group updated Successfully" });
         })
         .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to update group!'}) });
     }
-    res.status(200).json({ status: "200", message: "Group Created Successfully" });
 
   } catch (error) {
     res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create Group!" });
@@ -177,7 +178,7 @@ export const show = async({ params }, res, next) => {
             let obj = group.batchList[batchIndex];
             if (obj && Object.keys(obj).length > 0) {
               let batchDetail = await Batches.findOne({"_id": obj._id}).populate('clientTaxonomy');
-              batchObjects.push({ value: obj._id, label: obj.batchName, taxonomy:{ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName } });
+              batchObjects.push({ value: obj._id, label: obj.batchName, taxonomy:{ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName }, isAssignedToGroup: true });
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
@@ -193,6 +194,29 @@ export const show = async({ params }, res, next) => {
             }
           }        
         }
+        await Batches.find({isAssignedToGroup: false, status: true})
+        .populate('companiesList')
+        .populate('clientTaxonomy')
+        .then((batchList) => {
+          if (batchList) {
+            if (batchList && batchList.length >0) {
+              for (let bIndex = 0; bIndex < batchList.length; bIndex++) {
+                let obj = batchList[bIndex];
+                if (obj && Object.keys(obj).length > 0) {
+                  batchObjects.push({ 
+                    value: obj._id, 
+                    label: obj.batchName, 
+                    taxonomy:{ value: obj.clientTaxonomy.id, label: obj.clientTaxonomy.taxonomyName }, 
+                    isAssignedToGroup: obj.isAssignedToGroup 
+                  });
+                }
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : 'Unassigned batches not found!' });
+        })
         let admin = {};
         let adminDetail = await User.findById(group.groupAdmin ? group.groupAdmin.id : null)
         .populate({ path: 'roleDetails.roles' })
