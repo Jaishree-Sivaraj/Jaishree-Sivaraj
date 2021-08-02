@@ -1,5 +1,8 @@
+import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { ClientTaxonomy } from '.'
+import { Categories } from '../categories'
+import { Companies } from '../companies'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   ClientTaxonomy.create({ ...body, createdBy: user })
@@ -31,30 +34,44 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
   })
 }
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
+export const index = async({ querymen: { query, select, cursor } }, res, next) =>{
   query.status = true;
-  ClientTaxonomy.count(query)
+  await ClientTaxonomy.count(query)
     .then(count => ClientTaxonomy.find(query)
       .populate('createdBy')
-      // .populate({
-      //   path: 'fields.id',
-      //   model: 'Taxonomies'
-      // })
-      .then((clientTaxonomies) => {
+      .then(async(clientTaxonomies) => {
         let responseList = [];
-        clientTaxonomies.forEach(item => {
-          // let headersList = [];
-          // item.fields.forEach(obj => {
-          //   headersList.push({value: obj.id, label: obj.name});
-          // })
+        for (let index = 0; index < clientTaxonomies.length; index++) {
+          const item = clientTaxonomies[index];
+          let pillarList = [];
+          let categoriesList = await Categories.find({ clientTaxonomyId: item.id, status: true });
+          if (categoriesList.length > 0) {
+            for (let cIndex = 0; cIndex < categoriesList.length; cIndex++) {
+              const cItem = categoriesList[cIndex];
+              pillarList.push({ value: cItem.id, label: cItem.categoryName });
+            }
+          }
+
+          let nicCodeList = [];
+          let companiesList = await Companies.find({ clientTaxonomyId: item.id, status: true });
+          if (companiesList.length > 0) {
+            for (let cmpIndex = 0; cmpIndex < companiesList.length; cmpIndex++) {
+              const cmpItem = companiesList[cmpIndex];
+              nicCodeList.push({ value: cmpItem.nic, label: cmpItem.nic });
+            }
+          }
+          
+          let nicList = _.uniqBy(nicCodeList, 'nic');
           let objectToPush = {
             _id: item.id,
             taxonomyName: item.taxonomyName,
             headers: item.fields ? item.fields : [],
+            nicList: nicList ? nicList : [],
+            pillarList: pillarList ? pillarList : [],
             status: item.status
           }
-          responseList.push(objectToPush);
-        });
+          responseList.push(objectToPush);          
+        }
         return ({
           message: "Client taxonomy retrieved successfully",
           count,
