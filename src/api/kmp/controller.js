@@ -128,9 +128,17 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
         let mergeKmpMemberList = _.concat(kmpEq,kmpGt);
         if(mergeKmpMemberList.length > 0){
+          let kmpMemberlist = [];
+          for (let kmpMemberIndex = 0; kmpMemberIndex < mergeKmpMemberList.length; kmpMemberIndex++) {
+            let kmpNameValue = {
+              label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
+              value: mergeKmpMemberList[kmpMemberNameListIndex].id
+            }
+            kmpMemberlist.push(kmpNameValue);            
+          }
           return res.status(200).json({
             message: "KmpMember List",
-            KMPList: mergeKmpMemberList
+            KMPList: kmpMemberlist
           });
         } else{
           return res.status(404).json({
