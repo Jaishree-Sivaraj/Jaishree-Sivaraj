@@ -1180,9 +1180,12 @@ export const reports = async ({ user, params }, res, next) => {
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
     console.log(JSON.stringify(allTasks[i], null, 3))
-    var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
-    var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
-    var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
+    if (allTasks[i].companyId) {
+      var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
+      var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
+    } if (allTasks[i].categoryId) {
+      var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
+    }
     var obj = {
       taxonomy: categoryWithClientTaxonomy && categoryWithClientTaxonomy.clientTaxonomyId ? categoryWithClientTaxonomy.clientTaxonomyId.taxonomyName : null,
       companyName: allTasks[i].companyId.companyName,
