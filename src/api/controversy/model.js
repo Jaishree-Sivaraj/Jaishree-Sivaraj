@@ -64,6 +64,9 @@ const controversySchema = new Schema({
     type: Date,
     default: Date.now()
   },
+  additionalDetails: {
+    type: Object
+  },
   nextReviewDate: {
     type: Date,
     required: false
@@ -100,6 +103,7 @@ controversySchema.methods = {
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
       comments: this.comments ? this.comments : [],
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       submittedDate: this.submittedDate ? this.submittedDate : null,
       nextReviewDate: this.nextReviewDate ? this.nextReviewDate : null,

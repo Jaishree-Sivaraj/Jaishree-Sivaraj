@@ -10,6 +10,8 @@ import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
+import { ClientTaxonomy } from "../clientTaxonomy";
+import { Categories } from "../categories";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -395,6 +397,7 @@ export const getMyTasks = async (
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
+            clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
             companyId: object.companyId ? object.companyId.id : null,
             analyst: object.analystId ? object.analystId.name : null,
             analystId: object.analystId ? object.analystId.id : null,
@@ -455,6 +458,7 @@ export const getMyTasks = async (
             batch: object.batchId ? object.batchId.batchName : null,
             batchId: object.batchId ? object.batchId.id : null,
             company: object.companyId ? object.companyId.companyName : null,
+            clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
             companyId: object.companyId ? object.companyId.id : null,
             analyst: object.analystId ? object.analystId.name : null,
             analystId: object.analystId ? object.analystId.id : null,
@@ -555,6 +559,7 @@ export const getMyTasks = async (
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
+              clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
               companyId: object.companyId ? object.companyId.id : null,
               analyst: object.analystId ? object.analystId.name : null,
               analystId: object.analystId ? object.analystId.id : null,
@@ -615,6 +620,7 @@ export const getMyTasks = async (
               batch: object.batchId ? object.batchId.batchName : null,
               batchId: object.batchId ? object.batchId.id : null,
               company: object.companyId ? object.companyId.companyName : null,
+              clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
               companyId: object.companyId ? object.companyId.id : null,
               analyst: object.analystId ? object.analystId.name : null,
               analystId: object.analystId ? object.analystId.id : null,

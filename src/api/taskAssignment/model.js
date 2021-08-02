@@ -59,9 +59,9 @@ const taskAssignmentSchema = new Schema({
     type: Boolean,
     default: false
   },
-  overAllCompletedDate: {
+  overAllCompanyTaskCompletedDate: {
     type: Date,
-    required: false
+    default: Date.now()
   },
   status: {
     type: Boolean,
