@@ -1175,10 +1175,11 @@ export const updateCompanyStatus = async (
 export const reports = async ({ user, params }, res, next) => {
   console.log('in reports')
   var allTasks = await TaskAssignment.find().populate('companyId').populate('categoryId');
-  console.log(JSON.stringify(allTasks, null, 3));
+  //console.log(JSON.stringify(allTasks, null, 3));
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
+    console.log(JSON.stringify(allTasks[i], null, 3))
     var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
     var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
     var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
