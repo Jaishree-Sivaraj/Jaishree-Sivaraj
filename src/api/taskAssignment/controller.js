@@ -1189,7 +1189,7 @@ export const reports = async ({ user, params }, res, next) => {
     var obj = {
       taxonomy: categoryWithClientTaxonomy && categoryWithClientTaxonomy.clientTaxonomyId ? categoryWithClientTaxonomy.clientTaxonomyId.taxonomyName : null,
       companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
-      completedDate: allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null,
+      completedDate: allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null,
       companyRepresentative: companyRep && companyRep.userId ? companyRep.userId.name : null,
       clientRrepresentative: clientRep && clientRep.userId ? clientRep.userId.name : null,
       isChecked: false,
