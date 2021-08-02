@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, errorDatapointDetails, collectionDatapointDetails } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, errorDatapointDetails, collectionDatapointDetails, uploadNewTaxonomyDatapoints } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
@@ -79,7 +79,7 @@ var uploadDatapoints = multer({ //multer settings
 router.post('/upload',
   token({ required: true }),
   uploadDatapoints.single('file'),
-  uploadTaxonomyDatapoints)
+  uploadNewTaxonomyDatapoints)
 
 /**
  * @api {get} /datapoints Retrieve datapoints
