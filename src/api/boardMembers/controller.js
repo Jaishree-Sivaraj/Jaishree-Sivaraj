@@ -153,7 +153,8 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
       });
     } else{
       return res.status(404).json({
-        message: "No active members found"
+        message: "No active members found",
+        BoardMembersList: boardMemberListArray
       });
     }     
    //} 

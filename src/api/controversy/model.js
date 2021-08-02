@@ -64,12 +64,16 @@ const controversySchema = new Schema({
     type: Date,
     default: Date.now()
   },
-  status:{
-    type:Boolean,
-    default:true
-  },
   additionalDetails: {
     type: Object
+  },
+  nextReviewDate: {
+    type: Date,
+    required: false
+  },
+  status: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -80,13 +84,13 @@ const controversySchema = new Schema({
 })
 
 controversySchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       controversyNumber: this.controversyNumber ? this.controversyNumber : '-',
-      taskId: this.taskId ? this.taskId.view(full) : null ,
-      datapointId: this.datapointId ? this.datapointId.view(full) : null ,
+      taskId: this.taskId ? this.taskId.view(full) : null,
+      datapointId: this.datapointId ? this.datapointId.view(full) : null,
       companyId: this.companyId ? this.companyId.view(full) : null,
       year: this.year,
       response: this.response,
@@ -102,6 +106,7 @@ controversySchema.methods = {
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       submittedDate: this.submittedDate ? this.submittedDate : null,
+      nextReviewDate: this.nextReviewDate ? this.nextReviewDate : null,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

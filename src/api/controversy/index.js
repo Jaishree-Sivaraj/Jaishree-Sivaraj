@@ -7,7 +7,8 @@ import { schema } from './model'
 export Controversy, { schema } from './model'
 
 const router = new Router()
-const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails,status } = schema.tree
+
+const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails, status, nextReviewDate } = schema.tree
 const dpCodeId = '', source = {}, pageNo = '';
 
 /**
@@ -24,6 +25,7 @@ const dpCodeId = '', source = {}, pageNo = '';
  * @apiParam submittedDate Controversy's submittedDate.
  * @apiParam response Controversy's response.
  * @apiParam additionalDetails Controversy's additionalDetails.
+ * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiSuccess {Object} controversy Controversy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Controversy not found.
@@ -31,7 +33,7 @@ const dpCodeId = '', source = {}, pageNo = '';
  */
 router.post('/',
   token({ required: true }),
-  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response, additionalDetails }),
+  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response, additionalDetails, nextReviewDate }),
   create)
 
 /**
@@ -45,10 +47,10 @@ router.post('/',
  * @apiError 404 Controversy not found.
  * @apiError 401 user access only.
  */
- router.post('/upload',
- token({ required: true }),
- query(),
- uploadControversies)
+router.post('/upload',
+  token({ required: true }),
+  query(),
+  uploadControversies)
 
 /**
  * @api {post} /controversies/add/new-controversy Add New controversy
@@ -66,15 +68,16 @@ router.post('/',
  * @apiParam pageNo Controversy's pageNo.
  * @apiParam comments Controversy's comments.
  * @apiParam additionalDetails Controversy's additionalDetails.
+ * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiSuccess {Object} controversy Controversy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Controversy not found.
  * @apiError 401 user access only.
  */
 router.post('/add/new-controversy',
-token({ required: true }),
-body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails }),
-addNewControversy)
+  token({ required: true }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate }),
+  addNewControversy)
 
 /**
  * @api {get} /controversies Retrieve controversies
@@ -150,6 +153,7 @@ router.get('/fetch/:companyId/:datapointId',
  * @apiParam controversyDetails Controversy's controversyDetails.
  * @apiParam comments Controversy's comments.
  * @apiParam submittedDate Controversy's submittedDate.
+ * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiParam response Controversy's response.
  * @apiParam additionalDetails Controversy's additionalDetails.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -159,7 +163,7 @@ router.get('/fetch/:companyId/:datapointId',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response, status, additionalDetails }),
+  body({ datapointId, companyId, year, controversyDetails, comments, submittedDate, response, status, additionalDetails, nextReviewDate }),
   update)
 
 /**
@@ -174,6 +178,7 @@ router.put('/:id',
  * @apiParam controversyDetails Controversy's controversyDetails.
  * @apiParam comments Controversy's comments.
  * @apiParam submittedDate Controversy's submittedDate.
+ * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiParam response Controversy's response.
  * @apiParam additionalDetails Controversy's additionalDetails.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -183,7 +188,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate }),
   updateControversy)
 
 /**

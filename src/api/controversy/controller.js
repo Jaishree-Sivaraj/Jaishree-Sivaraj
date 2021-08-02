@@ -15,14 +15,14 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const addNewControversy = async({ user, bodymen: { body } }, res, next) => {
+export const addNewControversy = async ({ user, bodymen: { body } }, res, next) => {
   try {
     if (body) {
-      let lastControversy = await Controversy.findOne({status: true}).sort({createdAt: -1}).limit(1);
+      let lastControversy = await Controversy.findOne({ status: true }).sort({ createdAt: -1 }).limit(1);
       let newTaskNumber = '';
       if (lastControversy && Object.keys(lastControversy).length > 0) {
         let lastTaskNumber = lastControversy.controversyNumber ? lastControversy.controversyNumber.split('CON')[1] : '1';
-        newTaskNumber = 'CON'+String(Number(lastTaskNumber)+1);
+        newTaskNumber = 'CON' + String(Number(lastTaskNumber) + 1);
       } else {
         newTaskNumber = 'CON1';
       }
@@ -43,23 +43,24 @@ export const addNewControversy = async({ user, bodymen: { body } }, res, next) =
         controversyDetails: [],
         additionalDetails: body.additionalDetails,
         submittedDate: Date.now(),
+        nextReviewDate: body.nextReviewDate,
         status: true,
         createdBy: user
       };
       await Controversy.create(controversyObject)
-      .then((controversyDetail) => {
-        return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
-      })
-      .catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
-      })
-    }    
+        .then((controversyDetail) => {
+          return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
+        })
+        .catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
+        })
+    }
   } catch (error) {
     return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create new controversy!' });
   }
 }
 
-export const updateControversy = async({ user, bodymen: { body }, params }, res, next) => {
+export const updateControversy = async ({ user, bodymen: { body }, params }, res, next) => {
   try {
     if (body) {
       let controversyObject = {
@@ -77,17 +78,18 @@ export const updateControversy = async({ user, bodymen: { body }, params }, res,
         comments: body.comments,
         controversyDetails: [],
         additionalDetails: body.additionalDetails,
+        nextReviewDate: body.nextReviewDate,
         submittedDate: Date.now(),
         status: true,
         createdBy: user
       };
-      await Controversy.updateOne({ _id: params.id}, { $set: controversyObject })
-      .then((controversyDetail) => {
-        return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
-      })
-      .catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update controversy!' });
-      })
+      await Controversy.updateOne({ _id: params.id }, { $set: controversyObject })
+        .then((controversyDetail) => {
+          return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
+        })
+        .catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update controversy!' });
+        })
     } else {
       return res.status(400).json({ status: "400", message: "Some fields are missing!" });
     }
@@ -448,6 +450,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
             controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
             controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
             controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
+            controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
             if (controversyObject.response == 'Very High') {
               responseValue = 4;
             } else if (controversyObject.response == 'High') {
@@ -457,39 +460,14 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
             } else if (controversyObject.response == 'Low') {
               responseValue = 1;
             } else {
-              responseValue = 0;
+              return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" });
             }
-            responseList.push(responseValue);
-            controversyObject.source = {
-              sourceName : controversyList[cIndex].sourceName ? controversyList[cIndex].sourceName : '',
-              url : controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
-              publicationDate : controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
-            }
-            controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : [];
-            responseObject.controversyList.push(controversyObject);
-          }
-          let greatestResponseValue = responseList.sort((a,b)=>a-b)[responseList.length - 1];
-          if (greatestResponseValue == 4) {
-            responseObject.avgResponse = 'Very High';
-          } else if (greatestResponseValue == 3) {
-            responseObject.avgResponse = 'High';
-          } else if (greatestResponseValue == 2) {
-            responseObject.avgResponse = 'Medium';
-          } else if (greatestResponseValue == 1) {
-            responseObject.avgResponse = 'Low';
-          } else {
-            responseObject.avgResponse = '';
-          }
-          return res.status(200).json({ status: "200", message: "Datapoint Controversies retrieved successfully!", data: responseObject });
-        } else {
-          return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" });
-        }
+          })
+          .catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" })
+          })
       })
-      .catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" })
-      })
-    })
-    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoint not found!' }) })
+      .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoint not found!' }) })
   } else {
     return res.status(404).json({ status: "404", message: "Controversy not found for the company and dpcode!" })
   }
