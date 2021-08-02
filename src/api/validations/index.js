@@ -7,7 +7,9 @@ import { schema } from './model'
 export Validations, { schema } from './model'
 
 const router = new Router()
-const { datapointId, validationRule, rule, dependantCode, condition, criteria, validationAlert, status } = schema.tree
+const { datapointId, rule, dependantCode, condition, validationAlert} = schema.tree
+const { dpCode, validationRule, dataType, hasDependentCode, dependantCodes, validationType, percentileThreasholdValue, parameters, 
+  methodName, checkCondition, criteria, checkResponse,errorMessage, status } = schema.tree
 const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = '', response = '';
 /**
  * @api {post} /validations Create validations
@@ -16,12 +18,20 @@ const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = ''
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam datapointId Validations's datapointId.
+ * @apiParam dpCode Validations's dpCode.
+ * @apiParam clientTaxonomyId Validations's clientTaxonomyId.
  * @apiParam validationRule Validations's validationRule.
- * @apiParam rule Validations's rule.
- * @apiParam dependantCode Validations's dependantCode.
- * @apiParam condition Validations's condition.
+ * @apiParam dataType Validations's dataType.
+ * @apiParam hasDependentCode Validations's hasDependentCode.
+ * @apiParam dependantCodes Validations's dependantCodes.
+ * @apiParam validationType Validations's validationType.
+ * @apiParam percentileThreasholdValue Validations's percentileThreasholdValue.
+ * @apiParam parameters Validations's parameters.
+ * @apiParam methodName Validations's methodName.
+ * @apiParam checkCondition Validations's checkCondition.
  * @apiParam criteria Validations's criteria.
- * @apiParam validationAlert Validations's validationAlert.
+ * @apiParam checkResponse Validations's checkResponse.
+ * @apiParam errorMessage Validations's errorMessage.
  * @apiSuccess {Object} validations Validations's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Validations not found.
@@ -29,7 +39,8 @@ const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = ''
  */
 router.post('/',
   token({ required: true }),
-  body({ datapointId, validationRule, rule, dependantCode, condition, criteria, validationAlert }),
+  body({ datapointId, dpCode, clientTaxonomyId, validationRule, dataType, hasDependentCode, dependantCodes, validationType, percentileThreasholdValue, parameters, 
+    methodName, checkCondition, criteria, checkResponse, errorMessage }),
   create)
 /**
  * @api {post} /validations/type8 Type8 Validations
