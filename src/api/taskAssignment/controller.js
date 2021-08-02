@@ -11,7 +11,6 @@ import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { ClientTaxonomy } from "../clientTaxonomy";
-import { Categories } from "../categories";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
