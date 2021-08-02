@@ -67,6 +67,9 @@ const controversySchema = new Schema({
   status:{
     type:Boolean,
     default:true
+  },
+  additionalDetails: {
+    type: Object
   }
 }, {
   timestamps: true,
@@ -96,6 +99,7 @@ controversySchema.methods = {
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
       comments: this.comments ? this.comments : [],
+      additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       submittedDate: this.submittedDate ? this.submittedDate : null,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,

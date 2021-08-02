@@ -41,6 +41,7 @@ export const addNewControversy = async({ user, bodymen: { body } }, res, next) =
         screenShot: body.screenShot,
         comments: body.comments,
         controversyDetails: [],
+        additionalDetails: body.additionalDetails,
         submittedDate: Date.now(),
         status: true,
         createdBy: user
@@ -75,6 +76,7 @@ export const updateControversy = async({ user, bodymen: { body }, params }, res,
         screenShot: body.screenShot,
         comments: body.comments,
         controversyDetails: [],
+        additionalDetails: body.additionalDetails,
         submittedDate: Date.now(),
         status: true,
         createdBy: user
@@ -445,6 +447,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
             controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
             controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
             controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
+            controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
             if (controversyObject.response == 'Very High') {
               responseValue = 4;
             } else if (controversyObject.response == 'High') {
