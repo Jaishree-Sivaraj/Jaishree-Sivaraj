@@ -104,7 +104,7 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
         await Kmp.updateMany({
           companyId: body.companyId,
-          id: {$in : body.memberName},    
+          _id: {$in : body.memberName},    
         },{
           $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp,createdBy:user}
         })
@@ -127,8 +127,8 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         let kmpEq = await Kmp.find({companyId: params.companyId, endDateTimeStamp: 0});
         let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
         let mergeKmpMemberList = _.concat(kmpEq,kmpGt);
+        let kmpMemberlist = [];
         if(mergeKmpMemberList.length > 0){
-          let kmpMemberlist = [];
           for (let kmpMemberIndex = 0; kmpMemberIndex < mergeKmpMemberList.length; kmpMemberIndex++) {
             let kmpNameValue = {
               label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
@@ -142,7 +142,8 @@ export const updateEndDate = async({ user, body }, res, next) =>{
           });
         } else{
           return res.status(404).json({
-            message: "No active members found"
+            message: "No active members found",
+            KMPList: kmpMemberlist
           });
         }     
       } catch (error) {
