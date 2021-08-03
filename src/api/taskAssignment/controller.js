@@ -11,7 +11,6 @@ import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { ClientTaxonomy } from "../clientTaxonomy";
-import { Categories } from "../categories";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1121,44 +1120,32 @@ export const updateCompanyStatus = async (
   next
 ) => {
   try {
-    console.log(body.companyId, body.year);
-    let companyDetails = await Companies.findOne({
-      companyId: body.companyId,
-      status: true,
-    });
+    let taskDetails = await TaskAssignment.updateOne({_id: body.taskId},{$set:{taskStatus: body.taskStatus}});
+
     let categoriesLength = await Categories.find({
-      clientTaxonomyId: companyDetails.clientTaxonomyId,
+      clientTaxonomyId: body.clientTaxonomyId,
       status: true,
     });
-    let taskDetails = await TaskAssignment.find({
+    let taskDetailsObject = await TaskAssignment.find({
       companyId: body.companyId,
       year: body.year,
       taskStatus: "Completed",
     });
-    if (categoriesLength.length == taskDetails.length) {
+    if (categoriesLength.length == taskDetailsObject.length) {
       await TaskAssignment.updateOne(
         {
           companyId: body.companyId,
           year: body.year,
+          taskStatus: "Completed"
         },
         {
           $set: {
             overAllCompanyTaskStatus: true,
+            overAllCompanyTaskCompletedDate: Date.now()
           },
         }
       );
     } else {
-      await TaskAssignment.updateOne(
-        {
-          companyId: body.companyId,
-          year: body.year,
-        },
-        {
-          $set: {
-            overAllCompanyTaskStatus: false,
-          },
-        }
-      );
     }
     return res.status(200).json({
       message: "Company Status update succesfully!",
@@ -1170,3 +1157,4 @@ export const updateCompanyStatus = async (
     });
   }
 };
+

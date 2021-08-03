@@ -196,8 +196,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-        taskId: req.body.taskId,
-        year: {
+      companyId: taskDetails.companyId.id,
+      year: {
           "$in": currentYear
         },
         memberStatus: true,
@@ -218,7 +218,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      taskId: req.body.taskId,
+      companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
         },
@@ -242,6 +242,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     console.log(taskDetails.taskStatus == 'Collection' );
     if (taskDetails.taskStatus == 'Yet to start') {
       if (dpTypeValues.length > 0) {
+        
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
@@ -398,7 +399,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
                   keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                   pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                  pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                  pillar: dpTypeDatapoints[ ].categoryId.categoryName,
                   fiscalYear: taskDetails.year,
                   status: 'yet to Start'
                 }

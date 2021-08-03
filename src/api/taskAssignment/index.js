@@ -196,7 +196,10 @@ router.put('/updateCompanyStatus',
   }),
   body({
     companyId,
-    year
+    year,
+    clienTaxonomyId,
+    taskId,
+    taskStatus
   }),
   updateCompanyStatus)
 /**
