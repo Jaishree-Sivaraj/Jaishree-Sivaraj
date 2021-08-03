@@ -92,6 +92,7 @@ taskAssignmentSchema.methods = {
       qaSLADate: this.qaSLADate ? this.qaSLADate : null,
       taskStatus: this.taskStatus,
       overAllCompanyTaskStatus: this.overAllCompanyTaskStatus,
+      overAllCompletedDate: this.overAllCompletedDate,
       analystId: this.analystId ? this.analystId.view(full) : null,
       qaId: this.qaId ? this.qaId.view(full) : null,
       status: this.status,
