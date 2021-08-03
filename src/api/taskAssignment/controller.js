@@ -274,6 +274,8 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
           qaId: object.qaId ? object.qaId.id : null,
           fiscalYear: object.year,
           taskStatus: object.taskStatus,
+          overAllCompletedDate: object.overAllCompletedDate,
+          overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
           createdBy: object.createdBy ? object.createdBy.name : null,
           createdById: object.createdBy ? object.createdBy.id : null,
         };
@@ -1157,4 +1159,36 @@ export const updateCompanyStatus = async (
     });
   }
 };
+
+export const reports = async ({ user, params }, res, next) => {
+  console.log('in reports')
+  var allTasks = await TaskAssignment.find().populate('companyId').populate('categoryId');
+  //console.log(JSON.stringify(allTasks, null, 3));
+  var completedTask = [];
+  var pendingTask = [];
+  for (var i = 0; i < allTasks.length; i++) {
+    console.log(JSON.stringify(allTasks[i], null, 3))
+    if (allTasks[i].companyId) {
+      var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
+      var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
+    } if (allTasks[i].categoryId) {
+      var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
+    }
+    var obj = {
+      taxonomy: categoryWithClientTaxonomy && categoryWithClientTaxonomy.clientTaxonomyId ? categoryWithClientTaxonomy.clientTaxonomyId.taxonomyName : null,
+      companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
+      completedDate: allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null,
+      companyRepresentative: companyRep && companyRep.userId ? companyRep.userId.name : null,
+      clientRrepresentative: clientRep && clientRep.userId ? clientRep.userId.name : null,
+      isChecked: false,
+    }
+    if (allTasks[i].overAllCompanyTaskStatus) {
+      completedTask.push(obj)
+    } else {
+      pendingTask.push(obj)
+    }
+  }
+  return res.status(200).json({ completed: completedTask, pending: pendingTask });
+}
+
 

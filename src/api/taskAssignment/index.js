@@ -22,7 +22,8 @@ import {
   updateCompanyStatus,
   createTask,
   getQaAndAnalystFromGrp,
-  updateSlaDates
+  updateSlaDates,
+  reports
 } from './controller'
 import {
   schema
@@ -101,6 +102,24 @@ router.post('/getQaAndAnalyst',
   token({ required: true }),
   body({ groupId, batchId }),
   getQaAndAnalystFromGrp)
+
+/**
+* @api {get} /taskAssignments/task/reports Retrieve my task assignments
+* @apiName RetrieveTaskAssignments
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of task assignments.
+* @apiSuccess {Object[]} rows List of task assignments.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/task/reports',
+  token({
+    required: true
+  }),
+  reports)
 
 /**
  * @api {get} /taskAssignments Retrieve task assignments

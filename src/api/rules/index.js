@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, addExtraKeys } from './controller'
 import { schema } from './model'
 export Rules, { schema } from './model'
 
 const router = new Router()
-const { methodName, methodType, criteria, parameter, datapointId, aidDPLogic, status } = schema.tree
+const { methodName, methodType, criteria, parameter, dpCode, datapointId, categoryId, aidDPLogic, status } = schema.tree
 
 /**
  * @api {post} /rules Create rules
@@ -19,7 +19,9 @@ const { methodName, methodType, criteria, parameter, datapointId, aidDPLogic, st
  * @apiParam methodType Rules's methodType.
  * @apiParam criteria Rules's criteria.
  * @apiParam parameter Rules's parameter.
+ * @apiParam dpCode Rules's dpCode.
  * @apiParam datapointId Rules's datapointId.
+ * @apiParam categoryId Rules's categoryId.
  * @apiParam aidDPLogic Rules's aidDPLogic.
  * @apiSuccess {Object} rules Rules's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -28,7 +30,7 @@ const { methodName, methodType, criteria, parameter, datapointId, aidDPLogic, st
  */
 router.post('/',
   token({ required: true }),
-  body({ methodName, methodType, criteria, parameter, datapointId, aidDPLogic }),
+  body({ methodName, methodType, criteria, parameter, dpCode, datapointId, categoryId, aidDPLogic }),
   create)
 
 /**
@@ -64,6 +66,23 @@ router.get('/:id',
   show)
 
 /**
+ * @api {get} /rules/add/extra-keys Add extra-keys for rules
+ * @apiName AddExtraKeysForRules
+ * @apiGroup Rules
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of rules.
+ * @apiSuccess {Object[]} rows List of rules.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/add/extra-keys',
+  token({ required: true }),
+  query(),
+  addExtraKeys)
+
+/**
  * @api {put} /rules/:id Update rules
  * @apiName UpdateRules
  * @apiGroup Rules
@@ -73,7 +92,9 @@ router.get('/:id',
  * @apiParam methodType Rules's methodType.
  * @apiParam criteria Rules's criteria.
  * @apiParam parameter Rules's parameter.
+ * @apiParam dpCode Rules's dpCode.
  * @apiParam datapointId Rules's datapointId.
+ * @apiParam categoryId Rules's categoryId.
  * @apiParam aidDPLogic Rules's aidDPLogic.
  * @apiParam status Rules's status.
  * @apiSuccess {Object} rules Rules's data.
@@ -83,7 +104,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ methodName, methodType, criteria, parameter, datapointId, aidDPLogic, status }),
+  body({ methodName, methodType, criteria, parameter, dpCode, datapointId, categoryId, aidDPLogic, status }),
   update)
 
 /**
