@@ -8,7 +8,7 @@ export Kmp, { schema } from './model'
 
 const router = new Router()
 const { companyId, MASP003, startDate, endDate, endDateTimeStamp, dob,MASR008, memberStatus,clientTaxonomyId, status } = schema.tree
-let memberName = "", gender = "";
+let memberName = "", gender = "",kmpMembersToTerminate = [];
 /**
  * @api {post} /kmp Create kmp
  * @apiName CreateKmp
@@ -52,7 +52,7 @@ router.post('/',
  */
 router.post('/deleteKmpMembers',
 token({ required: true }),
-body({ companyId, memberName , endDate}),
+body({ companyId, kmpMembersToTerminate , endDate}),
 updateEndDate)
 
 /**
