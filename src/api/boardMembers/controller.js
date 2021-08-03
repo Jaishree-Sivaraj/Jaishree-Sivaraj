@@ -108,12 +108,12 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next)
 
 export const updateEndDate = async({ user, body }, res, next) =>{
-  console.log(body.companyId, body.memberName, body.endDate);
+  console.log(body.companyId, body.boardMembersToTerminate, body.endDate);
   try {
     let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
     await BoardMembers.updateMany({
       companyId: body.companyId,
-      _id : {$in: body.memberName},    
+      _id : {$in: body.boardMembersToTerminate},    
     },{
       $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp,createdBy:user}
     })
