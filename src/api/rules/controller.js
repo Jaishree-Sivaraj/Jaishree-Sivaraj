@@ -42,3 +42,24 @@ export const destroy = ({ params }, res, next) =>
     .then((rules) => rules ? rules.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+export const addExtraKeys = async({ params }, res, next) => {
+  await Rules.find({})
+  .populate({
+    path: "datapointId",
+    populate: {
+       path: "categoryId"
+    }
+ })
+  .then(async(allRules) => {
+    if (allRules && allRules.length > 0) {
+      for (let index = 0; index < allRules.length; index++) {
+        const item = allRules[index];
+        await Rules.updateOne({ _id: item.id }, { $set: { categoryId: item.datapointId.categoryId.id, dpCode: item.datapointId.code } });
+      }
+      return res.status(200).json({ status: "200", message: "Extra-keys added for rules!" });
+    } else {
+      return res.status(200).json({ status: "200", message: "No rules found!" });
+    }
+  });
+}

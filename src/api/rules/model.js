@@ -13,6 +13,14 @@ const rulesSchema = new Schema({
   parameter: {
     type: String
   },
+  categoryId: {
+    type: Schema.ObjectId,
+    ref: 'Categories',
+    required: true
+  },
+  dpCode: {
+    type: String
+  },
   datapointId: {
     type: Schema.ObjectId,
     ref: 'Datapoints',
@@ -42,7 +50,9 @@ rulesSchema.methods = {
       methodType: this.methodType,
       criteria: this.criteria,
       parameter: this.parameter,
+      dpCode: this.dpCode ? this.dpCode.view(full) : null,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
+      categoryId: this.categoryId ? this.categoryId.view(full) : null,
       aidDPLogic: this.aidDPLogic,
       status: this.status,
       createdAt: this.createdAt,
