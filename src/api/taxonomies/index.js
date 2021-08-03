@@ -18,7 +18,6 @@ const { name, fieldName, description, isRequired, applicableFor, inputType, inpu
  * @apiParam name Taxonomies's name.
  * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
- * @apiParam isRequired Taxonomies's isRequired.
  * @apiParam applicableFor Taxonomies's applicableFor.
  * @apiParam inputType Taxonomies's inputType.
  * @apiParam inputValues Taxonomies's inputValues.
@@ -30,7 +29,7 @@ const { name, fieldName, description, isRequired, applicableFor, inputType, inpu
  */
 router.post('/',
   token({ required: true }),
-  body({ name, fieldName, description, isRequired, applicableFor, inputType, inputValues, toDisplay }),
+  body({ name, fieldName, description, applicableFor, inputType, inputValues, toDisplay }),
   create)
 
 /**
@@ -74,7 +73,6 @@ router.get('/:id',
  * @apiParam name Taxonomies's name.
  * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
- * @apiParam isRequired Taxonomies's isRequired.
  * @apiParam applicableFor Taxonomies's applicableFor.
  * @apiParam inputType Taxonomies's inputType.
  * @apiParam inputValues Taxonomies's inputValues.
@@ -87,7 +85,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, fieldName, description, isRequired, applicableFor, inputType, inputValues, toDisplay, status }),
+  body({ name, fieldName, description, applicableFor, inputType, inputValues, toDisplay, status }),
   update)
 
 /**
