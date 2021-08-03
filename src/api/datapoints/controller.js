@@ -196,8 +196,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-        taskId: req.body.taskId,
-        year: {
+      companyId: taskDetails.companyId.id,
+      year: {
           "$in": currentYear
         },
         memberStatus: true,
@@ -218,7 +218,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      taskId: req.body.taskId,
+      companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
         },
@@ -240,8 +240,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     console.log(taskDetails.taskStatus == 'Collection' );
-    if (taskDetails.taskStatus == 'Yet to start') {
+    if (taskDetails.taskStatus == 'Yet to work') {
       if (dpTypeValues.length > 0) {
+
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
@@ -1042,6 +1043,7 @@ export const datapointDetails = async (req, res, next) => {
         .populate('taskId');
 
       let historyYear = _.uniqBy(historyAllStandaloneDetails, 'year');
+      historyYear = _.orderBy(historyYear, 'year', 'desc');
       let datapointsObject = {
         dpCode: dpTypeValues.code,
         dpCodeId: dpTypeValues.id,
@@ -1135,7 +1137,13 @@ export const datapointDetails = async (req, res, next) => {
         }
         datapointsObject.currentData.push(currentDatapointsObject);
       }
-      for (let historicalYearIndex = 0; historicalYearIndex < historyYear.length; historicalYearIndex++) {
+      let totalHistories = 0;
+      if (historyYear.length > 5 ) {
+        totalHistories = 5;
+      } else{
+        totalHistories = historyYear.length;
+      }
+      for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
         let historicalDatapointsObject = {};
         _.filter(historyAllStandaloneDetails, function (object) {
           if (object.year == historyYear[historicalYearIndex].year) {
