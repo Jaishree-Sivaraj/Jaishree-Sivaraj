@@ -104,7 +104,7 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
         await Kmp.updateMany({
           companyId: body.companyId,
-          _id: {$in : body.memberName},    
+          id: {"$in" : body.memberName},    
         },{
           $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp,createdBy:user}
         })
@@ -131,8 +131,8 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         if(mergeKmpMemberList.length > 0){
           for (let kmpMemberIndex = 0; kmpMemberIndex < mergeKmpMemberList.length; kmpMemberIndex++) {
             let kmpNameValue = {
-              label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
-              value: mergeKmpMemberList[kmpMemberNameListIndex].id
+              label: mergeKmpMemberList[kmpMemberIndex].MASP003,
+              value: mergeKmpMemberList[kmpMemberIndex].id
             }
             kmpMemberlist.push(kmpNameValue);            
           }
