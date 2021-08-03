@@ -23,7 +23,8 @@ import {
   createTask,
   getQaAndAnalystFromGrp,
   updateSlaDates,
-  reports
+  reports,
+  getTaskList
 } from './controller'
 import {
   schema
@@ -35,8 +36,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '';
-const clientTaxonomyId = "";
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "";
 /**
  * @api {post} /taskAssignments Create task assignment
  * @apiName CreateTaskAssignment
@@ -323,6 +323,24 @@ router.post('/getAllAssignedUsers',
     categoryId
   }),
   getUsers)
+
+/**
+* @api {post} /taskAssignments Create task assignment
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam batchId Task assignment's batchId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/taskListWithStatus',
+  token({ required: true }),
+  body({ flag, companyId }),
+  getTaskList)
 
 
 export default router

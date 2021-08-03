@@ -10,7 +10,7 @@ import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
-import { ClientTaxonomy } from "../clientTaxonomy";
+import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1181,6 +1181,7 @@ export const reports = async ({ user, params }, res, next) => {
       companyRepresentative: companyRep && companyRep.userId ? companyRep.userId.name : null,
       clientRrepresentative: clientRep && clientRep.userId ? clientRep.userId.name : null,
       isChecked: false,
+      companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
     if (allTasks[i].overAllCompanyTaskStatus) {
       completedTask.push(obj)
@@ -1188,7 +1189,46 @@ export const reports = async ({ user, params }, res, next) => {
       pendingTask.push(obj)
     }
   }
+  completedTask = _.uniqBy(completedTask, function (e) {
+    return e.companyId;
+  })
+  pendingTask = _.uniqBy(pendingTask, function (e) {
+    return e.companyId;
+  })
   return res.status(200).json({ completed: completedTask, pending: pendingTask });
 }
 
 
+export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
+  if (body.flag && body.flag.toUpperCase() === 'PENDING') {
+    var allTasks = await TaskAssignment.find({
+      companyId: body.companyId, taskStatus: {
+        $ne: "Completed",
+      }
+    }).populate('companyId').populate('categoryId').populate('groupId');
+  }
+  if (body.flag && body.flag.toUpperCase() === 'COMPLETED') {
+    var allTasks = await TaskAssignment.find({
+      companyId: body.companyId, taskStatus: "Completed",
+    }).populate('companyId').populate('categoryId').populate('groupId').populate('batchId').populate('categoryId').populate('analystId').populate('qaId');
+  }
+  var result = [];
+  for (var i = 0; i < allTasks.length; i++) {
+    var obj = {
+      companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
+      taskid: allTasks[i].taskNumber,
+      group: allTasks[i].groupId ? allTasks[i].groupId.groupName : null,
+      batch: allTasks[i].batchId ? allTasks[i].batchId.batchName : null,
+      pillar: allTasks[i].categoryId ? allTasks[i].categoryId.categoryName : null,
+      analyst: allTasks[i].analystId ? allTasks[i].analystId.name : null,
+      analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
+      qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
+      qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
+      analystStatus: "Breached",
+      qaStatus: "OnTrack",
+      status: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+    }
+    result.push(obj);
+  }
+  return res.status(200).json({ data: result });
+}
