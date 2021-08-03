@@ -21,7 +21,11 @@ const taxonomiesSchema = new Schema({
   },
   isRequired: {
     type: Boolean,
-    default: true
+    default: false
+  },
+  applicableFor: {
+    type: String,
+    default: 'Only Data Collection'
   },
   inputType: {
     type: String,
@@ -56,6 +60,7 @@ taxonomiesSchema.methods = {
       fieldName: this.fieldName ? this.fieldName : '',
       description: this.description ? this.description : '',
       isRequired: this.isRequired,
+      applicableFor: this.applicableFor ? this.applicableFor : 'Only Data Collection',
       inputType: this.inputType ? this.inputType : '', 
       inputValues: this.inputValues ? this.inputValues : '', 
       toDisplay: this.toDisplay ? this.toDisplay : false,
