@@ -99,12 +99,12 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next)
 
 export const updateEndDate = async({ user, body }, res, next) =>{
-  console.log(body.companyId, body.memberName, body.endDate);
+  console.log(body.companyId, body.kmpMembersToTerminate, body.endDate);
     try {
         let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
         await Kmp.updateMany({
           companyId: body.companyId,
-          id: {"$in" : body.memberName},    
+          id: {"$in" : body.kmpMembersToTerminate},    
         },{
           $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp,createdBy:user}
         })

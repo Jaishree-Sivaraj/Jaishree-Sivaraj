@@ -2426,7 +2426,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
           if (clientTaxonomies) {
             for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
               const fieldNameObject = clientTaxonomies.fields[nameIndex];
-              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static") {
+              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                 masterLevelMandatoryNamesList.push({
                   "name": fieldNameObject.name ? fieldNameObject.name : '',
                   "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
@@ -2446,7 +2446,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                     "name": fieldNameObject.name ? fieldNameObject.name : '',
                     "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
                   });
-                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static") {
+                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                   additionalFieldNamesList.push({
                     "name": fieldNameObject.name ? fieldNameObject.name : '',
                     "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
