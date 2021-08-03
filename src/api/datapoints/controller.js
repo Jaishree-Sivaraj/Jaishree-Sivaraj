@@ -2644,6 +2644,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 await Datapoints.updateOne({
                   clientTaxonomyId: req.body.clientTaxonomyId,
                   categoryId: newDatapoints[unqCatIndex].categoryId,
+                  themeId: newDatapoints[unqCatIndex].themeId,
                   keyIssueId: newDatapoints[unqCatIndex].keyIssueId,
                   functionId: newDatapoints[unqCatIndex].functionId,
                   code: newDatapoints[unqCatIndex].code ? newDatapoints[unqCatIndex].code : '',

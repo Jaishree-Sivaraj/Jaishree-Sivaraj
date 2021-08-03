@@ -1,5 +1,6 @@
 import { success, notFound } from '../../services/response/'
 import { Rules } from '.'
+import { Datapoints } from '../datapoints'
 
 export const create = ({ bodymen: { body } }, res, next) =>
   Rules.create(body)
@@ -48,18 +49,39 @@ export const addExtraKeys = async({ params }, res, next) => {
   .populate({
     path: "datapointId",
     populate: {
-       path: "categoryId"
+      path: "categoryId"
     }
  })
   .then(async(allRules) => {
     if (allRules && allRules.length > 0) {
       for (let index = 0; index < allRules.length; index++) {
         const item = allRules[index];
-        await Rules.updateOne({ _id: item.id }, { $set: { categoryId: item.datapointId.categoryId.id, dpCode: item.datapointId.code } });
+        await Rules.updateOne({ _id: item.id }, { $set: { categoryId: item.datapointId.categoryId.id, dpCode: item.datapointId.code } }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update categoryId for ' + item.code + ' of id ' + item.id }) });;
       }
-      return res.status(200).json({ status: "200", message: "Extra-keys added for rules!" });
+      await Datapoints.find({})
+      .populate({
+        path: "keyIssueId",
+        populate: {
+          path: "themeId"
+        }
+      })
+      .then(async(allDatapoints) => {
+        if (allDatapoints &&  allDatapoints.length > 0) {
+          for (let dIndex = 0; dIndex < allDatapoints.length; dIndex++) {
+            const dItem = allDatapoints[dIndex];
+            await Datapoints.updateOne({ _id: dItem.id }, { $set: { themeId: dItem.keyIssueId.themeId.id } }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to update themeId for ' + dItem.code + ' of id ' + dItem.id }) });
+          }
+        }
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : 'No datapoint found!' });
+      })
+      return res.status(200).json({ status: "200", message: "Extra-keys added for rules and themeId for datapoints!" });
     } else {
       return res.status(200).json({ status: "200", message: "No rules found!" });
     }
+  })
+  .catch((error) => {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : 'No datapoint found!' });
   });
 }
