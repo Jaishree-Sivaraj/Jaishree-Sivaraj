@@ -7,7 +7,7 @@ import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
 const router = new Router()
-const { taxonomyName, fields, status } = schema.tree
+const { taxonomyName, fields, fiscalYearEndDate, fiscalYearEndMonth, status } = schema.tree
 const headers = [];
 
 /**
