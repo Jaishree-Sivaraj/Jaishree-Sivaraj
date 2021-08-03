@@ -59,6 +59,11 @@ const datapointsSchema = new Schema({
   finalUnit: {
     type: String
   },
+  themeId: {
+    type: Schema.ObjectId,
+    ref: 'Themes',
+    required: true
+  },
   keyIssueId: {
     type: Schema.ObjectId,
     ref: 'KeyIssues',
@@ -156,6 +161,7 @@ datapointsSchema.methods = {
       signal: this.signal,
       percentile: this.percentile,
       finalUnit: this.finalUnit,
+      themeId: this.themeId ? this.themeId.view(full) : null,
       keyIssueId: this.keyIssueId ? this.keyIssueId.view(full) : null,
       functionId: this.functionId ? this.functionId.view(full) : null,
       clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
