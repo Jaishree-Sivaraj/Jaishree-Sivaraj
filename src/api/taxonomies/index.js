@@ -7,7 +7,7 @@ import { schema } from './model'
 export Taxonomies, { schema } from './model'
 
 const router = new Router()
-const { name, fieldName, description, isRequired, inputType, inputValues, toDisplay, status } = schema.tree
+const { name, fieldName, description, isRequired, applicableFor, inputType, inputValues, toDisplay, status } = schema.tree
 
 /**
  * @api {post} /taxonomies Create taxonomies
@@ -18,7 +18,7 @@ const { name, fieldName, description, isRequired, inputType, inputValues, toDisp
  * @apiParam name Taxonomies's name.
  * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
- * @apiParam isRequired Taxonomies's isRequired.
+ * @apiParam applicableFor Taxonomies's applicableFor.
  * @apiParam inputType Taxonomies's inputType.
  * @apiParam inputValues Taxonomies's inputValues.
  * @apiParam toDisplay Taxonomies's toDisplay.
@@ -29,7 +29,7 @@ const { name, fieldName, description, isRequired, inputType, inputValues, toDisp
  */
 router.post('/',
   token({ required: true }),
-  body({ name, fieldName, description, isRequired, inputType, inputValues, toDisplay }),
+  body({ name, fieldName, description, applicableFor, inputType, inputValues, toDisplay }),
   create)
 
 /**
@@ -73,7 +73,7 @@ router.get('/:id',
  * @apiParam name Taxonomies's name.
  * @apiParam fieldName Taxonomies's fieldName.
  * @apiParam description Taxonomies's description.
- * @apiParam isRequired Taxonomies's isRequired.
+ * @apiParam applicableFor Taxonomies's applicableFor.
  * @apiParam inputType Taxonomies's inputType.
  * @apiParam inputValues Taxonomies's inputValues.
  * @apiParam toDisplay Taxonomies's toDisplay.
@@ -85,7 +85,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, fieldName, description, isRequired, inputType, inputValues, toDisplay, status }),
+  body({ name, fieldName, description, applicableFor, inputType, inputValues, toDisplay, status }),
   update)
 
 /**
