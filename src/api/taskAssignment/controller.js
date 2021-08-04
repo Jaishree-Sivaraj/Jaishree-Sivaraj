@@ -1207,7 +1207,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   for (var index = 0; index < body.companyTaskReports.length; index++) {
     var allTasks = await TaskAssignment.find({
       companyId: body.companyTaskReports[index]
-    }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId');
+    }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     var result = [];
     for (var i = 0; i < allTasks.length; i++) {
       var obj = {
@@ -1222,7 +1222,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
         analystStatus: "Breached",
         qaStatus: "OnTrack",
-        status: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+        stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
       }
       result.push(obj);
     }
