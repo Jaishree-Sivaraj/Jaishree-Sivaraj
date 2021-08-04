@@ -7,7 +7,7 @@ import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
 const router = new Router()
-const { taxonomyName, fields, status } = schema.tree
+const { taxonomyName, fields, fiscalYearEndDate, fiscalYearEndMonth, status } = schema.tree
 const headers = [];
 
 /**
@@ -18,6 +18,8 @@ const headers = [];
  * @apiParam {String} access_token user access token.
  * @apiParam taxonomyName Client taxonomy's taxonomyName.
  * @apiParam fields Client taxonomy's fields.
+ * @apiParam fiscalYearEndDate Client taxonomy's fiscalYearEndDate.
+ * @apiParam fiscalYearEndMonth Client taxonomy's fiscalYearEndMonth.
  * @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Client taxonomy not found.
@@ -25,7 +27,7 @@ const headers = [];
  */
 router.post('/',
   token({ required: true }),
-  body({ taxonomyName, fields }),
+  body({ taxonomyName, fields, fiscalYearEndDate, fiscalYearEndMonth }),
   create)
 
 /**
@@ -36,6 +38,8 @@ router.post('/',
  * @apiParam {String} access_token user access token.
  * @apiParam taxonomyName Client taxonomy's taxonomyName.
  * @apiParam headers Client taxonomy's headers.
+ * @apiParam fiscalYearEndDate Client taxonomy's fiscalYearEndDate.
+ * @apiParam fiscalYearEndMonth Client taxonomy's fiscalYearEndMonth.
  * @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Client taxonomy not found.
@@ -43,7 +47,7 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ taxonomyName, headers }),
+  body({ taxonomyName, headers, fiscalYearEndDate, fiscalYearEndMonth }),
   createClientTaxonomy)
 
 /**
@@ -86,6 +90,8 @@ router.get('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam taxonomyName Client taxonomy's taxonomyName.
  * @apiParam fields Client taxonomy's fields.
+ * @apiParam fiscalYearEndDate Client taxonomy's fiscalYearEndDate.
+ * @apiParam fiscalYearEndMonth Client taxonomy's fiscalYearEndMonth.
  * @apiParam status Client taxonomy's status.
  * @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -94,7 +100,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ taxonomyName, fields, status }),
+  body({ taxonomyName, fields, fiscalYearEndDate, fiscalYearEndMonth, status }),
   update)
 
 /**
@@ -105,6 +111,8 @@ router.put('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam taxonomyName Client taxonomy's taxonomyName.
  * @apiParam fields Client taxonomy's fields.
+ * @apiParam fiscalYearEndDate Client taxonomy's fiscalYearEndDate.
+ * @apiParam fiscalYearEndMonth Client taxonomy's fiscalYearEndMonth.
  * @apiParam status Client taxonomy's status.
  * @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -113,7 +121,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ taxonomyName, headers, status }),
+  body({ taxonomyName, headers, fiscalYearEndDate, fiscalYearEndMonth, status }),
   updateClientTaxonomy)
 
 /**
