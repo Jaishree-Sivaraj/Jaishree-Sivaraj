@@ -165,6 +165,8 @@ export const uploadCompaniesFile = async (req, res, next) => {
               isinCode: rowObject['ISIN Code'].replace(/[\\r\\n]/g,''),
               cmieProwessCode: rowObject['CMIE/Prowess Code'],
               clientTaxonomyId: req.body.clientTaxonomyId,
+              fiscalYearEndDate: rowObject['Fiscal Year End Date'] ? rowObject['Fiscal Year End Date'] : '',
+              fiscalYearEndMonth: rowObject['Fiscal Year End Month'] ? rowObject['Fiscal Year End Month'] : '',
               status: true,
               createdBy: userDetail
             }

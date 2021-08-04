@@ -7,7 +7,7 @@ import { schema } from './model'
 export Companies, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName, companyMemberDetails, isAssignedToBatch, status } = schema.tree
+const { clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, socialAnalystName, socialQAName, companyMemberDetails, fiscalYearEndDate, fiscalYearEndMonth, isAssignedToBatch, status } = schema.tree
 const companyId = '', name = '', years = [], memberType = '';
 
 /**
@@ -128,6 +128,8 @@ router.get('/:id',
  * @apiParam isinCode Companies's isinCode.
  * @apiParam cmieProwessCode Companies's cmieProwessCode.
  * @apiParam companyMemberDetails Companies's companyMemberDetails.
+ * @apiParam fiscalYearEndDate Companies's fiscalYearEndDate.
+ * @apiParam fiscalYearEndMonth Companies's fiscalYearEndMonth.
  * @apiParam isAssignedToBatch Companies's isAssignedToBatch.
  * @apiParam status Companies's status.
  * @apiSuccess {Object} companies Companies's data.
@@ -137,7 +139,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, companyMemberDetails, isAssignedToBatch, status }),
+  body({ clientTaxonomyId, companyName, cin, nicCode, nic, nicIndustry, isinCode, cmieProwessCode, companyMemberDetails, fiscalYearEndDate, fiscalYearEndMonth, isAssignedToBatch, status }),
   update)
 
 /**
