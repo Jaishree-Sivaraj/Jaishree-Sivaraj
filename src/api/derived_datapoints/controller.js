@@ -2723,28 +2723,29 @@ export const derivedCalculation = async ({
               default:
                 break;
           }
+      }      
+  if(ruleMethodIndex == distinctRuleMethods.length - 1){
+    await DerivedDatapoints.updateMany({
+      "companyId": taskDetailsObject.companyId.id,
+      "year": {
+        $in: year
       }
-      
+    }, {
+      $set: {
+        status: false
+      }
+    }, {});
+    await DerivedDatapoints.insertMany(allDerivedDatapoints)
+      .then((result,err) => {
+        if (err) {
+          console.log('error', err);
+        } else {
+          return res.status(200).json({
+            message: "Calculation completed successfuly!",
+            derivedDatapoints: allDerivedDatapoints
+          });
+        }
+      });
   }
-  await DerivedDatapoints.updateMany({
-    "companyId": taskDetailsObject.companyId.id,
-    "year": {
-      $in: year
-    }
-  }, {
-    $set: {
-      status: false
-    }
-  }, {});
-  await DerivedDatapoints.insertMany(allDerivedDatapoints)
-    .then((result,err) => {
-      if (err) {
-        console.log('error', err);
-      } else {
-        return res.status(200).json({
-          message: "Calculation completed successfuly!",
-          derivedDatapoints: allDerivedDatapoints
-        });
-      }
-    });
+  }
   }
