@@ -316,6 +316,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                     pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
                     fiscalYear: boardDpCodesData.boardMemberList[boarMemberListIndex].year ,
                     memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
                     memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
@@ -372,6 +373,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                     pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
                     fiscalYear: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].year,
                     memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
                     memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
@@ -400,8 +402,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                   pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                   pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                  dataType: dpTypeDatapoints[datapointsIndex].dataType,
                   fiscalYear: taskDetails.year,
-                  status: 'yet to Start'
+                  status: 'Yet to Start'
                 }
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   _.filter(currentAllStandaloneDetails,(object)=>{
@@ -2426,7 +2429,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
           if (clientTaxonomies) {
             for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
               const fieldNameObject = clientTaxonomies.fields[nameIndex];
-              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static") {
+              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                 masterLevelMandatoryNamesList.push({
                   "name": fieldNameObject.name ? fieldNameObject.name : '',
                   "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
@@ -2446,7 +2449,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                     "name": fieldNameObject.name ? fieldNameObject.name : '',
                     "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
                   });
-                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static") {
+                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                   additionalFieldNamesList.push({
                     "name": fieldNameObject.name ? fieldNameObject.name : '',
                     "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''

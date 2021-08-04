@@ -46,6 +46,14 @@ const companiesSchema = new Schema({
     type: Object,
     default: []
   },
+  fiscalYearEndDate: {
+    type: String,
+    default: ''
+  },
+  fiscalYearEndMonth: {
+    type: String,
+    default: ''
+  },
   isAssignedToBatch: {
     type: Boolean,
     default: false
@@ -78,6 +86,8 @@ companiesSchema.methods = {
       socialQAName: this.socialQAName ? this.socialQAName : '',
       companyMemberDetails: this.companyMemberDetails ? this.companyMemberDetails : [],
       clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
+      fiscalYearEndDate: this.fiscalYearEndDate ? this.fiscalYearEndDate : '',
+      fiscalYearEndMonth: this.fiscalYearEndMonth ? this.fiscalYearEndMonth : '',
       status: this.status,
       isAssignedToBatch: this.isAssignedToBatch ? this.isAssignedToBatch : false,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,

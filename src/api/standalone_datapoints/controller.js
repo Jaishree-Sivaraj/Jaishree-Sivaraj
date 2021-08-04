@@ -895,7 +895,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            if (missingDPList.length != 0) {
+            if (missingDPList.length == 0) {
               const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds

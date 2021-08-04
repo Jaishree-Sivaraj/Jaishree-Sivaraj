@@ -1122,7 +1122,7 @@ export const updateCompanyStatus = async (
   next
 ) => {
   try {
-    let taskDetails = await TaskAssignment.updateOne({_id: body.taskId},{$set:{taskStatus: body.taskStatus}});
+    let taskDetails = await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
 
     let categoriesLength = await Categories.find({
       clientTaxonomyId: body.clientTaxonomyId,
@@ -1163,7 +1163,6 @@ export const updateCompanyStatus = async (
 export const reports = async ({ user, params }, res, next) => {
   console.log('in reports')
   var allTasks = await TaskAssignment.find().populate('companyId').populate('categoryId');
-  //console.log(JSON.stringify(allTasks, null, 3));
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
@@ -1177,11 +1176,16 @@ export const reports = async ({ user, params }, res, next) => {
     var obj = {
       taxonomy: categoryWithClientTaxonomy && categoryWithClientTaxonomy.clientTaxonomyId ? categoryWithClientTaxonomy.clientTaxonomyId.taxonomyName : null,
       companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
-      completedDate: allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null,
       companyRepresentative: companyRep && companyRep.userId ? companyRep.userId.name : null,
       clientRrepresentative: clientRep && clientRep.userId ? clientRep.userId.name : null,
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
+    }
+    if (allTasks[i].taskStatus !== 'Completed') {
+      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
+    } else {
+      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
+
     }
     if (allTasks[i].overAllCompanyTaskStatus) {
       completedTask.push(obj)
@@ -1200,35 +1204,28 @@ export const reports = async ({ user, params }, res, next) => {
 
 
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
-  if (body.flag && body.flag.toUpperCase() === 'PENDING') {
-    var allTasks = await TaskAssignment.find({
-      companyId: body.companyId, taskStatus: {
-        $ne: "Completed",
-      }
-    }).populate('companyId').populate('categoryId').populate('groupId');
-  }
-  if (body.flag && body.flag.toUpperCase() === 'COMPLETED') {
-    var allTasks = await TaskAssignment.find({
-      companyId: body.companyId, taskStatus: "Completed",
-    }).populate('companyId').populate('categoryId').populate('groupId').populate('batchId').populate('categoryId').populate('analystId').populate('qaId');
-  }
   var result = [];
-  for (var i = 0; i < allTasks.length; i++) {
-    var obj = {
-      companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
-      taskid: allTasks[i].taskNumber,
-      group: allTasks[i].groupId ? allTasks[i].groupId.groupName : null,
-      batch: allTasks[i].batchId ? allTasks[i].batchId.batchName : null,
-      pillar: allTasks[i].categoryId ? allTasks[i].categoryId.categoryName : null,
-      analyst: allTasks[i].analystId ? allTasks[i].analystId.name : null,
-      analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
-      qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
-      qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
-      analystStatus: "Breached",
-      qaStatus: "OnTrack",
-      status: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+  for (var index = 0; index < body.companyTaskReports.length; index++) {
+    var allTasks = await TaskAssignment.find({
+      companyId: body.companyTaskReports[index]
+    }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
+    for (var i = 0; i < allTasks.length; i++) {
+      var obj = {
+        companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
+        taskid: allTasks[i].taskNumber,
+        group: allTasks[i].groupId ? allTasks[i].groupId.groupName : null,
+        batch: allTasks[i].batchId ? allTasks[i].batchId.batchName : null,
+        pillar: allTasks[i].categoryId ? allTasks[i].categoryId.categoryName : null,
+        analyst: allTasks[i].analystId ? allTasks[i].analystId.name : null,
+        analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
+        qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
+        qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
+        analystStatus: "Breached",
+        qaStatus: "OnTrack",
+        stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+      }
+      result.push(obj);
     }
-    result.push(obj);
   }
   return res.status(200).json({ data: result });
 }

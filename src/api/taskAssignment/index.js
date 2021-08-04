@@ -36,7 +36,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "";
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [];
 /**
  * @api {post} /taskAssignments Create task assignment
  * @apiName CreateTaskAssignment
@@ -339,7 +339,7 @@ router.post('/getAllAssignedUsers',
 */
 router.post('/taskListWithStatus',
   token({ required: true }),
-  body({ flag, companyId }),
+  body({ companyTaskReports }),
   getTaskList)
 
 
