@@ -36,7 +36,8 @@ import {
 import {
   Companies
 } from '../companies'
-
+import { TaskAssignment } from "../taskAssignment";
+let DerivedCalculations = require('../derived_datapoints/derived_calculation');
 export const create = ({
     user,
     bodymen: {
@@ -2568,3 +2569,182 @@ export const updateForAudr002 = async ({
     })
   }
 }
+
+export const derivedCalculation = async ({
+  user,
+  body
+}, res, next)=>{
+  let taskDetailsObject = await TaskAssignment.findOne({_id: body.taskId})
+  .populate('companyId').populate('categoryId');
+  let allDerivedDatapoints = [];
+  let year = taskDetailsObject.year.split(",");
+  let allStandaloneDetails = await StandaloneDatapoints.find({
+      companyId: taskDetailsObject.companyId,
+      year: {
+        "$in": year
+      },
+      status: true
+    })
+    .populate('createdBy')
+    .populate('datapointId')
+    .populate('companyId')
+  
+  let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+      companyId: taskDetailsObject.companyId,
+      year: {
+        "$in": year
+      },
+      memberStatus: true,
+      status: true
+    })
+    .populate('createdBy')
+    .populate('datapointId')
+    .populate('companyId')
+  
+  let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+      companyId: taskDetailsObject.companyId,
+      year: {
+        "$in": year
+      },
+      memberStatus: true,
+      status: true
+    })
+    .populate('createdBy')
+    .populate('datapointId')
+    .populate('companyId')
+    let allDatapointsList = await Datapoints.find({
+      status: true
+    }).populate('updatedBy').populate('keyIssueId').populate('functionId');
+  
+  let mergedDetails = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
+  let rulesDetailsObject = await Rules.find({categoryId: taskDetailsObject.categoryId}).distinct("methodName");
+  let distinctRuleMethods = ["MatrixPercentage", "Minus", "Sum", "count of", "Ratio", "Percentage", "YesNo", "RatioADD", "As", "ADD", "AsPercentage", "AsRatio", "Condition", "Multiply"];
+  for (let ruleMethodIndex = 0; ruleMethodIndex < distinctRuleMethods.length; ruleMethodIndex++) {
+    if(rulesDetailsObject.includes(distinctRuleMethods[ruleMethodIndex])){
+      switch (distinctRuleMethods[ruleMethodIndex]) {
+              case "ADD":
+                await DerivedCalculations.addCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                break;
+              case "As":
+                await DerivedCalculations.asCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                break;
+              case "AsPercentage":
+                await DerivedCalculations.asPercentageCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                break;
+              case "AsRatio":
+                await DerivedCalculations.asRatioCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                break;
+              case "Condition":
+                await DerivedCalculations.conditionCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                break;
+              case "MatrixPercentage":
+                await DerivedCalculations.matrixPercentageCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+                break;
+              case "Minus":
+                await DerivedCalculations.minusCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+                break;
+              case "Multiply":
+                await DerivedCalculations.multiplyCalculation(taskDetailsObject.companyId.id, year,allDatapointsList, taskDetailsObject.categoryId.id, user)
+                break;
+              case "Percentage":
+                await DerivedCalculations.percentageCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+                break;
+              case "Ratio":
+                await DerivedCalculations.ratioCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList,allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+                break;
+              case "RatioADD":
+                await DerivedCalculations.ratioAddCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+              case "Sum":
+                await DerivedCalculations.sumCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                })
+                break;
+              case "YesNo":
+                await DerivedCalculations.yesNoCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                });
+                break;
+              case "count of":
+                await DerivedCalculations.countOfCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                .then((result) => {
+                  if (result) {
+                    if (result.allDerivedDatapoints) {
+                      allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                  }
+                });
+                break;
+  
+              default:
+                break;
+          }
+      }
+      
+  }
+  await DerivedDatapoints.updateMany({
+    "companyId": taskDetailsObject.companyId.id,
+    "year": {
+      $in: year
+    }
+  }, {
+    $set: {
+      status: false
+    }
+  }, {});
+  await DerivedDatapoints.insertMany(allDerivedDatapoints)
+    .then((result,err) => {
+      if (err) {
+        console.log('error', err);
+      } else {
+        return res.status(200).json({
+          message: "Calculation completed successfuly!",
+          derivedDatapoints: allDerivedDatapoints
+        });
+      }
+    });
+  }

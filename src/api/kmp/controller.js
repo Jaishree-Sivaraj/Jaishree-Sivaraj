@@ -104,13 +104,21 @@ export const updateEndDate = async({ user, body }, res, next) =>{
         let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
         await Kmp.updateMany({
           companyId: body.companyId,
-          id: {"$in" : body.kmpMembersToTerminate},    
+          _id: {$in : body.kmpMembersToTerminate},    
         },{
-          $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp,createdBy:user}
-        })
-        return res.status(200).json({
-          message: "KmpMember endDate updated successfully"
-        });        
+          $set:{endDate: body.endDate, endDateTimeStamp: yearTimeStamp, createdBy:user}
+        }).then((result,err) =>{
+          if(err){
+            return res.status(500).json({
+              message: error.message,
+              status: 500
+            });
+          } else{       
+            return res.status(200).json({
+              message: "KmpMember endDate updated successfully"
+            });
+          }
+        });       
       } catch (error) {
         return res.status(500).json({
           message: error.message,
