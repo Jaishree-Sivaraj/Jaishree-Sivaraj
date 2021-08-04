@@ -1204,12 +1204,10 @@ export const reports = async ({ user, params }, res, next) => {
 
 
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
-  console.log(body);
   for (var index = 0; index < body.companyTaskReports.length; index++) {
     var allTasks = await TaskAssignment.find({
       companyId: body.companyTaskReports[index]
-    }).populate('companyId').populate('categoryId').populate('groupId');
-
+    }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId');
     var result = [];
     for (var i = 0; i < allTasks.length; i++) {
       var obj = {
