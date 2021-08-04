@@ -2579,7 +2579,7 @@ export const derivedCalculation = async ({
   let allDerivedDatapoints = [];
   let year = taskDetailsObject.year.split(",");
   let allStandaloneDetails = await StandaloneDatapoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
@@ -2590,7 +2590,7 @@ export const derivedCalculation = async ({
     .populate('companyId')
   
   let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
@@ -2602,7 +2602,7 @@ export const derivedCalculation = async ({
     .populate('companyId')
   
   let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
