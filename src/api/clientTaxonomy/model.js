@@ -35,12 +35,6 @@ const clientTaxonomySchema = new Schema({
       default: false
     }
   }],
-  fiscalYearEndDate: {
-    type: String
-  },
-  fiscalYearEndMonth: {
-    type: String
-  },
   status: {
     type: Boolean,
     default: true
@@ -61,8 +55,6 @@ clientTaxonomySchema.methods = {
       createdBy: this.createdBy.view(full),
       taxonomyName: this.taxonomyName,
       fields: this.fields ? this.fields : [],
-      fiscalYearEndDate: this.fiscalYearEndDate ? this.fiscalYearEndDate : '',
-      fiscalYearEndMonth: this.fiscalYearEndMonth ? this.fiscalYearEndMonth : '',
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
