@@ -316,6 +316,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                     pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
                     fiscalYear: boardDpCodesData.boardMemberList[boarMemberListIndex].year ,
                     memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
                     memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
@@ -372,6 +373,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                     pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
                     fiscalYear: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].year,
                     memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
                     memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
@@ -400,8 +402,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                   pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                   pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                  dataType: dpTypeDatapoints[datapointsIndex].dataType,
                   fiscalYear: taskDetails.year,
-                  status: 'yet to Start'
+                  status: 'Yet to Start'
                 }
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   _.filter(currentAllStandaloneDetails,(object)=>{
