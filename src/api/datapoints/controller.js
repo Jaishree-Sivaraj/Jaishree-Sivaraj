@@ -1062,8 +1062,15 @@ export const datapointDetails = async (req, res, next) => {
         status: ''
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){
-        inputValues = dpTypeValues.unit.split('/');
+      if(dpTypeValues.dataType == 'select'){        
+       let inputs = dpTypeValues.unit.split('/');
+       for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+         const element = {
+           label: inputs[inputIndex],
+           value: inputs[inputIndex]
+         }
+         inputValues.push(element);
+       }
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
@@ -1228,8 +1235,15 @@ export const datapointDetails = async (req, res, next) => {
         status: ""
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){
-        inputValues = dpTypeValues.unit.split('/');
+      if(dpTypeValues.dataType == 'select'){        
+        let inputs = dpTypeValues.unit.split('/');
+        for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+          const element = {
+            label: inputs[inputIndex],
+            value: inputs[inputIndex]
+          }
+          inputValues.push(element);
+        }
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
@@ -1390,8 +1404,15 @@ export const datapointDetails = async (req, res, next) => {
         status: ''
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){
-        inputValues = dpTypeValues.unit.split('/');
+      if(dpTypeValues.dataType == 'select'){        
+        let inputs = dpTypeValues.unit.split('/');
+        for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+          const element = {
+            label: inputs[inputIndex],
+            value: inputs[inputIndex]
+          }
+          inputValues.push(element);
+        }
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
