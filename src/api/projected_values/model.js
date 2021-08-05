@@ -39,6 +39,9 @@ const projectedValuesSchema = new Schema({
   actualAverage: {
     type: String
   },
+  performanceResult: {
+    type: String
+  },
   status: {
     type: Boolean,
     default: true
@@ -66,6 +69,7 @@ projectedValuesSchema.methods = {
       projectedAverage: this.projectedAverage,
       actualStdDeviation: this.actualStdDeviation,
       actualAverage: this.actualAverage,
+      performanceResult: this.performanceResult,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

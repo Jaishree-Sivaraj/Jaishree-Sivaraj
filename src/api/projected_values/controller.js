@@ -121,3 +121,37 @@ export const getAverageByNic = async ({body},res,next)=> {
   }
   return res.status(200).json({ status: ("200"), message: "response updated for datapoints", count: responseData.length, data: responseData})
 }
+
+export const getPercentileByPillar = async ({body}, res, next) => {
+  let nicCompaniesList = [];
+  nicCompaniesList = await Companies.find({ "clientTaxonomyId": body.clientTaxonomyId, "nic": body.nic, "status": true})
+  let nicCompaniesIds = [];
+  for (let Index = 0; Index < nicCompaniesList.length; Index++) {
+    nicCompaniesIds.push(nicCompaniesList[Index].id);
+  }
+  let percentileDatapoints = [];
+  percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "categoryId": body.pillar, "percentile": "Yes", "relevantForIndia" : "Yes", "status": true});
+  let years = [];
+  let completeDetails = [];
+  years = body.years;
+  for (let index = 0; index < percentileDatapoints.length; index++) {
+    let yearsObj = [], dpResponse = [];
+    for (let yIndex = 0; yIndex < years.length; yIndex++) {
+      dpResponse = await ProjectedValues.findOne({ datapointId: percentileDatapoints[index].id, year: years[yIndex], nic: body.nic})
+      console.log("Datapoint Response", dpResponse);
+      let dataObject = {
+        year: years[yIndex],
+        yearAvg: dpResponse.actualAverage,
+        yearStdDeviation: dpResponse.actualStdDeviation 
+      }
+      yearsObj.push(dataObject);
+    }
+    let responseObject = {
+      dpCodeId: percentileDatapoints[index].id,
+      dpCode: percentileDatapoints[index].code,
+      data: yearsObj
+    }
+    completeDetails.push(responseObject);
+  }
+  res.status(200).json({ status: ("200"), message: "data retrieved sucessfully", response: completeDetails});
+}

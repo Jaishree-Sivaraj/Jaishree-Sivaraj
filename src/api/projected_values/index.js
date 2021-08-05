@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getAverageByNic } from './controller'
+import { create, index, show, update, destroy, getAverageByNic, getPercentileByPillar } from './controller'
 import { schema } from './model'
 export ProjectedValues, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, status } = schema.tree
+const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, pillar, years,  performanceResult, status } = schema.tree
 
 /**
  * @api {post} /projected_values Create projected values
@@ -24,6 +24,7 @@ const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviat
  * @apiParam projectedAverage Projected values's projectedAverage.
  * @apiParam actualStdDeviation Projected values's actualStdDeviation.
  * @apiParam actualAverage Projected values's actualAverage.
+ * @apiParam performaceResult Projected values's performaceResult.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -32,7 +33,7 @@ const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviat
  */
 router.post('/',
   token({ required: true }),
-  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, status }),
+  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
   create)
 
 /**
@@ -55,6 +56,26 @@ router.post('/',
  body({ clientTaxonomyId, nic, year}),
  getAverageByNic)
 
+/**
+ * @api {post} /projected_values/pillar_wise_percentile Create projected values
+ * @apiName CreateProjectedValues
+ * @apiGroup ProjectedValues
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam clientTaxonomyId Projected values's clientTaxonomyId.
+ * @apiParam nic Projected values's nic.
+ * @apiParam year Projected values's years.
+ * @apiParam pillar Projected values's pillar.
+ * @apiParam status Projected values's status.
+ * @apiSuccess {Object} projectedValues Projected values's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Projected values not found.
+ * @apiError 401 user access only.
+ */
+ router.post('/pillar_wise_percentile',
+ token({ required: true }),
+ body({ clientTaxonomyId, nic, pillar, years}),
+ getPercentileByPillar) 
 
 /**
  * @api {get} /projected_values Retrieve projected values
@@ -103,6 +124,7 @@ router.get('/:id',
  * @apiParam projectedAverage Projected values's projectedAverage.
  * @apiParam actualStdDeviation Projected values's actualStdDeviation.
  * @apiParam actualAverage Projected values's actualAverage.
+ * @apiParam performanceResult Projected values's performanceResult.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -111,7 +133,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, status }),
+  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
   update)
 
 /**
