@@ -49,6 +49,7 @@ import controversyTasks from './controversy_tasks'
 import controversyTaskHistories from './controversy_task_histories'
 import taskHistories from './task_histories'
 import sourceSubTypes from './source_sub_types'
+import projectedValues from './projected_values'
 
 const router = new Router()
 
@@ -126,5 +127,6 @@ router.use('/controversy_tasks', controversyTasks)
 router.use('/controversy_task_histories', controversyTaskHistories)
 router.use('/task_histories', taskHistories)
 router.use('/source_sub_types', sourceSubTypes)
+router.use('/projected_values', projectedValues)
 
 export default router
