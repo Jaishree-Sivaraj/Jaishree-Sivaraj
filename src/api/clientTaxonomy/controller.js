@@ -60,10 +60,8 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
               nicCodeList.push({ value: cmpItem.nic, label: cmpItem.nic });
             }
           }
-          console.log('nicCodeList', nicCodeList);
           
-          let nicList = _.uniqBy(nicCodeList, 'nic');
-          console.log('nicList', nicList);
+          let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
             taxonomyName: item.taxonomyName,
