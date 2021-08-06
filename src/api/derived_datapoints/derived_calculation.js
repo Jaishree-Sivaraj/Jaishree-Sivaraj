@@ -2,6 +2,7 @@ import { Rules } from "../rules";
 import _ from 'lodash';
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
+import { Companies } from '../companies'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 
