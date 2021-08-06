@@ -1192,7 +1192,7 @@ export const datapointDetails = async (req, res, next) => {
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
-        standdpCodeDataalone: datapointsObject
+        dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
 
