@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, addExtraKeys } from './controller'
+import { create, index, show, update, destroy, addExtraKeys, addParameterId } from './controller'
 import { schema } from './model'
 export Rules, { schema } from './model'
 
@@ -49,6 +49,22 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+  /**
+ * @api {get} /rules/addParameterId Add extra-keys for rules
+ * @apiName AddExtraKeysForRules
+ * @apiGroup Rules
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of rules.
+ * @apiSuccess {Object[]} rows List of rules.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/addParameterId',
+token({ required: true }),
+query(),
+addParameterId)
 
 /**
  * @api {get} /rules/:id Retrieve rules
@@ -81,6 +97,7 @@ router.get('/add/extra-keys',
   token({ required: true }),
   query(),
   addExtraKeys)
+
 
 /**
  * @api {put} /rules/:id Update rules
