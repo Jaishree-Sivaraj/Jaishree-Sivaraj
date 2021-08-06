@@ -79,7 +79,7 @@ router.post('/',
  getPercentileByPillar) 
 
  /**
- * @api {post} /projected_values/update_projected_value Create projected values
+ * @api {post} /projected_values/save_projected_value Create projected values
  * @apiName CreateProjectedValues
  * @apiGroup ProjectedValues
  * @apiPermission user
@@ -94,7 +94,7 @@ router.post('/',
  * @apiError 404 Projected values not found.
  * @apiError 401 user access only.
  */
-  router.post('/update_projected_value',
+  router.post('/save_projected_value',
   token({ required: true }),
   body({ taxonomy, nicCode, pillar, currentYear}),
   saveProjectedValue) 
