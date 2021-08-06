@@ -123,35 +123,129 @@ export const getAverageByNic = async ({body},res,next)=> {
 }
 
 export const getPercentileByPillar = async ({body}, res, next) => {
-  let nicCompaniesList = [];
-  nicCompaniesList = await Companies.find({ "clientTaxonomyId": body.clientTaxonomyId, "nic": body.nic, "status": true})
-  let nicCompaniesIds = [];
-  for (let Index = 0; Index < nicCompaniesList.length; Index++) {
-    nicCompaniesIds.push(nicCompaniesList[Index].id);
-  }
-  let percentileDatapoints = [];
-  percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "categoryId": body.pillar, "percentile": "Yes", "relevantForIndia" : "Yes", "status": true});
-  let years = [];
-  let completeDetails = [];
-  years = body.years;
-  for (let index = 0; index < percentileDatapoints.length; index++) {
-    let yearsObj = [], dpResponse = [];
-    for (let yIndex = 0; yIndex < years.length; yIndex++) {
-      dpResponse = await ProjectedValues.findOne({ datapointId: percentileDatapoints[index].id, year: years[yIndex], nic: body.nic})
-      console.log("Datapoint Response", dpResponse);
-      let dataObject = {
-        year: years[yIndex],
-        yearAvg: dpResponse.actualAverage,
-        yearStdDeviation: dpResponse.actualStdDeviation 
+  try {
+    let percentileDatapoints = await Datapoints.find({
+      "clientTaxonomyId": body.taxonomy, 
+      "categoryId": body.pillar, 
+      "percentile": "Yes", 
+      "relevantForIndia" : "Yes", 
+      "status": true
+    }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'No percentile datapoints available!' }) });
+    let years = body.years ? body.years : [];
+    let completeDetails = [];
+    if (percentileDatapoints.length > 0) {
+      for (let index = 0; index < percentileDatapoints.length; index++) {
+        let yearObj = {
+          'dpCodeId': percentileDatapoints[index].id,
+          'dpCode': percentileDatapoints[index].code,
+          'fiveYearsBackAvg': '',
+          'fourYearsBackAvg': '',
+          'threeYearsBackAvg': '',
+          'twoYearsBackAvg': '',
+          'oneYearBackAvg': '',
+           'projectedAvg': '',
+          'fiveYearsBackSD': '',
+          'fourYearsBackSD': '',
+          'threeYearsBackSD': '',
+          'twoYearsBackSD': '',
+          'oneYearBackSD': '',
+           'projectedSd': ''
+        };
+        let sdYearNumber = 'fiveYearsBackSD';
+        let avgYearNumber = 'fiveYearsBackAvg';
+        for (let yIndex = 0; yIndex < years.length; yIndex++) {
+          if (yIndex == 1) {
+            sdYearNumber = 'fourYearsBackSD';
+            avgYearNumber = 'fourYearsBackAvg';
+          } else if(yIndex == 2) {
+            sdYearNumber = 'threeYearsBackSD';
+            avgYearNumber = 'threeYearsBackAvg';
+          } else if(yIndex == 3) {
+            sdYearNumber = 'twoYearsBackSD';
+            avgYearNumber = 'twoYearsBackAvg';
+          } else if(yIndex == 4) {
+            sdYearNumber = 'oneYearBackSD';
+            avgYearNumber = 'oneYearBackAvg';
+          }
+          let dpResponse = await ProjectedValues.findOne({ 
+            clientTaxonomyId: body.taxonomy, 
+            datapointId: percentileDatapoints[index].id, 
+            year: years[yIndex], 
+            nic: body.nicCode 
+          }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoints value not found for the '+ years[yIndex] + ' year!' }) });
+          console.log("Datapoint Response", dpResponse);
+          if (dpResponse) {
+            yearObj[avgYearNumber] = dpResponse.actualAverage;
+            yearObj[sdYearNumber] = dpResponse.actualStdDeviation;
+          } else {
+            yearObj[avgYearNumber] = '';
+            yearObj[sdYearNumber] = '';
+          }
+        }
+        let currentYearValues = await ProjectedValues.findOne({ 
+          clientTaxonomyId: body.taxonomy, 
+          datapointId: percentileDatapoints[index].id, 
+          year: body.currentYear, 
+          nic: body.nicCode
+        }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
+        if (currentYearValues) {
+          yearObj[ 'projectedAvg'] = currentYearValues.actualAverage;
+          yearObj[ 'projectedSd'] = currentYearValues.actualStdDeviation;
+        } else{
+          yearObj[ 'projectedAvg'] = '';
+          yearObj[ 'projectedSd'] = '';
+        }
+        completeDetails.push(yearObj);
       }
-      yearsObj.push(dataObject);
-    }
-    let responseObject = {
-      dpCodeId: percentileDatapoints[index].id,
-      dpCode: percentileDatapoints[index].code,
-      data: yearsObj
-    }
-    completeDetails.push(responseObject);
+      res.status(200).json({ status: ("200"), message: "data retrieved sucessfully", response: completeDetails });
+    } else {
+      res.status(500).json({ status: ("500"), message: "No percentile datapoints available!" });
+    }    
+  } catch (error) {
+    res.status(500).json({ status: ("500"), message: error.message ? error.message : "No percentile datapoints available!" });
   }
-  res.status(200).json({ status: ("200"), message: "data retrieved sucessfully", response: completeDetails});
+}
+
+export const saveProjectedValue = async ({body}, res, next) => {  
+  try {  
+    let datapointData = body.data ? body.data : [];
+    console.log("datapointData Length", datapointData.length);
+    if (datapointData.length > 0) {
+      for (let index = 0; index < datapointData.length; index++) {
+        let objectToUpdate = { 
+          clientTaxonomyId: body.taxonomy,
+          datapointId: datapointData[index].dpCodeId,
+          year: body.currentYear,
+          categoryId: body.pillar,
+          nic: body.nicCode,
+          projectedAverage: datapointData[index].projectedAvg,
+          projectedStdDeviation: datapointData[index].projectedSd,
+          actualAverage : "",
+          actualStdDeviation : ""
+        }
+        await ProjectedValues.updateOne({
+          "clientTaxonomyId": body.taxonomy,
+          "datapointId": datapointData[index].dpCodeId,
+          "year": body.currentYear,
+          "categoryId": body.pillar,
+          "nic": body.nicCode
+        },
+        {
+          $set: objectToUpdate
+        },
+        { upsert: true })
+        .catch((error) => {
+          return res.status(500).json({
+            status: "500",
+            message: error.message ? error.message : "Failed to update projected values"
+          })
+        });
+      }
+      res.status(200).json({ status: "200", message: "Projected values saved sucessfully" })
+    } else {
+      return res.status(500).json({ status: "500", message: "No data available!"})
+    }
+  } catch (error) {
+    res.status(500).json({ status: ("500"), message: error.message ? error.message : "No data available!" }); 
+  }
 }
