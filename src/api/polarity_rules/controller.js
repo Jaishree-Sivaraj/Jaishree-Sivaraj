@@ -245,3 +245,27 @@ export const mockPercentileCalculation = async ({ user, body }, res, next) => {
   }
   return res.status(200).json({ message: "Percentile calculated ", PerformanceResult:performanceResult });
 }
+
+export const extraAddKeys = async({params}, res, next)=>{
+  try { 
+  let polarityRulesId = await PolarityRules.find({}).populate({
+    path: "datapointId",
+    populate: {
+      path: "categoryId"
+    }
+ });
+ console.log(polarityRulesId)
+  if(polarityRulesId && polarityRulesId.length > 0){
+    for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesId.length; polarityRulesIndex++) {
+      console.log(polarityRulesId[polarityRulesIndex].id)
+      await PolarityRules.updateOne({_id: polarityRulesId[polarityRulesIndex].id},{$set:{categoryId: polarityRulesId[polarityRulesIndex].datapointId.categoryId.id }})
+    }
+    return res.status(200).json({ status: "200", message: "Extra-keys added for polarity rules!" });
+  } else {
+    return res.status(404).json({ message: "No polarity rules found!" });
+  }   
+} catch (error) {
+  return res.status(500).json({ message: error.message });
+}
+
+}

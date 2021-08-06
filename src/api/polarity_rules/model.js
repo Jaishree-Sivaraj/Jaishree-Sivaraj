@@ -20,6 +20,11 @@ const polarityRulesSchema = new Schema({
     ref: 'Datapoints',
     required: true
   },
+  categoryId: {
+    type: Schema.ObjectId,
+    ref: 'Categories',
+    required: true
+  },
   status: {
     type: Boolean,
     default: true
@@ -42,6 +47,7 @@ polarityRulesSchema.methods = {
       polarityValue: this.polarityValue,
       condition: this.condition,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
+      categoryId: this.categoryId ? this.categoryId.view(full): null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
