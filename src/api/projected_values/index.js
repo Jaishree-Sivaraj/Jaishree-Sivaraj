@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getAverageByNic, getPercentileByPillar } from './controller'
+import { create, index, show, update, destroy, getAverageByNic, getPercentileByPillar, saveProjectedValue } from './controller'
 import { schema } from './model'
 export ProjectedValues, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, pillar, years,  performanceResult, status } = schema.tree
+const { clientTaxonomyId, taxonomy, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, pillar, years,  performanceResult, currentYear, status } = schema.tree
 
 /**
  * @api {post} /projected_values Create projected values
@@ -16,7 +16,7 @@ const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviat
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam clientTaxonomyId Projected values's clientTaxonomyId.
- * @apiParam nic Projected values's nic.
+ * @apiParam nicCode Projected values's nicCode.
  * @apiParam categoryId Projected values's categoryId.
  * @apiParam year Projected values's year.
  * @apiParam datapointId Projected values's datapointId.
@@ -33,7 +33,7 @@ const { clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviat
  */
 router.post('/',
   token({ required: true }),
-  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
+  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, currentYear, status }),
   create)
 
 /**
@@ -43,7 +43,7 @@ router.post('/',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam clientTaxonomyId Projected values's clientTaxonomyId.
- * @apiParam nic Projected values's nic.
+ * @apiParam nicCode Projected values's nicCode.
  * @apiParam year Projected values's year.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
@@ -53,7 +53,7 @@ router.post('/',
  */
  router.post('/calculate_actuals',
  token({ required: true }),
- body({ clientTaxonomyId, nic, year}),
+ body({ clientTaxonomyId, nicCode, year}),
  getAverageByNic)
 
 /**
@@ -62,9 +62,10 @@ router.post('/',
  * @apiGroup ProjectedValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam clientTaxonomyId Projected values's clientTaxonomyId.
- * @apiParam nic Projected values's nic.
- * @apiParam year Projected values's years.
+ * @apiParam taxonomy Projected values's taxonomy.
+ * @apiParam nicCode Projected values's nicCode.
+ * @apiParam years Projected values's years.
+ * @apiParam currentYear Projected values's currentYears.
  * @apiParam pillar Projected values's pillar.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
@@ -74,9 +75,29 @@ router.post('/',
  */
  router.post('/pillar_wise_percentile',
  token({ required: true }),
- body({ clientTaxonomyId, nic, pillar, years}),
+ body({ taxonomy, nicCode, pillar, years, currentYear}),
  getPercentileByPillar) 
 
+ /**
+ * @api {post} /projected_values/update_projected_value Create projected values
+ * @apiName CreateProjectedValues
+ * @apiGroup ProjectedValues
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam taxonomy Projected values's taxonomy.
+ * @apiParam nicCode Projected values's nicCode.
+ * @apiParam currentYear Projected values's currentYears.
+ * @apiParam pillar Projected values's pillar.
+ * @apiParam status Projected values's status.
+ * @apiSuccess {Object} projectedValues Projected values's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Projected values not found.
+ * @apiError 401 user access only.
+ */
+  router.post('/update_projected_value',
+  token({ required: true }),
+  body({ taxonomy, nicCode, pillar, currentYear}),
+  saveProjectedValue) 
 /**
  * @api {get} /projected_values Retrieve projected values
  * @apiName RetrieveProjectedValues
@@ -133,7 +154,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ clientTaxonomyId, nic, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
+  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
   update)
 
 /**
