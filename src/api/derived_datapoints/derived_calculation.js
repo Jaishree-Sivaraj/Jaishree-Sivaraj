@@ -1498,7 +1498,9 @@ export const conditionCalculation = async function (companyId, distinctYears, al
     }
 }
 
-
+// module.exports ={
+//   addCalculation
+// }
 
 
 

@@ -2575,6 +2575,7 @@ export const derivedCalculation = async ({
   user,
   body
 }, res, next)=>{
+  //let dd = new DerivedCalculationSample();
   let taskDetailsObject = await TaskAssignment.findOne({_id: body.taskId})
   .populate('companyId').populate('categoryId');
   let allDerivedDatapoints = [];
@@ -2617,6 +2618,7 @@ export const derivedCalculation = async ({
       status: true
     }).populate('updatedBy').populate('keyIssueId').populate('functionId');
   
+   // DerivedCalculationSample.addCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id,user);
   let mergedDetails = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
   let rulesDetailsObject = await Rules.find({categoryId: taskDetailsObject.categoryId}).distinct("methodName");
   let distinctRuleMethods = ["MatrixPercentage", "Minus", "Sum", "count of", "Ratio", "Percentage", "YesNo", "RatioADD", "As", "ADD", "AsPercentage", "AsRatio", "Condition", "Multiply"];
@@ -2653,6 +2655,7 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
+                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
@@ -2666,6 +2669,7 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
+                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
@@ -2676,6 +2680,7 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
+                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
