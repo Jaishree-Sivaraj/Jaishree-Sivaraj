@@ -61,7 +61,7 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
             }
           }
           
-          let nicList = _.uniqBy(nicCodeList, 'nic');
+          let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
             taxonomyName: item.taxonomyName,

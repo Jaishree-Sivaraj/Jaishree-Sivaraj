@@ -1002,7 +1002,6 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
       var qaObject = {};
       var analystObject = {};
       var userPillar = await UserPillarAssignments.findOne({
-        clientTaxonomyId: batch.clientTaxonomy,
         userId: group.assignedMembers[index].id,
         $or: [
           {
