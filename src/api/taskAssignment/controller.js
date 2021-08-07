@@ -1122,7 +1122,7 @@ export const updateCompanyStatus = async (
   next
 ) => {
   try {
-    let taskDetails = await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
+    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
 
     let categoriesLength = await Categories.find({
       clientTaxonomyId: body.clientTaxonomyId,
@@ -1133,12 +1133,12 @@ export const updateCompanyStatus = async (
       year: body.year,
       taskStatus: "Completed",
     });
+    console.log(categoriesLength.length, taskDetailsObject.length)
     if (categoriesLength.length == taskDetailsObject.length) {
-      await TaskAssignment.updateOne(
+      await CompaniesTasks.updateMany(
         {
           companyId: body.companyId,
-          year: body.year,
-          taskStatus: "Completed"
+          year: body.year
         },
         {
           $set: {
@@ -1147,7 +1147,6 @@ export const updateCompanyStatus = async (
           },
         }
       );
-    } else {
     }
     return res.status(200).json({
       message: "Company Status update succesfully!",
