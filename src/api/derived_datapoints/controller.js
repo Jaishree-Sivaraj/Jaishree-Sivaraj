@@ -2655,7 +2655,6 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
-                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
@@ -2669,7 +2668,6 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
-                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
@@ -2680,7 +2678,6 @@ export const derivedCalculation = async ({
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
-                      console.log("..................\n\n\n\n\n\n\n",allDerivedDatapoints.length)
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
                   }
