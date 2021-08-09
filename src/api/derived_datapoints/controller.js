@@ -37,6 +37,7 @@ import {
   Companies
 } from '../companies'
 import { TaskAssignment } from "../taskAssignment";
+import {DerivedCalculationSample} from '../derived_datapoints/derived_calculation'
 let DerivedCalculations = require('../derived_datapoints/derived_calculation');
 export const create = ({
     user,
@@ -2574,12 +2575,13 @@ export const derivedCalculation = async ({
   user,
   body
 }, res, next)=>{
+  //let dd = new DerivedCalculationSample();
   let taskDetailsObject = await TaskAssignment.findOne({_id: body.taskId})
   .populate('companyId').populate('categoryId');
   let allDerivedDatapoints = [];
   let year = taskDetailsObject.year.split(",");
   let allStandaloneDetails = await StandaloneDatapoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
@@ -2590,7 +2592,7 @@ export const derivedCalculation = async ({
     .populate('companyId')
   
   let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
@@ -2602,7 +2604,7 @@ export const derivedCalculation = async ({
     .populate('companyId')
   
   let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
-      companyId: taskDetailsObject.companyId,
+      companyId: taskDetailsObject.companyId.id,
       year: {
         "$in": year
       },
@@ -2616,6 +2618,7 @@ export const derivedCalculation = async ({
       status: true
     }).populate('updatedBy').populate('keyIssueId').populate('functionId');
   
+   // DerivedCalculationSample.addCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id,user);
   let mergedDetails = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
   let rulesDetailsObject = await Rules.find({categoryId: taskDetailsObject.categoryId}).distinct("methodName");
   let distinctRuleMethods = ["MatrixPercentage", "Minus", "Sum", "count of", "Ratio", "Percentage", "YesNo", "RatioADD", "As", "ADD", "AsPercentage", "AsRatio", "Condition", "Multiply"];
@@ -2723,28 +2726,164 @@ export const derivedCalculation = async ({
               default:
                 break;
           }
+      }      
+  if(ruleMethodIndex == distinctRuleMethods.length - 1){
+    await DerivedDatapoints.updateMany({
+      "companyId": taskDetailsObject.companyId.id,
+      "year": {
+        $in: year
       }
-      
-  }
-  await DerivedDatapoints.updateMany({
-    "companyId": taskDetailsObject.companyId.id,
-    "year": {
-      $in: year
-    }
-  }, {
-    $set: {
-      status: false
-    }
-  }, {});
-  await DerivedDatapoints.insertMany(allDerivedDatapoints)
-    .then((result,err) => {
-      if (err) {
-        console.log('error', err);
-      } else {
-        return res.status(200).json({
-          message: "Calculation completed successfuly!",
-          derivedDatapoints: allDerivedDatapoints
-        });
+    }, {
+      $set: {
+        status: false
       }
-    });
+    }, {});
+    await DerivedDatapoints.insertMany(allDerivedDatapoints)
+      .then((result,err) => {
+        if (err) {
+          console.log('error', err);
+        } 
+      });
   }
+  }
+  for (let yearIndex = 0; yearIndex < year.length; yearIndex++) {
+    let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"},relevantForIndia: "Yes" })
+    let allStandaloneDatapoints = await StandaloneDatapoints.find({companyId: taskDetailsObject.companyId.id, year: year[yearIndex],status: true}).populate('datapointId').populate('companyId');
+    let allDerivedDatapointsDetails = await DerivedDatapoints.find({companyId: taskDetailsObject.companyId.id, year: year[yearIndex],status: true}).populate('datapointId').populate('companyId');
+    let mergedDetails = _.concat(allStandaloneDatapoints, allDerivedDatapointsDetails);
+    let polarityRulesList = await PolarityRules.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId')
+    
+    for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesList.length; polarityRulesIndex++) {
+      let performanceResult = "";
+      let datapointDetail = polarityRulesList[polarityRulesIndex].datapointId;
+      // (datapointDetail.relevantForIndia == "Yes") {
+        let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
+       // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
+          let foundResponseIndex = mergedDetails.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year[yearIndex]);
+          if (foundResponseIndex > -1) {
+            let foundResponse = mergedDetails[foundResponseIndex];
+            if (foundResponse) { 
+              if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
+                performanceResult = 'NA'
+              } else {
+                if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
+                  if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                    performanceResult = 'Positive';
+                  } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                    performanceResult = 'Negative';
+                  }
+                } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
+                  if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                    performanceResult = 'Negative';
+                  } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                    performanceResult = 'Positive';
+                  }
+                } else {
+                  if (polarityRuleDetails.condition == 'range') {
+                    let param = polarityRuleDetails.polarityValue.split(',');
+                    if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
+                      performanceResult = 'Positive';
+                    } else {
+                      performanceResult = 'Positive';
+                    }
+                  }
+                }
+              }
+            }
+            console.log(polarityRuleDetails.datapointId.code,performanceResult)
+            if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
+              await StandaloneDatapoints.updateOne({
+                _id: foundResponse.id
+              }, {
+                $set: {
+                  performanceResult: performanceResult
+                }
+              });
+            } else {
+              await DerivedDatapoints.updateOne({
+                _id: foundResponse.id
+              }, {
+                $set: {
+                  performanceResult: performanceResult
+                }
+              });
+            }
+          } else {
+            if (polarityRuleDetails.datapointId.relevantForIndia == "Yes" && polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+              return res.status(500).json({
+                message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+              });
+            }
+          }
+    }
+    for (let dataPointIndex = 0; dataPointIndex < dataPointsIdList.length; dataPointIndex++) {
+      let performanceResult = "";
+      let isDpExistInPolarityRule = polarityRulesList.findIndex((object, index) => object.datapointId.id == dataPointsIdList[dataPointIndex].id);
+      if (isDpExistInPolarityRule <= -1) {
+        let datapointDetail = dataPointsIdList[dataPointIndex];
+       // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
+          let foundResponseIndex = mergedDetails.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year);
+          if (foundResponseIndex > -1) {
+            let foundResponse = mergedDetails[foundResponseIndex];
+            if (foundResponse) {
+              if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA' || foundResponse.response.toLowerCase() == 'nan') {
+                performanceResult = 'NA';
+              } else {
+                if (datapointDetail.code == 'BUSP009' || datapointDetail.code == 'BUSP008') {
+                  if (foundResponse.response == 'No' || foundResponse.response == 'N') {
+                    performanceResult = 'Positive'
+                  } else if (foundResponse.response == 'Yes' || foundResponse.response == 'Y') {
+                    performanceResult = 'Negative';
+                  }
+                } else if (foundResponse.response == "Yes" || foundResponse.response == "Y" || foundResponse.response == "yes" || foundResponse.response == "y") {
+                  if (datapointDetail.polarity == 'Positive') {
+                    performanceResult = 'Yes'
+                  } else if (datapointDetail.polarity == 'Negative') {
+                    performanceResult = 'No'
+                  } else {
+                    if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                      performanceResult = foundResponse.response;
+                    }
+                  }
+                } else if (foundResponse.response == "No" || foundResponse.response == "N" || foundResponse.response == "no" || foundResponse.response == "n") {
+                  if (datapointDetail.polarity == 'Positive') {
+                    performanceResult = 'No';
+                  } else if (datapointDetail.polarity == 'Negative') {
+                    performanceResult = 'Yes';
+                  } else {
+                    if (datapointDetail.polarity == 'Neutral' && datapointDetail.signal == "No") {
+                      performanceResult = foundResponse.response
+                    }
+                  }
+                } else if (datapointDetail.finalUnit === 'Number' || datapointDetail.finalUnit === 'Number (Tonne)' || datapointDetail.finalUnit === 'Number (tCO2e)' || datapointDetail.finalUnit.trim() === 'Currency' || datapointDetail.finalUnit === 'Days' || datapointDetail.finalUnit === 'Hours' || datapointDetail.finalUnit === 'Miles' || datapointDetail.finalUnit === 'Million Hours Worked' || datapointDetail.finalUnit === 'No/Low/Medium/High/Very High' || datapointDetail.finalUnit === 'Number (tCFCe)' || datapointDetail.finalUnit === 'Number (Cubic meter)' || datapointDetail.finalUnit === 'Number (KWh)' || datapointDetail.finalUnit === 'Percentage' && datapointDetail.signal == 'No') {
+                  performanceResult = foundResponse.response
+                }
+              }
+            }  
+            console.log(performanceResult)        
+            if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
+              await StandaloneDatapoints.updateOne({
+                _id: foundResponse.id
+              }, {
+                $set: {
+                  performanceResult: performanceResult
+                }
+              });
+            } else {
+              await DerivedDatapoints.updateOne({
+                _id: foundResponse.id
+              }, {
+                $set: {
+                  performanceResult: performanceResult
+                }
+              });
+            }
+          }
+      }
+    }
+  }  
+  return res.status(200).json({
+    message: "Calculation completed successfuly!",
+    derivedDatapoints: allDerivedDatapoints
+  });
+}

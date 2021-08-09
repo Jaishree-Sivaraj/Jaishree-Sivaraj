@@ -1,9 +1,13 @@
 import { Rules } from "../rules";
 import _ from 'lodash';
+import moment from 'moment'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
+import { Companies } from '../companies'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
+import { companiesAndAnalyst } from "../controversy_tasks/controller";
+import { BoardMembers } from "../boardMembers";
 
 export const multiplyCalculation = async function (companyId, distinctYears, allDatapointsList,categoryId, userDetail) {
     //let multiplyT1 = performance.now();
@@ -267,63 +271,38 @@ export const minusCalculation = async function (companyId, mergedDetails, distin
     }).populate('datapointId');
   
     for (let i = 0; i < minusRules.length; i++) {
-      let parameters = minusRules[i].parameter.split(",");
-      let numerator = parameters[0] ? parameters[0] : '';
-      let denominator = parameters[1] ? parameters[1] : '';
-      let numeratorDpObject = _.filter(allDatapointsList, {
-        code: numerator
-      });
-      let denominatorDpObject = _.filter(allDatapointsList, {
-        code: denominator
-      });
-      let numeratorDpId = numeratorDpObject[0] ? numeratorDpObject[0].id : '';
-      let denominatorDpId = denominatorDpObject[0] ? denominatorDpObject[0].id : '';
-      let numeratorValues = [];
-      let denominatorValues = [];
-      _.filter(mergedDetails, (object, index) => {
-        for (let k = 0; k < distinctYears.length; k++) {
-          const year = distinctYears[k];
-          if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
-            numeratorValues.push(object);
-          } else if (object.datapointId.id == denominatorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
-            denominatorValues.push(object);
-          }
-        }
-      })
-      if (numeratorValues.length > 0 && denominatorValues.length > 0 && numeratorValues.length == denominatorValues.length) {
-        for (let j = 0; j < numeratorValues.length; j++) {
-          let derivedResponse;
-          if (denominatorValues[j].response == ' ' || denominatorValues[j].response == '' || denominatorValues[j].response == 'NA') {
-            derivedResponse = 'NA';
-          } else {
-            let numeratorConvertedDate;
-            let denominatorConvertedDate;
-            try {
-              numeratorConvertedDate = getJsDateFromExcel(numeratorValues[j].fiscalYearEndDate);
-              denominatorConvertedDate = getJsDateFromExcel(denominatorValues[j].response);
-            } catch (error) {
-              let companyDetail = await Companies.findOne({
-                _id: companyId
-              }).distinct('companyName');
-              return {
-                error: `${companyDetail ? companyDetail : 'a company, please check'}`
-              };
-              // return res.status(500).json({ message: `Found invalid date format in ${companyDetail ? companyDetail : 'a company'}, please correct and try again!` })
-            }
-            derivedResponse = moment([numeratorConvertedDate.getUTCFullYear(), numeratorConvertedDate.getUTCMonth(), numeratorConvertedDate.getUTCDate()])
-              .diff(moment([denominatorConvertedDate.getUTCFullYear(), denominatorConvertedDate.getUTCMonth(), denominatorConvertedDate.getUTCDate()]), 'years', true)
-          }
+      let derivedResponse;
+      let boardMemberEq = await BoardMembers.find({companyId: companyId, endDateTimeStamp: 0});
+      for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
+        let yearSplit = distinctYears[currentYearIndex].split('-');
+        let endDateString = yearSplit[1]+"-12-31";
+        let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
+        let boardMemberGt = await BoardMembers.find({companyId: companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
+        console.log(1614709800 ,  yearTimeStamp);        
+        let companyDetailObject = await Companies.findOne({
+          _id: companyId
+        })
+        let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
+        console.log("\n booooooooooooo",mergeBoardMemberList.length )
+        for (let boardMamberIndex = 0; boardMamberIndex < mergeBoardMemberList.length; boardMamberIndex++) {
+          let denominatorConvertedDate = new Date(mergeBoardMemberList[boardMamberIndex].startDate);
+          let fiscalYearEndDate = yearSplit[1]+'-'+companyDetailObject.fiscalYearEndMonth+'-'+companyDetailObject.fiscalYearEndMonth;
+          let numeratorConvertedDate = new Date(fiscalYearEndDate)
+          derivedResponse = moment([numeratorConvertedDate.getUTCFullYear(), numeratorConvertedDate.getUTCMonth(), numeratorConvertedDate.getUTCDate()])
+          .diff(moment([denominatorConvertedDate.getUTCFullYear(), denominatorConvertedDate.getUTCMonth(), denominatorConvertedDate.getUTCDate()]), 'years', true)
+          console.log("\n\n",denominatorConvertedDate,fiscalYearEndDate,numeratorConvertedDate)
           let derivedDatapointsObject = {
-            companyId: numeratorValues[j].companyId.id,
+            companyId: companyId,
             datapointId: minusRules[i].datapointId.id,
-            year: numeratorValues[j].year,
+            year: distinctYears[currentYearIndex],
             response: derivedResponse ? derivedResponse.toString() : derivedResponse,
-            memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
+            memberName: mergeBoardMemberList[boardMamberIndex].BOSP004 ? mergeBoardMemberList[boardMamberIndex].BOSP004.replace('\r\n', '') : '',
             memberStatus: true,
             status: true,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
+          
         }
       }
       if (i == minusRules.length - 1) {
@@ -1498,7 +1477,9 @@ export const conditionCalculation = async function (companyId, distinctYears, al
     }
 }
 
-
+// module.exports ={
+//   addCalculation
+// }
 
 
 

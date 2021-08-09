@@ -85,3 +85,30 @@ export const addExtraKeys = async({ params }, res, next) => {
     return res.status(500).json({ status: "500", message: error.message ? error.message : 'No datapoint found!' });
   });
 }
+
+export const addParameterId = async({params}, res, next)=>{
+  await Rules.find({})
+  .populate({
+    path: "datapointId",
+    populate: {
+      path: "categoryId"
+    }
+ }).then(async(ruleIds)=>{
+   if(ruleIds && ruleIds.length > 0){
+     for (let rulesIndex = 0; rulesIndex < ruleIds.length; rulesIndex++) {
+       const element = ruleIds[rulesIndex].parameter.split(",");
+       for (let paramterIndex = 0; paramterIndex < element.length; paramterIndex++) {
+         let dpCodeId = await Datapoints.findOne({code : element[paramterIndex].trim()});
+         await Rules.updateOne({_id : ruleIds[rulesIndex]},{$push:{paramterIds : dpCodeId.id}})
+       }       
+     }  
+   }else {
+      return res.status(200).json({ status: "200", message: "No rules found!" });
+    }
+    return res.status(200).json({ status: "200", message: "Parameter Id are inserted for datapoints!" });
+ })
+ .catch((error) => {
+   return res.status(500).json({ status: "500", message: error.message ? error.message : 'No datapoint found!' });
+ })
+
+}

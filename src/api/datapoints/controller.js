@@ -992,7 +992,7 @@ export const datapointDetails = async (req, res, next) => {
   try {
     let taskDetails = await TaskAssignment.findOne({
       _id: req.body.taskId
-    }).populate('companyId');
+    }).populate('companyId').populate('categoryId');
     let functionId = await Functions.findOne({
       functionType: "Negative News",
       status: true
@@ -1006,7 +1006,7 @@ export const datapointDetails = async (req, res, next) => {
         "$ne": functionId.id
       },
      // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
-      categoryId: taskDetails.categoryId,
+      categoryId: taskDetails.categoryId.id,
       _id: req.body.datapointId,
       status: true
     }).populate('keyIssueId').populate('categoryId');
@@ -1017,7 +1017,7 @@ export const datapointDetails = async (req, res, next) => {
       year: {
         $in: currentYear
       },
-      categoryId: taskDetails.categoryId,
+      categoryId: taskDetails.categoryId.id,
       status: true
     }).populate('errorTypeId');
     if (req.body.memberType == 'Standalone') {
@@ -1061,6 +1061,17 @@ export const datapointDetails = async (req, res, next) => {
         historicalData: [],
         status: ''
       }
+      let inputValues = [];
+      if(dpTypeValues.dataType == 'select'){        
+       let inputs = dpTypeValues.unit.split('/');
+       for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+         const element = {
+           label: inputs[inputIndex],
+           value: inputs[inputIndex]
+         }
+         inputValues.push(element);
+       }
+      }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
         _.filter(currentAllStandaloneDetails, function (object) {
@@ -1074,6 +1085,7 @@ export const datapointDetails = async (req, res, next) => {
                 fiscalYear: currentYear[currentYearIndex],
                 description: dpTypeValues.description,
                 dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
                 screenShot: object.screenShot,
@@ -1103,6 +1115,7 @@ export const datapointDetails = async (req, res, next) => {
                 fiscalYear: currentYear[currentYearIndex],
                 description: dpTypeValues.description,
                 dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
                 screenShot: object.screenShot,
@@ -1128,6 +1141,7 @@ export const datapointDetails = async (req, res, next) => {
             fiscalYear: currentYear[currentYearIndex],
             description: dpTypeValues.description,
             dataType: dpTypeValues.dataType,
+            inputValues:inputValues,
             textSnippet: '',
             pageNo: '',
             screenShot: '',
@@ -1178,7 +1192,7 @@ export const datapointDetails = async (req, res, next) => {
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
-        standdpCodeDataalone: datapointsObject
+        dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
 
@@ -1220,6 +1234,17 @@ export const datapointDetails = async (req, res, next) => {
         historicalData: [],
         status: ""
       }
+      let inputValues = [];
+      if(dpTypeValues.dataType == 'select'){        
+        let inputs = dpTypeValues.unit.split('/');
+        for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+          const element = {
+            label: inputs[inputIndex],
+            value: inputs[inputIndex]
+          }
+          inputValues.push(element);
+        }
+      }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(currentAllBoardMemberMatrixDetails, function (object) {
@@ -1234,6 +1259,7 @@ export const datapointDetails = async (req, res, next) => {
                   fiscalYear: object.year,
                   description: dpTypeValues.description,
                   dataType: dpTypeValues.dataType,
+                  inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
                   screenShot: object.screenShot,
@@ -1262,6 +1288,7 @@ export const datapointDetails = async (req, res, next) => {
                   fiscalYear: object.year,
                   description: dpTypeValues.description,
                   dataType: dpTypeValues.dataType,
+                  inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
                   screenShot: object.screenShot,
@@ -1287,6 +1314,7 @@ export const datapointDetails = async (req, res, next) => {
               fiscalYear: currentYear[currentYearIndex],
               description: dpTypeValues.description,
               dataType: dpTypeValues.dataType,
+              inputValues:inputValues,
               memberName: req.body.memberName,
               textSnippet: '',
               pageNo: '',
@@ -1375,6 +1403,17 @@ export const datapointDetails = async (req, res, next) => {
         historicalData: [],
         status: ''
       }
+      let inputValues = [];
+      if(dpTypeValues.dataType == 'select'){        
+        let inputs = dpTypeValues.unit.split('/');
+        for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
+          const element = {
+            label: inputs[inputIndex],
+            value: inputs[inputIndex]
+          }
+          inputValues.push(element);
+        }
+      }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(currentAllKmpMatrixDetails, function (object) {
@@ -1388,6 +1427,7 @@ export const datapointDetails = async (req, res, next) => {
                   fiscalYear: object.year,
                   description: dpTypeValues.description,
                   dataType: dpTypeValues.dataType,
+                  inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
                   screenShot: object.screenShot,
@@ -1416,6 +1456,7 @@ export const datapointDetails = async (req, res, next) => {
                   fiscalYear: object.year,
                   description: dpTypeValues.description,
                   dataType: dpTypeValues.dataType,
+                  inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
                   screenShot: object.screenShot,
@@ -1441,6 +1482,7 @@ export const datapointDetails = async (req, res, next) => {
               fiscalYear: currentYear[currentYearIndex],
               description: dpTypeValues.description,
               dataType: dpTypeValues.dataType,
+              inputValues:inputValues,
               memberName: req.body.memberName,
               textSnippet: '',
               pageNo: '',

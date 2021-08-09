@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, percentileCalculation, mockPercentileCalculation} from './controller'
+import { create, index, show, update, destroy, percentileCalculation, mockPercentileCalculation, extraAddKeys} from './controller'
 import { schema } from './model'
 import { get } from 'mongoose'
 export PolarityRules, { schema } from './model'
 
 const router = new Router()
-const { polarityName, polarityValue, condition, datapointId, status } = schema.tree
+const { polarityName, polarityValue, condition, datapointId, categoryId, status } = schema.tree
 const companyId = '', standardDeviation = '', average = '', response = '';
 /**
  * @api {post} /polarity_rules Create polarity rules
@@ -18,7 +18,8 @@ const companyId = '', standardDeviation = '', average = '', response = '';
  * @apiParam {String} access_token user access token.
  * @apiParam polarityName Polarity rules's polarityName.
  * @apiParam polarityValue Polarity rules's polarityValue.
- * @apiParam condition Polarity rules's condition.
+ * @apiParam condition Polarity rules's condition. * 
+ * @apiParam categoryId Polarity rules's CategoryId.
  * @apiParam datapointId Polarity rules's datapointId.
  * @apiParam status Polarity rules's status.
  * @apiSuccess {Object} polarityRules Polarity rules's data.
@@ -28,7 +29,7 @@ const companyId = '', standardDeviation = '', average = '', response = '';
  */
 router.post('/',
   token({ required: true }),
-  body({ polarityName, polarityValue, condition, datapointId }),
+  body({ polarityName, polarityValue, condition, datapointId, categoryId }),
   create)
 
   /**
@@ -69,6 +70,22 @@ router.get('/',
   query(),
   index)
 
+/**
+ * @api {get} /polarity_rules/addExtraKeys Add Extra Keys
+ * @apiName Add Extra Keys
+ * @apiGroup PolarityRules
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of polarity rules.
+ * @apiSuccess {Object[]} rows List of polarity rules.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+ router.get('/addExtraKeys',
+ token({ required: true }),
+ query(),
+ extraAddKeys)
 /**
  * @api {get} /polarity_rules/:id Retrieve polarity rules
  * @apiName RetrievePolarityRules
