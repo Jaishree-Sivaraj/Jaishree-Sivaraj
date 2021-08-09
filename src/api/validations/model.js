@@ -86,7 +86,7 @@ hasDependentCode: {
 dependentCodes: {
   type: Array
 },
-validationTypes: {
+validationType: {
   type: String
 },
 percentileThreasholdValue: {
@@ -110,6 +110,11 @@ checkResponse: {
 errorMessage: {
   type: String
 },
+categoryId: {
+  type: Schema.ObjectId,
+  ref: 'Categories',
+  required: false
+},
 status: {
   type: Boolean,
   default: true
@@ -130,11 +135,12 @@ view (full) {
     datapointId: this.datapointId ? this.datapointId.view(full) : null,
     dpCode: this.dpCode,
     clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
+    categoryId: this.categoryId ? this.categoryId.view(full) : null,
     validationRule: this.validationRule,
     dataType: this.dataType,
     hasDependentCode: this.hasDependentCode,
     dependantCodes: this.dependantCodes,
-    validationTypes: this.validationTypes,
+    validationType: this.validationType,
     percentileThreasholdValue: this.percentileThreasholdValue,
     parameters: this.parameters,
     methodName: this.methodName,

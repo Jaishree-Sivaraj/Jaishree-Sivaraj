@@ -1142,7 +1142,7 @@ export const updateCompanyStatus = async (
         {
           $set: {
             overAllCompanyTaskStatus: true,
-            overAllCompanyTaskCompletedDate: Date.now()
+            completedDate: Date.now()
           },
         }
       );
