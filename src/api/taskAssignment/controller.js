@@ -1260,9 +1260,12 @@ export const controversyReports = async ({ user, params }, res, next) => {
       companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
       allocatedDate: controversyTask[i].createdAt,
       taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
-      isChecked: false
+      isChecked: false,
+      id: controversyTask[i].id
     }
     controversy.push(obj);
   }
   return res.status(200).json({ controversy: controversy });
 }
+
+
