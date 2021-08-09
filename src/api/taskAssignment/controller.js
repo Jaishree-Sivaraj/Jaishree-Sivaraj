@@ -1183,10 +1183,10 @@ export const reports = async ({ user, params }, res, next) => {
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
-    if (companyTask && Object.keys(companyTask).length > 0 && companyTask.overAllCompanyTaskStatus) {
-      obj.completedDate = companyTask && Object.keys(companyTask).length > 0 ? companyTask.completedDate : null;
+    if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = companyTask && Object.keys(companyTask).length > 0 ? companyTask.completedDate : null;
+      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
     }
     if (allTasks[i].overAllCompanyTaskStatus) {
       completedTask.push(obj)
