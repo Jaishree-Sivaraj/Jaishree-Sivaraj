@@ -10,6 +10,7 @@ import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
+import { TaskSlaLog } from "../taskSlaLog"
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1211,6 +1212,8 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       companyId: body.companyTaskReports[index]
     }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     for (var i = 0; i < allTasks.length; i++) {
+      var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
+      var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
       var obj = {
         companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
         taskid: allTasks[i].taskNumber,
@@ -1221,9 +1224,14 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
         qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
         qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
-        analystStatus: "Breached",
-        qaStatus: "OnTrack",
+        analystStatus: analystTaskLog && analystTaskLog.length > 0 ? "Breached" : "OnTrack",
+        qaStatus: qaLog && qaLog.length > 0 ? "Breached" : "OnTrack",
         stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+      }
+      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+        obj.status = "Yet to completed";
+      } else {
+        obj.status = 'OnTrack'
       }
       result.push(obj);
     }
