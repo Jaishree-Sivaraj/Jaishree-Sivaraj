@@ -1250,6 +1250,7 @@ export const controversyReports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
   for (var i = 0; i < controversyTask.length; i++) {
+    console.log(JSON.stringify(controversyTask[i], null, 3))
     if (controversyTask[i].companyId) {
       var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
     }
@@ -1257,8 +1258,8 @@ export const controversyReports = async ({ user, params }, res, next) => {
       taxonomy: taxonomy && taxonomy.clientTaxonomyId ? taxonomy.clientTaxonomyId.taxonomyName : null,
       companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
       companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
-      allocatedDate: controversyTask[i].createAt,
-      taskId: controversyTask[i].controversyNumber,
+      allocatedDate: controversyTask[i].createdAt,
+      taskId: controversyTask[i].controversyNumber ? controversyTask[i].controversyNumber : null,
       isChecked: false
     }
     controversy.push(obj);
