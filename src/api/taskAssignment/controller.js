@@ -1160,19 +1160,14 @@ export const updateCompanyStatus = async (
 };
 
 export const reports = async ({ user, params }, res, next) => {
-  console.log('in reports')
   var allTasks = await TaskAssignment.find({}).populate('companyId').populate('categoryId');
-  console.log('allTasks', JSON.stringify(allTasks, null, 3))
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
     if (allTasks[i].companyId) {
-      console.log('in companyId');
-      console.log('eachTask', JSON.stringify(allTasks[i], null, 3))
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
       var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
-      console.log('companyTask', companyTask);
     } if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
@@ -1213,9 +1208,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
     }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     for (var i = 0; i < allTasks.length; i++) {
       if (allTasks[i].companyId) {
-        console.log('in companyId');
         var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
-        console.log('companyTask', companyTask);
       }
       var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
       var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
@@ -1249,4 +1242,25 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
     }
   }
   return res.status(200).json({ data: result });
+}
+
+
+export const controversyReports = async ({ user, params }, res, next) => {
+  var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
+  var controversy = [];
+  for (var i = 0; i < controversyTask.length; i++) {
+    if (controversyTask[i].companyId) {
+      var taxonomy = companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
+    }
+    var obj = {
+      taxonomy: taxonomy && taxonomy.clientTaxonomyId ? taxonomy.clientTaxonomyId.taxonomyName : null,
+      companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
+      companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
+      allocatedDate: controversyTask[i].createAt,
+      taskId: controversyTask[i].controversyNumber,
+      isChecked: false
+    }
+    controversy.push(obj);
+  }
+  return res.status(200).json({ controversy: controversy });
 }
