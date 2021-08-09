@@ -11,6 +11,7 @@ import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { TaskSlaLog } from "../taskSlaLog"
+import { Companies } from "../companies"
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1250,7 +1251,7 @@ export const controversyReports = async ({ user, params }, res, next) => {
   var controversy = [];
   for (var i = 0; i < controversyTask.length; i++) {
     if (controversyTask[i].companyId) {
-      var taxonomy = companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
+      var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
     }
     var obj = {
       taxonomy: taxonomy && taxonomy.clientTaxonomyId ? taxonomy.clientTaxonomyId.taxonomyName : null,
