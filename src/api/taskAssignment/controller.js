@@ -1259,7 +1259,7 @@ export const controversyReports = async ({ user, params }, res, next) => {
       companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
       companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
       allocatedDate: controversyTask[i].createdAt,
-      taskId: controversyTask[i].controversyNumber ? controversyTask[i].controversyNumber : null,
+      taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
       isChecked: false
     }
     controversy.push(obj);
