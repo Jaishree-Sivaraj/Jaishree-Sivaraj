@@ -1212,6 +1212,11 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       companyId: body.companyTaskReports[index]
     }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     for (var i = 0; i < allTasks.length; i++) {
+      if (allTasks[i].companyId) {
+        console.log('in companyId');
+        var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
+        console.log('companyTask', companyTask);
+      }
       var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
       var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
       var obj = {
@@ -1228,10 +1233,17 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         qaStatus: qaLog && qaLog.length > 0 ? "Breached" : "OnTrack",
         stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
       }
+      if (companyTask && !companyTask.overAllCompanyTaskStatus) {
+        obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
+      }
       if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Yet to completed";
+        obj.status = "Breached";
       } else {
-        obj.status = 'OnTrack'
+        if (companyTask && companyTask.overAllCompanyTaskStatus) {
+          obj.status = 'Completed';
+        } else {
+          obj.status = 'OnTrack'
+        }
       }
       result.push(obj);
     }
