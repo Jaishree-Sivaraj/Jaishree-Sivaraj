@@ -1160,12 +1160,14 @@ export const updateCompanyStatus = async (
 
 export const reports = async ({ user, params }, res, next) => {
   console.log('in reports')
-  var allTasks = await TaskAssignment.find().populate('companyId').populate('categoryId');
+  var allTasks = await TaskAssignment.find({}).populate('companyId').populate('categoryId');
+  console.log('allTasks', JSON.stringify(allTasks, null, 3))
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
-    console.log(JSON.stringify(allTasks[i], null, 3))
     if (allTasks[i].companyId) {
+      console.log('in companyId');
+      console.log('eachTask', JSON.stringify(allTasks[i], null, 3))
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
       var companyTask = await CompaniesTasks.findOne({ companyName: allTasks[i].companyId.id }).populate('companyId');
