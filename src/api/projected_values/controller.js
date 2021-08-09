@@ -66,28 +66,69 @@ export const getAverageByNic = async ({body},res,next)=> {
   let nicCompaniesList = [];
   nicCompaniesList = await Companies.find({ "clientTaxonomyId": body.clientTaxonomyId, "nic": body.nic, "status": true})
   let nicCompaniesIds = [];
+  let datapointIds = [];
   for (let Index = 0; Index < nicCompaniesList.length; Index++) {
     nicCompaniesIds.push(nicCompaniesList[Index].id);
   }
   let percentileDatapoints = [], avgResponse = '0', stdDeviation = '0';
   let negativeNews = await Functions.find({"functionType" : "Negative News", "status": true})
   percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "percentile": "Yes", "relevantForIndia" : "Yes", "functionId": { $ne : negativeNews.id }, "status": true});
+  for (let dIndex = 0; dIndex < percentileDatapoints.length; dIndex++) {
+    datapointIds.push(percentileDatapoints[dIndex].id);
+  }
   let responseData = [];
+  let mergedDetails = [];
+  mergedDetails = await StandaloneDatapoints.find({ 
+  companyId: { $in: nicCompaniesIds }, 
+  datapointId: { $in: datapointIds },
+  year: body.year,
+  status: true
+  })
+  .populate('companyId')
+  .populate('datapointId');
+  mergedDetails = await BoardMembersMatrixDataPoints.find({ 
+  companyId: { $in: nicCompaniesIds }, 
+  datapointId: { $in: datapointIds },
+  year: body.year,
+  status: true
+  })
+  .populate('companyId')
+  .populate('datapointId');
+  mergedDetails = await KmpMatrixDataPoints.find({ 
+  companyId: { $in: nicCompaniesIds }, 
+  datapointId: { $in: datapointIds },
+  year: body.year,
+  status: true
+  })
+  .populate('companyId')
+  .populate('datapointId');
+  mergedDetails = await DerivedDatapoints.find({ 
+  companyId: { $in: nicCompaniesIds }, 
+  datapointId: { $in: datapointIds },
+  year: body.year,
+  status: true
+  })
+  .populate('companyId')
+  .populate('datapointId');
   for (let index = 0; index < percentileDatapoints.length; index++) {
     let sumOfResponse = 0;
     let allResponses = [];
-    // let mergedDetails;
-    let allStandaloneDetails, allKmpMatrixDetails, allBoardMemberMatrixDetails, allDerivedDetails;
     var responseValue = 0;
     for (let cIndex = 0; cIndex < nicCompaniesIds.length; cIndex++) {
-      allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : responseValue;
-      allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
-      allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
-      allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
+      let foundResponse = {};
+      // allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+      // responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : 
+      foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+      if (foundResponse && foundResponse.response) {
+        responseValue = foundResponse.response; 
+      }
+      // allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+      // responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
+      // allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+      // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
+      // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+      // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
+      console.log("ResponseValue", responseValue);
       let currentCompanyResponse = responseValue;
       if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
           currentCompanyResponse = 0;        
@@ -95,8 +136,10 @@ export const getAverageByNic = async ({body},res,next)=> {
       sumOfResponse += Number(currentCompanyResponse);
       allResponses.push(Number(currentCompanyResponse));
     }
-    avgResponse = String(sumOfResponse/nicCompaniesIds.length);
-    stdDeviation = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponse), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
+    let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
+    avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
+    let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
+    stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
     let avgResponseObject = {
       clientTaxonomyId: body.clientTaxonomyId,
       datapointId: percentileDatapoints[index].id,
@@ -110,7 +153,17 @@ export const getAverageByNic = async ({body},res,next)=> {
   }
   if (responseData.length > 0) {
     for (let index = 0; index < responseData.length; index++) {
-      await ProjectedValues.updateOne({ clientTaxonomyId: responseData[index].clientTaxonomyId, datapointId: responseData[index].datapointId, year: responseData[index].year }, { $set: responseData[index] }, { upsert: true })
+      await ProjectedValues.updateOne({ 
+        clientTaxonomyId: responseData[index].clientTaxonomyId, 
+        datapointId: responseData[index].datapointId, 
+        year: responseData[index].year, 
+        nic: body.nic }, 
+        { 
+          $set: responseData[index] 
+        }, 
+        { 
+          upsert: true 
+        })
         .catch((error) => {
           return res.status(500).json({
             status: "500",
@@ -144,27 +197,27 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           'twoYearsBackAvg': '',
           'oneYearBackAvg': '',
            'projectedAvg': '',
-          'fiveYearsBackSD': '',
-          'fourYearsBackSD': '',
-          'threeYearsBackSD': '',
-          'twoYearsBackSD': '',
-          'oneYearBackSD': '',
+          'fiveYearsBackSd': '',
+          'fourYearsBackSd': '',
+          'threeYearsBackSd': '',
+          'twoYearsBackSd': '',
+          'oneYearBackSd': '',
            'projectedSd': ''
         };
-        let sdYearNumber = 'fiveYearsBackSD';
+        let sdYearNumber = 'fiveYearsBackSd';
         let avgYearNumber = 'fiveYearsBackAvg';
         for (let yIndex = 0; yIndex < years.length; yIndex++) {
           if (yIndex == 1) {
-            sdYearNumber = 'fourYearsBackSD';
+            sdYearNumber = 'fourYearsBackSd';
             avgYearNumber = 'fourYearsBackAvg';
           } else if(yIndex == 2) {
-            sdYearNumber = 'threeYearsBackSD';
+            sdYearNumber = 'threeYearsBackSd';
             avgYearNumber = 'threeYearsBackAvg';
           } else if(yIndex == 3) {
-            sdYearNumber = 'twoYearsBackSD';
+            sdYearNumber = 'twoYearsBackSd';
             avgYearNumber = 'twoYearsBackAvg';
           } else if(yIndex == 4) {
-            sdYearNumber = 'oneYearBackSD';
+            sdYearNumber = 'oneYearBackSd';
             avgYearNumber = 'oneYearBackAvg';
           }
           let dpResponse = await ProjectedValues.findOne({ 
