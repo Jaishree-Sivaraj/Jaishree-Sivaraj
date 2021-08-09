@@ -55,13 +55,6 @@ const taskAssignmentSchema = new Schema({
     ref: 'User',
     required: true
   },
-  overAllCompanyTaskStatus: {
-    type: Boolean,
-    default: false
-  },
-  overAllCompanyTaskCompletedDate: {
-    type: Date
-  },
   status: {
     type: Boolean,
     default: true

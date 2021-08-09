@@ -6,11 +6,11 @@ const companiesTasksSchema = new Schema({
     ref: 'User',
     required: true
   },
-  taskId: {
+  taskList: [{
     type: Schema.ObjectId,
     ref: 'TaskAssignment',
     required: true
-  },
+  }],
   companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',
@@ -19,10 +19,21 @@ const companiesTasksSchema = new Schema({
   year: {
     type: String
   },
-  categoryId: {
-    type: Schema.ObjectId,
-    ref: 'Categories',
-    required: true
+  overAllCompanyTaskStatus: {
+    type: Boolean,
+    default: false
+  },
+  completedDate: {
+    type: Date,
+    required: false
+  },
+  canGenerateJson: {
+    type: Boolean,
+    required: false
+  },
+  isJsonGenerated: {
+    type: Boolean,
+    required: false
   },
   status: {
     type: Boolean,
@@ -37,7 +48,7 @@ const companiesTasksSchema = new Schema({
 })
 
 companiesTasksSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
