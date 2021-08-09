@@ -1062,7 +1062,7 @@ export const datapointDetails = async (req, res, next) => {
         status: ''
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){        
+      if(dpTypeValues.dataType == 'Select'){        
        let inputs = dpTypeValues.unit.split('/');
        for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
          const element = {
@@ -1235,7 +1235,7 @@ export const datapointDetails = async (req, res, next) => {
         status: ""
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){        
+      if(dpTypeValues.dataType == 'Select'){        
         let inputs = dpTypeValues.unit.split('/');
         for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
           const element = {
@@ -1404,7 +1404,7 @@ export const datapointDetails = async (req, res, next) => {
         status: ''
       }
       let inputValues = [];
-      if(dpTypeValues.dataType == 'select'){        
+      if(dpTypeValues.dataType == 'Select'){        
         let inputs = dpTypeValues.unit.split('/');
         for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
           const element = {
