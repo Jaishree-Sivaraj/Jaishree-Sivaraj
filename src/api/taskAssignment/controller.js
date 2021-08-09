@@ -1170,7 +1170,7 @@ export const reports = async ({ user, params }, res, next) => {
       console.log('eachTask', JSON.stringify(allTasks[i], null, 3))
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
-      var companyTask = await CompaniesTasks.findOne({ companyName: allTasks[i].companyId.id }).populate('companyId');
+      var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
       console.log('companyTask', companyTask);
     } if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
