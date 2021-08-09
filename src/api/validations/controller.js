@@ -53,6 +53,28 @@ export const destroy = ({ user, params }, res, next) =>
     .then(success(res, 204))
     .catch(next)
 
+export const extraAddKeys = async({params}, res, next)=>{
+      try { 
+      let validationId = await Validations.find({}).populate({
+        path: "datapointId",
+        populate: {
+          path: "categoryId"
+        }
+     });
+      if(validationId && validationId.length > 0){
+        for (let validationIndex = 0; validationIndex < validationId.length; validationIndex++) {
+          await Validations.updateOne({_id: validationId[validationIndex].id},{$set:{categoryId: validationId[validationIndex].datapointId.categoryId.id }})
+        }
+        return res.status(200).json({ status: "200", message: "Extra-keys added for validations rules!" });
+      } else {
+        return res.status(404).json({ message: "No validations rules found!" });
+      }   
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+    
+}
+
 export const type8Validation = async ({ user, body }, res, next) => {
   console.log(body.datapointId, body.companyId, body.clientTaxonomyId, body.currentYear, body.previousYear, body.response);
   let derivedDatapoints = await DerivedDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
@@ -222,80 +244,153 @@ export const type3Validation = async ({ user, body }, res, next) => {
 }
 
 export const getAllValidation = async ({ user, body }, res, next) => {
-  let taskDetailsObject = await TaskAssignment.findOne({_id: body.params}).populate('companyId');
-  if(validationType == 3){
-    let previousResponse = await StandaloneDatapoints.findOne({ datapointId: body.datapointId, companyId: body.companyId, year: body.previousYear });
-  try {
-    if (previousResponse.response.toLowerCase() == 'yes' || previousResponse.response.toLowerCase() == 'y') {
-      if (body.response.toLowerCase() == 'yes' || body.response.toLowerCase() == 'y') {
-        return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-      } else {
-        return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
-      }
-    } else {
-      return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-    }
-  } catch (error) {
-    return res.status(412).json({ message: error.message, isValidResponse: false });
+  let validationResponseObject = {
+    dpCodeId: '',
+    dpCode: "",
+    isValidResponse: false,
+    errorMessage:"",
+    validationType: 0
   }
-  } else if(validationType == 8){
-    let derivedDatapoints = await DerivedDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
-    let standalone_datapoints = await StandaloneDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
-    let mergedDetails = _.concat(derivedDatapoints, standalone_datapoints);
-    let datapointDetails = await Datapoints.findOne({ _id: body.datapointId, clientTaxonomyId: body.clientTaxonomyId });
-    if (datapointDetails.methodName.trim() == 'OR') {
-      let parameters = datapointDetails.dependentCodes;
-      if (parameters.length > 0) {
-        for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
-          let parameterDPResponse, previousYearResponse;
-          _.filter(mergedDetails, (object, index) => {
-            if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameters[parameterIndex].id) {
-              parameterDPResponse = object;
-            } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
-              previousYearResponse = object;
+  let validationResponse = [];
+  let taskDetailsObject = await TaskAssignment.findOne({_id: body.params}).populate('companyId').populate('categoryId');
+  let distinctYears = taskDetailsObject.year.split(',');
+  let validationRules = await Validations.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId');
+  let derivedDatapoints = await DerivedDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
+  let standalone_datapoints = await StandaloneDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
+  let mergedDetails = _.concat(derivedDatapoints, standalone_datapoints);
+  for (let validationIndex = 0; validationIndex < validationRules.length; validationIndex++) {
+    if(validationRules[validationIndex].validationType == 3){
+      let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && year == body.previousYear);
+    if(previousResponseIndex <= -1){
+      let previousResponse = mergedDetails[previousResponseIndex];
+    try {
+      for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+        let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId && object.companyId.id == taskDetailsObject.companyId.id && year == distinctYears[yearIndex]);
+        if(currentResponse){
+          if (previousResponse.response.toLowerCase() == 'yes' || previousResponse.response.toLowerCase() == 'y') {
+            if (currentResponse[0].response.toLowerCase() == 'yes' || currentResponse[0].response.toLowerCase() == 'y') {
+              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
+              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
+              validationResponseObject.isValidResponse = true
+              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              validationResponse.push(validationResponseObject);
+            } else {
+              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
+              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
+              validationResponseObject.isValidResponse = false
+              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              validationResponse.push(validationResponseObject);
             }
-          })
-          console.log(parameterDPResponse, previousYearResponse)
-          if (parameterDPResponse) {
-            if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
-              if (datapointDetails.checkCondition.trim() == 'greater') {
-                let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                if (Number(body.response) > Number(calculatedResponse)) {
-                  return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+          } else {
+            validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
+            validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
+            validationResponseObject.isValidResponse = true
+            validationResponseObject.validationType = validationRules[validationIndex].validationType
+            validationResponse.push(validationResponseObject);
+          }
+        }
+      }
+    } catch (error) {
+      return res.status(412).json({ message: error.message, isValidResponse: false });
+    }
+  }
+    } else if(validationRules[validationIndex] == 8){
+      let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && year == body.previousYear);
+      if(previousResponseIndex <= -1){
+
+      if (validationRules[validationIndex].methodName.trim() == 'OR') {
+        let parameters = validationRules[validationIndex].dependentCodes;
+        if (parameters.length > 0) {
+          for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
+            let parameterDPResponse, previousYearResponse;
+            _.filter(mergedDetails, (object, index) => {
+              if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameters[parameterIndex].id) {
+                parameterDPResponse = object;
+              } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
+                previousYearResponse = object;
+              }
+            })
+            console.log(parameterDPResponse, previousYearResponse)
+            if (parameterDPResponse) {
+              if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
+                if (datapointDetails.checkCondition.trim() == 'greater') {
+                  let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
+                  if (Number(body.response) > Number(calculatedResponse)) {
+                    return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+                  } else {
+                    return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+                  }
                 } else {
-                  return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+                  let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
+                  if (Number(body.response) < Number(calculatedResponse)) {
+                    return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+                  } else {
+                    return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+                  }
                 }
+              }
+            } else {
+              return res.status(404).json({ message: "Response is missing for " + parameters[parameterIndex].code + "year :"+ body.currentYear});
+            }
+            if (parameterIndex == parameters.length - 1) {
+              return res.status(412).json({ message: "Condition Failed" });
+            }
+          }
+        } else {
+          return res.status(401).json({ message: "Parameters not found" });
+        }
+      } else if (datapointDetails.methodName.trim() == 'YES') {
+        let parameter = datapointDetails.dependentCodes;
+        let parameterDPResponse, previousYearResponse;
+        _.filter(mergedDetails, (object, index) => {
+          if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameter[0].id) {
+            parameterDPResponse = object;
+          } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
+            previousYearResponse = object;
+          }
+        })
+        if (parameterDPResponse) {
+          if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
+            if (datapointDetails.checkCondition.trim() == 'greater') {
+              let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
+              if (Number(body.response) > Number(calculatedResponse)) {
+                return res.status(200).json({ message: "Valid Response", isValidResponse: true });
               } else {
-                let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                if (Number(body.response) < Number(calculatedResponse)) {
-                  return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-                } else {
-                  return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
-                }
+                return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+              }
+            } else {
+              let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
+              if (Number(body.response) < Number(calculatedResponse)) {
+                return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+              } else {
+                return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
               }
             }
           } else {
-            return res.status(404).json({ message: "Response is missing for " + parameters[parameterIndex].code + "year :"+ body.currentYear});
-          }
-          if (parameterIndex == parameters.length - 1) {
             return res.status(412).json({ message: "Condition Failed" });
           }
+        } else {
+          return res.status(404).json({ message: "Response is missing for " + parameter[0].code + "year :"+ body.currentYear});
         }
-      } else {
-        return res.status(401).json({ message: "Parameters not found" });
-      }
-    } else if (datapointDetails.methodName.trim() == 'YES') {
-      let parameter = datapointDetails.dependentCodes;
-      let parameterDPResponse, previousYearResponse;
-      _.filter(mergedDetails, (object, index) => {
-        if (object.companyId == body.companyId, object.year == body.currentYear, object.datapointId.id == parameter[0].id) {
-          parameterDPResponse = object;
-        } else if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId.id == body.datapointId) {
-          previousYearResponse = object;
-        }
-      })
-      if (parameterDPResponse) {
-        if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
+      } else if (datapointDetails.methodName.trim() == 'ANDOR') {
+        let parameters = datapointDetails.dependentCodes;
+        let param1Value, param2Value, param3Value;
+        let previousYearResponse;
+        //let year;
+        _.filter(mergedDetails, (object, index) => {
+          if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
+            previousYearResponse = object
+          } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
+            param1Value = object.response ? object.response : ''
+          } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
+            param2Value = object.response ? object.response : ''
+          } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
+            param3Value = object.response ? object.response : ''
+          }
+        })
+        //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes') || param3Value.toLowerCase() == 'yes') {
+          if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes')) || (param3Value == 'yes' || param3Value == 'Yes')) {
           if (datapointDetails.checkCondition.trim() == 'greater') {
             let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
             if (Number(body.response) > Number(calculatedResponse)) {
@@ -314,76 +409,40 @@ export const getAllValidation = async ({ user, body }, res, next) => {
         } else {
           return res.status(412).json({ message: "Condition Failed" });
         }
-      } else {
-        return res.status(404).json({ message: "Response is missing for " + parameter[0].code + "year :"+ body.currentYear});
-      }
-    } else if (datapointDetails.methodName.trim() == 'ANDOR') {
-      let parameters = datapointDetails.dependentCodes;
-      let param1Value, param2Value, param3Value;
-      let previousYearResponse;
-      //let year;
-      _.filter(mergedDetails, (object, index) => {
-        if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
-          previousYearResponse = object
-        } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
-          param1Value = object.response ? object.response : ''
-        } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
-          param2Value = object.response ? object.response : ''
-        } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
-          param3Value = object.response ? object.response : ''
-        }
-      })
-      //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes') || param3Value.toLowerCase() == 'yes') {
-        if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes')) || (param3Value == 'yes' || param3Value == 'Yes')) {
-        if (datapointDetails.checkCondition.trim() == 'greater') {
-          let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-          if (Number(body.response) > Number(calculatedResponse)) {
-            return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-          } else {
-            return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+      } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
+        console.log('...',datapointDetails);
+        let parameters = datapointDetails.dependentCodes;
+        let param1Value, param2Value, param3Value, param4Value;
+        let previousYearResponse;
+        _.filter(mergedDetails, (object, index) => {
+          if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
+            previousYearResponse = object
+          } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
+            param1Value = object.response ? object.response : ''
+          } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
+            param2Value = object.response ? object.response : ''
+          } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
+            param3Value = object.response ? object.response : ''
+          } else if (object.datapointId == parameters[3].id, object.year == body.currentYear) {
+            param4Value = object.response ? object.response : ''
+          }
+        })
+        //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes' && param3Value.toLowerCase() == 'yes') || param4Value.toLowerCase() == 'yes') {
+          if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes') && (param3Value == 'yes' || param3Value == 'yes') || (param4Value == 'yes' || param4Value == 'Yes'))) {
+          if (datapointDetails.checkCondition.trim() == 'greater') {
+            let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
+            if (Number(body.response) > Number(calculatedResponse)) {
+              return res.status(200).json({ message: "Valid Response", isValidResponse: true });
+            } else {
+              return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
+            }
           }
         } else {
-          let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-          if (Number(body.response) < Number(calculatedResponse)) {
-            return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-          } else {
-            return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
-          }
+          return res.status(412).json({ message: "Condition Failed" });
         }
-      } else {
-        return res.status(412).json({ message: "Condition Failed" });
-      }
-    } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
-      console.log('...',datapointDetails);
-      let parameters = datapointDetails.dependentCodes;
-      let param1Value, param2Value, param3Value, param4Value;
-      let previousYearResponse;
-      _.filter(mergedDetails, (object, index) => {
-        if (object.companyId == body.companyId, object.year == body.previousYear, object.datapointId == body.datapointId) {
-          previousYearResponse = object
-        } else if (object.datapointId == parameters[0].id, object.year == body.currentYear) {
-          param1Value = object.response ? object.response : ''
-        } else if (object.datapointId == parameters[1].id, object.year == body.currentYear) {
-          param2Value = object.response ? object.response : ''
-        } else if (object.datapointId == parameters[2].id, object.year == body.currentYear) {
-          param3Value = object.response ? object.response : ''
-        } else if (object.datapointId == parameters[3].id, object.year == body.currentYear) {
-          param4Value = object.response ? object.response : ''
-        }
-      })
-      //if ((param1Value.toLowerCase() == 'yes' && param2Value.toLowerCase() == 'yes' && param3Value.toLowerCase() == 'yes') || param4Value.toLowerCase() == 'yes') {
-        if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes') && (param3Value == 'yes' || param3Value == 'yes') || (param4Value == 'yes' || param4Value == 'Yes'))) {
-        if (datapointDetails.checkCondition.trim() == 'greater') {
-          let calculatedResponse = (Number(datapointDetails.percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-          if (Number(body.response) > Number(calculatedResponse)) {
-            return res.status(200).json({ message: "Valid Response", isValidResponse: true });
-          } else {
-            return res.status(400).json({ message: "Invalid Response", isValidResponse: false });
-          }
-        }
-      } else {
-        return res.status(412).json({ message: "Condition Failed" });
       }
     }
+    }
+    
   }
 }
