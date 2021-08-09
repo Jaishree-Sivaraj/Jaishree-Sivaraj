@@ -1183,12 +1183,13 @@ export const reports = async ({ user, params }, res, next) => {
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
+    console.log('overAllCompanyTaskStatus', companyTask.overAllCompanyTaskStatus)
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
       obj.allocatedDate = companyTask ? companyTask.completedDate : null;
     }
-    if (allTasks[i].overAllCompanyTaskStatus) {
+    if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)
     } else {
       pendingTask.push(obj)
