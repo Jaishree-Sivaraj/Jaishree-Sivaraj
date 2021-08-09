@@ -1168,6 +1168,8 @@ export const reports = async ({ user, params }, res, next) => {
     if (allTasks[i].companyId) {
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
+      var companyTask = await CompaniesTasks.findOne({ companyName: allTasks[i].companyId.id }).populate('companyId');
+      console.log('companyTask', companyTask);
     } if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
@@ -1179,11 +1181,10 @@ export const reports = async ({ user, params }, res, next) => {
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
-    if (allTasks[i].taskStatus !== 'Completed') {
-      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
+    if (companyTask && Object.keys(companyTask).length > 0 && companyTask.overAllCompanyTaskStatus) {
+      obj.completedDate = companyTask && Object.keys(companyTask).length > 0 ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
-
+      obj.allocatedDate = companyTask && Object.keys(companyTask).length > 0 ? companyTask.completedDate : null;
     }
     if (allTasks[i].overAllCompanyTaskStatus) {
       completedTask.push(obj)
