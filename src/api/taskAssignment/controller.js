@@ -10,6 +10,7 @@ import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
+import { TaskSlaLog } from "../taskSlaLog"
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1160,14 +1161,18 @@ export const updateCompanyStatus = async (
 
 export const reports = async ({ user, params }, res, next) => {
   console.log('in reports')
-  var allTasks = await TaskAssignment.find().populate('companyId').populate('categoryId');
+  var allTasks = await TaskAssignment.find({}).populate('companyId').populate('categoryId');
+  console.log('allTasks', JSON.stringify(allTasks, null, 3))
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
-    console.log(JSON.stringify(allTasks[i], null, 3))
     if (allTasks[i].companyId) {
+      console.log('in companyId');
+      console.log('eachTask', JSON.stringify(allTasks[i], null, 3))
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
+      var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
+      console.log('companyTask', companyTask);
     } if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
@@ -1179,13 +1184,12 @@ export const reports = async ({ user, params }, res, next) => {
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
-    if (allTasks[i].taskStatus !== 'Completed') {
-      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
+    if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = allTasks[i].companyId && allTasks[i].companyId.overAllCompletedDate ? allTasks[i].companyId.overAllCompletedDate : null;
-
+      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
     }
-    if (allTasks[i].overAllCompanyTaskStatus) {
+    if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)
     } else {
       pendingTask.push(obj)
@@ -1208,6 +1212,8 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       companyId: body.companyTaskReports[index]
     }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     for (var i = 0; i < allTasks.length; i++) {
+      var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
+      var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
       var obj = {
         companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
         taskid: allTasks[i].taskNumber,
@@ -1218,9 +1224,14 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
         qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
         qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
-        analystStatus: "Breached",
-        qaStatus: "OnTrack",
+        analystStatus: analystTaskLog && analystTaskLog.length > 0 ? "Breached" : "OnTrack",
+        qaStatus: qaLog && qaLog.length > 0 ? "Breached" : "OnTrack",
         stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+      }
+      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+        obj.status = "Yet to completed";
+      } else {
+        obj.status = 'OnTrack'
       }
       result.push(obj);
     }
