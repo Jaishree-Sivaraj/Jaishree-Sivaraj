@@ -1034,7 +1034,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.primaryPillar = false;
         }
         console.log('primary', group.assignedMembers[index].roleDetails.primaryRole, qaId.id);
-        if (qaId && (group.assignedMembers[index].roleDetails.primaryRole === qaId.id)) {
+        console.log('primary', typeof group.assignedMembers[index].roleDetails.primaryRole, typeof qaId.id);
+        if (qaId && (group.assignedMembers[index].roleDetails.primaryRole == qaId.id)) {
           console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
@@ -1061,7 +1062,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           console.log('qa object', qaObject);
           qa.push(qaObject);
         }
-        if (analystId && (group.assignedMembers[index].roleDetails.primaryRole === analystId.id)) {
+        if (analystId && (group.assignedMembers[index].roleDetails.primaryRole == analystId.id)) {
           console.log('in if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
