@@ -16,6 +16,11 @@ const companiesTasksSchema = new Schema({
     ref: 'Companies',
     required: true
   },
+  categoryId: {
+    type: Schema.ObjectId,
+    ref: 'Categories',
+    required: true
+  },
   year: {
     type: String
   },
