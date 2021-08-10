@@ -1034,7 +1034,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.primaryPillar = false;
         }
         console.log('primary', group.assignedMembers[index].roleDetails.primaryRole, qaId.id);
-        if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId.id) {
+        if (qaId && (group.assignedMembers[index].roleDetails.primaryRole === qaId.id)) {
           console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
@@ -1047,7 +1047,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.activeTaskCount = activeTaskCount.length;
           console.log('qa object', qaObject);
           qa.push(qaObject);
-        } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1) {
+        } else if (qaId && (group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1)) {
           console.log('in else if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
@@ -1061,7 +1061,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           console.log('qa object', qaObject);
           qa.push(qaObject);
         }
-        if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId.id) {
+        if (analystId && (group.assignedMembers[index].roleDetails.primaryRole === analystId.id)) {
           console.log('in if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
@@ -1076,7 +1076,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.activeTaskCount = activeTaskCount.length;
           console.log('analystObject object', analystObject);
           analyst.push(analystObject);
-        } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1) {
+        } else if (analystId && (group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1)) {
           console.log('in else if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
