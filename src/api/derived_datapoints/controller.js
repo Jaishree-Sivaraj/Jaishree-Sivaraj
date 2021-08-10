@@ -37,8 +37,8 @@ import {
   Companies
 } from '../companies'
 import { TaskAssignment } from "../taskAssignment";
-import {DerivedCalculationSample} from '../derived_datapoints/derived_calculation'
-let DerivedCalculations = require('../derived_datapoints/derived_calculation');
+import  * as DerivedCalculationSample from '../derived_datapoints/derived_calculation';
+
 export const create = ({
     user,
     bodymen: {
@@ -2626,22 +2626,22 @@ export const derivedCalculation = async ({
     if(rulesDetailsObject.includes(distinctRuleMethods[ruleMethodIndex])){
       switch (distinctRuleMethods[ruleMethodIndex]) {
               case "ADD":
-                await DerivedCalculations.addCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                await DerivedCalculationSample.addCalculation(body.taskId,taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
                 break;
               case "As":
-                await DerivedCalculations.asCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                await DerivedCalculationSample.asCalculation(body.taskId,taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
                 break;
               case "AsPercentage":
-                await DerivedCalculations.asPercentageCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
+                await DerivedCalculationSample.asPercentageCalculation(body.taskId,taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user);
                 break;
               case "AsRatio":
-                await DerivedCalculations.asRatioCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.asRatioCalculation(body.taskId,taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 break;
               case "Condition":
-                await DerivedCalculations.conditionCalculation(taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.conditionCalculation(body.taskId,taskDetailsObject.companyId.id, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 break;
               case "MatrixPercentage":
-                await DerivedCalculations.matrixPercentageCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.matrixPercentageCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2651,7 +2651,7 @@ export const derivedCalculation = async ({
                 })
                 break;
               case "Minus":
-                await DerivedCalculations.minusCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.minusCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2661,10 +2661,10 @@ export const derivedCalculation = async ({
                 })
                 break;
               case "Multiply":
-                await DerivedCalculations.multiplyCalculation(taskDetailsObject.companyId.id, year,allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.multiplyCalculation(body.taskId,taskDetailsObject.companyId.id, year,allDatapointsList, taskDetailsObject.categoryId.id, user)
                 break;
               case "Percentage":
-                await DerivedCalculations.percentageCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.percentageCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2674,7 +2674,7 @@ export const derivedCalculation = async ({
                 })
                 break;
               case "Ratio":
-                await DerivedCalculations.ratioCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList,allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.ratioCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList,allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2684,7 +2684,7 @@ export const derivedCalculation = async ({
                 })
                 break;
               case "RatioADD":
-                await DerivedCalculations.ratioAddCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.ratioAddCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2693,7 +2693,7 @@ export const derivedCalculation = async ({
                   }
                 })
               case "Sum":
-                await DerivedCalculations.sumCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.sumCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2703,7 +2703,7 @@ export const derivedCalculation = async ({
                 })
                 break;
               case "YesNo":
-                await DerivedCalculations.yesNoCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.yesNoCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2713,7 +2713,7 @@ export const derivedCalculation = async ({
                 });
                 break;
               case "count of":
-                await DerivedCalculations.countOfCalculation(taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
+                await DerivedCalculationSample.countOfCalculation(body.taskId,taskDetailsObject.companyId.id, mergedDetails, year, allDatapointsList, allDerivedDatapoints, taskDetailsObject.categoryId.id, user)
                 .then((result) => {
                   if (result) {
                     if (result.allDerivedDatapoints) {
@@ -2746,22 +2746,21 @@ export const derivedCalculation = async ({
       });
   }
   }
-  for (let yearIndex = 0; yearIndex < year.length; yearIndex++) {
-    let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"},relevantForIndia: "Yes" })
-    let allStandaloneDatapoints = await StandaloneDatapoints.find({companyId: taskDetailsObject.companyId.id, year: year[yearIndex],status: true}).populate('datapointId').populate('companyId');
-    let allDerivedDatapointsDetails = await DerivedDatapoints.find({companyId: taskDetailsObject.companyId.id, year: year[yearIndex],status: true}).populate('datapointId').populate('companyId');
-    let mergedDetails = _.concat(allStandaloneDatapoints, allDerivedDatapointsDetails);
-    let polarityRulesList = await PolarityRules.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId')
-    
+  let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"},relevantForIndia: "Yes" })
+  let allStandaloneDatapoints = await StandaloneDatapoints.find({taskId: body.taskId,status: true}).populate('datapointId').populate('companyId');
+  let allDerivedDatapointsDetails = await DerivedDatapoints.find({taskId: body.taskId,status: true}).populate('datapointId').populate('companyId');
+  let mergedDatapoints = _.concat(allStandaloneDatapoints, allDerivedDatapointsDetails);
+  let polarityRulesList = await PolarityRules.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId')
+  for (let yearIndex = 0; yearIndex < year.length; yearIndex++) {    
     for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesList.length; polarityRulesIndex++) {
       let performanceResult = "";
       let datapointDetail = polarityRulesList[polarityRulesIndex].datapointId;
       // (datapointDetail.relevantForIndia == "Yes") {
         let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
        // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
-          let foundResponseIndex = mergedDetails.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year[yearIndex]);
+          let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year[yearIndex]);
           if (foundResponseIndex > -1) {
-            let foundResponse = mergedDetails[foundResponseIndex];
+            let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) { 
               if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
                 performanceResult = 'NA'
@@ -2790,7 +2789,6 @@ export const derivedCalculation = async ({
                 }
               }
             }
-            console.log(polarityRuleDetails.datapointId.code,performanceResult)
             if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
               await StandaloneDatapoints.updateOne({
                 _id: foundResponse.id
@@ -2822,9 +2820,9 @@ export const derivedCalculation = async ({
       if (isDpExistInPolarityRule <= -1) {
         let datapointDetail = dataPointsIdList[dataPointIndex];
        // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
-          let foundResponseIndex = mergedDetails.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year);
+          let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year);
           if (foundResponseIndex > -1) {
-            let foundResponse = mergedDetails[foundResponseIndex];
+            let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) {
               if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA' || foundResponse.response.toLowerCase() == 'nan') {
                 performanceResult = 'NA';
@@ -2859,8 +2857,7 @@ export const derivedCalculation = async ({
                   performanceResult = foundResponse.response
                 }
               }
-            }  
-            console.log(performanceResult)        
+            }       
             if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
               await StandaloneDatapoints.updateOne({
                 _id: foundResponse.id

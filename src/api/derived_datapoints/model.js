@@ -16,6 +16,12 @@ const derivedDatapointsSchema = new Schema({
     ref: 'Datapoints',
     required: true
   },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false,
+    default: null
+  },
   response: {
     type: String
   },
@@ -75,6 +81,7 @@ derivedDatapointsSchema.methods = {
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       companyId: this.companyId ? this.companyId.view(full) : null,
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
+      taskId: this.taskId ? this.taskId.view(full) : null,
       response: this.response,
       performanceResult: this.performanceResult,
       memberName: this.memberName ? this.memberName : '',
