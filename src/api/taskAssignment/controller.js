@@ -1033,18 +1033,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
-        if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1) {
-          var activeTaskCount = await TaskAssignment.find({
-            qaId: group.assignedMembers[index].id,
-            status: true,
-            taskStatus: { $ne: "Verification Completed" },
-          });
-          qaObject.id = group.assignedMembers[index].id;
-          qaObject.name = group.assignedMembers[index].name;
-          qaObject.primaryRole = false;
-          qaObject.activeTaskCount = activeTaskCount.length;
-          qa.push(qaObject);
-        } else if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId.id) {
+        if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId.id) {
+          console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
@@ -1054,24 +1044,24 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = true;
           qaObject.activeTaskCount = activeTaskCount.length;
+          console.log('qa object', qaObject);
+          qa.push(qaObject);
+        } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1) {
+          console.log('in else if for qa', qaId.id)
+          var activeTaskCount = await TaskAssignment.find({
+            qaId: group.assignedMembers[index].id,
+            status: true,
+            taskStatus: { $ne: "Verification Completed" },
+          });
+          qaObject.id = group.assignedMembers[index].id;
+          qaObject.name = group.assignedMembers[index].name;
+          qaObject.primaryRole = false;
+          qaObject.activeTaskCount = activeTaskCount.length;
+          console.log('qa object', qaObject);
           qa.push(qaObject);
         }
-        if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId.id) > -1) {
-          console.log('If', analystId.id);
-          var activeTaskCount = await TaskAssignment.find({
-            analystId: group.assignedMembers[index].id,
-            status: true,
-            taskStatus: {
-              $nin: ["Collection Completed", "Correction Completed"],
-            },
-          });
-          analystObject.id = group.assignedMembers[index].id;
-          analystObject.name = group.assignedMembers[index].name;
-          analystObject.primaryRole = false;
-          analystObject.activeTaskCount = activeTaskCount.length;
-          analyst.push(analystObject);
-        } else if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId.id) {
-          console.log('ELSE If', analystId.id);
+        if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId.id) {
+          console.log('in if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1083,6 +1073,22 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
+          console.log('analystObject object', analystObject);
+          analyst.push(analystObject);
+        } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1) {
+          console.log('in else if analyst', analystId.id)
+          var activeTaskCount = await TaskAssignment.find({
+            analystId: group.assignedMembers[index].id,
+            status: true,
+            taskStatus: {
+              $nin: ["Collection Completed", "Correction Completed"],
+            },
+          });
+          analystObject.id = group.assignedMembers[index].id;
+          analystObject.name = group.assignedMembers[index].name;
+          analystObject.primaryRole = false;
+          analystObject.activeTaskCount = activeTaskCount.length;
+          console.log('analystObject object', analystObject);
           analyst.push(analystObject);
         }
       }
