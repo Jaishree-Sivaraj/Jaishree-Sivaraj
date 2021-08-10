@@ -712,7 +712,7 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
             activeMemberValues = activeMemberValues.filter(e => e.trim());
             activeMemberValues = activeMemberValues.filter(e => e.toLowerCase() != "na");
             if (activeMemberValues.length > 0) {
-              sumValue = activeMemberValues.reduce(function (taskId, prev, next) {
+              sumValue = activeMemberValues.reduce(function (prev, next) {
                 if (prev && next) {
                   let prevResponse = prev.replace(/[, \D\s]/g, '');
                   let nextResponse = next.replace(/[, \D\s]/g, '');
@@ -870,7 +870,7 @@ export const sumCalculation = async function (taskId, companyId, mergedDetails, 
           }
         });
         if (activeMembers.length > 0) {
-          sumValue = activeMembers.reduce(function (taskId, prev, next) {
+          sumValue = activeMembers.reduce(function (prev, next) {
             if (prev && next) {
               let prevResponse = prev.trim().replace(/[, \D\s]/g, '');
               let nextResponse = next.trim().replace(/[, \D\s]/g, '');
@@ -1158,7 +1158,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
           });
   
           if (numeratorValues.length > 0) {
-            numeratorSum = numeratorValues.reduce(function (taskId, prev, next) {
+            numeratorSum = numeratorValues.reduce(function (prev, next) {
               if (prev && next) {
                 let prevResponse = prev.replace(/[, \D\s]/g, '');
                 let nextResponse = next.replace(/[, \D\s]/g, '');
@@ -1170,7 +1170,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
             numeratorSum = 0;
           }
           if (denominatorValues.length > 0) {
-            denominatorSum = denominatorValues.reduce(function (taskId, prev, next) {
+            denominatorSum = denominatorValues.reduce(function ( prev, next) {
               if (prev && next) {
                 let prevResponse = prev.replace(/[, \D\s]/g, '');
                 let nextResponse = next.replace(/[, \D\s]/g, '');
@@ -1369,7 +1369,7 @@ export const ratioAddCalculation = async function (taskId, companyId, distinctYe
       }
     }
 }
-export const asCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const asCalculation = async function (taskId,companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let asT1 = performance.now();
     let asRules = await Rules.find({
       methodName: "As",categoryId: categoryId
@@ -1423,7 +1423,7 @@ export const asCalculation = async function (companyId, distinctYears, allDatapo
       }
     }
 }
-export const conditionCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const conditionCalculation = async function (taskId,companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let conditionT1 = performance.now();
     let asConditionRules = await Rules.find({
       methodName: "Condition",categoryId: categoryId
