@@ -1033,6 +1033,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
+        console.log('primary', group.assignedMembers[index].roleDetails.primaryRole, qaId.id);
         if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId.id) {
           console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
