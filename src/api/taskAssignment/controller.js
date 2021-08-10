@@ -11,6 +11,7 @@ import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { TaskSlaLog } from "../taskSlaLog"
+import { Companies } from "../companies"
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1160,19 +1161,14 @@ export const updateCompanyStatus = async (
 };
 
 export const reports = async ({ user, params }, res, next) => {
-  console.log('in reports')
   var allTasks = await TaskAssignment.find({}).populate('companyId').populate('categoryId');
-  console.log('allTasks', JSON.stringify(allTasks, null, 3))
   var completedTask = [];
   var pendingTask = [];
   for (var i = 0; i < allTasks.length; i++) {
     if (allTasks[i].companyId) {
-      console.log('in companyId');
-      console.log('eachTask', JSON.stringify(allTasks[i], null, 3))
       var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       var clientRep = await ClientRepresentatives.findOne({ companyName: allTasks[i].companyId.id }).populate('userId');
       var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
-      console.log('companyTask', companyTask);
     } if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
@@ -1212,6 +1208,9 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       companyId: body.companyTaskReports[index]
     }).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
     for (var i = 0; i < allTasks.length; i++) {
+      if (allTasks[i].companyId) {
+        var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
+      }
       var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
       var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
       var obj = {
@@ -1228,13 +1227,45 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         qaStatus: qaLog && qaLog.length > 0 ? "Breached" : "OnTrack",
         stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
       }
+      if (companyTask && !companyTask.overAllCompanyTaskStatus) {
+        obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
+      }
       if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Yet to completed";
+        obj.status = "Breached";
       } else {
-        obj.status = 'OnTrack'
+        if (companyTask && companyTask.overAllCompanyTaskStatus) {
+          obj.status = 'Completed';
+        } else {
+          obj.status = 'OnTrack'
+        }
       }
       result.push(obj);
     }
   }
   return res.status(200).json({ data: result });
 }
+
+
+export const controversyReports = async ({ user, params }, res, next) => {
+  var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
+  var controversy = [];
+  for (var i = 0; i < controversyTask.length; i++) {
+    console.log(JSON.stringify(controversyTask[i], null, 3))
+    if (controversyTask[i].companyId) {
+      var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
+    }
+    var obj = {
+      taxonomy: taxonomy && taxonomy.clientTaxonomyId ? taxonomy.clientTaxonomyId.taxonomyName : null,
+      companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
+      companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
+      allocatedDate: controversyTask[i].createdAt,
+      taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
+      isChecked: false,
+      id: controversyTask[i].id
+    }
+    controversy.push(obj);
+  }
+  return res.status(200).json({ controversy: controversy });
+}
+
+

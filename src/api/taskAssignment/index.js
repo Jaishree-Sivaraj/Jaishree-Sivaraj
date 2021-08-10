@@ -24,7 +24,8 @@ import {
   getQaAndAnalystFromGrp,
   updateSlaDates,
   reports,
-  getTaskList
+  getTaskList,
+  controversyReports
 } from './controller'
 import {
   schema
@@ -120,6 +121,24 @@ router.get('/task/reports',
     required: true
   }),
   reports)
+
+/**
+* @api {get} /taskAssignments/task/controversyReports Retrieve my task assignments
+* @apiName RetrieveTaskAssignments
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of task assignments.
+* @apiSuccess {Object[]} rows List of task assignments.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/task/controversyReports',
+  token({
+    required: true
+  }),
+  controversyReports)
 
 /**
  * @api {get} /taskAssignments Retrieve task assignments
