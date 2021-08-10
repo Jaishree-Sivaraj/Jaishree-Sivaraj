@@ -1057,6 +1057,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qa.push(qaObject);
         }
         if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId.id) > -1) {
+          console.log('If', analystId.id);
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1070,6 +1071,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.activeTaskCount = activeTaskCount.length;
           analyst.push(analystObject);
         } else if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId.id) {
+          console.log('ELSE If', analystId.id);
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
