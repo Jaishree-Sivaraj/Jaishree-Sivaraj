@@ -31,7 +31,7 @@ router.post('/',
   create)
 
   /**
-   * @api {post} /xzXxxc/derivedCalculation Create derived datapoints
+   * @api {post} /derived_datapoints/derivedCalculation Create derived datapoints
    * @apiName CreateDerivedDatapoints
    * @apiGroup DerivedDatapoints
    * @apiPermission user
