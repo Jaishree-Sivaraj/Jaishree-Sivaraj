@@ -2732,7 +2732,8 @@ export const derivedCalculation = async ({
       "companyId": taskDetailsObject.companyId.id,
       "year": {
         $in: year
-      }
+      },
+      taskId: body.taskId
     }, {
       $set: {
         status: false
