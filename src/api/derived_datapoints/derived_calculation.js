@@ -9,7 +9,7 @@ import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { companiesAndAnalyst } from "../controversy_tasks/controller";
 import { BoardMembers } from "../boardMembers";
 
-export const multiplyCalculation = async function (companyId, distinctYears, allDatapointsList,categoryId, userDetail) {
+export const multiplyCalculation = async function (taskId, companyId, distinctYears, allDatapointsList,categoryId, userDetail) {
     //let multiplyT1 = performance.now();
     let asMultiplyRules = await Rules.find({
       methodName: "Multiply", categoryId: categoryId
@@ -119,7 +119,7 @@ export const multiplyCalculation = async function (companyId, distinctYears, all
       }
     }
 }
-export const matrixPercentageCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const matrixPercentageCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let matrixPercentageT1 = performance.now();
     let allDerivedDatapoints = [];
     let matrixPercentageRules = await Rules.find({
@@ -178,6 +178,7 @@ export const matrixPercentageCalculation = async function (companyId, mergedDeta
               memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
               memberStatus: true,
               status: true,
+              taskId:taskId,
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
@@ -236,6 +237,7 @@ export const matrixPercentageCalculation = async function (companyId, mergedDeta
                 memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
                 memberStatus: true,
                 status: true,
+                taskId:taskId,
                 createdBy: userDetail
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
@@ -249,6 +251,7 @@ export const matrixPercentageCalculation = async function (companyId, mergedDeta
               memberName: '',
               memberStatus: true,
               status: true,
+              taskId:taskId,
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
@@ -262,7 +265,7 @@ export const matrixPercentageCalculation = async function (companyId, mergedDeta
       }
     }
 }
-export const minusCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const minusCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let minusT1 = performance.now();
     let allDerivedDatapoints = [];
     console.log('minus Calculation');
@@ -283,7 +286,6 @@ export const minusCalculation = async function (companyId, mergedDetails, distin
           _id: companyId
         })
         let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
-        console.log("\n booooooooooooo",mergeBoardMemberList.length )
         for (let boardMamberIndex = 0; boardMamberIndex < mergeBoardMemberList.length; boardMamberIndex++) {
           let denominatorConvertedDate = new Date(mergeBoardMemberList[boardMamberIndex].startDate);
           let fiscalYearEndDate = yearSplit[1]+'-'+companyDetailObject.fiscalYearEndMonth+'-'+companyDetailObject.fiscalYearEndMonth;
@@ -299,6 +301,7 @@ export const minusCalculation = async function (companyId, mergedDetails, distin
             memberName: mergeBoardMemberList[boardMamberIndex].BOSP004 ? mergeBoardMemberList[boardMamberIndex].BOSP004.replace('\r\n', '') : '',
             memberStatus: true,
             status: true,
+            taskId:taskId,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
@@ -312,7 +315,7 @@ export const minusCalculation = async function (companyId, mergedDetails, distin
       }
     }
   }
-export const asRatioCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const asRatioCalculation = async function (taskId, companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     //let asRatioT1 = performance.now();
     let asRatioRules = await Rules.find({
       methodName: "AsRatio", categoryId: categoryId
@@ -382,7 +385,7 @@ export const asRatioCalculation = async function (companyId, distinctYears, allD
       }
     }
 }
-export const asPercentageCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const asPercentageCalculation = async function (taskId, companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     //let asPercentageT1 = performance.now();
     let asPercentageRules = await Rules.find({
       methodName: "AsPercentage", categoryId: categoryId
@@ -452,7 +455,7 @@ export const asPercentageCalculation = async function (companyId, distinctYears,
       }
     }
 }
-export const addCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const addCalculation = async function (taskId, companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     //let addT1 = performance.now();
     let addRules = await Rules.find({
       methodName: "ADD", categoryId: categoryId
@@ -522,7 +525,7 @@ export const addCalculation = async function (companyId, distinctYears, allDatap
       }
     }
 }
-export const yesNoCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const yesNoCalculation = async function (taskId, companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
    // let yesNoT1 = performance.now();
     let allDerivedDatapoints = [];
     let yesNoRules = await Rules.find({
@@ -570,6 +573,7 @@ export const yesNoCalculation = async function (companyId, distinctYears, allDat
             memberName: '',
             memberStatus: true,
             status: true,
+            taskId:taskId,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
@@ -582,6 +586,7 @@ export const yesNoCalculation = async function (companyId, distinctYears, allDat
             memberName: '',
             memberStatus: true,
             status: true,
+            taskId:taskId,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
@@ -597,7 +602,7 @@ export const yesNoCalculation = async function (companyId, distinctYears, allDat
       }
     }
 }
-export const ratioCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList,derivedDatapointsList, categoryId, userDetail) {   
+export const ratioCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList,derivedDatapointsList, categoryId, userDetail) {   
   let allDerivedDatapoints = [];
   let priorityDatapointObjects =  await Rules.find({
     methodName: "Ratio", methodType: "Priority",categoryId: categoryId
@@ -651,6 +656,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
             memberName: '',
             memberStatus: true,
             status: true,
+            taskId:taskId,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
@@ -725,6 +731,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
                 memberName: '',
                 memberStatus: true,
                 status: true,
+                taskId:taskId,
                 createdBy: userDetail
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
@@ -751,6 +758,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
                 memberName: '',
                 memberStatus: true,
                 status: true,
+                taskId:taskId,
                 createdBy: userDetail
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
@@ -764,6 +772,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
               memberName: '',
               memberStatus: true,
               status: true,
+              taskId:taskId,
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
@@ -809,6 +818,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
             memberName: '',
             memberStatus: true,
             status: true,
+            taskId:taskId,
             createdBy: userDetail
           }
           allDerivedDatapoints.push(derivedDatapointsObject);
@@ -822,7 +832,7 @@ export const ratioCalculation = async function (companyId, mergedDetails, distin
     }
   }
 }
-export const sumCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const sumCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let sumT1 = performance.now();
     let allDerivedDatapoints = [];
     let sumRules = await Rules.find({
@@ -891,6 +901,7 @@ export const sumCalculation = async function (companyId, mergedDetails, distinct
           memberName: '',
           memberStatus: true,
           status: true,
+          taskId:taskId,
           createdBy: userDetail
         }
         allDerivedDatapoints.push(derivedDatapointsObject);
@@ -902,7 +913,7 @@ export const sumCalculation = async function (companyId, mergedDetails, distinct
       }
     }
 }
-export const countOfCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList, derivedDatapointsList, categoryId, userDetail) {
+export const countOfCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList, derivedDatapointsList, categoryId, userDetail) {
     // let countOfT1 = performance.now();
     let allDerivedDatapoints = [];
     let countOfRules = await Rules.find({
@@ -971,6 +982,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
                 memberName: '',
                 memberStatus: true,
                 status: true,
+                taskId:taskId,
                 createdBy: userDetail
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
@@ -983,6 +995,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
                 memberName: '',
                 memberStatus: true,
                 status: true,
+                taskId:taskId,
                 createdBy: userDetail
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
@@ -1018,6 +1031,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
               memberName: '',
               memberStatus: true,
               status: true,
+              taskId:taskId,
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
@@ -1078,6 +1092,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
               response: finalResponse ? finalResponse.toString() : finalResponse,
               memberName: '',
               memberStatus: true,
+              taskId:taskId,
               status: true,
               createdBy: userDetail
             }
@@ -1090,6 +1105,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
               response: 'NA',
               memberName: '',
               memberStatus: true,
+              taskId:taskId,
               status: true,
               createdBy: userDetail
             }
@@ -1105,7 +1121,7 @@ export const countOfCalculation = async function (companyId, mergedDetails, dist
     }
 
 }
-export const percentageCalculation = async function (companyId, mergedDetails, distinctYears, allDatapointsList, allDerivedDatapointsList, categoryId, userDetail) {
+export const percentageCalculation = async function (taskId, companyId, mergedDetails, distinctYears, allDatapointsList, allDerivedDatapointsList, categoryId, userDetail) {
     console.log('percentage Calculation');
     let allDerivedDatapoints = [];
     let percentageRules = await Rules.find({
@@ -1154,7 +1170,7 @@ export const percentageCalculation = async function (companyId, mergedDetails, d
             numeratorSum = 0;
           }
           if (denominatorValues.length > 0) {
-            denominatorSum = denominatorValues.reduce(function (prev, next) {
+            denominatorSum = denominatorValues.reduce(function ( prev, next) {
               if (prev && next) {
                 let prevResponse = prev.replace(/[, \D\s]/g, '');
                 let nextResponse = next.replace(/[, \D\s]/g, '');
@@ -1173,6 +1189,7 @@ export const percentageCalculation = async function (companyId, mergedDetails, d
             response: derivedResponse ? derivedResponse.toString() : derivedResponse,
             memberName: '',
             memberStatus: true,
+            taskId:taskId,
             status: true,
             createdBy: userDetail
   
@@ -1254,6 +1271,7 @@ export const percentageCalculation = async function (companyId, mergedDetails, d
               response: derivedResponse ? derivedResponse.toString() : derivedResponse,
               memberName: '',
               memberStatus: true,
+              taskId:taskId,
               status: true,
               createdBy: userDetail
             }
@@ -1269,7 +1287,7 @@ export const percentageCalculation = async function (companyId, mergedDetails, d
       }
     }
 }
-export const ratioAddCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const ratioAddCalculation = async function (taskId, companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let ratioAddT1 = performance.now();
     let allDerivedDatapoints = [];
     let ratioAddRules = await Rules.find({
@@ -1338,6 +1356,7 @@ export const ratioAddCalculation = async function (companyId, distinctYears, all
           response: percentResponse ? percentResponse.toString() : percentResponse,
           memberName: '',
           memberStatus: true,
+          taskId:taskId,
           status: true,
           createdBy: userDetail
         }
@@ -1350,7 +1369,7 @@ export const ratioAddCalculation = async function (companyId, distinctYears, all
       }
     }
 }
-export const asCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const asCalculation = async function (taskId,companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let asT1 = performance.now();
     let asRules = await Rules.find({
       methodName: "As",categoryId: categoryId
@@ -1404,7 +1423,7 @@ export const asCalculation = async function (companyId, distinctYears, allDatapo
       }
     }
 }
-export const conditionCalculation = async function (companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
+export const conditionCalculation = async function (taskId,companyId, distinctYears, allDatapointsList, categoryId, userDetail) {
     // let conditionT1 = performance.now();
     let asConditionRules = await Rules.find({
       methodName: "Condition",categoryId: categoryId
@@ -1476,10 +1495,6 @@ export const conditionCalculation = async function (companyId, distinctYears, al
       }
     }
 }
-
-// module.exports ={
-//   addCalculation
-// }
 
 
 
