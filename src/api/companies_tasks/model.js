@@ -6,11 +6,11 @@ const companiesTasksSchema = new Schema({
     ref: 'User',
     required: true
   },
-  taskList: [{
+  taskId: {
     type: Schema.ObjectId,
     ref: 'TaskAssignment',
     required: true
-  }],
+  },
   companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',

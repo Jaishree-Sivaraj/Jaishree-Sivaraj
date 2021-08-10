@@ -137,51 +137,21 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
         }
         await TaskAssignment.create(taskObject)
           .then(async (taskAssignment) => {
-            await CompaniesTasks.findOne({
+            await CompaniesTasks.create({
               companyId: taskObject.companyId,
               year: taskObject.year,
               categoryId: taskObject.categoryId,
-              status: true
-            })
-              .then(async (foundCompaniesTask) => {
-                if (foundCompaniesTask) {
-                  await CompaniesTasks.updateOne({
-                    _id: foundCompaniesTask.id
-                  }, {
-                    $push: { taskList: taskAssignment.id }
-                  })
-                    .then(async () => {
-                      taskArray.push(taskAssignment.view(true));
-                    })
-                    .catch((error) => {
-                      return res.status(400).json({
-                        status: "400",
-                        message: error.message
-                          ? error.message
-                          : "Failed to create companies task!",
-                      });
-                    });
-                } else {
-                  console.log('Else part');
-                  await CompaniesTasks.create({
-                    companyId: taskObject.companyId,
-                    year: taskObject.year,
-                    categoryId: taskObject.categoryId,
-                    status: true,
-                    taskList: [taskAssignment.id],
-                    createdBy: taskObject.createdBy,
-                  }).then(async () => {
-                    taskArray.push(taskAssignment.view(true));
-                  }).catch((error) => {
-                    return res.status(400).json({
-                      status: "400",
-                      message: error.message
-                        ? error.message
-                        : "Failed to create companies task!",
-                    });
-                  });
-                }
-              })
+              status: true,
+              taskId: taskAssignment.id,
+              createdBy: taskObject.createdBy,
+            }).then(async () => {
+              taskArray.push(taskAssignment.view(true));
+            }).catch((error) => {
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create companies task!",
+              });
+            });
           }).catch((error) => {
             return res.status(400).json({
               status: "400",
