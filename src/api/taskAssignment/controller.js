@@ -1033,7 +1033,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
-        if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId._id) {
+        if (qaId && group.assignedMembers[index].roleDetails.primaryRole === qaId.id) {
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
@@ -1044,7 +1044,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.primaryRole = true;
           qaObject.activeTaskCount = activeTaskCount.length;
           qa.push(qaObject);
-        } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId._id) > -1) {
+        } else if (qaId && group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1) {
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
@@ -1056,7 +1056,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.activeTaskCount = activeTaskCount.length;
           qa.push(qaObject);
         }
-        if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId._id) {
+        if (analystId && group.assignedMembers[index].roleDetails.primaryRole === analystId.id) {
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1069,7 +1069,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
           analyst.push(analystObject);
-        } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1) {
+        } else if (analystId && group.assignedMembers[index].roleDetails.roles.indexOf(analystId.id) > -1) {
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
