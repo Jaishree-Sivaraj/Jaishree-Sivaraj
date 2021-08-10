@@ -2747,8 +2747,16 @@ export const derivedCalculation = async ({
   }
   }
   let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"},relevantForIndia: "Yes" })
-  let allStandaloneDatapoints = await StandaloneDatapoints.find({taskId: body.taskId,status: true}).populate('datapointId').populate('companyId');
-  let allDerivedDatapointsDetails = await DerivedDatapoints.find({taskId: body.taskId,status: true}).populate('datapointId').populate('companyId');
+  let allStandaloneDatapoints = await StandaloneDatapoints.find({
+    "companyId": taskDetailsObject.companyId.id,
+    "year": {
+      $in: year
+    },status: true}).populate('datapointId').populate('companyId');
+  let allDerivedDatapointsDetails = await DerivedDatapoints.find({
+    "companyId": taskDetailsObject.companyId.id,
+    "year": {
+      $in: year
+    },status: true}).populate('datapointId').populate('companyId');
   let mergedDatapoints = _.concat(allStandaloneDatapoints, allDerivedDatapointsDetails);
   let polarityRulesList = await PolarityRules.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId')
   for (let yearIndex = 0; yearIndex < year.length; yearIndex++) {    

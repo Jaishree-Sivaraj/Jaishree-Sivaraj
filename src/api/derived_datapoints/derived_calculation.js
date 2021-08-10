@@ -1496,10 +1496,6 @@ export const conditionCalculation = async function (taskId,companyId, distinctYe
     }
 }
 
-// module.exports ={
-//   addCalculation
-// }
-
 
 
  
