@@ -1145,13 +1145,31 @@ export const reports = async ({ user, params }, res, next) => {
       pendingTask.push(obj)
     }
   }
+  var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
+  var controversy = [];
+  for (var i = 0; i < controversyTask.length; i++) {
+    console.log(JSON.stringify(controversyTask[i], null, 3))
+    if (controversyTask[i].companyId) {
+      var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
+    }
+    var obj = {
+      taxonomy: taxonomy && taxonomy.clientTaxonomyId ? taxonomy.clientTaxonomyId.taxonomyName : null,
+      companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
+      companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
+      allocatedDate: controversyTask[i].createdAt,
+      taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
+      isChecked: false,
+      id: controversyTask[i].id
+    }
+    controversy.push(obj);
+  }
   completedTask = _.uniqBy(completedTask, function (e) {
     return e.companyId;
   })
   pendingTask = _.uniqBy(pendingTask, function (e) {
     return e.companyId;
   })
-  return res.status(200).json({ completed: completedTask, pending: pendingTask });
+  return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
 
