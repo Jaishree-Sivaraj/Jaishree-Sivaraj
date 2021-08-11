@@ -307,11 +307,9 @@ export const getMyTasks = async (
   res,
   next
 ) => {
-  console.log("get my tasks");
   let completeUserDetail = await User.findOne({
     _id: user.id,
-    isRoleAssigned: true,
-    isUserActive: true,
+    isUserActive: true
   })
     .populate({
       path: "roleDetails.roles",
@@ -435,6 +433,9 @@ export const getMyTasks = async (
         {
           taskStatus: "Verification Pending",
         },
+        {
+          taskStatus: "Correction Pending",
+        }
       ],
       status: true,
     })
@@ -472,7 +473,7 @@ export const getMyTasks = async (
             createdBy: object.createdBy ? object.createdBy.name : null,
             createdById: object.createdBy ? object.createdBy.id : null,
           };
-          if (taskAssignments[index].taskStatus == "Verification Pending") {
+          if (taskAssignments[index].taskStatus == "Verification Pending" || taskAssignments[index].taskStatus == "Correction Pending") {
             analystCorrectionTaskList.push(taskObject);
           } else {
             analystCollectionTaskList.push(taskObject);
@@ -527,7 +528,7 @@ export const getMyTasks = async (
         }
       });
   }
-
+  console.log('userRoles', userRoles);
   if (userRoles.includes("Client Representative")) {
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,

@@ -424,16 +424,62 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           indicator: datapointDetail.name,
           description: datapointDetail.description,
           keyIssue: datapointDetail.keyIssueId.keyIssueName,
-          responseList: ['Very High', 'High', 'Medium', 'Low', 'No'],
+          inputValues: [{ value: 'Very High', label: 'Very High' }, { value: 'High', label: 'High' }, { value: 'Medium', label: 'Medium' }, { value: 'Low', label: 'Low' }, { value: 'No', label: 'No' }],
           dataType: datapointDetail.dataType,
           avgResponse: '',
-          controversyList: []
+          controversyList: [],
+          additionalDetails: []
         };
         await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId')
-          .then((controversyList) => {
+          .then(async(controversyList) => {
+            let clientTaxonomyId = '';
+            if (controversyList.length > 0) {
+              clientTaxonomyId = controversyList[0].datapointId.clientTaxonomyId;
+            } else {
+              clientTaxonomyId = null;
+            }
+            let clienttaxonomyFields = await ClientTaxonomy.find({ _id: clientTaxonomyId }).distinct('fields');
+            let displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Collection');
+            let requiredFields = [
+              "categoryCode",
+              "categoryName",
+              "code",
+              "comments",
+              "dataCollection",
+              "dataCollectionGuide",
+              "description",
+              "dpType",
+              "errorType",
+              "finalUnit",
+              "functionType",
+              "hasError",
+              "industryRelevant",
+              "isPriority",
+              "keyIssueCode",
+              "keyIssueName",
+              "name",
+              "normalizedBy",
+              "pageNumber",
+              "percentile",
+              "polarity",
+              "publicationDate",
+              "reference",
+              "response",
+              "screenShot",
+              "signal",
+              "sourceName",
+              "standaloneOrMatrix",
+              "textSnippet",
+              "themeCode",
+              "themeName",
+              "unit",
+              "url",
+              "weighted",
+              "year"
+            ];
             if (controversyList && controversyList.length > 0) {
               let responseValue = 0, responseList = [0];
               for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
@@ -449,8 +495,58 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
                 controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
-                controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
+                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
+                controversyObject.additionalDetails = [];
+                
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    let controversyDtl = controversyList[cIndex];
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = controversyDtl[displayFields[dIndex].fieldName];
+                    } else {
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '', label: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    controversyObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                    let foundObject = responseObject.additionalDetails.find((obj) => obj.fieldName == displayFields[dIndex].fieldName)
+                    if (!foundObject) {
+                      responseObject.additionalDetails.push({
+                        fieldName: displayFields[dIndex].fieldName,
+                        name: displayFields[dIndex].name,
+                        value: '',
+                        inputType: displayFields[dIndex].inputType,
+                        inputValues: optionValues.length > 0 ? optionValues : optionVal
+                      })                      
+                    }
+                  }                
+                }
+
                 if (controversyObject.response == 'Very High') {
                   responseValue = 4;
                 } else if (controversyObject.response == 'High') {
