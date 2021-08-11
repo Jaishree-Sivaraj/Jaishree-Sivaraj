@@ -38,6 +38,9 @@ const companySourcesSchema = new Schema({
   fiscalYear: {
     type: String
   },
+  name: {
+    type: String
+  },
   status: {
     type: String,
     default: true
@@ -63,6 +66,7 @@ companySourcesSchema.methods = {
       sourceFile: this.sourceFile,
       publicationDate: this.publicationDate,
       fiscalYear: this.fiscalYear,
+      name: this.name,
       newSourceTypeName: this.newSourceTypeName,
       newSubSourceTypeName: this.newSubSourceTypeName,
       createdAt: this.createdAt,
