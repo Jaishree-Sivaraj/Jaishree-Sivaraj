@@ -534,13 +534,8 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                       inputType: displayFields[dIndex].inputType,
                       inputValues: optionValues.length > 0 ? optionValues : optionVal
                     })
-                    if (responseObject.additionalDetails.findIndex({
-                      fieldName: displayFields[dIndex].fieldName,
-                      name: displayFields[dIndex].name,
-                      value: '',
-                      inputType: displayFields[dIndex].inputType,
-                      inputValues: optionValues.length > 0 ? optionValues : optionVal
-                    }) == -1) {
+                    let foundObject = responseObject.additionalDetails.find((obj) => obj.fieldName == displayFields[dIndex].fieldName)
+                    if (!foundObject) {
                       responseObject.additionalDetails.push({
                         fieldName: displayFields[dIndex].fieldName,
                         name: displayFields[dIndex].name,
