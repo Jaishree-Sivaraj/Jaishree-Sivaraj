@@ -475,7 +475,7 @@ export const getMyTasks = async (
             createdBy: object.createdBy ? object.createdBy.name : null,
             createdById: object.createdBy ? object.createdBy.id : null,
           };
-          if (taskAssignments[index].taskStatus == "Verification Pending") {
+          if (taskAssignments[index].taskStatus == "Verification Pending" || taskAssignments[index].taskStatus == "Correction Pending") {
             analystCorrectionTaskList.push(taskObject);
           } else {
             analystCollectionTaskList.push(taskObject);
