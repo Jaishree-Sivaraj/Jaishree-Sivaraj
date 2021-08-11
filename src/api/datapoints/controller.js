@@ -1293,11 +1293,11 @@ export const datapointDetails = async (req, res, next) => {
               if(displayFields[dIndex].inputType == 'Static'){
                 currentValue = dpTypeValues[displayFields[dIndex].fieldName];
               } else {
-                let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+              //  let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                 if(displayFields[dIndex].inputType == 'Select'){
-                  currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  currentValue = { value: '', label: '' };
                 } else {
-                  currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  currentValue = '';
                 }
               }
               currentDatapointsObject.additionalDetails.push({
@@ -1585,11 +1585,11 @@ export const datapointDetails = async (req, res, next) => {
                 if(displayFields[dIndex].inputType == 'Static'){
                   currentValue = dpTypeValues[displayFields[dIndex].fieldName];
                 } else {
-                  let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                 // let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
-                    currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    currentValue = { value: '', label: '' };
                   } else {
-                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                    currentValue = '';
                   }
                 }
                 currentDatapointsObject.additionalDetails.push({
@@ -1750,7 +1750,7 @@ export const datapointDetails = async (req, res, next) => {
                     } else {
                       let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                       if(displayFields[dIndex].inputType == 'Select'){
-                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                        currentValue = { value:f ?f[displayFields[dIndex].fieldName] : '', label:f ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
                       } else {
                         currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
                       }
@@ -1869,11 +1869,11 @@ export const datapointDetails = async (req, res, next) => {
                 if(displayFields[dIndex].inputType == 'Static'){
                   currentValue = dpTypeValues[displayFields[dIndex].fieldName];
                 } else {
-                  let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                 // let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
-                    currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    currentValue = { value: '', label:  '' };
                   } else {
-                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                    currentValue =  '';
                   }
                 }
                 currentDatapointsObject.additionalDetails.push({
