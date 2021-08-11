@@ -1242,3 +1242,20 @@ export const controversyReports = async ({ user, params }, res, next) => {
 }
 
 
+
+export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
+  var result = [];
+  for (var index = 0; index < body.controversyTaskReports.length; index++) {
+    var controversyTask = await ControversyTasks.findById(body.controversyTaskReports[index]).populate('companyId').populate('analystId');
+    if (controversyTask && Object.keys(controversyTask).length > 0) {
+      var obj = {
+        "companyName": controversyTask.companyId ? controversyTask.companyId.companyName : null,
+        "controversyId": controversyTask.taskNumber ? controversyTask.taskNumber : null,
+        "analyst": controversyTask.analystId ? controversyTask.analystId.name : null,
+        "createdDate": controversyTask.createdAt,
+      }
+      result.push(obj);
+    }
+  }
+  return res.status(200).json({ controversyTaskList: result });
+}

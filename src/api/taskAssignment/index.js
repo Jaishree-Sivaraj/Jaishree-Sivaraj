@@ -25,7 +25,8 @@ import {
   updateSlaDates,
   reports,
   getTaskList,
-  controversyReports
+  controversyReports,
+  getTaskListForControversy
 } from './controller'
 import {
   schema
@@ -37,7 +38,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [];
+const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [], controversyTaskReports = [];
 /**
  * @api {post} /taskAssignments Create task assignment
  * @apiName CreateTaskAssignment
@@ -360,6 +361,25 @@ router.post('/taskListWithStatus',
   token({ required: true }),
   body({ companyTaskReports }),
   getTaskList)
+
+
+/**
+* @api {post} /taskAssignments Create task assignment
+* @apiName CreateTaskAssignment
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam groupId Task assignment's groupId.
+* @apiParam batchId Task assignment's batchId.
+* @apiSuccess {Object} taskAssignment Task assignment's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Task assignment not found.
+* @apiError 401 user access only.
+*/
+router.post('/taskListForControversy',
+  token({ required: true }),
+  body({ controversyTaskReports }),
+  getTaskListForControversy)
 
 
 export default router
