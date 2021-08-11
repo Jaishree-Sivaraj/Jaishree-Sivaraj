@@ -424,10 +424,11 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           indicator: datapointDetail.name,
           description: datapointDetail.description,
           keyIssue: datapointDetail.keyIssueId.keyIssueName,
-          responseList: ['Very High', 'High', 'Medium', 'Low', 'No'],
+          inputValues: [{ value: 'Very High', label: 'Very High' }, { value: 'High', label: 'High' }, { value: 'Medium', label: 'Medium' }, { value: 'Low', label: 'Low' }, { value: 'No', label: 'No' }],
           dataType: datapointDetail.dataType,
           avgResponse: '',
-          controversyList: []
+          controversyList: [],
+          additionalDetails: []
         };
         await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, status: true })
           .populate('createdBy')
@@ -530,6 +531,13 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                       fieldName: displayFields[dIndex].fieldName,
                       name: displayFields[dIndex].name,
                       value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                    responseObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: '',
                       inputType: displayFields[dIndex].inputType,
                       inputValues: optionValues.length > 0 ? optionValues : optionVal
                     })
