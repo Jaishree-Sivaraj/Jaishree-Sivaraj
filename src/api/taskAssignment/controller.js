@@ -435,6 +435,9 @@ export const getMyTasks = async (
         {
           taskStatus: "Verification Pending",
         },
+        {
+          taskStatus: "Correction Pending",
+        }
       ],
       status: true,
     })
