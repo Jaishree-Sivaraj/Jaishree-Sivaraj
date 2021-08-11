@@ -310,8 +310,7 @@ export const getMyTasks = async (
   console.log("get my tasks");
   let completeUserDetail = await User.findOne({
     _id: user.id,
-    isRoleAssigned: true,
-    isUserActive: true,
+    isUserActive: true
   })
     .populate({
       path: "roleDetails.roles",
