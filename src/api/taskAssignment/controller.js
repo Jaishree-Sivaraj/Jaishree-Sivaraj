@@ -1259,7 +1259,7 @@ export const getTaskListForControversy = async ({ user, bodymen: { body } }, res
       var obj = {
         "companyName": controversyTask[index].companyId ? controversyTask[index].companyId.companyName : null,
         "controversyId": controversyTask[index].controversyNumber ? controversyTask[index].controversyNumber : null,
-        "analyst": controversyTask[index].companyId.analystId ? controversyTask[index].companyId.analystId.name : null,
+        "analyst": controversyTask[index].taskId.analystId ? controversyTask[index].taskId.analystId.name : null,
         "createdDate": controversyTask[index].createdAt,
       }
       result.push(obj);
