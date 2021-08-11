@@ -2247,7 +2247,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
         keyIssue: dpTypeValues.keyIssueId.keyIssueName,
         pillarId: dpTypeValues.categoryId.id,
         pillar: dpTypeValues.categoryId.categoryName,
-        fiscalYear: taskDetails.year,
+        fiscalYear: req.body.year,
         currentData: [],
         historicalData: [],
         status: ''
@@ -2409,7 +2409,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
-        standdpCodeDataalone: datapointsObject
+        dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
 
@@ -2662,7 +2662,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
         keyIssue: dpTypeValues.keyIssueId.keyIssueName,
         pillarId: dpTypeValues.categoryId.id,
         pillar: dpTypeValues.categoryId.categoryName,
-        fiscalYear: taskDetails.year,
+        fiscalYear: req.body.year,
         currentData: [],
         historicalData: [],
         status: ''
