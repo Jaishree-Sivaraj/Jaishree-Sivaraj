@@ -307,7 +307,6 @@ export const getMyTasks = async (
   res,
   next
 ) => {
-  console.log("get my tasks");
   let completeUserDetail = await User.findOne({
     _id: user.id,
     isUserActive: true
@@ -331,12 +330,8 @@ export const getMyTasks = async (
     companyRepTaskList = [],
     controversyTaskList = [];
   let userRoles = [];
-  console.log('completeUserDetail', completeUserDetail);
-  console.log('completeUserDetail', JSON.stringify(completeUserDetail, null, 3));
   if (completeUserDetail && completeUserDetail.roleDetails) {
-    console.log('IF Part');
     if (completeUserDetail.roleDetails.primaryRole) {
-      console.log('Nested IF Part');
       userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
       if (
         completeUserDetail.roleDetails.roles &&
@@ -355,14 +350,12 @@ export const getMyTasks = async (
         }
       }
     } else {
-      console.log('Nested Else Part');
       return res.status(400).json({
         status: "400",
         message: "User role not found!",
       });
     }
   } else {
-    console.log('Else Part');
     return res.status(400).json({
       status: "400",
       message: "User role not found!",
