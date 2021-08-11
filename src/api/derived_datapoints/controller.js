@@ -339,136 +339,133 @@ export const calculateForACompany = async ({
             },
             percentile: {
               "$ne": "Yes"
-            },
-            relevantForIndia: "Yes"
+            }
           })
           let polarityRulesList = await PolarityRules.find({}).populate('datapointId')
 
           for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesList.length; polarityRulesIndex++) {
             let datapointDetail = polarityRulesList[polarityRulesIndex].datapointId;
-            if (datapointDetail.relevantForIndia == "Yes") {
-              let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
-              if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
-                let foundResponseIndex = fullStandaloneDetails.findIndex((object, index) => object.companyId.id == companyId && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year);
-                if (foundResponseIndex > -1) {
-                  let foundResponse = fullStandaloneDetails[foundResponseIndex];
-                  if (foundResponse) {
-                    if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
-                      await StandaloneDatapoints.updateOne({
-                        _id: foundResponse.id
-                      }, {
-                        $set: {
-                          response: 'NA',
-                          performanceResult: 'NA'
-                        }
-                      });
-                    } else {
-                      if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
-                        if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
-                          await StandaloneDatapoints.updateOne({
-                            _id: foundResponse.id
-                          }, {
-                            $set: {
-                              performanceResult: 'Positive'
-                            }
-                          });
-                        } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
-                          await StandaloneDatapoints.updateOne({
-                            _id: foundResponse.id
-                          }, {
-                            $set: {
-                              performanceResult: 'Negative'
-                            }
-                          });
-                        }
-                      } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
-                        if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
-                          await StandaloneDatapoints.updateOne({
-                            _id: foundResponse.id
-                          }, {
-                            $set: {
-                              performanceResult: 'Negative'
-                            }
-                          });
-                        } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
-                          await StandaloneDatapoints.updateOne({
-                            _id: foundResponse.id
-                          }, {
-                            $set: {
-                              performanceResult: 'Positive'
-                            }
-                          });
-                        }
-                      } else {
-                        if (polarityRuleDetails.condition == 'range') {
-                          let param = polarityRuleDetails.polarityValue.split(',');
-                          if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
-                            await StandaloneDatapoints.updateOne({
-                              _id: foundResponse.id
-                            }, {
-                              $set: {
-                                performanceResult: 'Positive'
-                              }
-                            });
-                          } else {
-                            await StandaloneDatapoints.updateOne({
-                              _id: foundResponse.id
-                            }, {
-                              $set: {
-                                performanceResult: 'Negative'
-                              }
-                            });
+            let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
+            if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
+              let foundResponseIndex = fullStandaloneDetails.findIndex((object, index) => object.companyId.id == companyId && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year);
+              if (foundResponseIndex > -1) {
+                let foundResponse = fullStandaloneDetails[foundResponseIndex];
+                if (foundResponse) {
+                  if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
+                    await StandaloneDatapoints.updateOne({
+                      _id: foundResponse.id
+                    }, {
+                      $set: {
+                        response: 'NA',
+                        performanceResult: 'NA'
+                      }
+                    });
+                  } else {
+                    if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
+                      if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                        await StandaloneDatapoints.updateOne({
+                          _id: foundResponse.id
+                        }, {
+                          $set: {
+                            performanceResult: 'Positive'
                           }
+                        });
+                      } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                        await StandaloneDatapoints.updateOne({
+                          _id: foundResponse.id
+                        }, {
+                          $set: {
+                            performanceResult: 'Negative'
+                          }
+                        });
+                      }
+                    } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
+                      if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                        await StandaloneDatapoints.updateOne({
+                          _id: foundResponse.id
+                        }, {
+                          $set: {
+                            performanceResult: 'Negative'
+                          }
+                        });
+                      } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                        await StandaloneDatapoints.updateOne({
+                          _id: foundResponse.id
+                        }, {
+                          $set: {
+                            performanceResult: 'Positive'
+                          }
+                        });
+                      }
+                    } else {
+                      if (polarityRuleDetails.condition == 'range') {
+                        let param = polarityRuleDetails.polarityValue.split(',');
+                        if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
+                          await StandaloneDatapoints.updateOne({
+                            _id: foundResponse.id
+                          }, {
+                            $set: {
+                              performanceResult: 'Positive'
+                            }
+                          });
+                        } else {
+                          await StandaloneDatapoints.updateOne({
+                            _id: foundResponse.id
+                          }, {
+                            $set: {
+                              performanceResult: 'Negative'
+                            }
+                          });
                         }
                       }
                     }
-                  }
-                } else {
-                  if (polarityRuleDetails.datapointId.relevantForIndia == "Yes" && polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
-                    return res.status(500).json({
-                      message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
-                    });
                   }
                 }
               } else {
-                let foundResponseIndex = allDerivedDatapoints.findIndex((object, index) => object.companyId == companyId && object.datapointId == polarityRuleDetails.datapointId.id && object.year == year);
-                if (foundResponseIndex > -1) {
-                  let foundResponse = allDerivedDatapoints[foundResponseIndex];
-                  if (foundResponse) {
-                    if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
-                      allDerivedDatapoints[foundResponseIndex].response = 'NA';
-                      allDerivedDatapoints[foundResponseIndex].performanceResult = 'NA';
+                if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                  return res.status(500).json({
+                    message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+                  });
+                }
+              }
+            } else {
+              let foundResponseIndex = allDerivedDatapoints.findIndex((object, index) => object.companyId == companyId && object.datapointId == polarityRuleDetails.datapointId.id && object.year == year);
+              if (foundResponseIndex > -1) {
+                let foundResponse = allDerivedDatapoints[foundResponseIndex];
+                if (foundResponse) {
+                  if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
+                    allDerivedDatapoints[foundResponseIndex].response = 'NA';
+                    allDerivedDatapoints[foundResponseIndex].performanceResult = 'NA';
+                  } else {
+                    if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
+                      if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                        allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
+                      } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                        allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
+                      }
+                    } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
+                      if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                        allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
+                      } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                        allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
+                      }
                     } else {
-                      if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
-                        if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                      if (polarityRuleDetails.condition == 'range') {
+                        let param = polarityRuleDetails.polarityValue.split(',');
+                        if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
                           allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
-                        } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                        } else {
                           allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
-                        }
-                      } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
-                        if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
-                          allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
-                        } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
-                          allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
-                        }
-                      } else {
-                        if (polarityRuleDetails.condition == 'range') {
-                          let param = polarityRuleDetails.polarityValue.split(',');
-                          if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
-                            allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
-                          } else {
-                            allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
-                          }
                         }
                       }
                     }
                   }
-                } else {
-                  if (polarityRuleDetails.datapointId.relevantForIndia == "Yes" && polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
-                    return res.status(500).json({
-                      message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
-                    });
-                  }
+                }
+              } else {
+                if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                  return res.status(500).json({
+                    message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+                  });
                 }
               }
             }
@@ -682,7 +679,6 @@ export const jsonGeneration = async ({
   params
 }, res, next) => {
   let requiredDataPoints = await Datapoints.find({
-    relevantForIndia: "Yes",
     standaloneOrMatrix: {
       "$ne": "Matrix"
     },
@@ -2747,7 +2743,7 @@ export const derivedCalculation = async ({
       });
   }
   }
-  let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"},relevantForIndia: "Yes" })
+  let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"}})
   let allStandaloneDatapoints = await StandaloneDatapoints.find({
     "companyId": taskDetailsObject.companyId.id,
     "year": {
@@ -2764,64 +2760,62 @@ export const derivedCalculation = async ({
     for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesList.length; polarityRulesIndex++) {
       let performanceResult = "";
       let datapointDetail = polarityRulesList[polarityRulesIndex].datapointId;
-      // (datapointDetail.relevantForIndia == "Yes") {
-        let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
-       // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
-          let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year[yearIndex]);
-          if (foundResponseIndex > -1) {
-            let foundResponse = mergedDatapoints[foundResponseIndex];
-            if (foundResponse) { 
-              if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
-                performanceResult = 'NA'
-              } else {
-                if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
-                  if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
-                    performanceResult = 'Positive';
-                  } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
-                    performanceResult = 'Negative';
-                  }
-                } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
-                  if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
-                    performanceResult = 'Negative';
-                  } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
-                    performanceResult = 'Positive';
-                  }
+      let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
+      let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == polarityRuleDetails.datapointId.id && object.year == year[yearIndex]);
+      if (foundResponseIndex > -1) {
+        let foundResponse = mergedDatapoints[foundResponseIndex];
+        if (foundResponse) { 
+          if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA') {
+            performanceResult = 'NA'
+          } else {
+            if (Number(foundResponse.response) >= Number(polarityRuleDetails.polarityValue)) {
+              if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                performanceResult = 'Positive';
+              } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                performanceResult = 'Negative';
+              }
+            } else if (Number(foundResponse.response) <= Number(polarityRuleDetails.polarityValue)) {
+              if (polarityRuleDetails.condition == 'greater' || polarityRuleDetails.condition == 'atleast' || polarityRuleDetails.condition == 'lesserthan') {
+                performanceResult = 'Negative';
+              } else if (polarityRuleDetails.condition == 'greaterthan' || polarityRuleDetails.condition == 'lesser') {
+                performanceResult = 'Positive';
+              }
+            } else {
+              if (polarityRuleDetails.condition == 'range') {
+                let param = polarityRuleDetails.polarityValue.split(',');
+                if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
+                  performanceResult = 'Positive';
                 } else {
-                  if (polarityRuleDetails.condition == 'range') {
-                    let param = polarityRuleDetails.polarityValue.split(',');
-                    if (Number(foundResponse.response) >= Number(param[0]) && Number(foundResponse.response) <= Number(param[1])) {
-                      performanceResult = 'Positive';
-                    } else {
-                      performanceResult = 'Positive';
-                    }
-                  }
+                  performanceResult = 'Positive';
                 }
               }
             }
-            if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
-              await StandaloneDatapoints.updateOne({
-                _id: foundResponse.id
-              }, {
-                $set: {
-                  performanceResult: performanceResult
-                }
-              });
-            } else {
-              await DerivedDatapoints.updateOne({
-                _id: foundResponse.id
-              }, {
-                $set: {
-                  performanceResult: performanceResult
-                }
-              });
-            }
-          } else {
-            if (polarityRuleDetails.datapointId.relevantForIndia == "Yes" && polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
-              return res.status(500).json({
-                message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
-              });
-            }
           }
+        }
+        if(datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y"){
+          await StandaloneDatapoints.updateOne({
+            _id: foundResponse.id
+          }, {
+            $set: {
+              performanceResult: performanceResult
+            }
+          });
+        } else {
+          await DerivedDatapoints.updateOne({
+            _id: foundResponse.id
+          }, {
+            $set: {
+              performanceResult: performanceResult
+            }
+          });
+        }
+      } else {
+        if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+          return res.status(500).json({
+            message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+          });
+        }
+      }
     }
     for (let dataPointIndex = 0; dataPointIndex < dataPointsIdList.length; dataPointIndex++) {
       let performanceResult = "";

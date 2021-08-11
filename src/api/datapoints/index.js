@@ -8,7 +8,7 @@ import { schema } from './model'
 export Datapoints, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status } = schema.tree
+const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status } = schema.tree
 const taskId = '',year = '', datapointId = '', memberType = '', memberName = '';
 /**
  * @api {post} /datapoints Create datapoints
@@ -25,7 +25,6 @@ const taskId = '',year = '', datapointId = '', memberType = '', memberName = '';
  * @apiParam dataCollectionGuide Datapoints's dataCollectionGuide.
  * @apiParam normalizedBy Datapoints's normalizedBy.
  * @apiParam weighted Datapoints's weighted.
- * @apiParam relevantForIndia Datapoints's relevantForIndia.
  * @apiParam standaloneOrMatrix Datapoints's standaloneOrMatrix.
  * @apiParam reference Datapoints's reference.
  * @apiParam industryRelevant Datapoints's industryRelevant.
@@ -43,7 +42,7 @@ const taskId = '',year = '', datapointId = '', memberType = '', memberName = '';
  */
 router.post('/',
   token({ required: true }),
-  body({ categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus }),
+  body({ categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus }),
   create)
 
 var storage = multer.diskStorage({ //multers disk storage settings
@@ -252,7 +251,6 @@ router.get('/list/:taskId',
  * @apiParam dataCollectionGuide Datapoints's dataCollectionGuide.
  * @apiParam normalizedBy Datapoints's normalizedBy.
  * @apiParam weighted Datapoints's weighted.
- * @apiParam relevantForIndia Datapoints's relevantForIndia.
  * @apiParam standaloneOrMatrix Datapoints's standaloneOrMatrix.
  * @apiParam reference Datapoints's reference.
  * @apiParam industryRelevant Datapoints's industryRelevant.
@@ -272,7 +270,7 @@ router.get('/list/:taskId',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, relevantForIndia, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, status }),
+  body({ categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, status }),
   update)
 
 /**

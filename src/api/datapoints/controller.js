@@ -136,7 +136,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // search negative news function 
     let currentYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.find({
-      relevantForIndia: "Yes",
       dataCollection: 'Yes',
       functionId: {
         "$ne": functionId.id
@@ -246,7 +245,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
-              relevantForIndia: "Yes",
               dataCollection: 'Yes',
               functionId: {
                 "$ne": functionId.id
@@ -256,7 +254,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               status: true
             }).populate('keyIssueId');
             let dpTypeDatapoints = await Datapoints.find({
-              relevantForIndia: "Yes",
               dataCollection: 'Yes',
               functionId: {
                 "$ne": functionId.id
@@ -458,7 +455,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           console.log(dpTypeValues.length);
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let dpTypeDatapoints = await Datapoints.find({
-              relevantForIndia: "Yes",
               dataCollection: 'Yes',
               functionId: {
                 "$ne": functionId.id
@@ -992,15 +988,63 @@ export const datapointDetails = async (req, res, next) => {
   try {
     let taskDetails = await TaskAssignment.findOne({
       _id: req.body.taskId
-    }).populate('companyId').populate('categoryId');
+    }).populate({
+      path: "companyId",
+      populate: {
+        path: "clientTaxonomyId"
+      }
+    }).populate('categoryId');
     let functionId = await Functions.findOne({
       functionType: "Negative News",
       status: true
     });
 
     let currentYear = taskDetails.year.split(",");
+    let clienttaxonomyFields = await ClientTaxonomy.find({_id: taskDetails.companyId.clientTaxonomyId.id}).distinct('fields');
+    console.log(clienttaxonomyFields);
+    let displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
+    console.log(displayFields);
+    let requiredFields = [
+        "categoryCode",
+        "categoryName",
+        "code",
+        "comments",
+        "dataCollection",
+        "dataCollectionGuide",
+        "description",
+        "dpType",
+        "errorType",
+        "finalUnit",
+        "functionType",
+        "hasError",
+        "industryRelevant",
+        "isPriority",
+        "keyIssueCode",
+        "keyIssueName",
+        "name",
+        "normalizedBy",
+        "pageNumber",
+        "percentile",
+        "polarity",
+        "publicationDate",
+        "reference",
+        "response",
+        "screenShot",
+        "signal",
+        "sourceName",
+        "standaloneOrMatrix",
+        "textSnippet",
+        "themeCode",
+        "themeName",
+        "unit",
+        "url",
+        "weighted",
+        "year"
+    ];
+    let staticFields = displayFields.filter(obj => obj.inputType == "Static");
+    let inputFields = displayFields.filter(obj => obj.inputType != "Static"); 
+    console.log(staticFields, inputFields);
     let dpTypeValues = await Datapoints.findOne({
-      relevantForIndia: "Yes",
       dataCollection: 'Yes',
       functionId: {
         "$ne": functionId.id
@@ -1104,7 +1148,45 @@ export const datapointDetails = async (req, res, next) => {
                   errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                   errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                 },
-                comments: []
+                comments: [],
+                additionalDetails: []
+              }
+              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                  let optionValues = [], optionVal = '', currentValue;
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    let options = displayFields[dIndex].inputValues.split(',');
+                    if(options.length > 0){
+                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                        optionValues.push({
+                          value: options[optIndex],
+                          label: options[optIndex]
+                        });                        
+                      }
+                    } else {
+                      optionValues = [];
+                    }
+                  } else {
+                    optionVal = displayFields[dIndex].inputValues;
+                  }
+                  if(displayFields[dIndex].inputType == 'Static'){
+                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  } else {
+                    let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    } else {
+                      currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
+                    }
+                  }
+                  currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                }                
               }
 
             } else {
@@ -1127,7 +1209,46 @@ export const datapointDetails = async (req, res, next) => {
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
                 error: {},
-                comments: []
+                comments: [],
+                additionalDetails:[]
+              }
+              
+              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                  let optionValues = [], optionVal = '', currentValue;
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    let options = displayFields[dIndex].inputValues.split(',');
+                    if(options.length > 0){
+                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                        optionValues.push({
+                          value: options[optIndex],
+                          label: options[optIndex]
+                        });                        
+                      }
+                    } else {
+                      optionValues = [];
+                    }
+                  } else {
+                    optionVal = displayFields[dIndex].inputValues;
+                  }
+                  if(displayFields[dIndex].inputType == 'Static'){
+                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  } else {
+                    let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    } else {
+                      currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
+                    }
+                  }
+                  currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                }                
               }
             }
             datapointsObject.status = 'Completed';
@@ -1148,7 +1269,45 @@ export const datapointDetails = async (req, res, next) => {
             response: '',
             source: '',
             error: {},
-            comments: []
+            comments: [],
+            additionalDetails: []
+          }          
+          for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+            if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+              let optionValues = [], optionVal = '', currentValue;
+              if(displayFields[dIndex].inputType == 'Select'){
+                let options = displayFields[dIndex].inputValues.split(',');
+                if(options.length > 0){
+                  for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                    optionValues.push({
+                      value: options[optIndex],
+                      label: options[optIndex]
+                    });                        
+                  }
+                } else {
+                  optionValues = [];
+                }
+              } else {
+                optionVal = displayFields[dIndex].inputValues;
+              }
+              if(displayFields[dIndex].inputType == 'Static'){
+                currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+              } else {
+              //  let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                if(displayFields[dIndex].inputType == 'Select'){
+                  currentValue = { value: '', label: '' };
+                } else {
+                  currentValue = '';
+                }
+              }
+              currentDatapointsObject.additionalDetails.push({
+                fieldName: displayFields[dIndex].fieldName,
+                name: displayFields[dIndex].name,
+                value: currentValue ? currentValue: '',
+                inputType: displayFields[dIndex].inputType,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+              })
+            }                
           }
           datapointsObject.status = 'Yet to Start';
         }
@@ -1213,6 +1372,7 @@ export const datapointDetails = async (req, res, next) => {
       let currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
+          memberName:req.body.memberName,
           memberStatus: true,
           status: true
         }).populate('createdBy')
@@ -1278,7 +1438,46 @@ export const datapointDetails = async (req, res, next) => {
                     errorComments: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
                   },
-                  comments: []
+                  comments: [],
+                  additionalDetails: []
+                }
+                
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    } else {
+                      let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                  }
                 }
               } else {
                 currentDatapointsObject = {
@@ -1300,7 +1499,46 @@ export const datapointDetails = async (req, res, next) => {
                     publicationDate: object.publicationDate ? object.publicationDate : ''
                   },
                   error: {},
-                  comments: []
+                  comments: [],
+                  additionalDetails: []
+                }
+                
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    } else {
+                      let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName]: '' };
+                      } else {
+                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                  }
                 }
               }
               boardDatapointsObject.status = 'Completed'
@@ -1322,7 +1560,46 @@ export const datapointDetails = async (req, res, next) => {
               response: '',
               source: '',
               error: {},
-              comments: []
+              comments: [],
+              additionalDetails:[]
+            }
+            
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                } else {
+                 // let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: '', label: '' };
+                  } else {
+                    currentValue = '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }
             }
             boardDatapointsObject.status = "Yet to Start"
           }
@@ -1381,6 +1658,7 @@ export const datapointDetails = async (req, res, next) => {
       let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
+          memberName: req.body.memberName,
           memberStatus: true,
           status: true
         }).populate('createdBy')
@@ -1446,7 +1724,45 @@ export const datapointDetails = async (req, res, next) => {
                     errorComments: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
                   },
-                  comments: []
+                  comments: [],
+                  additionalDetails: []
+                }
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    } else {
+                      let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value:f ?f[displayFields[dIndex].fieldName] : '', label:f ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                  }
                 }
               } else {
                 currentDatapointsObject = {
@@ -1468,7 +1784,46 @@ export const datapointDetails = async (req, res, next) => {
                     publicationDate: object.publicationDate ? object.publicationDate : ''
                   },
                   error: {},
-                  comments: []
+                  comments: [],
+                  additionalDetails: []
+                }
+                
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    } else {
+                      let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                  }
                 }
               }
               kmpDatapointsObject.status = 'Completed'
@@ -1490,7 +1845,45 @@ export const datapointDetails = async (req, res, next) => {
               response: '',
               source: '',
               error: {},
-              comments: []
+              comments: [],
+              additionalDetails: []
+            }
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                } else {
+                 // let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: '', label:  '' };
+                  } else {
+                    currentValue =  '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }
             }
             kmpDatapointsObject.status = 'Yet to Start';
           }
@@ -1558,7 +1951,6 @@ export const errorDatapointDetails = async(req,res,next) =>{
     let currentYear = req.body.year.split(",");
     let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
-      relevantForIndia: "Yes",
       dataCollection: 'Yes',
       functionId: {
         "$ne": functionId.id
@@ -1934,7 +2326,6 @@ export const collectionDatapointDetails = async(req,res,next) =>{
     let currentYear = year.split(",");
     let taskDetailsYear = taskDetails.year.split(",");
     let dpTypeValues = await Datapoints.findOne({
-      relevantForIndia: "Yes",
       dataCollection: 'Yes',
       functionId: {
         "$ne": functionId.id
@@ -2480,7 +2871,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 if (
                   fieldNameObject.fieldName == 'unit' ||
                   fieldNameObject.fieldName == 'polarity' ||
-                  fieldNameObject.fieldName == 'polarity' ||
+                  fieldNameObject.fieldName == 'percentile' ||
                   fieldNameObject.fieldName == 'normalizedBy' ||
                   fieldNameObject.fieldName == 'weighted' ||
                   fieldNameObject.fieldName == 'reference' ||

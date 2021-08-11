@@ -99,7 +99,6 @@ export const trackError = async ({
   params
 }, res, next) => {
   try {
-    
   console.log(body.isErrorAccepted, body.isErrorRejected, body.rejectComment, body.taskId, body.datapointId);
   if (body.isErrorAccepted == true) {
     await ErrorDetails.update({
