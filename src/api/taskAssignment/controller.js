@@ -530,7 +530,7 @@ export const getMyTasks = async (
         }
       });
   }
-
+  console.log('userRoles', userRoles);
   if (userRoles.includes("Client Representative")) {
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
