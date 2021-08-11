@@ -72,7 +72,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   }
   let percentileDatapoints = [], avgResponse = '0', stdDeviation = '0';
   let negativeNews = await Functions.find({"functionType" : "Negative News", "status": true})
-  percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "percentile": "Yes", "relevantForIndia" : "Yes", "functionId": { $ne : negativeNews.id }, "status": true});
+  percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "percentile": "Yes", "functionId": { $ne : negativeNews.id }, "status": true});
   for (let dIndex = 0; dIndex < percentileDatapoints.length; dIndex++) {
     datapointIds.push(percentileDatapoints[dIndex].id);
   }
@@ -180,8 +180,7 @@ export const getPercentileByPillar = async ({body}, res, next) => {
     let percentileDatapoints = await Datapoints.find({
       "clientTaxonomyId": body.taxonomy, 
       "categoryId": body.pillar, 
-      "percentile": "Yes", 
-      "relevantForIndia" : "Yes", 
+      "percentile": "Yes",
       "status": true
     }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'No percentile datapoints available!' }) });
     let years = body.years ? body.years : [];

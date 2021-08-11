@@ -35,9 +35,6 @@ const datapointsSchema = new Schema({
   weighted: {
     type: String
   },
-  relevantForIndia: {
-    type: String
-  },
   standaloneOrMatrix: {
     type: String
   },
@@ -152,7 +149,6 @@ datapointsSchema.methods = {
       dataCollectionGuide: this.dataCollectionGuide,
       normalizedBy: this.normalizedBy,
       weighted: this.weighted,
-      relevantForIndia: this.relevantForIndia,
       standaloneOrMatrix: this.standaloneOrMatrix,
       reference: this.reference,
       industryRelevant: this.industryRelevant,

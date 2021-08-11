@@ -870,7 +870,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               missingDatapointsDetails = [],
               missingDPsLength = [];
             let standaloneDatapointsList = await Datapoints.find({
-              relevantForIndia: "Yes",
               dataCollection: "Yes",
               functionId: {
                 "$ne": '609bcceb1d64cd01eeda092c'

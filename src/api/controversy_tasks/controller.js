@@ -141,7 +141,6 @@ export const show = async ({ params }, res, next) => {
             dpCodesList: []
           }
           await Datapoints.find({
-            "relevantForIndia": "Yes",
             "functionId": "609bcceb1d64cd01eeda092c",
             status: true
           })
