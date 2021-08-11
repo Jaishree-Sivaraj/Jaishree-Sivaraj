@@ -32,59 +32,67 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
         await TaskAssignment.create({
           ...body,
           createdBy: user,
-        })
-          .then((taskAssignment) => {
+        }).then(async (taskAssignment) => {
+          await CompaniesTasks.create({
+            companyId: body.companyId,
+            year: body.year,
+            categoryId: body.categoryId,
+            status: true,
+            taskId: taskAssignment.id,
+          }).then(async () => {
             return res.status(200).json({
               status: "200",
               message: "Task created successfully!",
               data: taskAssignment.view(true),
             });
-          })
-          .catch((error) => {
+          }).catch((error) => {
             return res.status(400).json({
               status: "400",
-              message: error.message ? error.message : "Failed to create task!",
+              message: error.message
+                ? error.message
+                : "Failed to create companies task!",
             });
           });
+        }).catch((error) => {
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : "Failed to create task!",
+          });
+        });
       } else {
         body.taskNumber = "DT1";
         await TaskAssignment.create({
           ...body,
           createdBy: user,
-        })
-          .then(async (taskAssignment) => {
-            await CompaniesTasks.create({
-              companyId: body.companyId,
-              year: body.year,
-              categoryId: body.categoryId,
-              status: true,
-              taskId: taskAssignment.id,
-            })
-              .then(async () => {
-                return res.status(200).json({
-                  status: "200",
-                  message: "Task created successfully!",
-                  data: taskAssignment.view(true),
-                });
-              })
-              .catch((error) => {
-                return res.status(400).json({
-                  status: "400",
-                  message: error.message
-                    ? error.message
-                    : "Failed to create companies task!",
-                });
-              });
-          })
-          .catch((error) => {
+        }).then(async (taskAssignment) => {
+          await CompaniesTasks.create({
+            companyId: body.companyId,
+            year: body.year,
+            categoryId: body.categoryId,
+            status: true,
+            taskId: taskAssignment.id,
+          }).then(async () => {
+            return res.status(200).json({
+              status: "200",
+              message: "Task created successfully!",
+              data: taskAssignment.view(true),
+            });
+          }).catch((error) => {
             return res.status(400).json({
               status: "400",
-              message: error.message ? error.message : "Failed to create task!",
+              message: error.message
+                ? error.message
+                : "Failed to create companies task!",
             });
           });
+        }).catch((error) => {
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : "Failed to create task!",
+          });
+        });
       }
-    })
-    .catch((error) => {
+    }).catch((error) => {
       return res.status(400).json({
         status: "400",
         message: error.message ? error.message : "Failed to create task!",
@@ -136,27 +144,21 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
               status: true,
               taskId: taskAssignment.id,
               createdBy: taskObject.createdBy,
-            })
-              .then(async () => {
-                taskArray.push(taskAssignment.view(true));
-              })
-              .catch((error) => {
-                return res.status(400).json({
-                  status: "400",
-                  message: error.message
-                    ? error.message
-                    : "Failed to create companies task!",
-                });
+            }).then(async () => {
+              taskArray.push(taskAssignment.view(true));
+            }).catch((error) => {
+              return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to create companies task!",
               });
-          })
-          .catch((error) => {
+            });
+          }).catch((error) => {
             return res.status(400).json({
               status: "400",
               message: error.message ? error.message : "Failed to create task!",
             });
           });
-      })
-      .catch((error) => {
+      }).catch((error) => {
         return res.status(400).json({
           status: "400",
           message: error.message ? error.message : "Failed to create task!",
@@ -946,18 +948,8 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
 
 export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   console.log("bodymen", body);
-  //batchId -> Batches.findById(batchId) -> companies ->
-  //loop companiesList
-  //unassigned company list - companies_tasks.find({categoryId, year : {$in : [year]}}) if length > 0 don'y include this company else include with value and lable
-  //find in group by groupID and populate assignedMembers
-  //if roleId match with roleDetals.primaryRole roleType would be primary if match with roleDetals.roles roleType would be secondary
-  //if categoryId match with roleDetals.primaryRole pilltype would be primary if match with roleDetals.roles pillType would be secondary
-  //loop assignedMembers and find qa and analyst with role name
-  //each iteration of assignedMembers find in taskAssignement with for qa qaId and for analyst with analystId, taskStatus !=Collection Completed and !=Correction Completed for analyst, !=Verification Completed for qa store in activeTaskCount;
   var resObj = {};
-  var batch = await Batches.findById(body.batchId)
-    .populate("companiesList")
-    .catch();
+  var batch = await Batches.findById(body.batchId).populate("companiesList").catch();
   if (batch && batch.companiesList.length > 0) {
     var unAssignedCompanyList = [];
     for (let index = 0; index < batch.companiesList.length; index++) {
@@ -971,28 +963,19 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           }
         });
       }
-      var assignedCompanyList = await CompaniesTasks.find({
-        categoryId: body.categoryId,
-        year: years,
-        companyId: batch.companiesList[index].id,
-      }).populate("companyId");
+      var assignedCompanyList = await CompaniesTasks.find({ categoryId: body.categoryId, year: years, companyId: batch.companiesList[index].id }).populate("companyId");
       if (assignedCompanyList.length === 0) {
         unAssignedCompanyList.push({
           id: batch.companiesList[index].id,
           companyName: batch.companiesList[index].companyName,
-        });
+        })
       }
     }
     resObj["companies"] = unAssignedCompanyList;
   }
-  var group = await Group.findById(body.groupId)
-    .populate("assignedMembers")
-    .populate({ path: "assignedMembers.roleDetails" });
+  var group = await Group.findById(body.groupId).populate("assignedMembers").populate({ path: "assignedMembers.roleDetails" });
   var roleDetails = await Role.find({ roleName: { $in: ["QA", "Analyst"] } });
-  console.log("roleDetails", roleDetails);
-  console.log("group", JSON.stringify(group, null, 3));
-  var qa = [],
-    analyst = [];
+  var qa = [], analyst = [];
   if (group && group.assignedMembers.length > 0) {
     for (let index = 0; index < group.assignedMembers.length; index++) {
       var qaId = roleDetails.find((rec) => {
@@ -1010,70 +993,47 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             secondaryPillar: { $in: [body.categoryId] },
           },
           { primaryPillar: body.categoryId },
-        ],
-      })
-        .populate("primaryPillar")
-        .populate("secondaryPillar");
-      console.log("userPillar", JSON.stringify(userPillar, null, 3));
+        ]
+      }).populate("primaryPillar").populate("secondaryPillar");
       if (userPillar && Object.keys(userPillar).length > 0) {
-        console.log("in userpillar first if");
         if (userPillar.primaryPillar.id === body.categoryId) {
-          console.log("in userpillar second if");
           qaObject.primaryPillar = true;
           analystObject.primaryPillar = true;
         } else {
-          console.log("in userpillar second else");
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
-        console.log(
-          "before qa",
-          group.assignedMembers[index].roleDetails.primaryRole,
-          qaId._id
-        );
-        if (
-          qaId &&
-          group.assignedMembers[index].roleDetails.primaryRole === qaId._id
-        ) {
-          console.log("in if qaId");
+        console.log('primary', group.assignedMembers[index].roleDetails.primaryRole, qaId.id);
+        console.log('primary', typeof group.assignedMembers[index].roleDetails.primaryRole, typeof qaId.id);
+        if (qaId && (group.assignedMembers[index].roleDetails.primaryRole == qaId.id)) {
+          console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
             taskStatus: { $ne: "Verification Completed" },
           });
-          console.log("activeTaskCount qa", activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = true;
           qaObject.activeTaskCount = activeTaskCount.length;
+          console.log('qa object', qaObject);
           qa.push(qaObject);
-        } else if (
-          qaId &&
-          group.assignedMembers[index].roleDetails.roles.indexOf(qaId._id) > -1
-        ) {
-          console.log("in else if qaId");
+        } else if (qaId && (group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1)) {
+          console.log('in else if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
             taskStatus: { $ne: "Verification Completed" },
           });
-          console.log("activeTaskCount qa", activeTaskCount);
           qaObject.id = group.assignedMembers[index].id;
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = false;
           qaObject.activeTaskCount = activeTaskCount.length;
+          console.log('qa object', qaObject);
           qa.push(qaObject);
         }
-        console.log(
-          "before analyst",
-          group.assignedMembers[index].roleDetails.primaryRole,
-          analystId._id
-        );
-        if (
-          analystId &&
-          group.assignedMembers[index].roleDetails.primaryRole === analystId._id
-        ) {
-          console.log("in if anylysy");
+        if (analystId && (group.assignedMembers[index].roleDetails.primaryRole == analystId.id)) {
+          console.log('in if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1081,19 +1041,14 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
               $nin: ["Collection Completed", "Correction Completed"],
             },
           });
-          console.log("activeTaskCount analyst", activeTaskCount);
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
+          console.log('analystObject object', analystObject);
           analyst.push(analystObject);
-        } else if (
-          analystId &&
-          group.assignedMembers[index].roleDetails.roles.indexOf(
-            analystId._id
-          ) > -1
-        ) {
-          console.log("in else if anylysy");
+        } else if (analystId && (group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1)) {
+          console.log('in else if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1101,15 +1056,14 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
               $nin: ["Collection Completed", "Correction Completed"],
             },
           });
-          console.log("activeTaskCount analyst", activeTaskCount);
           analystObject.id = group.assignedMembers[index].id;
           analystObject.name = group.assignedMembers[index].name;
           analystObject.primaryRole = false;
           analystObject.activeTaskCount = activeTaskCount.length;
+          console.log('analystObject object', analystObject);
           analyst.push(analystObject);
         }
       }
-      console.log("in else");
     }
     resObj["qaData"] = qa;
     resObj["analystData"] = analyst;

@@ -6,14 +6,19 @@ const companiesTasksSchema = new Schema({
     ref: 'User',
     required: true
   },
-  taskList: [{
+  taskId: {
     type: Schema.ObjectId,
     ref: 'TaskAssignment',
     required: true
-  }],
+  },
   companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',
+    required: true
+  },
+  categoryId: {
+    type: Schema.ObjectId,
+    ref: 'Categories',
     required: true
   },
   year: {
