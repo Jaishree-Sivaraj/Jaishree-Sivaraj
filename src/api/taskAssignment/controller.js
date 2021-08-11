@@ -12,6 +12,7 @@ import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
+import { Controversy } from "../controversy";
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1245,14 +1246,21 @@ export const controversyReports = async ({ user, params }, res, next) => {
 
 export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
-  for (var index = 0; index < body.controversyTaskReports.length; index++) {
-    var controversyTask = await ControversyTasks.findById(body.controversyTaskReports[index]).populate('companyId').populate('analystId');
-    if (controversyTask && Object.keys(controversyTask).length > 0) {
+  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, status: true }).
+    populate('companyId').populate({
+      path: "taskId",
+      populate: {
+        path: "analystId"
+      }
+    });
+  console.log('controversyTask', JSON.stringify(controversyTask, null, 3))
+  if (controversyTask && Object.keys(controversyTask).length > 0) {
+    for (let index = 0; index < controversyTask.length; index++) {
       var obj = {
-        "companyName": controversyTask.companyId ? controversyTask.companyId.companyName : null,
-        "controversyId": controversyTask.taskNumber ? controversyTask.taskNumber : null,
-        "analyst": controversyTask.analystId ? controversyTask.analystId.name : null,
-        "createdDate": controversyTask.createdAt,
+        "companyName": controversyTask[index].companyId ? controversyTask[index].companyId.companyName : null,
+        "controversyId": controversyTask[index].controversyNumber ? controversyTask[index].controversyNumber : null,
+        "analyst": controversyTask[index].companyId.analystId ? controversyTask[index].companyId.analystId.name : null,
+        "createdDate": controversyTask[index].createdAt,
       }
       result.push(obj);
     }
