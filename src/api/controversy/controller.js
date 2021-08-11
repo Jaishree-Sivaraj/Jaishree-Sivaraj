@@ -441,9 +441,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               clientTaxonomyId = null;
             }
             let clienttaxonomyFields = await ClientTaxonomy.find({ _id: clientTaxonomyId }).distinct('fields');
-            console.log(clienttaxonomyFields);
             let displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Collection');
-            console.log(displayFields);
             let requiredFields = [
               "categoryCode",
               "categoryName",
@@ -496,7 +494,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
                 controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
-                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';,
+                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
                 controversyObject.additionalDetails = [];
                 
@@ -518,10 +516,10 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                     } else {
                       optionVal = displayFields[dIndex].inputValues;
                     }
+                    let controversyDtl = controversyList[cIndex];
                     if(displayFields[dIndex].inputType == 'Static'){
-                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                      currentValue = controversyDtl[displayFields[dIndex].fieldName];
                     } else {
-                      let controversyDtl = controversyList[cIndex];
                       if(displayFields[dIndex].inputType == 'Select'){
                         currentValue = { value: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '', label: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '' };
                       } else {
