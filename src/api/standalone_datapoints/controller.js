@@ -1064,7 +1064,7 @@ export const dataCollection = async ({
           createdBy: user
         }
       })
-      await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId:body.datapointId, year : {$in : currentYearValues}, status:true},{$set:{status: false}});
+      await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.datapointId, year : {$in : currentYearValues}, status:true},{$set:{status: false}});
         let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
         return {
           datapointId: body.dpCodeId,
@@ -1083,7 +1083,7 @@ export const dataCollection = async ({
           createdBy: user
         }
       })
-      await StandaloneDatapoints.updateMany({comapnyId:body.companyId, datapointId:body.datapointId, year : {$in : historicalDataYear}, status:true},{$set:{status: false}});
+      await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId:body.datapointId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
       let mergedDetails = _.concat(historicalStandaloneDetails,standaloneDpDetails);
       await StandaloneDatapoints.insertMany(mergedDetails)
         .then((result,err) => {
@@ -1110,7 +1110,7 @@ export const dataCollection = async ({
           url: item.source['url'],
           sourceName: item.source['sourceName']+";"+item.source['value'],          
           additionalDetails: item['additionalDetails'],
-          memberName: item['memberName'],
+          memberName:body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
@@ -1131,7 +1131,7 @@ export const dataCollection = async ({
           url: item.source['url'],
           sourceName: item.source['sourceName']+";"+item.source['value'],          
           additionalDetails: item['additionalDetails'],
-          memberName: item['memberName'],
+          memberName: body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
@@ -1165,7 +1165,7 @@ export const dataCollection = async ({
           url: item.source['url'],
           sourceName: item.source['sourceName']+";"+item.source['value'],          
           additionalDetails: item['additionalDetails'],
-          memberName: item['memberName'],
+          memberName: body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
@@ -1185,7 +1185,7 @@ export const dataCollection = async ({
           url: item.source['url'],
           sourceName: item.source['sourceName']+";"+item.source['value'],          
           additionalDetails: item['additionalDetails'],
-          memberName: item['memberName'],
+          memberName: body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
