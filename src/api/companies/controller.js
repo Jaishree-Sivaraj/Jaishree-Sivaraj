@@ -167,6 +167,7 @@ export const uploadCompaniesFile = async (req, res, next) => {
               clientTaxonomyId: req.body.clientTaxonomyId,
               fiscalYearEndDate: rowObject['Fiscal Year End Date'] ? rowObject['Fiscal Year End Date'] : '',
               fiscalYearEndMonth: rowObject['Fiscal Year End Month'] ? rowObject['Fiscal Year End Month'] : '',
+              isAssignedToBatch: false,
               status: true,
               createdBy: userDetail
             }

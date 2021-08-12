@@ -47,7 +47,7 @@ const {
   status
 } = schema.tree
 const currentData = [],historicalData=[];
-const dpCodeId = '';
+const dpCodeId = '', memberType = '', memberName = '';
 
 /**
  * @api {post} /standalone_datapoints Create standalone datapoints
@@ -129,7 +129,7 @@ router.post('/saveDatapointDetails',
   token({
     required: true
   }),
-  body({companyId,currentData,dpCodeId}),
+  body({companyId,currentData,dpCodeId, historicalData, taskId,memberType, memberName}),
   dataCollection)
 
 /**

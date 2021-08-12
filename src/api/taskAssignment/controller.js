@@ -12,6 +12,7 @@ import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
 import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
+import { Controversy } from "../controversy";
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -307,11 +308,9 @@ export const getMyTasks = async (
   res,
   next
 ) => {
-  console.log("get my tasks");
   let completeUserDetail = await User.findOne({
     _id: user.id,
-    isRoleAssigned: true,
-    isUserActive: true,
+    isUserActive: true
   })
     .populate({
       path: "roleDetails.roles",
@@ -1252,3 +1251,27 @@ export const controversyReports = async ({ user, params }, res, next) => {
 }
 
 
+
+export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
+  var result = [];
+  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, status: true }).
+    populate('companyId').populate({
+      path: "taskId",
+      populate: {
+        path: "analystId"
+      }
+    });
+  console.log('controversyTask', JSON.stringify(controversyTask, null, 3))
+  if (controversyTask && Object.keys(controversyTask).length > 0) {
+    for (let index = 0; index < controversyTask.length; index++) {
+      var obj = {
+        "companyName": controversyTask[index].companyId ? controversyTask[index].companyId.companyName : null,
+        "controversyId": controversyTask[index].controversyNumber ? controversyTask[index].controversyNumber : null,
+        "analyst": controversyTask[index].taskId.analystId ? controversyTask[index].taskId.analystId.name : null,
+        "createdDate": controversyTask[index].createdAt,
+      }
+      result.push(obj);
+    }
+  }
+  return res.status(200).json({ controversyTaskList: result });
+}

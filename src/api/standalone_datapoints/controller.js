@@ -1041,47 +1041,66 @@ export const dataCollection = async ({
 }, res, next) => {
   try {
 
-    console.log(body.companyId, user);
     let dpCodesDetails = body.currentData;
-    let dpTypeValue = await Datapoints.findOne({
-      _id: body.dpCodeId,
-      status: true
-    });
-    if (dpTypeValue.dpType == 'Standalone') {
+    let dpHistoricalDpDetails = body.historicalData;
+    let currentYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];    
+    let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ]
+    if (body.memberType == 'Standalone') {
       let standaloneDpDetails = dpCodesDetails.map(function (item) {
         return {
           datapointId: body.dpCodeId,
           companyId: body.companyId,
           year: item['fiscalYear'],
+          taskId: body.taskId,
           response: item['response'],
           screenShot: item['screenShot'],
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
-          sourceName: item.source['sourceName'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],
+          status: true,
+          additionalDetails: item['additionalDetails'],
+          createdBy: user
+        }
+      })
+      await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues}, status:true},{$set:{status: false}});
+        let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],          
+          additionalDetails: item['additionalDetails'],
           status: true,
           createdBy: user
         }
       })
-      console.log(standaloneDpDetails);
-      await StandaloneDatapoints.insertMany(standaloneDpDetails)
-        .then((err, result) => {
+      await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
+      let mergedDetails = _.concat(historicalStandaloneDetails,standaloneDpDetails);
+      await StandaloneDatapoints.insertMany(mergedDetails)
+        .then((result,err) => {
           if (err) {
             console.log('error', err);
           } else {
-            //  console.log('result', result);
+            res.status('200').json({
+              message: "Data inserted Successfully"
+            });
           }
         });
-
-      res.status('200').json({
-        message: "Data inserted Successfully"
-      });
-    } else if (dpTypeValue.dpType == 'Board Matrix') {
+    } else if (body.memberType == 'Board Matrix') {
       let boardMemberDatapoints = dpCodesDetails.map(function (item) {
         return {
           datapointId: body.dpCodeId,
           companyId: body.companyId,
+          taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
           screenShot: item['screenShot'],
@@ -1089,29 +1108,54 @@ export const dataCollection = async ({
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
-          sourceName: item.source['sourceName'],
-          memberName: item['memberName'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],          
+          additionalDetails: item['additionalDetails'],
+          memberName:body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
         }
       });
-      await BoardMembersMatrixDataPoints.insertMany(boardMemberDatapoints)
-        .then((err, result) => {
+      
+      let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],          
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          status: true,
+          createdBy: user
+        }
+      });
+      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, status: true},{$set:{status: false}});
+      await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status: true},{$set:{status: false}});
+      let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
+      await BoardMembersMatrixDataPoints.insertMany(mergedDetails)
+        .then((result,err) => {
           if (err) {
             console.log('error', err);
           } else {
-            //  console.log('result', result);
+            res.status('200').json({
+              message: "Data inserted Successfully"
+            });
           }
         });
-      res.status('200').json({
-        message: "Data inserted Successfully"
-      });
-    } else if (dpTypeValue.dpType == 'KMP Matrix') {
+    } else if (body.memberType == 'KMP Matrix') {
       let kmpMemberDatapoints = dpCodesDetails.map(function (item) {
         return {
           datapointId: body.dpCodeId,
           companyId: body.companyId,
+          taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
           screenShot: item['screenShot'],
@@ -1119,26 +1163,47 @@ export const dataCollection = async ({
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
-          sourceName: item.source['sourceName'],
-          memberName: item['memberName'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],          
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
           memberStatus: true,
           status: true,
           createdBy: user
         }
       });
-
-      await KmpMatrixDataPoints.insertMany(kmpMemberDatapoints)
-        .then((err, result) => {
+      let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName']+";"+item.source['value'],          
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          status: true,
+          createdBy: user
+        }
+      });
+      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, status:true},{$set:{status: false}});
+      await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status:true},{$set:{status: false}});
+      let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
+      await KmpMatrixDataPoints.insertMany(mergedDetails)
+        .then((result, err ) => {
           if (err) {
             console.log('error', err);
           } else {
-            //  console.log('result', result);
+            res.status('200').json({
+              message: "Data inserted Successfully"
+            });
           }
         });
-
-      res.status('200').json({
-        message: "Data inserted Successfully"
-      });
     }
 
   } catch (error) {

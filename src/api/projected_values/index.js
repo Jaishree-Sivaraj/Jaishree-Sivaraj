@@ -7,7 +7,7 @@ import { schema } from './model'
 export ProjectedValues, { schema } from './model'
 
 const router = new Router()
-const { clientTaxonomyId, taxonomy, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, pillar, years,  performanceResult, currentYear, status } = schema.tree
+const { clientTaxonomyId, taxonomy, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, pillar, years, currentYear, status } = schema.tree
 
 /**
  * @api {post} /projected_values Create projected values
@@ -24,7 +24,6 @@ const { clientTaxonomyId, taxonomy, nicCode, categoryId, year, datapointId, proj
  * @apiParam projectedAverage Projected values's projectedAverage.
  * @apiParam actualStdDeviation Projected values's actualStdDeviation.
  * @apiParam actualAverage Projected values's actualAverage.
- * @apiParam performaceResult Projected values's performaceResult.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -33,7 +32,7 @@ const { clientTaxonomyId, taxonomy, nicCode, categoryId, year, datapointId, proj
  */
 router.post('/',
   token({ required: true }),
-  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, currentYear, status }),
+  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, currentYear, status }),
   create)
 
 /**
@@ -145,7 +144,6 @@ router.get('/:id',
  * @apiParam projectedAverage Projected values's projectedAverage.
  * @apiParam actualStdDeviation Projected values's actualStdDeviation.
  * @apiParam actualAverage Projected values's actualAverage.
- * @apiParam performanceResult Projected values's performanceResult.
  * @apiParam status Projected values's status.
  * @apiSuccess {Object} projectedValues Projected values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -154,7 +152,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, performanceResult, status }),
+  body({ clientTaxonomyId, nicCode, categoryId, year, datapointId, projectedStdDeviation, projectedAverage, actualStdDeviation, actualAverage, status }),
   update)
 
 /**
