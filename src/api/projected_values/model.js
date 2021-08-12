@@ -38,7 +38,7 @@ const projectedValuesSchema = new Schema({
   },
   actualAverage: {
     type: String
-  }
+  },
   status: {
     type: Boolean,
     default: true
