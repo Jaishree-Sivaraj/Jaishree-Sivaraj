@@ -1064,7 +1064,7 @@ export const dataCollection = async ({
           createdBy: user
         }
       })
-      await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.datapointId, year : {$in : currentYearValues}, status:true},{$set:{status: false}});
+      await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues}, status:true},{$set:{status: false}});
         let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
         return {
           datapointId: body.dpCodeId,
@@ -1083,7 +1083,7 @@ export const dataCollection = async ({
           createdBy: user
         }
       })
-      await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId:body.datapointId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
+      await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
       let mergedDetails = _.concat(historicalStandaloneDetails,standaloneDpDetails);
       await StandaloneDatapoints.insertMany(mergedDetails)
         .then((result,err) => {
@@ -1137,8 +1137,8 @@ export const dataCollection = async ({
           createdBy: user
         }
       });
-      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId:body.datapointId, year : {$in : currentYearValues},memberName:body.memberName, status:true},{$set:{status: false}});
-      await BoardMembersMatrixDataPoints.updateMany({companyId:body.companyId, datapointId:body.datapointId, year : {$in : historicalDataYear},memberName:body.memberName, status:true},{$set:{status: false}});
+      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, status: true},{$set:{status: false}});
+      await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status: true},{$set:{status: false}});
       let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
       await BoardMembersMatrixDataPoints.insertMany(mergedDetails)
         .then((result,err) => {
@@ -1191,8 +1191,8 @@ export const dataCollection = async ({
           createdBy: user
         }
       });
-      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId:body.datapointId, year : {$in : currentYearValues},memberName:body.memberName, status:true},{$set:{status: false}});
-      await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId:body.datapointId, year : {$in : historicalDataYear},memberName:body.memberName, status:true},{$set:{status: false}});
+      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName:body.memberName, status:true},{$set:{status: false}});
+      await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName:body.memberName, status:true},{$set:{status: false}});
       let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
       await KmpMatrixDataPoints.insertMany(mergedDetails)
         .then((result, err ) => {
