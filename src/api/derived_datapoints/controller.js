@@ -37,6 +37,8 @@ import {
   Companies
 } from '../companies'
 import { TaskAssignment } from "../taskAssignment";
+import { Ztables } from "../ztables";
+import { ProjectedValues } from "../projected_values";
 import  * as DerivedCalculationSample from '../derived_datapoints/derived_calculation';
 
 export const create = ({
@@ -2572,8 +2574,12 @@ export const derivedCalculation = async ({
   body
 }, res, next)=>{
   //let dd = new DerivedCalculationSample();
-  let taskDetailsObject = await TaskAssignment.findOne({_id: body.taskId})
-  .populate('companyId').populate('categoryId');
+  let taskDetailsObject = await TaskAssignment.findOne({_id: body.taskId}).populate({
+    path: "companyId",
+    populate: {
+      path: "clientTaxonomyId"
+    }
+  }).populate('categoryId');
   let allDerivedDatapoints = [];
   let year = taskDetailsObject.year.split(",");
   let allStandaloneDetails = await StandaloneDatapoints.find({
@@ -2743,7 +2749,8 @@ export const derivedCalculation = async ({
       });
   }
   }
-  let dataPointsIdList = await Datapoints.find({standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"}})
+  let dataPointsIdList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, standaloneOrMatrix: { "$ne": "Matrix"}, percentile: {"$ne": "Yes"}, status: true });
+  let percentileDataPointsList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, percentile: "Yes", status: true });
   let allStandaloneDatapoints = await StandaloneDatapoints.find({
     "companyId": taskDetailsObject.companyId.id,
     "year": {
@@ -2879,6 +2886,78 @@ export const derivedCalculation = async ({
               });
             }
           }
+      }
+    }
+    let projectedValues = await ProjectedValues.findOne({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: year[yearIndex], status: true });
+    for (let pdpIndex = 0; pdpIndex < percentileDataPointsList.length; pdpIndex++) {
+      try {
+        let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.datapointId.id == percentileDataPointsList[pdpIndex].id && object.year == year[yearIndex]);
+        let projectedValue = projectedValues.finde((object) => object.datapointId.id == percentileDataPointsList[pdpIndex].id);
+        if (foundResponseIndex > -1) {
+          let foundResponse = mergedDatapoints[foundResponseIndex];
+          if (foundResponse) {
+            if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA' || foundResponse.response.toLowerCase() == 'nan') {
+              if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
+              } else {
+                await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
+              }
+            } else {
+              let zscoreValue;
+              if (projectedValue.projectedStdDeviation == 'NA') {
+                await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+              } else {
+                if (percentileDatapointsList[pdpIndex].polarity == 'Positive') {
+                  zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
+                } else if (percentileDatapointsList[pdpIndex].polarity == 'Negative') {
+                  zscoreValue = (Number(projectedValue.projectedAverage) - Number(foundResponse.response)) / Number(projectedValue.projectedStdDeviation);
+                }
+                if (zscoreValue > 4) {
+                  if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '100'} });
+                  } else {
+                    await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '100'} });
+                  }
+                } else if (zscoreValue < -4) {
+                  if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '0'} });
+                  } else {
+                    await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '0'} });
+                  }
+                } else if (zscoreValue == 'NA') {
+                  if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                  } else {
+                    await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                  }
+                } else {
+                  //round of zscore value to two digit decimal value
+                  if (zscoreValue) {
+                    let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
+                    var lastDigit = twoDigitZscoreValue.toString().slice(-1);
+                    let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
+                    let zValues = ztableValue.values[0].split(",");
+                    let zScore = zValues[Number(lastDigit)]
+                    let percentile = zScore * 100;
+                    if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
+                    } else {
+                      await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
+                    }
+                  } else {
+                    if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                    } else {
+                      await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to get the response of '+ percentileDataPointsList[pdpIndex].code + ' for ' + year[yearIndex] + ' year' })
       }
     }
   }  
