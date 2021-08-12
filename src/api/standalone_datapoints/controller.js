@@ -1044,7 +1044,7 @@ export const dataCollection = async ({
     let dpCodesDetails = body.currentData;
     let dpHistoricalDpDetails = body.historicalData;
     let currentYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];    
-    let historicalDataYear = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ]
+    let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ]
     if (body.memberType == 'Standalone') {
       let standaloneDpDetails = dpCodesDetails.map(function (item) {
         return {
@@ -1191,8 +1191,8 @@ export const dataCollection = async ({
           createdBy: user
         }
       });
-      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName:body.memberName, status:true},{$set:{status: false}});
-      await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName:body.memberName, status:true},{$set:{status: false}});
+      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, status:true},{$set:{status: false}});
+      await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status:true},{$set:{status: false}});
       let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
       await KmpMatrixDataPoints.insertMany(mergedDetails)
         .then((result, err ) => {
