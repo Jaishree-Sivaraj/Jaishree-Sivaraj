@@ -38,10 +38,7 @@ const projectedValuesSchema = new Schema({
   },
   actualAverage: {
     type: String
-  },
-  performanceResult: {
-    type: String
-  },
+  }
   status: {
     type: Boolean,
     default: true
