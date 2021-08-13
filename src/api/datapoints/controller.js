@@ -240,7 +240,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     console.log(taskDetails.taskStatus == 'Collection' );
-    if (taskDetails.taskStatus == 'Yet to work') {
+    if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed') {
       if (dpTypeValues.length > 0) {
 
         if (dpTypeValues.length > 1) {
@@ -540,7 +540,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           dpCodeData: dpCodesData
         });
       }
-    } else if(taskDetails.taskStatus == 'Correction Completed' || taskDetails.taskStatus == 'Collection Completed' ) {
+    } else if( taskStatus == "Correction Pending" ) {
       console.log(taskDetails.taskStatus == 'Collection' ,"               ............. ", dpTypeValues);
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {          
@@ -767,7 +767,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
       }
-    } else if (taskDetails.taskStatus == 'Verification') {
+    } else if (taskDetails.taskStatus == 'Correction Completed' ) {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
@@ -938,7 +938,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             year:{
               $in:currentYear
             },
-            hasError: true,
+            hasCorrection: true,
             status: true
           }).populate([{
             path: 'datapointId',
@@ -1042,9 +1042,6 @@ export const datapointDetails = async (req, res, next) => {
         "weighted",
         "year"
     ];
-    // let staticFields = displayFields.filter(obj => obj.inputType == "Static");
-    // let inputFields = displayFields.filter(obj => obj.inputType != "Static"); 
-    // console.log(staticFields, inputFields);
     let dpTypeValues = await Datapoints.findOne({
       dataCollection: 'Yes',
       functionId: {
