@@ -239,7 +239,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    console.log(taskDetails.taskStatus == 'Collection' );
     if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed') {
       if (dpTypeValues.length > 0) {
 
@@ -540,8 +539,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           dpCodeData: dpCodesData
         });
       }
-    } else if( taskStatus == "Correction Pending" ) {
-      console.log(taskDetails.taskStatus == 'Collection' ,"               ............. ", dpTypeValues);
+    } else if( taskDetails.taskStatus == "Correction Pending" ) {
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {          
           if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
