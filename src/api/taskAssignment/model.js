@@ -80,7 +80,7 @@ taskAssignmentSchema.methods = {
       groupId: this.groupId ? this.groupId.view(full) : null,
       batchId: this.batchId ? this.batchId.view(full) : null,
       year: this.year,
-      analystSLA: this.analystSLADate ? this.analystSLADate : null,
+      analystSLADate: this.analystSLADate ? this.analystSLADate : null,
       qaSLADate: this.qaSLADate ? this.qaSLADate : null,
       taskStatus: this.taskStatus,
       overAllCompanyTaskStatus: this.overAllCompanyTaskStatus,
