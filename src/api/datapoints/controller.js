@@ -540,7 +540,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           dpCodeData: dpCodesData
         });
       }
-    } else if(taskDetails.taskStatus == 'Correction') {
+    } else if(taskDetails.taskStatus == 'Correction Completed' || taskDetails.taskStatus == 'Collection Completed' ) {
       console.log(taskDetails.taskStatus == 'Collection' ,"               ............. ", dpTypeValues);
       if (dpTypeValues.length > 1) {
         for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {          
