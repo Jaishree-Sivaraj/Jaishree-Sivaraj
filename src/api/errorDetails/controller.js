@@ -6,6 +6,14 @@ import {
 import {
   ErrorDetails
 } from '.'
+import {
+  BoardMembersMatrixDataPoints
+} from '../boardMembersMatrixDataPoints'
+import {
+  KmpMatrixDataPoints
+} from '../kmpMatrixDataPoints'
+import { Errors } from '../error'
+import { StandaloneDatapoints } from '../standalone_datapoints'
 
 export const create = ({
     user,
@@ -133,4 +141,211 @@ export const trackError = async ({
     })
   }
 
+}
+
+export const saveErrorDetails = async({
+  user,
+  bodymen: {
+    body
+  },
+  params
+}, res, next) =>{
+  
+  let dpCodesDetails = body.currentData;
+  let dpHistoricalDpDetails = body.historicalData;
+  let currentYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];    
+  let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ];  
+  let errorTypeDetails = await Errors.find({
+    status: true
+  });
+  if(body.memberType == 'Standalone'){
+    await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in : currentYearValues }, status:true},{$set: {hasError: true}});
+    let standaloneErrorDetails = dpCodesDetails.map(function (item) {
+      let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type'].replace('\r\n', ''))
+      if(item.error['raisedBy'] == 'QA'){
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          status: true,
+          createdBy: user
+        }
+      } else{
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          errorCaughtByRep:{
+          response: item.error.refData['response'],
+          screenShot: item.error.refData['screenShot'],
+          textSnippet: item.error.refData['textSnippet'],
+          pageNumber: item.error.refData['pageNo'],
+          publicationDate: item.error.refData.source['publicationDate'],
+          url: item.error.refData.source['url'],
+          sourceName: item.error.refData.source['sourceName']+";"+item.error.refData.source['value'],
+          additionalDetails: item.error.refData['additionalDetails']
+          },
+          createdBy: user
+        }
+
+      }
+    });
+    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: {$in : currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}})
+    await ErrorDetails.insertMany(standaloneErrorDetails)
+    .then((result, err ) => {
+      if (err) {
+        res.status(500).json({
+          message: err.message
+        });
+      } else {
+        res.status(200).json({
+          message: "Error Data inserted Successfully"
+        });
+      }
+    });
+  } else if(body.memberType == 'Board Matrix'){
+    
+    await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in : currentYearValues },memberName: body.memberName, status:true},{$set: {hasError: true}});
+    let boardMemberErrorDetails = dpCodesDetails.map(function (item) {
+      let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type'].replace('\r\n', ''))
+      if(item.error['raisedBy'] == 'QA'){
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          memberName: body.memberName,
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          status: true,
+          createdBy: user
+        }
+      } else{
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          memberName: body.memberName,
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          errorCaughtByRep:{
+          response: item.error.refData['response'],
+          screenShot: item.error.refData['screenShot'],
+          textSnippet: item.error.refData['textSnippet'],
+          pageNumber: item.error.refData['pageNo'],
+          publicationDate: item.error.refData.source['publicationDate'],
+          url: item.error.refData.source['url'],
+          sourceName: item.error.refData.source['sourceName']+";"+item.error.refData.source['value'],
+          additionalDetails: item.error.refData['additionalDetails']
+          },
+          createdBy: user
+        }
+
+      }
+    });
+    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: {$in : currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}})
+    await ErrorDetails.insertMany(boardMemberErrorDetails)
+    .then((result, err ) => {
+      if (err) {
+        res.status(500).json({
+          message: err.message
+        });
+      } else {
+        res.status(200).json({
+          message: "Error Data inserted Successfully"
+        });
+      }
+    });
+  } else if(body.memberType == 'KMP Matrix'){
+    
+    await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in : currentYearValues },memberName: body.memberName, status:true},{$set: {hasError: true}});
+    let kmpMemberErrorDetails = dpCodesDetails.map(function (item) {
+      let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type'].replace('\r\n', ''))
+      if(item.error['raisedBy'] == 'QA'){
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          memberName: body.memberName,
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          status: true,
+          createdBy: user
+        }
+      } else{
+        return {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item['fiscalYear'],
+          taskId: body.taskId, 
+          memberName: body.memberName,
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error['raisedBy'],
+          comments: {            
+          raisedBy: item.error['raisedBy'],
+          comments: item.error['comment']
+          },
+          errorCaughtByRep:{
+          response: item.error.refData['response'],
+          screenShot: item.error.refData['screenShot'],
+          textSnippet: item.error.refData['textSnippet'],
+          pageNumber: item.error.refData['pageNo'],
+          publicationDate: item.error.refData.source['publicationDate'],
+          url: item.error.refData.source['url'],
+          sourceName: item.error.refData.source['sourceName']+";"+item.error.refData.source['value'],
+          additionalDetails: item.error.refData['additionalDetails']
+          },
+          createdBy: user
+        }
+
+      }
+    });
+    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: {$in : currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}})
+    await ErrorDetails.insertMany(kmpMemberErrorDetails)
+    .then((result, err ) => {
+      if (err) {
+        res.status(500).json({
+          message: err.message
+        });
+      } else {
+        res.status(200).json({
+          message: "Error Data inserted Successfully"
+        });
+      }
+    });
+  }
 }

@@ -2151,7 +2151,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       functionId: {
         "$ne": functionId.id
       },
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
       categoryId: taskDetails.categoryId.id,
       _id: req.body.datapointId,
       status: true
@@ -2167,7 +2167,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
       categoryId: taskDetails.categoryId.id,
       //isErrorAccepted: true,
       status: true
-    }).populate('errorTypeId');
+    }).populate('datapointId').populate('errorTypeId');
     
     let clienttaxonomyFields = await ClientTaxonomy.find({_id: taskDetails.companyId.clientTaxonomyId.id}).distinct('fields');
     //console.log(clienttaxonomyFields);
@@ -2259,13 +2259,13 @@ export const errorDatapointDetails = async(req,res,next) =>{
         totalHistories = historyYear.length;
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-        let currentDatapointsObject = {};
+        let currentDatapointsObject = {}, errorDetailsValues = {};
         _.filter(currentAllStandaloneDetails, function (object) {
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex]) {
             let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -2287,6 +2287,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
                 error: {
                   raisedBy: errorDetailsObject[0].raisedBy,
                   isErrorRaised: true,
+                  refData: errorDetailsObject[0].errorCaughtByRep,
                   errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : '',                  
                   errorComments: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                   errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
@@ -2499,6 +2500,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
                   error: {
                     raisedBy: errorDetailsObject[0].raisedBy,
                     isErrorRaised: true,
+                    refData: errorDetailsObject[0].errorCaughtByRep,
                     errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : '',
                     errorComments: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -2644,8 +2646,11 @@ export const errorDatapointDetails = async(req,res,next) =>{
       historyYear = _.orderBy(historyYear, 'year', 'desc');
       let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           taskId: req.body.taskId,
-          datapointId:req.body.datapointId,
+          datapointId: req.body.datapointId,
           memberName: req.body.memberName,
+          year: {
+            "$in": currentYear
+          },
           memberStatus: true,
           status: true
         }).populate('createdBy')
@@ -2691,7 +2696,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
               let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
               let sourceName = sourceValues[0];
               let sourceId = sourceValues[1] ? sourceValues[1] : ''
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId.id == dpTypeValues.id && obj.year == currentYear[currentYearIndex])
                 currentDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -2714,6 +2719,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
                   error: {
                     raisedBy: errorDetailsObject[0].raisedBy,
                     isErrorRaised: true,
+                    refData: errorDetailsObject[0].errorCaughtByRep,
                     errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.id : '',
                     errorComments: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorDefenition : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -2763,7 +2769,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
               kmpDatapointsObject.status = 'Completed'
             
           });
-          }
+        }
       
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
             let historicalDatapointsObject = {};
@@ -2842,7 +2848,6 @@ export const errorDatapointDetails = async(req,res,next) =>{
       });
     }
   } catch (error) {
-
     return res.status(500).json({
       message: error.message
     });
