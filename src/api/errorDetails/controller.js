@@ -175,7 +175,7 @@ export const saveErrorDetails = async({
             content: object.error['comment']
             }
           comments.push(commentValues);
-          await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear, status:true},{$push :{comments: commentValues},$set: {hasError: true}});          
+          await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear, status:true},{$push :{comments: commentValues},$set: {hasError: true, hasCorrection: false}});          
           await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: object.fiscalYear, companyId: body.companyId, raisedBy: object.error.raisedBy, status: true},{$set:{status: false}})
           standaloneDatapoints = {
             datapointId: body.dpCodeId,
@@ -223,7 +223,32 @@ export const saveErrorDetails = async({
         }
       })
       
-    }
+    } 
+     let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
+      return {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        year: item['fiscalYear'],
+        response: item['response'],
+        screenShot: item['screenShot'],
+        textSnippet: item['textSnippet'],
+        pageNumber: item['pageNo'],
+        publicationDate: item.source['publicationDate'],
+        url: item.source['url'],
+        sourceName: item.source['sourceName']+";"+item.source['value'],          
+        additionalDetails: item['additionalDetails'],
+        status: true,
+        createdBy: user
+      }
+    })
+    await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
+    await StandaloneDatapoints.insertMany(historicalStandaloneDetails)
+      .then((result,err) => {
+        if (err) {
+          console.log('error', err);
+        }
+      });
     await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: {$in : currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}})
     await ErrorDetails.insertMany(standaloneErrorDetails)
     .then((result, err ) => {
@@ -251,7 +276,7 @@ export const saveErrorDetails = async({
             content: object.error['comment']
             }
           comments.push(commentValues);
-          await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear,memberName: body.memberName, status:true},{$push :{comments: commentValues},$set: {hasError: true}});
+          await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear,memberName: body.memberName, status:true},{$push :{comments: commentValues},$set: {hasError: true, hasCorrection: false}});
           await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: object.fiscalYear,memberName: body.memberName, companyId: body.companyId, raisedBy: object.error.raisedBy, status: true},{$set:{status: false}})
    
           boardDatapoints = {
@@ -303,6 +328,33 @@ export const saveErrorDetails = async({
       })
       
     }
+    let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
+      return {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        year: item['fiscalYear'],
+        response: item['response'],
+        screenShot: item['screenShot'],
+        textSnippet: item['textSnippet'],
+        pageNumber: item['pageNo'],
+        publicationDate: item.source['publicationDate'],
+        url: item.source['url'],
+        sourceName: item.source['sourceName']+";"+item.source['value'],          
+        additionalDetails: item['additionalDetails'],
+        memberName: body.memberName,
+        memberStatus: true,
+        status: true,
+        createdBy: user
+      }
+    });
+    await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status: true},{$set:{status: false}});
+    await BoardMembersMatrixDataPoints.insertMany(boardMemberHostoricalDp)
+      .then((result,err) => {
+        if (err) {
+          console.log('error', err);
+        }
+      });
      await ErrorDetails.insertMany(boardMemberErrorDetails)
     .then((result, err ) => {
       if (err) {
@@ -329,7 +381,7 @@ export const saveErrorDetails = async({
             content: object.error['comment']
             }
           comments.push(commentValues);
-          await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear,memberName: body.memberName, status:true},{$push :{comments: commentValues},$set: {hasError: true}});          
+          await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: object.fiscalYear,memberName: body.memberName, status:true},{$push :{comments: commentValues},$set: {hasError: true, hasCorrection: false}});          
           await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: object.fiscalYear,memberName: body.memberName, companyId: body.companyId, raisedBy: object.error.raisedBy, status: true},{$set:{status: false}})
           boardDatapoints = {
             datapointId: body.dpCodeId,
@@ -380,6 +432,33 @@ export const saveErrorDetails = async({
       })
       
     }
+    let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
+      return {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        year: item['fiscalYear'],
+        response: item['response'],
+        screenShot: item['screenShot'],
+        textSnippet: item['textSnippet'],
+        pageNumber: item['pageNo'],
+        publicationDate: item.source['publicationDate'],
+        url: item.source['url'],
+        sourceName: item.source['sourceName']+";"+item.source['value'],          
+        additionalDetails: item['additionalDetails'],
+        memberName: body.memberName,
+        memberStatus: true,
+        status: true,
+        createdBy: user
+      }
+    });
+    await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status:true},{$set:{status: false}});
+    await KmpMatrixDataPoints.insertMany(kmpMemberHistoricalDp)
+      .then((result, err ) => {
+        if (err) {
+          console.log('error', err);
+        }
+      });
     await ErrorDetails.insertMany(kmpMemberErrorDetails)
     .then((result, err ) => {
       if (err) {
