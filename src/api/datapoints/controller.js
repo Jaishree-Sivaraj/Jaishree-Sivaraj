@@ -1132,7 +1132,7 @@ export const datapointDetails = async (req, res, next) => {
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
-            datapointsObject.comments.push(object.comments);
+            datapointsObject.comments = _.concat(datapointsObject.comments,object.comments);
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -1204,7 +1204,7 @@ export const datapointDetails = async (req, res, next) => {
               }            
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] );
-            datapointsObject.comments.push(object.comments);
+            datapointsObject.comments = _.concat(datapointsObject.comments,object.comments);
             
             currentDatapointsObject = {
               status: 'Completed',
@@ -1276,7 +1276,7 @@ export const datapointDetails = async (req, res, next) => {
               }                
             }
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
-            datapointsObject.comments.push(object.comments);
+            datapointsObject.comments = _.concat(datapointsObject.comments,object.comments);
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
             currentDatapointsObject = {
               status: 'Completed',
@@ -1565,7 +1565,7 @@ export const datapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
-              boardDatapointsObject.comments.push(object.comments);
+              boardDatapointsObject.comments = _.concat(boardDatapointsObject.comments,object.comments)
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName )
                 currentDatapointsObject = {
                   status: 'Completed',
@@ -1637,7 +1637,7 @@ export const datapointDetails = async (req, res, next) => {
                   }
                 }           
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-              boardDatapointsObject.comments.push(object.comments);
+              boardDatapointsObject.comments = _.concat(boardDatapointsObject.comments,object.comments)
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
@@ -1709,7 +1709,7 @@ export const datapointDetails = async (req, res, next) => {
                 }
               }
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
-              boardDatapointsObject.comments.push(object.comments);
+              boardDatapointsObject.comments = _.concat(boardDatapointsObject.comments,object.comments)
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
@@ -1782,7 +1782,7 @@ export const datapointDetails = async (req, res, next) => {
               }
 
             }          
-            datapointsObject.status = 'Completed';
+             boardDatapointsObject.status = 'Completed';
           });
           if (Object.keys(currentDatapointsObject).length == 0) {
             currentDatapointsObject = {
@@ -1996,7 +1996,7 @@ export const datapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
-              kmpDatapointsObject.comments.push(object.comments);
+              kmpDatapointsObject.comments = _.concat(kmpDatapointsObject.comments,object.comments);
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
                 currentDatapointsObject = {
                   status: 'Completed',
@@ -2068,7 +2068,7 @@ export const datapointDetails = async (req, res, next) => {
                   }
                 }           
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-              kmpDatapointsObject.comments.push(object.comments);
+              kmpDatapointsObject.comments = _.concat(kmpDatapointsObject.comments,object.comments);
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
@@ -2140,7 +2140,7 @@ export const datapointDetails = async (req, res, next) => {
                 }
               }
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
-              kmpDatapointsObject.comments.push(object.comments);
+              kmpDatapointsObject.comments = _.concat(kmpDatapointsObject.comments,object.comments);
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',

@@ -1308,6 +1308,25 @@ export const dataCollection = async ({
             });            
           }
         }
+        let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item){
+          return {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: body.taskId,
+            memberName: body.memberName,
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: item['screenShot'],
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName']+";"+item.source['value'],          
+            additionalDetails: item['additionalDetails'],
+            status: true,
+            createdBy: user
+          }
+        })
         await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : acceptYearValues},memberName: body.memberName, status: true},{$set:{status: false}});
         await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status: true},{$set:{status: false}});
         let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
