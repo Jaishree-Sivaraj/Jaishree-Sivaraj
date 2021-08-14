@@ -478,7 +478,6 @@ export const calculateForACompany = async ({
             let isDpExistInPolarityRule = polarityRulesList.findIndex((object, index) => object.datapointId.id == dataPointsIdList[dataPointIndex].id);
             if (isDpExistInPolarityRule <= -1) {
               let datapointDetail = dataPointsIdList[dataPointIndex];
-              console.log("datapointDetail", datapointDetail);
               if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
                 let foundResponseIndex = fullStandaloneDetails.findIndex((object, index) => object.companyId.id == companyId && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year);
                 if (foundResponseIndex > -1) {
