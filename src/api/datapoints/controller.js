@@ -1305,7 +1305,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorType: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 errorComments: errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
+                errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : 'Incomplete'
               },
               comments: [],
               additionalDetails:[]
