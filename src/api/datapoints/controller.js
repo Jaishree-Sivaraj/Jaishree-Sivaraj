@@ -1302,7 +1302,7 @@ export const datapointDetails = async (req, res, next) => {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                errorType: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 errorComments: errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                 errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
