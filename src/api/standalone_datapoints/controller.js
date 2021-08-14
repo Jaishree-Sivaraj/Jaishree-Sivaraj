@@ -1217,7 +1217,7 @@ export const dataCollection = async ({
           for (let rejectIndex = 0; rejectIndex < acceptYearValues.length; rejectIndex++) {
             _.filter(dpCodesDetails , async(object, index)=>{
               if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == true){
-                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId, status: true},{$set:{ isErrorAccepted: true}});                
+                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Yet to Verify'}});                
                 let standaloneAcceptDpDetails ={
                   datapointId: body.dpCodeId,
                   companyId: body.companyId,
@@ -1279,8 +1279,8 @@ export const dataCollection = async ({
         if(acceptYearValues.length > 0){ 
           for (let rejectIndex = 0; rejectIndex < acceptYearValues.length; rejectIndex++) {
             _.filter(dpCodesDetails ,async(object, index)=>{
-              if(object.fiscalYear == acceptYearValues[rejectIndex] && isAccepted == true){
-                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true}});
+              if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == true){
+                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true ,errorStatus: 'Yet to Verify'}});
                 let acceptDpDetails ={
                   datapointId: body.dpCodeId,
                   companyId: body.companyId,
@@ -1302,7 +1302,7 @@ export const dataCollection = async ({
                 }
                 boardMemberDatapoints.push(acceptDpDetails);
               }
-              if(object.fiscalYear == acceptYearValues[rejectIndex] && isAccepted == false){
+              if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == false){
                 await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
               }
             });            
@@ -1325,8 +1325,8 @@ export const dataCollection = async ({
         if(acceptYearValues.length > 0){ 
           for (let rejectIndex = 0; rejectIndex < acceptYearValues.length; rejectIndex++) {
             _.filter(dpCodesDetails ,async(object, index)=>{
-              if(object.fiscalYear == acceptYearValues[rejectIndex] && isAccepted == true){
-                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true}});
+              if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == true){
+                await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Yet to Verify'}});
                 let acceptDpDetails ={
                   datapointId: body.dpCodeId,
                   companyId: body.companyId,
@@ -1348,7 +1348,7 @@ export const dataCollection = async ({
                 }
                 kmpMemberDatapoints.push(acceptDpDetails);
               }
-              if(object.fiscalYear == acceptYearValues[rejectIndex] && isAccepted == false){
+              if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == false){
                 await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
               }
             });            

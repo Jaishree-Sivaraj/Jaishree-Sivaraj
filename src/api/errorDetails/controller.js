@@ -171,9 +171,12 @@ export const saveErrorDetails = async({
           taskId: body.taskId, 
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
+          errorStatus: item.error['errorStatus'],
           comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+          author: item.error['raisedBy'],
+          fiscalYear: item['fiscalYear'],
+          dateTime: Date.now(),
+          content: item.error['comment']
           },
           status: true,
           createdBy: user
@@ -187,9 +190,12 @@ export const saveErrorDetails = async({
           taskId: body.taskId, 
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
-          comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+          errorStatus: item.error['errorStatus'],
+          comments: {             
+            author: item.error['raisedBy'],
+            fiscalYear: item['fiscalYear'],
+            dateTime: Date.now(),
+            content: item.error['comment']
           },
           errorCaughtByRep:{
           response: item.error.refData['response'],
@@ -234,9 +240,12 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
+          errorStatus: item.error['errorStatus'],
           comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+            author: item.error['raisedBy'],
+            fiscalYear: item['fiscalYear'],
+            dateTime: Date.now(),
+            content: item.error['comment']
           },
           status: true,
           createdBy: user
@@ -251,9 +260,12 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
-          comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+          errorStatus: item.error['errorStatus'],
+          comments: {               
+            author: item.error['raisedBy'],
+            fiscalYear: item['fiscalYear'],
+            dateTime: Date.now(),
+            content: item.error['comment']
           },
           errorCaughtByRep:{
           response: item.error.refData['response'],
@@ -298,9 +310,12 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
-          comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+          errorStatus: item.error['errorStatus'],
+          comments: {              
+            author: item.error['raisedBy'],
+            fiscalYear: item['fiscalYear'],
+            dateTime: Date.now(),
+            content: item.error['comment']
           },
           status: true,
           createdBy: user
@@ -315,9 +330,12 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
           raisedBy: item.error['raisedBy'],
-          comments: {            
-          raisedBy: item.error['raisedBy'],
-          comments: item.error['comment']
+          errorStatus: item.error['errorStatus'],
+          comments: {               
+            author: item.error['raisedBy'],
+            fiscalYear: item['fiscalYear'],
+            dateTime: Date.now(),
+            content: item.error['comment']
           },
           errorCaughtByRep:{
           response: item.error.refData['response'],

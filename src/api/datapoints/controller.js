@@ -1072,6 +1072,7 @@ export const datapointDetails = async (req, res, next) => {
     }
     if (req.body.memberType == 'Standalone') {
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
+          taskId: req.body.taskId,
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
           year: {
@@ -1152,6 +1153,8 @@ export const datapointDetails = async (req, res, next) => {
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
                 error: {
+                  hasError: object.hasError,
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1222,6 +1225,8 @@ export const datapointDetails = async (req, res, next) => {
                 publicationDate: object.publicationDate ? object.publicationDate : ''
               },
               error: {
+                hasError: object.hasError,
+                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1546,7 +1551,7 @@ export const datapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && errorStatus == 'Completed')
                 currentDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1568,6 +1573,8 @@ export const datapointDetails = async (req, res, next) => {
                     publicationDate: object.publicationDate ? object.publicationDate : ''
                   },
                   error: {
+                    hasError: object.hasError,
+                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                     errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1615,7 +1622,7 @@ export const datapointDetails = async (req, res, next) => {
                   }
                 }           
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName)
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName && errorStatus == 'Yet to Verify')
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -1637,6 +1644,8 @@ export const datapointDetails = async (req, res, next) => {
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
                 error: {
+                  hasError: object.hasError,
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1982,8 +1991,9 @@ export const datapointDetails = async (req, res, next) => {
                     publicationDate: object.publicationDate ? object.publicationDate : ''
                   },
                   error: {
+                    hasError: object.hasError,
+                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                    isErrorRaised: true,
                     errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                     errorComments: errorDetailsObject[0].rejectComment,
@@ -2052,9 +2062,9 @@ export const datapointDetails = async (req, res, next) => {
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
                 error: {
+                  hasError: object.hasError,
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  isErrorRaised: true,
-                  refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   errorComments: errorDetailsObject[0].rejectComment,
