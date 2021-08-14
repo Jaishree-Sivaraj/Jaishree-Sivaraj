@@ -1277,6 +1277,7 @@ export const datapointDetails = async (req, res, next) => {
               }                
             }
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
             currentDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,
@@ -1303,7 +1304,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                errorComments: errorDetailsObject[0].rejectComment,
+                errorComments: errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                 errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
               },
               comments: [],
