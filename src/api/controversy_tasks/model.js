@@ -26,6 +26,14 @@ const controversyTasksSchema = new Schema({
     type: Boolean,
     default: true
   },
+  canGenerateJson: {
+    type: Boolean,
+    required: false
+  },
+  isJsonGenerated: {
+    type: Boolean,
+    required: false
+  },
   createdBy: {
     type: Schema.ObjectId,
     ref: 'User',
@@ -40,7 +48,7 @@ const controversyTasksSchema = new Schema({
 })
 
 controversyTasksSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,

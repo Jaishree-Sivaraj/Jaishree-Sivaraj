@@ -2,12 +2,36 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, saveErrorDetails } from './controller'
 import { schema } from './model'
 export ErrorDetails, { schema } from './model'
 
 const router = new Router()
-const { errorTypeId, taskId, categoryId, companyId, year, raisedBy, comments, isErrorAccepted, isErrorRejected, rejectComment, errorCaughtByRep, errorLoggedDate, errorStatus, datapointId, status } = schema.tree
+const { errorTypeId, taskId, categoryId, companyId, year, raisedBy, comments,memberName, isErrorAccepted, isErrorRejected, rejectComment, errorCaughtByRep, errorLoggedDate, errorStatus, datapointId, status } = schema.tree
+const pillarId = '', dpCodeId = '', memberType = '', currentData = [], historicalData = [];
+
+/**
+ * @api {post} /errorDetails/saveErrorDetails Create error details
+ * @apiName CreateErrorDetails
+ * @apiGroup ErrorDetails
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam pillarId Error details's pillarId.
+ * @apiParam taskId Error details's taskId.
+ * @apiParam companyId Error details's companyId.
+ * @apiParam dpCodeId Error details's dpCodeId.
+ * @apiParam memberName Error details's memberName.
+ * @apiParam memberType Error details's memberType.
+ * @apiParam currentData Error details's currentData.
+ * @apiSuccess {Object} errorDetails Error details's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Error details not found.
+ * @apiError 401 user access only.
+ */
+router.post('/saveErrorDetails',
+token({ required: true }),
+body({ taskId, pillarId, companyId, dpCodeId, memberName, memberType, currentData, historicalData }),
+saveErrorDetails)
 
 /**
  * @api {post} /errorDetails Create error details
@@ -31,6 +55,7 @@ router.post('/',
   token({ required: true }),
   body({ errorTypeId, categoryId, companyId, year, raisedBy, rejectComment, datapointId }),
   create)
+  
 
 /**
  * @api {get} /errorDetails Retrieve error details

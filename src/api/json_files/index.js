@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, retrieveJsonFiles } from './controller'
+import { create, index, show, update, destroy, retrieveJsonFiles, payLoadGenerationDetails } from './controller'
 import { schema } from './model'
 export JsonFiles, { schema } from './model'
 
@@ -110,8 +110,24 @@ router.delete('/:id',
  * @apiError 404 Json files not found.
  * @apiError 401 user access only.
  */
- router.get('/retrieve/:type',
- token({ required: true }),
- retrieveJsonFiles)
+router.get('/retrieve/:type',
+  token({ required: true }),
+  retrieveJsonFiles)
+
+
+/**
+ * @api {get} /json_files/retrieve/:type Retrieve json files
+ * @apiName RetrieveJsonFiles
+ * @apiGroup JsonFiles
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} jsonFiles Json files's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Json files not found.
+ * @apiError 401 user access only.
+ */
+router.get('/payLoadGenerationDetails/:type',
+  token({ required: true }),
+  payLoadGenerationDetails)
 
 export default router
