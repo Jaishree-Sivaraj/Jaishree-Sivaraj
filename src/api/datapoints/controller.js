@@ -1156,9 +1156,9 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                  errorComments: errorDetailsObject[0].rejectComment,
+                  comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                 },
                 comments: [],
@@ -1201,7 +1201,6 @@ export const datapointDetails = async (req, res, next) => {
                   })
                 }                
               }            
-            datapointsObject.status = 'Completed';
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] );
             console.log("////////",object.comments)
@@ -1231,9 +1230,9 @@ export const datapointDetails = async (req, res, next) => {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                errorComments: errorDetailsObject[0].rejectComment,
+                comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                 errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
               },
               comments: object.comments,
@@ -1302,10 +1301,10 @@ export const datapointDetails = async (req, res, next) => {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                errorType: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                errorComments: errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : 'Incomplete'
+                comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
+                errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
               },
               comments: [],
               additionalDetails:[]
@@ -1349,6 +1348,7 @@ export const datapointDetails = async (req, res, next) => {
             }
 
           }
+          datapointsObject.status = 'Completed';
         });
         if (Object.keys(currentDatapointsObject).length == 0) {
           currentDatapointsObject = {
@@ -1563,7 +1563,7 @@ export const datapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && errorStatus == 'Completed')
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName )
                 currentDatapointsObject = {
                   status: 'Completed',
                   dpCode: dpTypeValues.code,
@@ -1588,9 +1588,9 @@ export const datapointDetails = async (req, res, next) => {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                    errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                    type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                    errorComments: errorDetailsObject[0].rejectComment,
+                    comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                     errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                   },
                   comments: [],
@@ -1634,7 +1634,7 @@ export const datapointDetails = async (req, res, next) => {
                   }
                 }           
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName && errorStatus == 'Yet to Verify')
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex]  && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -1659,9 +1659,9 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                  errorComments: errorDetailsObject[0].rejectComment,
+                  comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                 },
                 comments: [],
@@ -1705,6 +1705,7 @@ export const datapointDetails = async (req, res, next) => {
                 }
               }
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -1725,7 +1726,15 @@ export const datapointDetails = async (req, res, next) => {
                   value: sourceId,
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
-                error: {},
+                error: {
+                  hasError: object.hasError,
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
+                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
+                  comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
+                  errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
+                },
                 comments: [],
                 additionalDetails:[]
               } 
@@ -2006,9 +2015,9 @@ export const datapointDetails = async (req, res, next) => {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                    errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                    type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                    errorComments: errorDetailsObject[0].rejectComment,
+                    comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                     errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                   },
                   comments: [],
@@ -2077,9 +2086,9 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
-                  errorComments: errorDetailsObject[0].rejectComment,
+                  comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
                 },
                 comments: [],
@@ -2123,6 +2132,7 @@ export const datapointDetails = async (req, res, next) => {
                 }
               }
             } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName)
               currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -2143,7 +2153,15 @@ export const datapointDetails = async (req, res, next) => {
                   value: sourceId,
                   publicationDate: object.publicationDate ? object.publicationDate : ''
                 },
-                error: {},
+                error: {
+                  hasError: object.hasError,
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
+                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
+                  comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
+                  errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
+                },
                 comments: [],
                 additionalDetails:[]
               } 
