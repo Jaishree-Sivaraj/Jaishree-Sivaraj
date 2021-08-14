@@ -341,7 +341,8 @@ export const calculateForACompany = async ({
             },
             percentile: {
               "$ne": "Yes"
-            }
+            },
+            status: true
           })
           let polarityRulesList = await PolarityRules.find({}).populate('datapointId')
 
@@ -2888,12 +2889,13 @@ export const derivedCalculation = async ({
           }
       }
     }
-    let projectedValues = await ProjectedValues.findOne({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: year[yearIndex], status: true });
+    let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: year[yearIndex]}).populate('datapointId');
+    console.log("projectedValues.length", projectedValues.length);
     if (projectedValues.length > 0) {
       for (let pdpIndex = 0; pdpIndex < percentileDataPointsList.length; pdpIndex++) {
         try {
           let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.datapointId.id == percentileDataPointsList[pdpIndex].id && object.year == year[yearIndex]);
-          let projectedValue = projectedValues.finde((object) => object.datapointId.id == percentileDataPointsList[pdpIndex].id);
+          let projectedValue = projectedValues.find(object => object.datapointId.id == percentileDataPointsList[pdpIndex].id );
           if (foundResponseIndex > -1) {
             let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) {
@@ -2903,36 +2905,41 @@ export const derivedCalculation = async ({
                 } else {
                   await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
                 }
+                console.log("Step1");
               } else {
                 let zscoreValue;
+                console.log("Step1");
                 if (projectedValue.projectedStdDeviation == 'NA') {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                 } else {
-                  if (percentileDatapointsList[pdpIndex].polarity == 'Positive') {
+                  console.log("percentileDatapointsList[pdpIndex].polarity", percentileDataPointsList[pdpIndex].polarity);
+                  if (percentileDataPointsList[pdpIndex].polarity == 'Positive') {
                     zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
                   } else if (percentileDatapointsList[pdpIndex].polarity == 'Negative') {
                     zscoreValue = (Number(projectedValue.projectedAverage) - Number(foundResponse.response)) / Number(projectedValue.projectedStdDeviation);
                   }
+                  console.log("zscoreValue", zscoreValue);
                   if (zscoreValue > 4) {
-                    if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                       await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '100'} });
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '100'} });
                     }
                   } else if (zscoreValue < -4) {
-                    if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                       await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '0'} });
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: '0'} });
                     }
                   } else if (zscoreValue == 'NA') {
-                    if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                    if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                       await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     }
                   } else {
                     //round of zscore value to two digit decimal value
+                    console.log("zscoreValue", zscoreValue);
                     if (zscoreValue) {
                       let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
                       var lastDigit = twoDigitZscoreValue.toString().slice(-1);
@@ -2962,7 +2969,7 @@ export const derivedCalculation = async ({
         }
       }      
     } else {
-      return res.status(500).json({ status: "500", message: `No projected Standard Deviation and Average values available for ${taskDetailsObject.companyId.clientTaxonomyId.taxonomyName} - ${taskDetailsObject.companyId.companyId.companyName} - ${year[yearIndex]}` });
+      return res.status(500).json({ status: "500", message: `No projected Standard Deviation and Average values available for ${taskDetailsObject.companyId.clientTaxonomyId.taxonomyName} - ${taskDetailsObject.companyId.companyName} - ${year[yearIndex]}` });
     }
   }  
   return res.status(200).json({
