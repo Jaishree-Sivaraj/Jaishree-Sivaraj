@@ -1108,7 +1108,7 @@ export const datapointDetails = async (req, res, next) => {
         pillarId: dpTypeValues.categoryId.id,
         pillar: dpTypeValues.categoryId.categoryName,
         fiscalYear: taskDetails.year,
-        comments:[],
+        comments: [],
         currentData: [],
         historicalData: [],
         status: ''
@@ -1203,7 +1203,10 @@ export const datapointDetails = async (req, res, next) => {
               }            
             datapointsObject.status = 'Completed';
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] )
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] );
+            console.log("////////",object.comments)
+            datapointsObject.comments.push(object.comments);
+            
             currentDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,
@@ -1233,7 +1236,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorComments: errorDetailsObject[0].rejectComment,
                 errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : ''
               },
-              comments: [],
+              comments: object.comments,
               additionalDetails: []
             }
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
@@ -1294,7 +1297,15 @@ export const datapointDetails = async (req, res, next) => {
                 value: sourceId,
                 publicationDate: object.publicationDate ? object.publicationDate : ''
               },
-              error: {},
+              error: {
+                hasError: object.hasError,
+                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
+                errorType: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
+                refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
+                errorComments: errorDetailsObject[0].rejectComment,
+                errorStatus: errorDetailsObject[0].errorStatus ? errorDetailsObject[0].errorStatus : 'Incomplete'
+              },
               comments: [],
               additionalDetails:[]
             }              
