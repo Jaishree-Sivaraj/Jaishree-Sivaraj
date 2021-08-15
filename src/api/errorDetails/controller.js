@@ -160,7 +160,8 @@ export const saveErrorDetails = async({
   let errorTypeDetails = await Errors.find({
     status: true
   });
-  let comments = [];
+  let comments = []; 
+  let errorCaughtByRep = '';
   if(body.memberType == 'Standalone'){
     let standaloneErrorDetails = [];
     for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
@@ -168,6 +169,20 @@ export const saveErrorDetails = async({
       _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));     
+            if(object.error.refData != null || object.error.refData != ''){
+              errorCaughtByRep = {
+                response: object.error.refData.response,
+                screenShot: object.error.refData.screenShot,
+                textSnippet: object.error.refData.textSnippet,
+                pageNumber: object.error.refData.pageNo,
+                publicationDate: object.error.refData.source.publicationDate,
+                url: object.error.refData.source.url,
+                sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+                additionalDetails: object.error.refData.additionalDetails
+              } 
+            } else {
+              errorCaughtByRep =null;
+            }
             standaloneDatapoints = {
               datapointId: body.dpCodeId,
               companyId: body.companyId,
@@ -177,16 +192,7 @@ export const saveErrorDetails = async({
               errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
               raisedBy: object.error.raisedBy,
               errorStatus: object.error.errorStatus,
-              errorCaughtByRep: {
-              response: object.error.refData ? object.error.refData.response : '',
-              screenShot: object.error.refData ? object.error.refData.screenShot : '',
-              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
-              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
-              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
-              url: object.error.refData ? object.error.refData.source.url : '',
-              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
-              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
-              },
+              errorCaughtByRep: errorCaughtByRep,
               comments: {            
               author: object.error.raisedBy,
               fiscalYear: object.fiscalYear,
@@ -261,6 +267,20 @@ export const saveErrorDetails = async({
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
+          if(object.error.refData != null || object.error.refData != ''){
+            errorCaughtByRep = {
+              response: object.error.refData.response,
+              screenShot: object.error.refData.screenShot,
+              textSnippet: object.error.refData.textSnippet,
+              pageNumber: object.error.refData.pageNo,
+              publicationDate: object.error.refData.source.publicationDate,
+              url: object.error.refData.source.url,
+              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+              additionalDetails: object.error.refData.additionalDetails
+            } 
+          } else {
+            errorCaughtByRep =null;
+          }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
           boardDatapoints = {
             datapointId: body.dpCodeId,
@@ -272,16 +292,7 @@ export const saveErrorDetails = async({
             errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
             raisedBy: object.error.raisedBy,
             errorStatus: object.error.errorStatus,
-            errorCaughtByRep: {
-              response: object.error.refData ? object.error.refData.response : '',
-              screenShot: object.error.refData ? object.error.refData.screenShot : '',
-              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
-              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
-              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
-              url: object.error.refData ? object.error.refData.source.url : '',
-              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
-              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
-              },
+            errorCaughtByRep: errorCaughtByRep,
             comments: {            
             author: object.error.raisedBy,
             fiscalYear: object.fiscalYear,
@@ -359,14 +370,22 @@ export const saveErrorDetails = async({
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
+          if(object.error.refData != null || object.error.refData != ''){
+            errorCaughtByRep = {
+              response: object.error.refData.response,
+              screenShot: object.error.refData.screenShot,
+              textSnippet: object.error.refData.textSnippet,
+              pageNumber: object.error.refData.pageNo,
+              publicationDate: object.error.refData.source.publicationDate,
+              url: object.error.refData.source.url,
+              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+              additionalDetails: object.error.refData.additionalDetails
+            } 
+          } else {
+            errorCaughtByRep =null;
+          }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
-          let commentValues = {            
-            author : object.error['raisedBy'],
-            fiscalYear: object['fiscalYear'],
-            dateTime: Date.now(),
-            content: object.error['comment']
-            }
-          comments.push(commentValues);
+          
           boardDatapoints = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -377,16 +396,7 @@ export const saveErrorDetails = async({
             errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
             raisedBy: object.error.raisedBy,
             errorStatus: object.error.errorStatus,
-            errorCaughtByRep: {
-              response: object.error.refData ? object.error.refData.response : '',
-              screenShot: object.error.refData ? object.error.refData.screenShot : '',
-              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
-              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
-              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
-              url: object.error.refData ? object.error.refData.source.url : '',
-              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
-              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
-            },
+            errorCaughtByRep: errorCaughtByRep,
             comments: {            
             author: object.error.raisedBy,
             fiscalYear: object.fiscalYear,
