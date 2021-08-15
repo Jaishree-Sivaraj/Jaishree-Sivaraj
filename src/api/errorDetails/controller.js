@@ -161,7 +161,7 @@ export const saveErrorDetails = async({
     status: true
   });
   let comments = []; 
-  let errorCaughtByRep = '';
+  let errorCaughtByRep = {};
   if(body.memberType == 'Standalone'){
     let standaloneErrorDetails = [];
     for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
