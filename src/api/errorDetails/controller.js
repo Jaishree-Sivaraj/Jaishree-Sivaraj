@@ -267,19 +267,19 @@ export const saveErrorDetails = async({
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
-          if(object.error.refData != null || object.error.refData != ''){
-            errorCaughtByRep = {
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              textSnippet: object.error.refData.textSnippet,
-              pageNumber: object.error.refData.pageNo,
-              publicationDate: object.error.refData.source.publicationDate,
-              url: object.error.refData.source.url,
-              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-              additionalDetails: object.error.refData.additionalDetails
-            } 
+          if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
+            errorCaughtByRep == null
           } else {
-            errorCaughtByRep =null;
+            errorCaughtByRep = {
+            response: object.error.refData.response,
+            screenShot: object.error.refData.screenShot,
+            textSnippet: object.error.refData.textSnippet,
+            pageNumber: object.error.refData.pageNo,
+            publicationDate: object.error.refData.source.publicationDate,
+            url: object.error.refData.source.url,
+            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+            additionalDetails: object.error.refData.additionalDetails
+          }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
           boardDatapoints = {
@@ -370,19 +370,19 @@ export const saveErrorDetails = async({
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
-          if(object.error.refData != null || object.error.refData != ''){
-            errorCaughtByRep = {
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              textSnippet: object.error.refData.textSnippet,
-              pageNumber: object.error.refData.pageNo,
-              publicationDate: object.error.refData.source.publicationDate,
-              url: object.error.refData.source.url,
-              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-              additionalDetails: object.error.refData.additionalDetails
-            } 
+          if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
+            errorCaughtByRep == null
           } else {
-            errorCaughtByRep =null;
+            errorCaughtByRep = {
+            response: object.error.refData.response,
+            screenShot: object.error.refData.screenShot,
+            textSnippet: object.error.refData.textSnippet,
+            pageNumber: object.error.refData.pageNo,
+            publicationDate: object.error.refData.source.publicationDate,
+            url: object.error.refData.source.url,
+            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+            additionalDetails: object.error.refData.additionalDetails
+          }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
           
