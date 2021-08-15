@@ -178,14 +178,14 @@ export const saveErrorDetails = async({
               raisedBy: object.error.raisedBy,
               errorStatus: object.error.errorStatus,
               errorCaughtByRep: {
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              textSnippet: object.error.refData.textSnippet,
-              pageNumber: object.error.refData.pageNo,
-              publicationDate: object.error.refData.source.publicationDate,
-              url: object.error.refData.source.url,
-              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-              additionalDetails: object.error.refData.additionalDetails
+              response: object.error.refData ? object.error.refData.response : '',
+              screenShot: object.error.refData ? object.error.refData.screenShot : '',
+              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
+              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
+              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
+              url: object.error.refData ? object.error.refData.source.url : '',
+              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
+              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
               },
               comments: {            
               author: object.error.raisedBy,
@@ -273,15 +273,15 @@ export const saveErrorDetails = async({
             raisedBy: object.error.raisedBy,
             errorStatus: object.error.errorStatus,
             errorCaughtByRep: {
-            response: object.error.refData.response,
-            screenShot: object.error.refData.screenShot,
-            textSnippet: object.error.refData.textSnippet,
-            pageNumber: object.error.refData.pageNo,
-            publicationDate: object.error.refData.source.publicationDate,
-            url: object.error.refData.source.url,
-            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-            additionalDetails: object.error.refData.additionalDetails
-            },
+              response: object.error.refData ? object.error.refData.response : '',
+              screenShot: object.error.refData ? object.error.refData.screenShot : '',
+              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
+              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
+              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
+              url: object.error.refData ? object.error.refData.source.url : '',
+              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
+              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
+              },
             comments: {            
             author: object.error.raisedBy,
             fiscalYear: object.fiscalYear,
@@ -378,14 +378,14 @@ export const saveErrorDetails = async({
             raisedBy: object.error.raisedBy,
             errorStatus: object.error.errorStatus,
             errorCaughtByRep: {
-            response: object.error.refData.response,
-            screenShot: object.error.refData.screenShot,
-            textSnippet: object.error.refData.textSnippet,
-            pageNumber: object.error.refData.pageNo,
-            publicationDate: object.error.refData.source.publicationDate,
-            url: object.error.refData.source.url,
-            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-            additionalDetails: object.error.refData.additionalDetails
+              response: object.error.refData ? object.error.refData.response : '',
+              screenShot: object.error.refData ? object.error.refData.screenShot : '',
+              textSnippet: object.error.refData ? object.error.refData.textSnippet : '',
+              pageNumber: object.error.refData ? object.error.refData.pageNo : '',
+              publicationDate: object.error.refData ? object.error.refData.source.publicationDate : '',
+              url: object.error.refData ? object.error.refData.source.url : '',
+              sourceName: object.error.refData ? object.error.refData.source.sourceName+";"+object.error.refData ? object.error.refData.source.value : '',
+              additionalDetails: object.error.refData ? object.error.refData.additionalDetails : ''
             },
             comments: {            
             author: object.error.raisedBy,
