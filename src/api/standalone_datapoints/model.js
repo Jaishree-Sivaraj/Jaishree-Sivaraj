@@ -62,7 +62,8 @@ const standaloneDatapointsSchema = new Schema({
     type: String
   },
   comments: {
-    type: Array
+    type: Array,
+    default: []
   },
   collectionStatus: {
     type: Boolean,
