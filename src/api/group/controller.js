@@ -96,6 +96,7 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Group.count(query)
     .then(count => Group.find(query)
+      .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('groupAdmin')
       .populate('batchList')
