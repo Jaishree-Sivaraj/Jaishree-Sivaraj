@@ -61,7 +61,7 @@ const errorDetailsSchema = new Schema({
   },
   isErrorAccepted: {
     type: Boolean,
-    default: false
+    default: null
   },
   isErrorRejected: {
     type: Boolean,
