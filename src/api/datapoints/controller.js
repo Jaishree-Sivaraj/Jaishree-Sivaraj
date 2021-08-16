@@ -239,7 +239,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed') {
+    if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Completed') {
       if (dpTypeValues.length > 0) {
 
         if (dpTypeValues.length > 1) {
