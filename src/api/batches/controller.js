@@ -48,6 +48,7 @@ export const createBatch = async({ user, bodymen: { body } }, res, next) => {
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>{
   Batches.count(query)
     .then(count => Batches.find(query)
+      .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('companiesList')
       .populate('clientTaxonomy')
