@@ -606,19 +606,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     boardDatapointsObject.memberName = object.label
                     boardDatapointsObject.memberId = object.value
                     boardDatapointsObject.fiscalYear = errorboardDatapoints[errorDpIndex].year;
-                     if(boardDpCodesData.dpCodesData.length > 0)
-                    {
-                      let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
-                      if(yearfind > -1){
-                        boardDpCodesData.dpCodesData[yearfind].fiscalYear = boardDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorboardDatapoints[errorDpIndex].year)
-                      }else {
-                        boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-                        }
-                    } else {
-                      boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-                    }
                   }
-                });                
+                });                 
+                if(boardDpCodesData.dpCodesData.length > 0)
+                {
+                  let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
+                  if(yearfind > -1){
+                    boardDpCodesData.dpCodesData[yearfind].fiscalYear = boardDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorboardDatapoints[errorDpIndex].year)
+                  }else {
+                    boardDpCodesData.dpCodesData.push(boardDatapointsObject);
+                    }
+                } else {
+                  boardDpCodesData.dpCodesData.push(boardDatapointsObject);
+                }              
               }
             }
           } else if(dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
@@ -683,17 +683,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   kmpDatapointsObject.memberName = object.label;
                   kmpDatapointsObject.memberId = object.value; 
                   kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;              
-              if(kmpDpCodesData.dpCodesData.length > 0)
-              {
-                let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
-                if(yearfind > -1){
-                  kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorkmpDatapoints[errorDpIndex].year)
-                }else {
-                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-                  }
-              } else {
-                kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-              }
+              
                 }
                 
               })
@@ -705,6 +695,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               // kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
               // }
             //}
+            if(kmpDpCodesData.dpCodesData.length > 0)
+              {
+                let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
+                if(yearfind > -1){
+                  kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorkmpDatapoints[errorDpIndex].year)
+                }else {
+                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+                  }
+              } else {
+                kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+              }
             }
           } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
 
