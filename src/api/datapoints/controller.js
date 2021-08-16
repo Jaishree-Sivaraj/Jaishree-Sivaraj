@@ -587,30 +587,29 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
 
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
-              let boardDatapointsObject = {
-                dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
-                dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
-                companyId: taskDetails.companyId.id,
-                companyName: taskDetails.companyId.companyName,
-                keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
-                keyIssue: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                pillarId: taskDetails.categoryId.id,
-                pillar: taskDetails.categoryId.categoryName,
-                fiscalYear: "",
-                memberName: "",
-                memberId: ""
-              }
-              for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                _.filter(boardDpCodesData.boardMemberList,(object)=>{
-                  if(object.label == errorboardDatapoints[errorDpIndex].memberName && object.year.includes(errorboardDatapoints[errorDpIndex].year)){
-                    boardDatapointsObject.memberName = object.label
-                    boardDatapointsObject.memberId = object.value
-                    boardDatapointsObject.fiscalYear = errorboardDatapoints[errorDpIndex].year;
-                  }
-                });                 
-                if(boardDpCodesData.dpCodesData.length > 0)
-                {
-                  let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
+            //  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                let boardDatapointsObject = {
+                  dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
+                  dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
+                  companyId: taskDetails.companyId.id,
+                  companyName: taskDetails.companyId.companyName,
+                  keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
+                  keyIssue: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
+                  pillarId: taskDetails.categoryId.id,
+                  pillar: taskDetails.categoryId.categoryName,
+                  fiscalYear: errorboardDatapoints[errorDpIndex].year,
+                  memberName: errorboardDatapoints[errorDpIndex].memberName,
+                  memberId: "",
+                  status: 'Yet to start'
+                }
+                // _.filter(boardDpCodesData.boardMemberList,(object)=>{
+                //   if(object.label == errorboardDatapoints[errorDpIndex].memberName){
+                //     boardDatapointsObject.memberName = object.label
+                //     boardDatapointsObject.memberId = object.value                                   
+                //   }
+                // }); 
+                if(boardDpCodesData.dpCodesData.length > 0)                {
+                  let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code  && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
                   if(yearfind > -1){
                     boardDpCodesData.dpCodesData[yearfind].fiscalYear = boardDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorboardDatapoints[errorDpIndex].year)
                   }else {
@@ -618,8 +617,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                 } else {
                   boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-                }              
-              }
+                }               
+             // }
             }
           } else if(dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
@@ -674,27 +673,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
                   pillarId: taskDetails.categoryId.id,
                   pillar: taskDetails.categoryId.categoryName,
-                  fiscalYear: '',
-                  memberName: '',
-                  memberId: ''
+                  fiscalYear: errorkmpDatapoints[errorDpIndex].year,
+                  memberName: errorkmpDatapoints[errorDpIndex].memberName,
+                  memberId: '',
+                  status: 'Yet to start'
                 }
-              _.filter(kmpDpCodesData.kmpMemberList, (object)=>{
-                if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
-                  kmpDatapointsObject.memberName = object.label;
-                  kmpDatapointsObject.memberId = object.value; 
-                  kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;              
+              // _.filter(kmpDpCodesData.kmpMemberList, (object)=>{
+              //   if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
+              //     kmpDatapointsObject.memberName = object.label;
+              //     kmpDatapointsObject.memberId = object.value;          
               
-                }
-                
-              })
-              // let memberIndex = kmpDpCodesData.dpCodesData.findIndex((obj) => obj.dpCodeId == errorkmpDatapoints[errorDpIndex].datapointId.id && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName && obj.fiscalYear.includes(errorkmpDatapoints[errorDpIndex].year))
-              // if(memberIndex >= 0){
-              //   kmpDpCodesData.dpCodesData[memberIndex].fiscalYear = kmpDpCodesData.dpCodesData[memberIndex].fiscalYear + ','+ errorkmpDatapoints[errorDpIndex].year;
-              // } else{
-              // kmpDatapointsObject.fiscalYear = errorkmpDatapoints[errorDpIndex].year;                    
-              // kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-              // }
-            //}
+              //   }                
+              // })
             if(kmpDpCodesData.dpCodesData.length > 0)
               {
                 let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
@@ -784,7 +774,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               pillarId: taskDetails.categoryId.id,
               pillar: taskDetails.categoryId.categoryName,
               fiscalYear: errorDatapoints[errorDpIndex].year,
-              status: ''
+              status: 'Yet to Start'
             }
             if(dpCodesData.length > 0)
             {
