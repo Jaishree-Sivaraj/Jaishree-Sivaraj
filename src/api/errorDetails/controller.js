@@ -164,7 +164,7 @@ export const saveErrorDetails = async({
   let errorCaughtByRep = {};
   if(body.memberType == 'Standalone'){
     let standaloneErrorDetails = [];
-    for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
+    //for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
       let standaloneDatapoints = {}
       _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
@@ -221,8 +221,7 @@ export const saveErrorDetails = async({
           standaloneErrorDetails.push(standaloneDatapoints);
         }
       })
-      
-    } 
+
      let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
       return {
         datapointId: body.dpCodeId,
@@ -264,7 +263,7 @@ export const saveErrorDetails = async({
     });
   } else if(body.memberType == 'Board Matrix'){
     let boardMemberErrorDetails = [];
-    for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
+    //for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
@@ -324,7 +323,7 @@ export const saveErrorDetails = async({
         }
       })
       
-    }
+   // }
     let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
       return {
         datapointId: body.dpCodeId,
@@ -369,7 +368,7 @@ export const saveErrorDetails = async({
     });
   } else if(body.memberType == 'KMP Matrix'){
     let kmpMemberErrorDetails = [];
-    for (let errorIndex = 0; errorIndex < currentYearValues.length; errorIndex++) {
+    //for (let errorIndex = 0; errorIndex < currentYearValues.length; errorIndex++) {
       let boardDatapoints = {}
       _.filter(dpCodesDetails, async (object,index)=>{
         if(object.error.isThere == true){
@@ -430,7 +429,7 @@ export const saveErrorDetails = async({
         }
       })
       
-    }
+   // }
     let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
       return {
         datapointId: body.dpCodeId,
