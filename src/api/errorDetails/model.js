@@ -45,7 +45,7 @@ const errorDetailsSchema = new Schema({
   },
   comments: {
     type: Object,
-    default: []
+    default: {}
   },
   errorLoggedDate: {
     type: Date,

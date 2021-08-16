@@ -193,7 +193,7 @@ export const saveErrorDetails = async({
               raisedBy: object.error.raisedBy,
               errorStatus: object.error.errorStatus,
               errorCaughtByRep: errorCaughtByRep,
-              omments: {            
+              comments: {            
               author: object.error.raisedBy,
               fiscalYear: object.fiscalYear,
               dateTime: Date.now(),
@@ -285,8 +285,7 @@ export const saveErrorDetails = async({
             companyId: body.companyId,
             categoryId: body.pillarId,
             year: object.fiscalYear,
-            taskId: body.taskId, 
-            
+            taskId: body.taskId,             
             memberName: body.memberName,
             errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
             raisedBy: object.error.raisedBy,
@@ -307,8 +306,7 @@ export const saveErrorDetails = async({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             categoryId: body.pillarId,
-            year: object.fiscalYear,
-            
+            year: object.fiscalYear,            
             memberName: body.memberName,
             taskId: body.taskId, 
             errorTypeId: null,
