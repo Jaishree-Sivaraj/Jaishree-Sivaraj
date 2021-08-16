@@ -1216,8 +1216,8 @@ export const dataCollection = async ({
      // _.filter(dpCodesDetails , async(object, index)=>{
         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
           const object = dpCodesDetails[dpIndex];          
-          if(object.fiscalYear == acceptYearValues[rejectIndex] && object.isAccepted == true){
-            await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Incomplete'}});                
+          if(object.isAccepted == true){
+            await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Incomplete'}});                
             let standaloneAcceptDpDetails ={
               datapointId: body.dpCodeId,
               companyId: body.companyId,
@@ -1238,8 +1238,8 @@ export const dataCollection = async ({
             }
             standaloneDpDetails.push(standaloneAcceptDpDetails);
             }
-          if(object.fiscalYear == acceptYearValues[rejectIndex]&& object.isAccepted == false){
-            await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: acceptYearValues[rejectIndex], companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
+          if(object.isAccepted == false){
+            await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
           }
         }
         //});            
