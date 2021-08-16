@@ -155,12 +155,12 @@ export const saveErrorDetails = async({
   let dpCodesDetails = body.currentData;
   let dpHistoricalDpDetails = body.historicalData;
   let errorDpCodeDetails = dpCodesDetails.filter(obj => obj.error.isThere == true);
-  let currentYearValues = [...new Set( errorDpCodeDetails.map(obj => obj.fiscalYear)) ];    
+  let errorDpYear = [...new Set( errorDpCodeDetails.map(obj => obj.fiscalYear)) ];  
+  let currentYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];    
   let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ];  
   let errorTypeDetails = await Errors.find({
     status: true
   });
-  let comments = []; 
   let errorCaughtByRep = {};
   if(body.memberType == 'Standalone'){
     let standaloneErrorDetails = [];
@@ -169,7 +169,7 @@ export const saveErrorDetails = async({
       _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);     
-            if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
+            if(object.error.refData === '' || object.error.refData === ""){
               errorCaughtByRep == null
             } else {
               errorCaughtByRep = {
@@ -238,7 +238,7 @@ export const saveErrorDetails = async({
         createdBy: user
       }
     })
-    await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in: currentYearValues }, status:true},{$set: {hasError: true, hasCorrection: false}});   
+    await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in: errorDpYear }, status:true},{$set: {hasError: true, hasCorrection: false}});   
     await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: {$in: currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}});
     await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
     await StandaloneDatapoints.insertMany(historicalStandaloneDetails)
@@ -279,7 +279,7 @@ export const saveErrorDetails = async({
             additionalDetails: object.error.refData.additionalDetails
           }
           }
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
+          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);
           boardDatapoints = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -340,7 +340,7 @@ export const saveErrorDetails = async({
         createdBy: user
       }
     });
-    await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId,  year : {$in : currentYearValues},memberName: body.memberName, status:true},{$set: {hasError: true, hasCorrection: false}});
+    await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId,  year : {$in : errorDpYear},memberName: body.memberName, status:true},{$set: {hasError: true, hasCorrection: false}});
     await ErrorDetails.updateMany({datapointId: body.dpCodeId,   year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})
 
     await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status: true},{$set:{status: false}});
@@ -446,7 +446,7 @@ export const saveErrorDetails = async({
         createdBy: user
       }
     });
-    await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId,year : {$in : currentYearValues},memberName: body.memberName, status:true},{$set: {hasError: true, hasCorrection: false}});          
+    await KmpMatrixDataPoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId,year : {$in : errorDpYear},memberName: body.memberName, status:true},{$set: {hasError: true, hasCorrection: false}});          
     await ErrorDetails.updateMany({datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})
     
     await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear},memberName: body.memberName, status:true},{$set:{status: false}});
