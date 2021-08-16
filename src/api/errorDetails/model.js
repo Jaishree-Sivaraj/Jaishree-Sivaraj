@@ -45,7 +45,7 @@ const errorDetailsSchema = new Schema({
   },
   comments: {
     type: Object,
-    default: []
+    default: {}
   },
   errorLoggedDate: {
     type: Date,
@@ -61,7 +61,7 @@ const errorDetailsSchema = new Schema({
   },
   isErrorAccepted: {
     type: Boolean,
-    default: false
+    default: null
   },
   isErrorRejected: {
     type: Boolean,
