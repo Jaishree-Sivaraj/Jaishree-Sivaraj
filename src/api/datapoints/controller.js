@@ -585,9 +585,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-
+          let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
             //  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                if(memberId > -1){
+                  memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
+                }
                 let boardDatapointsObject = {
                   dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
                   dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
@@ -599,15 +603,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   pillar: taskDetails.categoryId.categoryName,
                   fiscalYear: errorboardDatapoints[errorDpIndex].year,
                   memberName: errorboardDatapoints[errorDpIndex].memberName,
-                  memberId: "",
+                  memberId: memberObjectId,
                   status: 'Yet to start'
                 }
-                // _.filter(boardDpCodesData.boardMemberList,(object)=>{
-                //   if(object.label == errorboardDatapoints[errorDpIndex].memberName){
-                //     boardDatapointsObject.memberName = object.label
-                //     boardDatapointsObject.memberId = object.value                                   
-                //   }
-                // }); 
                 if(boardDpCodesData.dpCodesData.length > 0)                {
                   let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code  && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
                   if(yearfind > -1){
@@ -663,7 +661,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               }
             }
+            let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
+                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                if(memberId > -1){
+                  memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
+                }
                 let kmpDatapointsObject = {
                   dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
                   dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
@@ -675,16 +678,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   pillar: taskDetails.categoryId.categoryName,
                   fiscalYear: errorkmpDatapoints[errorDpIndex].year,
                   memberName: errorkmpDatapoints[errorDpIndex].memberName,
-                  memberId: '',
+                  memberId: memberObjectId,
                   status: 'Yet to start'
                 }
-              // _.filter(kmpDpCodesData.kmpMemberList, (object)=>{
-              //   if(object.label == errorkmpDatapoints[errorDpIndex].memberName && object.year.includes(errorkmpDatapoints[errorDpIndex].year)){
-              //     kmpDatapointsObject.memberName = object.label;
-              //     kmpDatapointsObject.memberId = object.value;          
-              
-              //   }                
-              // })
             if(kmpDpCodesData.dpCodesData.length > 0)
               {
                 let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
