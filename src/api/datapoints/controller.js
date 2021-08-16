@@ -1078,7 +1078,7 @@ export const datapointDetails = async (req, res, next) => {
       status: true
     });
 
-    let currentYear = req.body.year;
+    let currentYear = req.body.year.split(',');
     let clienttaxonomyFields = await ClientTaxonomy.find({_id: taskDetails.companyId.clientTaxonomyId.id}).distinct('fields');
     console.log(clienttaxonomyFields);
     let displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
