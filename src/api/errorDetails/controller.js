@@ -238,7 +238,7 @@ export const saveErrorDetails = async({
         createdBy: user
       }
     })
-    await StandaloneDatapoints.updateOne({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in: currentYearValues }, status:true},{$set: {hasError: true, hasCorrection: false}});   
+    await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in: currentYearValues }, status:true},{$set: {hasError: true, hasCorrection: false}});   
     await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: {$in: currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}});
     await StandaloneDatapoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : historicalDataYear}, status: true},{$set:{status: false}});
     await StandaloneDatapoints.insertMany(historicalStandaloneDetails)
