@@ -1155,7 +1155,7 @@ export const datapointDetails = async (req, res, next) => {
                 },
                 error: {
                   hasError: object.hasError,
-                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1227,7 +1227,7 @@ export const datapointDetails = async (req, res, next) => {
               },
               error: {
                 hasError: object.hasError,
-                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1298,7 +1298,7 @@ export const datapointDetails = async (req, res, next) => {
               },
               error: {
                 hasError: object.hasError,
-                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1587,7 +1587,7 @@ export const datapointDetails = async (req, res, next) => {
                   },
                   error: {
                     hasError: object.hasError,
-                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                     type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1658,7 +1658,7 @@ export const datapointDetails = async (req, res, next) => {
                 },
                 error: {
                   hasError: object.hasError,
-                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -1729,7 +1729,7 @@ export const datapointDetails = async (req, res, next) => {
                 },
                 error: {
                   hasError: object.hasError,
-                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -2016,7 +2016,7 @@ export const datapointDetails = async (req, res, next) => {
                   },
                   error: {
                     hasError: object.hasError,
-                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                    isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                     type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -2087,7 +2087,7 @@ export const datapointDetails = async (req, res, next) => {
                 },
                 error: {
                   hasError: object.hasError,
-                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
@@ -2158,7 +2158,7 @@ export const datapointDetails = async (req, res, next) => {
                 },
                 error: {
                   hasError: object.hasError,
-                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isAccepted : '',
+                  isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
