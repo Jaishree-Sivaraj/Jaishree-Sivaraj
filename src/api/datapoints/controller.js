@@ -1053,6 +1053,7 @@ export const datapointDetails = async (req, res, next) => {
 
     let errorDataDetails = [];
     errorDataDetails = await ErrorDetails.find({
+      taskId: req.body.taskId,
       companyId: taskDetails.companyId.id,
       year: {
         $in: currentYear
