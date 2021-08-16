@@ -168,7 +168,7 @@ export const saveErrorDetails = async({
       let standaloneDatapoints = {}
       _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));     
+          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);     
             if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
               errorCaughtByRep == null
             } else {
