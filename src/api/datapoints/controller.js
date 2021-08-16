@@ -1072,7 +1072,7 @@ export const datapointDetails = async (req, res, next) => {
       })      
     }
     if (req.body.memberType == 'Standalone') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{datapointId: req.body.datapointId});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId});
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
           taskId: req.body.taskId,
           companyId: taskDetails.companyId.id,
