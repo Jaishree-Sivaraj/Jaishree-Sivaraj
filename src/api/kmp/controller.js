@@ -128,36 +128,36 @@ export const updateEndDate = async({ user, body }, res, next) =>{
       }
     }
     
-    export const activeMemberlist = async({ user, params }, res, next) =>{
-      try {
-        let currentDate = Date.now();
-        let yearTimeStamp = Math.floor(new Date(currentDate).getTime()/1000);
-        let kmpEq = await Kmp.find({companyId: params.companyId, endDateTimeStamp: 0});
-        let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
-        let mergeKmpMemberList = _.concat(kmpEq,kmpGt);
-        let kmpMemberlist = [];
-        if(mergeKmpMemberList.length > 0){
-          for (let kmpMemberIndex = 0; kmpMemberIndex < mergeKmpMemberList.length; kmpMemberIndex++) {
-            let kmpNameValue = {
-              label: mergeKmpMemberList[kmpMemberIndex].MASP003,
-              value: mergeKmpMemberList[kmpMemberIndex].id
-            }
-            kmpMemberlist.push(kmpNameValue);            
-          }
-          return res.status(200).json({
-            message: "KmpMember List",
-            KMPList: kmpMemberlist
-          });
-        } else{
-          return res.status(404).json({
-            message: "No active members found",
-            KMPList: kmpMemberlist
-          });
-        }     
-      } catch (error) {
-        return res.status(500).json({
-          message: error.message,
-          status: 500
-        });    
+export const activeMemberlist = async({ user, params }, res, next) =>{
+  try {
+    let currentDate = Date.now();
+    let yearTimeStamp = Math.floor(new Date(currentDate).getTime()/1000);
+    let kmpEq = await Kmp.find({companyId: params.companyId, endDateTimeStamp: 0});
+    let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
+    let mergeKmpMemberList = _.concat(kmpEq,kmpGt);
+    let kmpMemberlist = [];
+    if(mergeKmpMemberList.length > 0){
+      for (let kmpMemberIndex = 0; kmpMemberIndex < mergeKmpMemberList.length; kmpMemberIndex++) {
+        let kmpNameValue = {
+          label: mergeKmpMemberList[kmpMemberIndex].MASP003,
+          value: mergeKmpMemberList[kmpMemberIndex].id
+        }
+        kmpMemberlist.push(kmpNameValue);            
       }
+      return res.status(200).json({
+        message: "KmpMember List",
+        KMPList: kmpMemberlist
+      });
+    } else{
+      return res.status(404).json({
+        message: "No active members found",
+        KMPList: kmpMemberlist
+      });
+    }     
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+      status: 500
+    });    
+  }
     }

@@ -1209,7 +1209,7 @@ export const dataCollection = async ({
     } else if(taskDetailsObject.taskStatus == 'Correction Pending'){
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
-      let acceptYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];
+      let acceptYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear))];
       let standaloneDpDetails = [], boardMemberDatapoints = [], kmpMemberDatapoints = [];
       let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ];
       if (body.memberType == 'Standalone' ) {
