@@ -589,7 +589,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
             //  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
                 if(memberId > -1){
                   memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
                 }
@@ -664,7 +664,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
             let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
-                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
                 if(memberId > -1){
                   memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
                 }
@@ -682,7 +682,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   memberId: memberObjectId,
                   status: 'Yet to start'
                 }
-            if(kmpDpCodesData.dpCodesData.length > 0)
+              if(kmpDpCodesData.dpCodesData.length > 0)
               {
                 let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
                 if(yearfind > -1){
@@ -1242,7 +1242,7 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -1314,7 +1314,7 @@ export const datapointDetails = async (req, res, next) => {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                 errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -1674,7 +1674,7 @@ export const datapointDetails = async (req, res, next) => {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                    type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                    type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                     comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -1745,7 +1745,7 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -2103,7 +2103,7 @@ export const datapointDetails = async (req, res, next) => {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                     raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                    type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                    type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                     comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                     errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
@@ -2174,7 +2174,7 @@ export const datapointDetails = async (req, res, next) => {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
                   raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
-                  type: errorDetailsObject[0] ? errorDetailsObject[0].errorTypeId.errorType : '',
+                  type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
