@@ -3733,6 +3733,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                   });
                 } else {
                   if (
+                    fieldNameObject.fieldName == 'dataType' ||
                     fieldNameObject.fieldName == 'unit' ||
                     fieldNameObject.fieldName == 'polarity' ||
                     fieldNameObject.fieldName == 'percentile' ||
