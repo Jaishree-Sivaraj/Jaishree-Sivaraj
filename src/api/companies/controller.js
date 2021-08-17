@@ -22,6 +22,7 @@ export const createCompanyMembers = ({ user, bodymen: { body } }, res, next) => 
 export const index = ({ querymen: { query, select, cursor } }, res, next) => {
   Companies.count(query)
     .then(count => Companies.find(query)
+      .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('clientTaxonomyId')
       .then((companies) => ({
@@ -36,6 +37,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
 export const getAllUnAssignedCompanies = ({ querymen: { query, select, cursor }, params }, res, next) => {
   Companies.count({ isAssignedToBatch: false, clientTaxonomyId: params.clientTaxonomyId })
     .then(count => Companies.find({ isAssignedToBatch: false, clientTaxonomyId: params.clientTaxonomyId })
+      .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('clientTaxonomyId')
       .then((companies) => ({

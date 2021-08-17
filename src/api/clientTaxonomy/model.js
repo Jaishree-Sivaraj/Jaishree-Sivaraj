@@ -9,32 +9,10 @@ const clientTaxonomySchema = new Schema({
   taxonomyName: {
     type: String
   },
-  fields:[{
-    name: {
-      type: String
-    },
-    fieldName: {
-      type: String
-    },
-    description: {
-      type: String
-    },
-    isRequired: {
-      type: Boolean,
-      default: false
-    },
-    inputType: {
-      type: String
-    },
-    inputValues: {
-      type: Array,
-      default: []
-    },
-    toDisplay: {
-      type: Boolean,
-      default: false
-    }
-  }],
+  fields: {
+    type: Array,
+    default: []
+  },
   status: {
     type: Boolean,
     default: true
@@ -71,3 +49,30 @@ const model = mongoose.model('ClientTaxonomy', clientTaxonomySchema)
 
 export const schema = model.schema
 export default model
+
+// {
+//   name: {
+//     type: String
+//   },
+//   fieldName: {
+//     type: String
+//   },
+//   description: {
+//     type: String
+//   },
+//   isRequired: {
+//     type: Boolean,
+//     default: false
+//   },
+//   inputType: {
+//     type: String
+//   },
+//   inputValues: {
+//     type: Array,
+//     default: []
+//   },
+//   toDisplay: {
+//     type: Boolean,
+//     default: false
+//   }
+// }
