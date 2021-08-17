@@ -12,6 +12,7 @@ import { Themes } from '../themes'
 import { KeyIssues } from '../key_issues'
 import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
+import { Taxonomies } from '../taxonomies'
 import { ErrorDetails } from '../errorDetails'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp'
@@ -3719,36 +3720,39 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
       let newDatapoints = [], masterLevelMandatoryNamesList = [], masterLevelOptionalNamesList = [], additionalFieldNamesList = [];
       let newCategoriesList = [], newThemesList = [], newKeyIssuesList = [], newFunctionsList = [];
       await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
-        .then((clientTaxonomies) => {
+        .then(async(clientTaxonomies) => {
           if (clientTaxonomies) {
             for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
               const fieldNameObject = clientTaxonomies.fields[nameIndex];
-              if (fieldNameObject.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
-                masterLevelMandatoryNamesList.push({
-                  "name": fieldNameObject.name ? fieldNameObject.name : '',
-                  "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
-                });
-              } else {
-                if (
-                  fieldNameObject.fieldName == 'unit' ||
-                  fieldNameObject.fieldName == 'polarity' ||
-                  fieldNameObject.fieldName == 'percentile' ||
-                  fieldNameObject.fieldName == 'normalizedBy' ||
-                  fieldNameObject.fieldName == 'weighted' ||
-                  fieldNameObject.fieldName == 'reference' ||
-                  fieldNameObject.fieldName == 'dataCollectionGuide' ||
-                  fieldNameObject.fieldName == 'industryRelevant'
-                ) {
-                  masterLevelOptionalNamesList.push({
+              let taxonomyDetail = await Taxonomies.findOne({ "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : "", "status": true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to find the taxonomy detail!" }) });
+              if (taxonomyDetail) {
+                if (taxonomyDetail.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
+                  masterLevelMandatoryNamesList.push({
                     "name": fieldNameObject.name ? fieldNameObject.name : '',
                     "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
                   });
-                } else if (!fieldNameObject.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
-                  additionalFieldNamesList.push({
-                    "name": fieldNameObject.name ? fieldNameObject.name : '',
-                    "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
-                  });
-                }
+                } else {
+                  if (
+                    fieldNameObject.fieldName == 'unit' ||
+                    fieldNameObject.fieldName == 'polarity' ||
+                    fieldNameObject.fieldName == 'percentile' ||
+                    fieldNameObject.fieldName == 'normalizedBy' ||
+                    fieldNameObject.fieldName == 'weighted' ||
+                    fieldNameObject.fieldName == 'reference' ||
+                    fieldNameObject.fieldName == 'dataCollectionGuide' ||
+                    fieldNameObject.fieldName == 'industryRelevant'
+                  ) {
+                    masterLevelOptionalNamesList.push({
+                      "name": fieldNameObject.name ? fieldNameObject.name : '',
+                      "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
+                    });
+                  } else if (!taxonomyDetail.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
+                    additionalFieldNamesList.push({
+                      "name": fieldNameObject.name ? fieldNameObject.name : '',
+                      "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
+                    });
+                  }
+                }                
               }
             }
           }
