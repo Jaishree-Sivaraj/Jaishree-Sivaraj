@@ -3747,7 +3747,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                       "name": fieldNameObject.name ? fieldNameObject.name : '',
                       "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
                     });
-                  } else if (!taxonomyDetail.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
+                  } else if (!taxonomyDetail.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                     additionalFieldNamesList.push({
                       "name": fieldNameObject.name ? fieldNameObject.name : '',
                       "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
