@@ -1213,7 +1213,6 @@ export const dataCollection = async ({
       let standaloneDpDetails = [], boardMemberDatapoints = [], kmpMemberDatapoints = [];
       let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ];
       if (body.memberType == 'Standalone' ) {
-     // _.filter(dpCodesDetails , async(object, index)=>{
         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
           const object = dpCodesDetails[dpIndex];          
           if(object.isAccepted == true){
@@ -1240,28 +1239,8 @@ export const dataCollection = async ({
             }
           if(object.isAccepted == false){
             await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}});
-            let standaloneAcceptDpDetails ={
-              datapointId: body.dpCodeId,
-              companyId: body.companyId,
-              taskId: body.taskId,
-              year: object.fiscalYear,
-              response: object.response,
-              screenShot: object.screenShot,
-              textSnippet: object.textSnippet,
-              pageNumber: object.pageNo,
-              hasError: false,
-              hasCorrection: true,
-              publicationDate: object.source.publicationDate,
-              url: object.source.url,
-              sourceName: object.source.sourceName+";"+object.source.value,          
-              additionalDetails: object.additionalDetails,
-              status: true,
-              createdBy: user
-            }
-            standaloneDpDetails.push(standaloneAcceptDpDetails);
           }
-        }
-        //});            
+        }          
          
         await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year : {$in : acceptYearValues}, status:true},{$set:{status: false}});
           let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item){
@@ -1298,7 +1277,7 @@ export const dataCollection = async ({
          for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                 const object = dpCodesDetails[dpIndex];
                 if( object.isAccepted == true){
-                  await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.year, companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true ,errorStatus: 'Incomplete'}});
+                  await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true ,errorStatus: 'Incomplete'}});
                   let acceptDpDetails ={
                     datapointId: body.dpCodeId,
                     companyId: body.companyId,
@@ -1321,27 +1300,8 @@ export const dataCollection = async ({
                   boardMemberDatapoints.push(acceptDpDetails);
                 }
                 if( object.isAccepted == false){
-                  await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.year, memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
-                  let acceptDpDetails ={
-                    datapointId: body.dpCodeId,
-                    companyId: body.companyId,
-                    taskId: body.taskId,
-                    year: object.fiscalYear,
-                    response: object.response,
-                    screenShot: object.screenShot,
-                    textSnippet: object.textSnippet,
-                    pageNumber: object.pageNo,
-                    hasError: false,
-                    hasCorrection: true,
-                    memberName: body.memberName,
-                    publicationDate: object.source.publicationDate,
-                    url: object.source.url,
-                    sourceName: object.source.sourceName+";"+object.source.value,          
-                    additionalDetails: object.additionalDetails,
-                    status: true,
-                    createdBy: user
-                  }
-                  boardMemberDatapoints.push(acceptDpDetails);
+                  await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
+                  
                 }
                 
         }
@@ -1381,7 +1341,7 @@ export const dataCollection = async ({
            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
              const object = dpCodesDetails[dpIndex];
              if(object.isAccepted == true){
-               await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.year, companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Incomplete'}});
+               await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId,memberName: body.memberName, status: true},{$set:{ isErrorAccepted: true, errorStatus: 'Incomplete'}});
                let acceptDpDetails ={
                  datapointId: body.dpCodeId,
                  companyId: body.companyId,
@@ -1404,27 +1364,8 @@ export const dataCollection = async ({
                kmpMemberDatapoints.push(acceptDpDetails);
              }
              if(object.isAccepted == false){
-               await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.year, memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
-               let acceptDpDetails ={
-                datapointId: body.dpCodeId,
-                companyId: body.companyId,
-                taskId: body.taskId,
-                year: object.fiscalYear,
-                response: object.response,
-                screenShot: object.screenShot,
-                textSnippet: object.textSnippet,
-                pageNumber: object.pageNo,
-                hasError: false,
-                hasCorrection: true,
-                memberName: body.memberName,
-                publicationDate: object.source.publicationDate,
-                url: object.source.url,
-                sourceName: object.source.sourceName+";"+object.source.value,          
-                additionalDetails: object.additionalDetails,
-                status: true,
-                createdBy: user
-              }
-              kmpMemberDatapoints.push(acceptDpDetails);
+               await ErrorDetails.updateMany({datapointId: body.dpCodeId, year: object.fiscalYear, memberName: body.memberName,companyId: body.companyId, status: true},{$set:{ isErrorAccepted: false, isErrorRejected : true, rejectComment: object.rejectComment}})
+               
              }
              
            } 

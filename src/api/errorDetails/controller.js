@@ -263,7 +263,7 @@ export const saveErrorDetails = async({
     let boardMemberErrorDetails = [];
     //for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
       let boardDatapoints = {}
-      _.filter(dpCodesDetails, async (object,index)=>{
+      _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
           if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
             errorCaughtByRep == null
@@ -366,7 +366,7 @@ export const saveErrorDetails = async({
     let kmpMemberErrorDetails = [];
     //for (let errorIndex = 0; errorIndex < currentYearValues.length; errorIndex++) {
       let boardDatapoints = {}
-      _.filter(dpCodesDetails, async (object,index)=>{
+      _.filter(dpCodesDetails, (object,index)=>{
         if(object.error.isThere == true){
           if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
             errorCaughtByRep == null
@@ -382,7 +382,7 @@ export const saveErrorDetails = async({
             additionalDetails: object.error.refData.additionalDetails
           }
           }
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type'].replace('\r\n', ''));
+          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);
           
           boardDatapoints = {
             datapointId: body.dpCodeId,

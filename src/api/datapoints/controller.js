@@ -588,7 +588,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
             //  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
                 if(memberId > -1){
                   memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
                 }
@@ -663,7 +663,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
             let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
-                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.year.includes(errorkmpDatapoints[errorDpIndex].year) && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
                 if(memberId > -1){
                   memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
                 }
@@ -681,7 +681,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   memberId: memberObjectId,
                   status: 'Yet to start'
                 }
-            if(kmpDpCodesData.dpCodesData.length > 0)
+              if(kmpDpCodesData.dpCodesData.length > 0)
               {
                 let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
                 if(yearfind > -1){
