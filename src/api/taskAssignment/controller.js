@@ -909,7 +909,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
     if (userDetailWithSuperAdminRole) {
       await Group.find({
         status: true
-      }).populate("assignedMembers")
+      }).sort({ createdAt: -1 }).populate("assignedMembers")
         .populate("batchList")
         .then(async (group) => {
           var resArray = [];
