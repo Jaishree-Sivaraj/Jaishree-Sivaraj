@@ -909,8 +909,8 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
     console.log('userDetailWithSuperAdminRole', userDetailWithSuperAdminRole);
     if (userDetailWithSuperAdminRole) {
       await Group.find({
-        status: true,
-      }).populate("assignedMembers")
+        status: true
+      }).sort({ createdAt: -1 }).populate("assignedMembers")
         .populate("batchList")
         .then(async (group) => {
           var resArray = [];
@@ -928,20 +928,34 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                   message: err.message
                 });
               });
-              var assignedBatches = group[index].batchList.map((rec) => {
-                return {
-                  batchName: rec.batchName,
-                  batchID: rec._id,
-                  pillars: categories.map((rec) => {
-                    return {
-                      value: rec.id,
-                      label: rec.categoryName
-                    };
-                  }),
-                  batchYear: rec.years
-                };
-              });
-              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
+              var obj = {
+                batchName: group[index].batchList[index1].batchName,
+                batchID: group[index].batchList[index1]._id,
+                batchYear: group[index].batchList[index1].years,
+                pillars: []
+              };
+              for (let index3 = 0; index3 < categories.length; index3++) {
+                obj.pillars.push({
+                  value: categories[index3].id,
+                  label: categories[index3].categoryName
+                })
+              }
+              resObject.assignedBatches.push(obj);
+              // var assignedBatches = group[index].batchList.map((rec) => {
+              //   return {
+              //     batchName: rec.batchName,
+              //     batchID: rec._id,
+              //     pillars: categories.map((rec1) => {
+              //       return {
+              //         value: rec1.id,
+              //         label: rec1.categoryName
+              //       };
+              //     }),
+              //     batchYear: rec.years
+              //   };
+              // });
+              // resObject.assignedBatches = assignedBatches.length > 0 ? assignedBatches : [];
+              // console.log('res', resObject);
             }
             resArray.push(resObject);
           }

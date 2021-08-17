@@ -3733,6 +3733,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                   });
                 } else {
                   if (
+                    fieldNameObject.fieldName == 'dataType' ||
                     fieldNameObject.fieldName == 'unit' ||
                     fieldNameObject.fieldName == 'polarity' ||
                     fieldNameObject.fieldName == 'percentile' ||
@@ -3746,7 +3747,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                       "name": fieldNameObject.name ? fieldNameObject.name : '',
                       "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
                     });
-                  } else if (!taxonomyDetail.isRequired && fieldNameObject.inputType != "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
+                  } else if (!taxonomyDetail.isRequired && fieldNameObject.inputType == "Static" && fieldNameObject.applicableFor != 'Only Controversy') {
                     additionalFieldNamesList.push({
                       "name": fieldNameObject.name ? fieldNameObject.name : '',
                       "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : ''
