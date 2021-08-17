@@ -330,7 +330,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                 }
               }
-            } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
               let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -619,7 +619,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }               
              // }
             }
-          } else if(dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
@@ -877,7 +877,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               })
             }
-          } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
             let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -2010,7 +2010,7 @@ export const datapointDetails = async (req, res, next) => {
         dpCodeData: boardDatapointsObject
       });
     } else if (req.body.memberType == 'KMP Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{datapointId: req.body.datapointId,memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{datapointId: req.body.datapointId, memberName:req.body.memberName});
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
