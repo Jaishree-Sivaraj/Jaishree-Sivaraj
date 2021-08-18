@@ -540,7 +540,7 @@ export const saveErrorDetails = async({
       })
       
    // }
-    let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
+    let kmpMemberHistoricalDp = dpHistoricalDpDetails.map(function (item) {
       return {
         datapointId: body.dpCodeId,
         companyId: body.companyId,
