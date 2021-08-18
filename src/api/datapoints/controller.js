@@ -201,7 +201,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       year: {
           "$in": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -212,7 +212,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         year: {
           "$nin": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -223,7 +223,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       year: {
           "$in": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -234,7 +234,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         year: {
           "$nin": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -550,7 +550,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,              
+              hasError: true,             
               status: true
             }).populate([{
               path: 'datapointId',
@@ -587,7 +587,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           }
           for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
-            _.filter( boardDpCodesData.boardMemberList, (object)=>{
+            _.filter(boardDpCodesData.boardMemberList, (object)=>{
               if(object.label == errorboardDatapoints[errorDpIndex].memberName){
                 let boardDatapointsObject = {
                   dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
@@ -1592,7 +1592,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1604,7 +1604,7 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2019,7 +2019,6 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          memberStatus: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2032,7 +2031,6 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
           memberName: req.body.memberName,
-          memberStatus: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2755,7 +2753,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName: req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2958,7 +2956,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           year: {
             "$nin": taskDetailsYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2974,7 +2972,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           year: {
             "$in": currentYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3333,7 +3331,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
          datapointId: req.body.datapointId,          
           memberName:req.body.memberName,
           hasCorrection:true,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3425,7 +3423,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           year: {
             "$nin": taskDetailsYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3438,7 +3436,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           datapointId:req.body.datapointId,
           hasCorrection:true,
           memberName: req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
