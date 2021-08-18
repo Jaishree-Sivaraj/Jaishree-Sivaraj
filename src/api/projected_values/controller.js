@@ -128,7 +128,6 @@ export const getAverageByNic = async ({body},res,next)=> {
       // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
       // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
       // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
-      console.log("ResponseValue", responseValue);
       let currentCompanyResponse = responseValue;
       if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
           currentCompanyResponse = 0;        
@@ -137,17 +136,17 @@ export const getAverageByNic = async ({body},res,next)=> {
       allResponses.push(Number(currentCompanyResponse));
     }
     let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
-    avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
+    // avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
     let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
-    stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
+    // stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
     let avgResponseObject = {
       clientTaxonomyId: body.clientTaxonomyId,
       datapointId: percentileDatapoints[index].id,
       nic: body.nic,
       year: body.year,
       categoryId: percentileDatapoints[index].categoryId,
-      actualAverage: avgResponse,
-      actualStdDeviation: stdDeviation
+      actualAverage: avgResponseValue,
+      actualStdDeviation: stdDeviationValue
     }
     responseData.push(avgResponseObject);
   }
@@ -227,8 +226,10 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoints value not found for the '+ years[yIndex] + ' year!' }) });
           console.log("Datapoint Response", dpResponse);
           if (dpResponse) {
-            yearObj[avgYearNumber] = dpResponse.actualAverage;
-            yearObj[sdYearNumber] = dpResponse.actualStdDeviation;
+            let actualAverageValue = Math.round( dpResponse.actualAverage * 100 + Number.EPSILON ) / 100;
+            let actualStdDeviationValue = Math.round( dpResponse.actualStdDeviation * 100 + Number.EPSILON ) / 100;;
+            yearObj[avgYearNumber] = actualAverageValue;
+            yearObj[sdYearNumber] = actualStdDeviationValue;
           } else {
             yearObj[avgYearNumber] = '';
             yearObj[sdYearNumber] = '';
@@ -241,8 +242,10 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           nic: body.nicCode
         }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
         if (currentYearValues) {
-          yearObj[ 'projectedAvg'] = currentYearValues.actualAverage;
-          yearObj[ 'projectedSd'] = currentYearValues.actualStdDeviation;
+          let currentActualAverageValue = Math.round( currentYearValues.actualAverage * 100 + Number.EPSILON ) / 100;
+          let currentActualStdDeviationValue = Math.round( currentYearValues.stdDeviation * 100 + Number.EPSILON ) / 100;
+          yearObj[ 'projectedAvg'] = currentActualAverageValue;
+          yearObj[ 'projectedSd'] = currentActualStdDeviationValue;
         } else{
           yearObj[ 'projectedAvg'] = '';
           yearObj[ 'projectedSd'] = '';
