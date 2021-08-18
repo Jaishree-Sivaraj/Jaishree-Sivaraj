@@ -1820,7 +1820,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: 'Incomplete'
+                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : 'Incomplete'
                 },
                 comments: [],
                 additionalDetails:[]
@@ -2247,7 +2247,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: 'Incomplete'
+                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : 'Incomplete'
                 },
                 comments: [],
                 additionalDetails:[]
