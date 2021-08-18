@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, slaDateExtensionRequest } from './controller'
 import { schema } from './model'
 export TaskSlaLog, { schema } from './model'
 
 const router = new Router()
-const { taskId, currentDate, preferedDate, requestedBy, isAccepted, status } = schema.tree
+const { taskId, requestedBy, days, isAccepted, status } = schema.tree
 
 /**
  * @api {post} /taskSlaLogs Create task sla log
@@ -16,8 +16,7 @@ const { taskId, currentDate, preferedDate, requestedBy, isAccepted, status } = s
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam taskId Task sla log's taskId.
- * @apiParam currentDate Task sla log's currentDate.
- * @apiParam preferedDate Task sla log's preferedDate.
+ * @apiParam days Task sla log's days.
  * @apiParam requestedBy Task sla log's requestedBy.
  * @apiParam isAccepted Task sla log's isAccepted.
  * @apiSuccess {Object} taskSlaLog Task sla log's data.
@@ -27,8 +26,28 @@ const { taskId, currentDate, preferedDate, requestedBy, isAccepted, status } = s
  */
 router.post('/',
   token({ required: true }),
-  body({ taskId, currentDate, preferedDate, requestedBy, isAccepted }),
+  body({ taskId,days, requestedBy, isAccepted }),
   create)
+
+/**
+ * @api {post} /taskSlaLogs/slaExtensionRequest Update task sla date
+ * @apiName UpdateTaskSlaDate
+ * @apiGroup TaskSlaLog
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam taskId Task sla log's taskId.
+ * @apiParam days Task sla log's days.
+ * @apiParam requestedBy Task sla log's requestedBy.
+ * @apiParam isAccepted Task sla log's isAccepted.
+ * @apiSuccess {Object} taskSlaLog Task sla log's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Task sla log not found.
+ * @apiError 401 user access only.
+ */
+ router.post('/slaExtensionRequest',
+ token({ required: true }),
+ body({ taskId, days, requestedBy }),
+ slaDateExtensionRequest)
 
 /**
  * @api {get} /taskSlaLogs Retrieve task sla logs
@@ -69,8 +88,7 @@ router.get('/:id',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam taskId Task sla log's taskId.
- * @apiParam currentDate Task sla log's currentDate.
- * @apiParam preferedDate Task sla log's preferedDate.
+ * @apiParam days Task sla log's days.
  * @apiParam requestedBy Task sla log's requestedBy.
  * @apiParam isAccepted Task sla log's isAccepted.
  * @apiParam status Task sla log's status.
@@ -81,7 +99,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ taskId, currentDate, preferedDate, requestedBy, isAccepted, status }),
+  body({ taskId,days, requestedBy, isAccepted, status }),
   update)
 
 /**

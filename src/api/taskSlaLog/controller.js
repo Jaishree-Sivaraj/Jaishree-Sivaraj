@@ -1,5 +1,8 @@
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { TaskSlaLog } from '.'
+import { TaskAssignment } from '../taskAssignment'
+import { User } from '../user'
+import { populate } from 'mongoose/lib/utils'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   TaskSlaLog.create({ ...body, createdBy: user })
@@ -47,3 +50,32 @@ export const destroy = ({ user, params }, res, next) =>
     .then((taskSlaLog) => taskSlaLog ? taskSlaLog.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+export const slaDateExtensionRequest = async ({user, body}, res, next) => {
+  try {
+    let taskDetails = await TaskAssignment.find({_id: body.taskId, status: true })
+    .populate('analystId')
+    .populate('qaId');
+    taskDetails.find({})
+    console.log("Task Details", taskDetails);
+    if (taskDetails) {
+      let taskUpdateObject = {
+        taskId: body.taskId,
+        requestedBy: user.name,
+        days: body.days
+      }
+      await TaskSlaLog.create(taskUpdateObject)
+      .then((response) => {
+        return res.status(200).json({ status: (200), message: "sla extension request stored sucessfully!", data: response});
+      })
+      .catch((error) => {
+        res.status(400).json({ status: (400), message: error.message ? error.message : ''});
+      })
+    } else {
+      res.status(500).json({ status: (500), message: "No task details available please check!"});
+    }
+    
+  } catch (error) {
+    res.status(500).json({ status: (500), message: " No task details available please check!"});        
+  }
+}

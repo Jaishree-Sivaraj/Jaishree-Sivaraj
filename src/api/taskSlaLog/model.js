@@ -3,29 +3,27 @@ import mongoose, { Schema } from 'mongoose'
 const taskSlaLogSchema = new Schema({
   createdBy: {
     type: Schema.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   taskId: {
    type: Schema.ObjectId,
     ref: 'TaskAssigment',
     required: true
   },
-  currentDate: {
-    type: String
-  },
-  preferedDate: {
+  days: {
     type: String
   },
   requestedBy: {
-    type: String
+    type: String,
+    required: true
   },
   isAccepted: {
     type: Boolean,
     default: false
   },
   status: {
-    type: String
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -41,8 +39,7 @@ taskSlaLogSchema.methods = {
       // simple view
       id: this.id,
       taskId: this.taskId ? this.taskId.view(full) : null ,
-      currentDate: this.currentDate,
-      preferedDate: this.preferedDate,
+      days: this.days,
       requestedBy: this.requestedBy,
       isAccepted: this.isAccepted,
       status: this.status,
