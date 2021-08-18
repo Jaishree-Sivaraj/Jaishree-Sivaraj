@@ -1105,7 +1105,7 @@ export const updateCompanyStatus = async (
     //let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId');
 
     await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
-    let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
+   // let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
 
     let categoriesLength = await Categories.find({
       clientTaxonomyId: body.clientTaxonomyId,
