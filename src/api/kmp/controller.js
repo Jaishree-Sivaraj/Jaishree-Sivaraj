@@ -160,4 +160,4 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
       status: 500
     });    
   }
-    }
+}
