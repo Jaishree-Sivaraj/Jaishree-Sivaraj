@@ -246,7 +246,7 @@ export const downloadJson = async ({ bodymen: { body } }, res, next) => {
     Key: myKey,
     Expires: signedUrlExpireSeconds
   })
-  return res.status(200).json({ status: "200", signedUrl: url });
+  return res.status(200).json({ status: "200", message: "Json downloaded successfully!", signedUrl: url });
 }
 
 
