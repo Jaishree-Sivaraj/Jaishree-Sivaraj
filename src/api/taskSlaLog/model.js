@@ -14,8 +14,7 @@ const taskSlaLogSchema = new Schema({
     type: String
   },
   requestedBy: {
-    type: String,
-    required: true
+    type: String
   },
   isAccepted: {
     type: Boolean,
