@@ -1250,7 +1250,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                  errorStatus: object.correctionStatus
                 },
                 comments: [],
                 additionalDetails: []
@@ -1322,7 +1322,7 @@ export const datapointDetails = async (req, res, next) => {
                 type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                errorStatus: object.correctionStatus
+                errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
               },
               comments: object.comments,
               additionalDetails: []
