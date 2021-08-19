@@ -75,6 +75,10 @@ const boardMembersMatrixDataPointsSchema = new Schema({
     type: Boolean,
     default: false
   },
+  correctionStatus:{
+     type: String,
+     default:'Incomplete'
+  },
   hasCorrection: {
     type: Boolean,
     default: false
@@ -129,6 +133,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
       comments: this.comments,
+      correctionStatus: this.correctionStatus,
       internalFileSource: this.internalFileSource,
       collectionStatus: this.collectionStatus,
       hasCorrection: this.hasCorrection,
