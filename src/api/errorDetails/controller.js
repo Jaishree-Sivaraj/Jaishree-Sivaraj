@@ -417,7 +417,7 @@ export const saveErrorDetails = async({
         createdBy: user
       }
     });
-    await ErrorDetails.updateMany({datapointId: body.dpCodeId,   year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})
+    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})
     await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : yearValue},memberName: body.memberName, status: true},{$set:{status: false}});
     let mergedDetails = _.concat(boardMemberHostoricalDp,dpCodeDetails)
     await BoardMembersMatrixDataPoints.insertMany(mergedDetails)

@@ -176,6 +176,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       status: true
     }).populate('errorTypeId');
     currentAllStandaloneDetails = await StandaloneDatapoints.find({
+        taskId: req.params.taskId,
         companyId: taskDetails.companyId.id,
         year: {
           $in: currentYear
@@ -196,7 +197,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({      
+      taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
@@ -219,6 +221,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('companyId')
       .populate('taskId');
     currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
+      taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
@@ -242,7 +245,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('taskId');
     if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed') {
       if (dpTypeValues.length > 0) {
-
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
@@ -438,8 +440,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-          console.log(boardDpCodesData, kmpDpCodesData, dpCodesData);
-
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
@@ -521,8 +521,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
             }
           }
-          console.log(dpCodesData);
-
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
@@ -832,6 +830,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
+              taskId: req.params.taskId,
               companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
@@ -844,6 +843,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 path: 'keyIssueId'
               }
             }]);
+            if(errorboardDatapoints.length > 0){             
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
               _.filter( boardDpCodesData.boardMemberList, (object)=>{
                 if(object.label == errorboardDatapoints[errorDpIndex].memberName){
@@ -874,7 +874,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 }
               })
-            }
+            }  
+          }
           } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
             let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -917,6 +918,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 path: 'keyIssueId'
               }
             }]);
+            if(errorkmpDatapoints.length >0 ){
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
               _.filter(kmpDpCodesData.kmpMemberList ,(object)=>{
                 if(object.label ==  errorkmpDatapoints[errorDpIndex].memberName){
@@ -948,9 +950,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               });
             }
+          }
           } else if(dpTypeValues[dpTypeIndex] == 'Standalone') {
-
             let errorDatapoints = await StandaloneDatapoints.find({
+              taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
               year:{
                 $in:currentYear
@@ -990,20 +993,21 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-          return res.status(200).send({
-            status: "200",
-            message: "Data correction dp codes retrieved successfully!",
-            standalone: {
-              dpCodesData: dpCodesData
-            },
-            boardMatrix: boardDpCodesData,
-            kmpMatrix: kmpDpCodesData
-          });
-        }
+        }        
+        return res.status(200).send({
+          status: "200",
+          message: "Data correction dp codes retrieved successfully!",
+          standalone: {
+            dpCodesData: dpCodesData
+          },
+          boardMatrix: boardDpCodesData,
+          kmpMatrix: kmpDpCodesData
+        });
       } else {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
             // taskId: req.params.taskId,
+            taskId: req.params.taskId,
             companyId:taskDetails.companyId.id,
             year:{
               $in:currentYear
