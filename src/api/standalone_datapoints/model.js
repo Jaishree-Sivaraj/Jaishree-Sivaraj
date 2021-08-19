@@ -65,6 +65,10 @@ const standaloneDatapointsSchema = new Schema({
     type: Array,
     default: []
   },
+  correctionStatus:{
+     type: String,
+     default:'Incomplete'
+  },
   collectionStatus: {
     type: Boolean,
     default: false
@@ -149,6 +153,7 @@ standaloneDatapointsSchema.methods = {
       sourceName: this.sourceName,
       url: this.url,
       pageNumber: this.pageNumber,
+      correctionStatus: this.correctionStatus,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot,

@@ -1322,7 +1322,7 @@ export const datapointDetails = async (req, res, next) => {
                 type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                errorStatus: object.correctionStatus
               },
               comments: object.comments,
               additionalDetails: []
@@ -1753,7 +1753,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                  errorStatus: object.correctionStatus
                 },
                 comments: [],
                 additionalDetails: []
@@ -2055,7 +2055,7 @@ export const datapointDetails = async (req, res, next) => {
         comments: commentsDetails,
         currentData: [],
         historicalData: [],
-        status: ''
+        status: 'Yet to Start'
       }
       let inputValues = [];
       if(dpTypeValues.dataType == 'Select'){        
@@ -2180,7 +2180,8 @@ export const datapointDetails = async (req, res, next) => {
                   type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                  errorStatus: object.correctionStatus
+
                 },
                 comments: [],
                 additionalDetails: []
