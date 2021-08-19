@@ -1209,7 +1209,7 @@ export const dataCollection = async ({
     } else if(taskDetailsObject.taskStatus == 'Correction Pending'){
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
-      let acceptYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];
+      let acceptYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear))];
       let standaloneDpDetails = [], boardMemberDatapoints = [], kmpMemberDatapoints = [];
       let historicalDataYear = [...new Set( dpHistoricalDpDetails.map(obj => obj.fiscalYear)) ];
       if (body.memberType == 'Standalone' ) {
@@ -1228,6 +1228,7 @@ export const dataCollection = async ({
               pageNumber: object.pageNo,
               hasError: false,
               hasCorrection: true,
+              correctionStatus: 'Completed',
               publicationDate: object.source.publicationDate,
               url: object.source.url,
               sourceName: object.source.sourceName+";"+object.source.value,          
@@ -1289,6 +1290,7 @@ export const dataCollection = async ({
                     pageNumber: object.pageNo,
                     hasError: false,
                     hasCorrection: true,
+                    correctionStatus: 'Completed',
                     memberName: body.memberName,
                     publicationDate: object.source.publicationDate,
                     url: object.source.url,
@@ -1353,6 +1355,7 @@ export const dataCollection = async ({
                  pageNumber: object.pageNo,
                  hasError: false,
                  hasCorrection: true,
+                 correctionStatus: 'Completed',
                  memberName: body.memberName,
                  publicationDate: object.source.publicationDate,
                  url: object.source.url,

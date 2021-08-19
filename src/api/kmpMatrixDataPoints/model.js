@@ -67,6 +67,10 @@ const kmpMatrixDataPointsSchema = new Schema({
   comments: {
     type: Array
   },
+  correctionStatus:{
+     type: String,
+     default:'Incomplete'
+  },
   collectionStatus: {
     type: Boolean,
     default: false
@@ -125,6 +129,7 @@ kmpMatrixDataPointsSchema.methods = {
       pageNumber: this.pageNumber,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
+      correctionStatus: this.correctionStatus,
       screenShot: this.screenShot,
       sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,

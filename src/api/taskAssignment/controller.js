@@ -13,6 +13,7 @@ import { ControversyTasks } from "../controversy_tasks";
 import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
 import { Controversy } from "../controversy";
+import { Datapoints } from "../datapoints";
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1101,7 +1102,10 @@ export const updateCompanyStatus = async (
   next
 ) => {
   try {
+    //let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId');
+
     await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
+   // let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
 
     let categoriesLength = await Categories.find({
       clientTaxonomyId: body.clientTaxonomyId,

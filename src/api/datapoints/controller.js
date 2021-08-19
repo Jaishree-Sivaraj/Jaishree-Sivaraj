@@ -176,6 +176,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       status: true
     }).populate('errorTypeId');
     currentAllStandaloneDetails = await StandaloneDatapoints.find({
+        taskId: req.params.taskId,
         companyId: taskDetails.companyId.id,
         year: {
           $in: currentYear
@@ -196,12 +197,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({      
+      taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -212,18 +214,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         year: {
           "$nin": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
     currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
+      taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -234,7 +237,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         year: {
           "$nin": currentYear
         },
-        memberStatus: true,
+        
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -242,7 +245,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('taskId');
     if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed') {
       if (dpTypeValues.length > 0) {
-
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
@@ -330,7 +332,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                 }
               }
-            } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
               let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -438,8 +440,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-          console.log(boardDpCodesData, kmpDpCodesData, dpCodesData);
-
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
@@ -521,8 +521,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
             }
           }
-          console.log(dpCodesData);
-
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
@@ -550,7 +548,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,              
+              hasError: true,             
               status: true
             }).populate([{
               path: 'datapointId',
@@ -586,13 +584,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-          let memberObjectId = '';
-            for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
-            //  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-              let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
-                if(memberId > -1){
-                  memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
-                }
+          for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
+            _.filter(boardDpCodesData.boardMemberList, (object)=>{
+              if(object.label == errorboardDatapoints[errorDpIndex].memberName){
                 let boardDatapointsObject = {
                   dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
                   dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
@@ -603,12 +597,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   pillarId: taskDetails.categoryId.id,
                   pillar: taskDetails.categoryId.categoryName,
                   fiscalYear: errorboardDatapoints[errorDpIndex].year,
-                  memberName: errorboardDatapoints[errorDpIndex].memberName,
-                  memberId: memberObjectId,
-                  status: 'Yet to start'
+                  memberName: object.label,
+                  memberId: object.value,
+                  status:'Yet to Start'
                 }
-                if(boardDpCodesData.dpCodesData.length > 0)                {
-                  let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code  && obj.memberName == errorboardDatapoints[errorDpIndex].memberName );
+                if(boardDpCodesData.dpCodesData.length > 0)
+                {
+                  let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorboardDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorboardDatapoints[errorDpIndex].memberName);
                   if(yearfind > -1){
                     boardDpCodesData.dpCodesData[yearfind].fiscalYear = boardDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorboardDatapoints[errorDpIndex].year)
                   }else {
@@ -616,10 +611,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                 } else {
                   boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-                }               
-             // }
-            }
-          } else if(dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+                }
+              }
+            })
+          }
+          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
@@ -662,37 +658,36 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               }
             }
-            let memberObjectId = '';
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
-                let memberId = kmpDpCodesData.kmpMemberList.findIndex(obj => obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
-                if(memberId > -1){
-                  memberObjectId = kmpDpCodesData.kmpMemberList[memberId].value
-                }
-                let kmpDatapointsObject = {
-                  dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
-                  dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
-                  companyId: taskDetails.companyId.id,
-                  companyName: taskDetails.companyId.companyName,
-                  keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
-                  keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                  pillarId: taskDetails.categoryId.id,
-                  pillar: taskDetails.categoryId.categoryName,
-                  fiscalYear: errorkmpDatapoints[errorDpIndex].year,
-                  memberName: errorkmpDatapoints[errorDpIndex].memberName,
-                  memberId: memberObjectId,
-                  status: 'Yet to start'
-                }
-              if(kmpDpCodesData.dpCodesData.length > 0)
-              {
-                let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName );
-                if(yearfind > -1){
-                  kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorkmpDatapoints[errorDpIndex].year)
-                }else {
-                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+              _.filter(kmpDpCodesData.kmpMemberList ,(object)=>{
+                if(object.label ==  errorkmpDatapoints[errorDpIndex].memberName){
+                  let kmpDatapointsObject = {
+                    dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
+                    dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
+                    companyId: taskDetails.companyId.id,
+                    companyName: taskDetails.companyId.companyName,
+                    keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
+                    keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
+                    pillarId: taskDetails.categoryId.id,
+                    pillar: taskDetails.categoryId.categoryName,
+                    fiscalYear: errorkmpDatapoints[errorDpIndex].year,
+                    memberName: object.label,
+                    memberId: object.value,
+                    status: 'Yet to Start'
                   }
-              } else {
-                kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-              }
+                  if(kmpDpCodesData.dpCodesData.length > 0)
+                  {
+                    let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                    if(yearfind > -1){
+                      kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",",errorkmpDatapoints[errorDpIndex].year)
+                    }else {
+                      kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+                      }
+                  } else {
+                    kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+                  }
+                }
+              });
             }
           } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
 
@@ -835,6 +830,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
             let errorboardDatapoints = await BoardMembersMatrixDataPoints.find({
+              taskId: req.params.taskId,
               companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
@@ -847,6 +843,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 path: 'keyIssueId'
               }
             }]);
+            if(errorboardDatapoints.length > 0){             
             for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
               _.filter( boardDpCodesData.boardMemberList, (object)=>{
                 if(object.label == errorboardDatapoints[errorDpIndex].memberName){
@@ -861,7 +858,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: taskDetails.categoryId.categoryName,
                     fiscalYear: errorboardDatapoints[errorDpIndex].year,
                     memberName: object.label,
-                    memberId: object.value
+                    memberId: object.value,
+                    status:'Yet to Start'
                   }
                   if(boardDpCodesData.dpCodesData.length > 0)
                   {
@@ -876,8 +874,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 }
               })
-            }
-          } else if (dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+            }  
+          }
+          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
             let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -919,6 +918,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 path: 'keyIssueId'
               }
             }]);
+            if(errorkmpDatapoints.length >0 ){
             for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
               _.filter(kmpDpCodesData.kmpMemberList ,(object)=>{
                 if(object.label ==  errorkmpDatapoints[errorDpIndex].memberName){
@@ -933,7 +933,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillar: taskDetails.categoryId.categoryName,
                     fiscalYear: errorkmpDatapoints[errorDpIndex].year,
                     memberName: object.label,
-                    memberId: object.value
+                    memberId: object.value,
+                    status: 'Yet to Start'
                   }
                   if(kmpDpCodesData.dpCodesData.length > 0)
                   {
@@ -949,9 +950,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               });
             }
+          }
           } else if(dpTypeValues[dpTypeIndex] == 'Standalone') {
-
             let errorDatapoints = await StandaloneDatapoints.find({
+              taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
               year:{
                 $in:currentYear
@@ -975,7 +977,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 keyIssue: errorDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
                 pillarId: taskDetails.categoryId.id,
                 pillar: taskDetails.categoryId.categoryName,
-                fiscalYear: errorDatapoints[errorDpIndex].year
+                fiscalYear: errorDatapoints[errorDpIndex].year,
+                status: 'Yet to Start'
               }
               if(dpCodesData.length > 0)
               {
@@ -990,20 +993,21 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             }
           }
-          return res.status(200).send({
-            status: "200",
-            message: "Data correction dp codes retrieved successfully!",
-            standalone: {
-              dpCodesData: dpCodesData
-            },
-            boardMatrix: boardDpCodesData,
-            kmpMatrix: kmpDpCodesData
-          });
-        }
+        }        
+        return res.status(200).send({
+          status: "200",
+          message: "Data correction dp codes retrieved successfully!",
+          standalone: {
+            dpCodesData: dpCodesData
+          },
+          boardMatrix: boardDpCodesData,
+          kmpMatrix: kmpDpCodesData
+        });
       } else {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
             // taskId: req.params.taskId,
+            taskId: req.params.taskId,
             companyId:taskDetails.companyId.id,
             year:{
               $in:currentYear
@@ -1028,6 +1032,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               pillarId: taskDetails.categoryId.id,
               pillar: taskDetails.categoryId.categoryName,
               fiscalYear: errorDatapoints[errorDpIndex].year,
+              status: 'Yet to Start'
             }
             if(dpCodesData.length > 0)
             {
@@ -1245,7 +1250,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                  errorStatus: object.correctionStatus
                 },
                 comments: [],
                 additionalDetails: []
@@ -1388,7 +1393,7 @@ export const datapointDetails = async (req, res, next) => {
                 type: '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                 comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : 'Incomplete'
+                errorStatus:object.correctionStatus
               },
               comments: [],
               additionalDetails:[]
@@ -1591,7 +1596,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1603,7 +1608,7 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1677,7 +1682,7 @@ export const datapointDetails = async (req, res, next) => {
                     type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                     comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                    errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                    errorStatus: object.correctionStatus
                   },
                   comments: [],
                   additionalDetails: []
@@ -1819,7 +1824,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: 'Incomplete'
+                  errorStatus:object.correctionStatus
                 },
                 comments: [],
                 additionalDetails:[]
@@ -2010,7 +2015,7 @@ export const datapointDetails = async (req, res, next) => {
         dpCodeData: boardDatapointsObject
       });
     } else if (req.body.memberType == 'KMP Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{datapointId: req.body.datapointId,memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{datapointId: req.body.datapointId, memberName:req.body.memberName});
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
@@ -2018,7 +2023,6 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          memberStatus: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2031,7 +2035,6 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
           memberName: req.body.memberName,
-          memberStatus: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2052,7 +2055,7 @@ export const datapointDetails = async (req, res, next) => {
         comments: commentsDetails,
         currentData: [],
         historicalData: [],
-        status: ''
+        status: 'Yet to Start'
       }
       let inputValues = [];
       if(dpTypeValues.dataType == 'Select'){        
@@ -2106,7 +2109,7 @@ export const datapointDetails = async (req, res, next) => {
                     type: errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '',
                     refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                     comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                    errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+                    errorStatus: object.correctionStatus
                   },
                   comments: [],
                   additionalDetails: []
@@ -2178,6 +2181,7 @@ export const datapointDetails = async (req, res, next) => {
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
                   errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
+
                 },
                 comments: [],
                 additionalDetails: []
@@ -2248,7 +2252,7 @@ export const datapointDetails = async (req, res, next) => {
                   type: '',
                   refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : '',
                   comment:errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : '',
-                  errorStatus: 'Incomplete'
+                  errorStatus:object.correctionStatus
                 },
                 comments: [],
                 additionalDetails:[]
@@ -2754,7 +2758,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName: req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2957,7 +2961,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           year: {
             "$nin": taskDetailsYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2973,7 +2977,7 @@ export const errorDatapointDetails = async(req,res,next) =>{
           year: {
             "$in": currentYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3332,7 +3336,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
          datapointId: req.body.datapointId,          
           memberName:req.body.memberName,
           hasCorrection:true,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3424,7 +3428,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           year: {
             "$nin": taskDetailsYear
           },
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3437,7 +3441,7 @@ export const collectionDatapointDetails = async(req,res,next) =>{
           datapointId:req.body.datapointId,
           hasCorrection:true,
           memberName: req.body.memberName,
-          memberStatus: true,
+          
           status: true
         }).populate('createdBy')
         .populate('datapointId')
