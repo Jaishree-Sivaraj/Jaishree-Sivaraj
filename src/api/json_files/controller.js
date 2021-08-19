@@ -74,9 +74,13 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
     });
     for (let index = 0; index < companiesTasks.length; index++) {
       let yearValue = companiesTasks[index].year.trim().split(',');
+      console.log('yearValue', yearValue);
       let yearVal = "";
+      console.log('length', yearValue.length);
+      console.log('yearValue[0]', yearValue[0]);
+      console.log('yearValue[1]', yearValue[1]);
       if (yearValue.length > 1) {
-        yearVal = `${yearValue[0]}-${yearValue[1]}`;
+        yearVal = `${yearValue[1]}-${yearValue[0]}`;
       }
       let obj = {
         "companyId": companiesTasks[index].companyId ? companiesTasks[index].companyId.id : null,
