@@ -58,6 +58,8 @@ controversyTasksSchema.methods = {
       taskStatus: this.taskStatus,
       completedDate: this.completedDate,
       status: this.status,
+      canGenerateJson: this.canGenerateJson,
+      isJsonGenerated: this.isJsonGenerated,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
