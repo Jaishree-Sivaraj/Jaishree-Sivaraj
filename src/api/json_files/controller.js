@@ -73,13 +73,22 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       }
     });
     for (let index = 0; index < companiesTasks.length; index++) {
+      let yearValue = companiesTasks[index].year.trim().split(',');
+      console.log('yearValue', yearValue);
+      let yearVal = "";
+      console.log('length', yearValue.length);
+      console.log('yearValue[0]', yearValue[0]);
+      console.log('yearValue[1]', yearValue[1]);
+      if (yearValue.length > 1) {
+        yearVal = `${yearValue[1]}-${yearValue[0]}`;
+      }
       let obj = {
         "companyId": companiesTasks[index].companyId ? companiesTasks[index].companyId.id : null,
         "companyName": companiesTasks[index].companyId ? companiesTasks[index].companyId.companyName : null,
         "modifiedDate": companiesTasks[index].updatedAt,
         "taxonomyId": (companiesTasks[index].companyId && companiesTasks[index].companyId.clientTaxonomyId) ? companiesTasks[index].companyId.clientTaxonomyId.id : null,
         "taxonomyName": (companiesTasks[index].companyId && companiesTasks[index].companyId.clientTaxonomyId) ? companiesTasks[index].companyId.clientTaxonomyId.taxonomyName : null,
-        "year": companiesTasks[index].year
+        "year": yearVal
       }
       response.pendingCompaniesData.push(obj);
     }
