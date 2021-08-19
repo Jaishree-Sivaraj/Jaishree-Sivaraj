@@ -114,7 +114,7 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       var obj = {
         "companyId": files[index].companyId ? files[index].companyId.id : null,
         "companyName": files[index].companyId ? files[index].companyId.companyName : null,
-        "generatedDate": files[index].updatedAt,
+        "modifiedDate": files[index].updatedAt,
         "taxonomyId": (files[index].companyId && files[index].companyId.clientTaxonomyId) ? files[index].companyId.clientTaxonomyId.id : null,
         "taxonomyName": (files[index].companyId && files[index].companyId.clientTaxonomyId) ? files[index].companyId.clientTaxonomyId.taxonomyName : null
       }
