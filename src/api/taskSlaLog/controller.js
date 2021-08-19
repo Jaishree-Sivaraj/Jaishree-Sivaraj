@@ -74,7 +74,6 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
         }
         await TaskSlaLog.create(taskObject)
         .then(async(response) => {
-          console.log("TaskObject", taskObject);
           await Notifications.create({
             notifyToUser: taskDetail.groupId ? taskDetail.groupId.groupAdmin : null,
             notificationType: '/tasks',
