@@ -617,14 +617,19 @@ export const saveRepErrorDetails = async({
             if(object.error.refData === '' || object.error.refData === ""){
               errorCaughtByRep == null
             } else {
-              errorCaughtByRep = {
+            errorCaughtByRep = {
+              description: object.error.refData.description,
               response: object.error.refData.response,
               screenShot: object.error.refData.screenShot,
+              dataType: object.error.refData.dataType,
+              fiscalYear: object.error.refData.fiscalYear,
               textSnippet: object.error.refData.textSnippet,
-              pageNumber: object.error.refData.pageNo,
-              publicationDate: object.error.refData.source.publicationDate,
-              url: object.error.refData.source.url,
-              sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
+              pageNo: object.error.refData.pageNo,
+              source:{
+                publicationDate: object.error.refData.source.publicationDate,
+                url: object.error.refData.source.url,
+                sourceName: object.error.refData.source.sourceName
+              },
               additionalDetails: object.error.refData.additionalDetails
             }
             }
@@ -689,15 +694,20 @@ export const saveRepErrorDetails = async({
             errorCaughtByRep == null
           } else {
             errorCaughtByRep = {
-            response: object.error.refData.response,
-            screenShot: object.error.refData.screenShot,
-            textSnippet: object.error.refData.textSnippet,
-            pageNumber: object.error.refData.pageNo,
-            publicationDate: object.error.refData.source.publicationDate,
-            url: object.error.refData.source.url,
-            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-            additionalDetails: object.error.refData.additionalDetails
-          }
+              description: object.error.refData.description,
+              response: object.error.refData.response,
+              screenShot: object.error.refData.screenShot,
+              dataType: object.error.refData.dataType,
+              fiscalYear: object.error.refData.fiscalYear,
+              textSnippet: object.error.refData.textSnippet,
+              pageNo: object.error.refData.pageNo,
+              source:{
+                publicationDate: object.error.refData.source.publicationDate,
+                url: object.error.refData.source.url,
+                sourceName: object.error.refData.source.sourceName
+              },
+              additionalDetails: object.error.refData.additionalDetails
+            }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);
           boardDatapoints = {
@@ -761,15 +771,20 @@ export const saveRepErrorDetails = async({
             errorCaughtByRep == null
           } else {
             errorCaughtByRep = {
-            response: object.error.refData.response,
-            screenShot: object.error.refData.screenShot,
-            textSnippet: object.error.refData.textSnippet,
-            pageNumber: object.error.refData.pageNo,
-            publicationDate: object.error.refData.source.publicationDate,
-            url: object.error.refData.source.url,
-            sourceName: object.error.refData.source.sourceName+";"+object.error.refData.source.value,
-            additionalDetails: object.error.refData.additionalDetails
-          }
+              description: object.error.refData.description,
+              response: object.error.refData.response,
+              screenShot: object.error.refData.screenShot,
+              dataType: object.error.refData.dataType,
+              fiscalYear: object.error.refData.fiscalYear,
+              textSnippet: object.error.refData.textSnippet,
+              pageNo: object.error.refData.pageNo,
+              source:{
+                publicationDate: object.error.refData.source.publicationDate,
+                url: object.error.refData.source.url,
+                sourceName: object.error.refData.source.sourceName
+              },
+              additionalDetails: object.error.refData.additionalDetails
+            }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);          
           boardDatapoints = {
