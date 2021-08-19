@@ -30,8 +30,8 @@ router.post('/',
   create)
 
 /**
- * @api {post} /taskSlaLogs/slaExtensionRequest Update task sla date
- * @apiName UpdateTaskSlaDate
+ * @api {post} /taskSlaLogs/slaExtensionRequest Request for extension of task sla date
+ * @apiName RequestForTaskSlaDateExtension
  * @apiGroup TaskSlaLog
  * @apiPermission user
  * @apiParam {String} access_token user access token.

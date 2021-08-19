@@ -2,7 +2,7 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { TaskSlaLog } from '.'
 import { TaskAssignment } from '../taskAssignment'
 import { User } from '../user'
-import { populate } from 'mongoose/lib/utils'
+import { Notifications } from '../notifications'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   TaskSlaLog.create({ ...body, createdBy: user })
@@ -53,27 +53,56 @@ export const destroy = ({ user, params }, res, next) =>
 
 export const slaDateExtensionRequest = async ({user, body}, res, next) => {
   try {
-    let taskDetails = await TaskAssignment.find({_id: body.taskId, status: true })
+    await TaskAssignment.findOne({_id: body.taskId, status: true })
+    .populate('groupId')
     .populate('analystId')
-    .populate('qaId');
-    taskDetails.find({})
-    console.log("Task Details", taskDetails);
-    if (taskDetails) {
-      let taskUpdateObject = {
-        taskId: body.taskId,
-        requestedBy: user.name,
-        days: body.days
+    .populate('qaId')
+    .then(async(taskDetail) => {
+      if (taskDetail) {
+        let taskObject = {
+          taskId: body.taskId,
+          requestedBy: "",
+          days: body.days,
+          isAccepted: false,
+          status: true,
+          createdBy: user
+        }
+        if (taskDetail.analystId == user) {
+          taskObject.requestedBy = "Analyst";
+        } else if (taskDetail.qaId == user) {
+          taskObject.requestedBy = "QA";
+        }
+        await TaskSlaLog.create(taskObject)
+        .then(async(response) => {
+          await Notifications.create({
+            notifyToUser: taskDetail.groupId ? taskDetail.groupId.groupAdmin : null,
+            notificationType: '/tasks',
+            content: `${user.name ? user.name : 'Employee'} has raised SLA extension request for ${body.days ? body.days : ''} days of TaskID - ${taskObject.taskNumber ? taskObject.taskNumber : ''}`,
+            notificationTitle: `${taskObject.requestedBy} SLA extension requested`,
+            isRead: false,
+            status: true
+          })
+          .then((notify) => {
+            if (notify) {
+              return res.status(200).json({ status: 200, message: "Sla extension request sucessful!", data: response });  
+            } else {
+              return res.status(500).json({ status: "500", message: 'Failed to send SLA extension notification!' });  
+            }
+          })
+          .catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to send SLA extension notification!' });
+          })
+        })
+        .catch((error) => {
+          res.status(400).json({ status: 400, message: error.message ? error.message : 'Failed to add SLA extension request!' });
+        })
+      } else {
+        res.status(500).json({ status: 500, message: "Task not found!"});
       }
-      await TaskSlaLog.create(taskUpdateObject)
-      .then((response) => {
-        return res.status(200).json({ status: (200), message: "sla extension request stored sucessfully!", data: response});
-      })
-      .catch((error) => {
-        res.status(400).json({ status: (400), message: error.message ? error.message : ''});
-      })
-    } else {
-      res.status(500).json({ status: (500), message: "No task details available please check!"});
-    }
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "400", message: error.message ? error.message : "Task not found!" });
+    });
     
   } catch (error) {
     res.status(500).json({ status: (500), message: " No task details available please check!"});        
