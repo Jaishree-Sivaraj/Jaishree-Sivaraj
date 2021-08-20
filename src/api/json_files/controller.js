@@ -7,6 +7,7 @@ import { DerivedDatapoints } from '../derived_datapoints'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { Companies } from '../companies'
+import { Controversy } from "../controversy"
 
 export const create = ({ bodymen: { body } }, res, next) =>
   JsonFiles.create(body)
@@ -222,8 +223,71 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
     }).catch(function (err) {
       return res.status(500).json({ status: "500", message: err.message ? err.message : `errror while storing json files ` });
     });
-  } if (body.type && body.type === 'controversy') {
-    //call api http://65.1.140.116:9010/controversies/json/60cad1c1b09656fa3611490d
+  } else if (body.type && body.type === 'controversy') {
+    let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
+    if (companyDetails) {
+      let companyControversyYears = await Controversy.find({ companyId: body.companyId, status: true }).distinct('year');
+      let responseObject = {
+        companyName: companyDetails.companyName,
+        CIN: companyDetails.cin,
+        data: [],
+        status: 200
+      };
+      if (companyControversyYears.length > 0) {
+        for (let yearIndex = 0; yearIndex < companyControversyYears.length; yearIndex++) {
+          const year = companyControversyYears[yearIndex];
+          let yearwiseData = {
+            year: year,
+            companyName: companyDetails.companyName,
+            Data: []
+          };
+          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, status: true })
+            .populate('createdBy')
+            .populate('companyId')
+            .populate('datapointId');
+          if (companyControversiesYearwise.length > 0) {
+            for (let index = 0; index < companyControversiesYearwise.length; index++) {
+              const element = companyControversiesYearwise[index];
+              let dataObject = {
+                Dpcode: element.datapointId.code,
+                Year: element.year,
+                ResponseUnit: element.response,
+                controversy: element.controversyDetails
+              }
+              yearwiseData.Data.push(dataObject);
+            }
+          }
+          responseObject.data.push(yearwiseData)
+        }
+      }
+      await storeFileInS3(responseObject, 'controversy', body.companyId).then(async function (s3Data) {
+        console.log('s3Data', s3Data);
+        let jsonFileObject = {
+          companyId: companyID,
+          url: s3Data.data.Location,
+          type: 'data',
+          fileName: s3Data.fileName,
+          status: true
+        }
+        await JsonFiles.updateOne({ companyId: companyID }, { $set: jsonFileObject }, { upsert: true })
+          .then(async (updatedJsonfiles) => {
+            console.log('updatedJsonfiles', updatedJsonfiles);
+            await ControversyTasks.updateMany({ companyId: companyID }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
+              .then(async (updatedControversyTasks) => {
+                console.log('updatedCompaniesTasks', updatedControversyTasks);
+                return res.status(200).json({ status: "200", message: body.type.toUpperCase() + " Json generated successfully!" });
+              }).catch(function (err) {
+                return res.status(500).json({ status: "500", message: err.message ? err.message : `error while updating compines tasks` });
+              })
+          }).catch(function (err) {
+            return res.status(500).json({ status: "500", message: err.message ? err.message : `error while updating json files` });
+          })
+      }).catch(function (err) {
+        return res.status(500).json({ status: "500", message: err.message ? err.message : `error while storing json files` });
+      });
+    }
+  } else {
+    return res.status(500).json({ status: "500", message: 'Type should be either data or controversy' });
   }
 }
 
