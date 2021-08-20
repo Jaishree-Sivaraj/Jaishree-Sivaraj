@@ -85,11 +85,6 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       }
     });
     for (let index = 0; index < companiesTasks.length; index++) {
-      // let yearValue = companiesTasks[index].year.trim().split(',');
-      // let yearVal = "";
-      // if (yearValue.length > 1) {
-      //   yearVal = `${yearValue[1]}-${yearValue[0]}`;
-      // }
       let obj = {
         "companyId": companiesTasks[index].companyId ? companiesTasks[index].companyId.id : null,
         "companyName": companiesTasks[index].companyId ? companiesTasks[index].companyId.companyName : null,
@@ -259,7 +254,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         let jsonFileObject = {
           companyId: body.companyId,
           url: s3Data.data.Location,
-          type: 'data',
+          type: 'controversy',
           fileName: s3Data.fileName,
           status: true
         }
