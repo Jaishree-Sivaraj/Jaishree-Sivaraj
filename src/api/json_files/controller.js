@@ -8,7 +8,13 @@ import { DerivedDatapoints } from '../derived_datapoints'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { Companies } from '../companies'
-import { Controversy } from "../controversy"
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  signatureVersion: 'v4',
+  region: 'ap-south-1'
+});
 
 export const create = ({ bodymen: { body } }, res, next) =>
   JsonFiles.create(body)
@@ -70,7 +76,6 @@ export const retrieveJsonFiles = async ({ params }, res, next) => {
 }
 
 export const payLoadGenerationDetails = async ({ params }, res, next) => {
-  console.log('params', params);
   let response = { pendingCompaniesData: [], completedCompaniesData: [] };
   if (params.type == 'data') {
     var companiesTasks = await CompaniesTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate('categoryId').populate({
@@ -79,7 +84,6 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
         path: 'clientTaxonomyId'
       }
     });
-    console.log('companiesTasks', JSON.stringify(companiesTasks, null, 3))
     for (let index = 0; index < companiesTasks.length; index++) {
       // let yearValue = companiesTasks[index].year.trim().split(',');
       // let yearVal = "";
@@ -123,7 +127,6 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       path: 'clientTaxonomyId'
     }
   }).then(async (files) => {
-    console.log('files', files);
     for (let index = 0; index < files.length; index++) {
       var obj = {
         "companyId": files[index].companyId ? files[index].companyId.id : null,
@@ -144,14 +147,10 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
   });
 }
 
-
-
-
 export const generateJson = async ({ bodymen: { body } }, res, next) => {
   if (body.type && body.type === 'data') {
     let companyID = body.companyId ? body.companyId : '';
     let companyDetails = await Companies.findById(companyID).populate('clientTaxonomyId');
-    console.log('companyDetails', JSON.stringify(companyDetails, null, 3));
     let requiredDataPoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, standaloneOrMatrix: { "$ne": "Matrix" }, functionId: { "$ne": '609bcceb1d64cd01eeda092c' }, status: true }).distinct('_id');
     let jsonResponseObject = {
       companyName: companyDetails.companyName ? companyDetails.companyName : '',
@@ -168,7 +167,6 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       ]
     }
     await StandaloneDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, status: true, companyId: companyID }).populate('datapointId').then((result) => {
-      console.log('StandaloneDatapoints', result);
       if (result.length > 0) {
         for (let index = 0; index < result.length; index++) {
           const element = result[index];
@@ -183,7 +181,6 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       }
     });
     await DerivedDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, status: true, companyId: companyID }).populate('datapointId').then((result) => {
-      console.log('DerivedDatapoints', result);
       if (result.length > 0) {
         for (let index = 0; index < result.length; index++) {
           const element = result[index];
@@ -197,9 +194,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
       }
     });
-    console.log('jsonResponseObject', JSON.stringify(jsonResponseObject, null, 3));
     await storeFileInS3(jsonResponseObject, 'data', body.companyId, body.year).then(async function (s3Data) {
-      console.log('s3Data', s3Data);
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
@@ -210,10 +205,8 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       }
       await JsonFiles.updateOne({ companyId: companyID, year: body.year }, { $set: jsonFileObject }, { upsert: true })
         .then(async (updatedJsonfiles) => {
-          console.log('updatedJsonfiles', updatedJsonfiles);
           await CompaniesTasks.updateMany({ companyId: companyID, year: body.year }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
             .then(async (updatedCompaniesTasks) => {
-              console.log('updatedCompaniesTasks', updatedCompaniesTasks);
               return res.status(200).json({ status: "200", message: body.type.toUpperCase() + " Json generated successfully!" });
             }).catch(function (err) {
               return res.status(500).json({ status: "500", message: err.message ? err.message : `errror while updating compines tasks ` });
@@ -242,7 +235,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
             companyName: companyDetails.companyName,
             Data: []
           };
-          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, status: true })
+          // let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, status: true })
           let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, status: true })
             .populate('createdBy')
             .populate('companyId')
@@ -263,20 +256,17 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
       }
       await storeFileInS3(responseObject, 'controversy', body.companyId).then(async function (s3Data) {
-        console.log('s3Data', s3Data);
         let jsonFileObject = {
-          companyId: companyID,
+          companyId: body.companyId,
           url: s3Data.data.Location,
           type: 'data',
           fileName: s3Data.fileName,
           status: true
         }
-        await JsonFiles.updateOne({ companyId: companyID }, { $set: jsonFileObject }, { upsert: true })
+        await JsonFiles.updateOne({ companyId: body.companyId }, { $set: jsonFileObject }, { upsert: true })
           .then(async (updatedJsonfiles) => {
-            console.log('updatedJsonfiles', updatedJsonfiles);
-            await ControversyTasks.updateMany({ companyId: companyID }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
+            await ControversyTasks.updateMany({ companyId: body.companyId }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
               .then(async (updatedControversyTasks) => {
-                console.log('updatedCompaniesTasks', updatedControversyTasks);
                 return res.status(200).json({ status: "200", message: body.type.toUpperCase() + " Json generated successfully!" });
               }).catch(function (err) {
                 return res.status(500).json({ status: "500", message: err.message ? err.message : `error while updating compines tasks` });
@@ -294,16 +284,6 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
 }
 
 export const downloadJson = async ({ bodymen: { body } }, res, next) => {
-  AWS.config.update({
-    accessKeyId: 'AKIA2B53Z7RFPSTPWYOL',
-    secretAccessKey: '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',
-    signatureVersion: 'v4',
-    region: 'ap-south-1'
-  })
-  const s3 = new AWS.S3({
-    accessKeyId: 'AKIA2B53Z7RFPSTPWYOL',
-    secretAccessKey: 'aXk39XeAwJnP/tD5rPp/ei0hRPrRkq1MY9HZqBk7'
-  });
   const myBucket = 'esgdsdatajsonfiles'
   const myKey = body.fileName;
   const signedUrlExpireSeconds = 60 * 5 // your expiry time in seconds.
@@ -318,12 +298,6 @@ export const downloadJson = async ({ bodymen: { body } }, res, next) => {
 async function storeFileInS3(actualJson, type, companyId, year) {
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
-    const s3 = new AWS.S3({
-      accessKeyId: 'AKIA2B53Z7RFPSTPWYOL',
-      secretAccessKey: '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',
-      signatureVersion: 'v4',
-      region: 'ap-south-1'
-    });
     const params = {
       Bucket: 'esgdsdatajsonfiles', // pass your bucket name
       Key: type + '/' + fileName, // file will be saved in <folderName> folder
