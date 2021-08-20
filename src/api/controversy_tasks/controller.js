@@ -210,6 +210,8 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
           analystId: body.analyst.value ? body.analyst.value : null,
           taskStatus: 'Yet to Work',
           status: true,
+          canGenerateJson: true, 
+          isJsonGenerated: false,
           createdBy: user
         }
         controversyTaskDetails.push(controversyObject);

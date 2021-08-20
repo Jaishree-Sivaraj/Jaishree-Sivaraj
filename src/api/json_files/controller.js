@@ -1,6 +1,7 @@
 import { success, notFound } from '../../services/response/'
 import { JsonFiles } from '.'
 import { CompaniesTasks } from "../companies_tasks";
+import { Controversy } from "../controversy"
 import { ControversyTasks } from "../controversy_tasks"
 import * as AWS from 'aws-sdk'
 import { DerivedDatapoints } from '../derived_datapoints'
@@ -80,18 +81,18 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
     });
     console.log('companiesTasks', JSON.stringify(companiesTasks, null, 3))
     for (let index = 0; index < companiesTasks.length; index++) {
-      let yearValue = companiesTasks[index].year.trim().split(',');
-      let yearVal = "";
-      if (yearValue.length > 1) {
-        yearVal = `${yearValue[1]}-${yearValue[0]}`;
-      }
+      // let yearValue = companiesTasks[index].year.trim().split(',');
+      // let yearVal = "";
+      // if (yearValue.length > 1) {
+      //   yearVal = `${yearValue[1]}-${yearValue[0]}`;
+      // }
       let obj = {
         "companyId": companiesTasks[index].companyId ? companiesTasks[index].companyId.id : null,
         "companyName": companiesTasks[index].companyId ? companiesTasks[index].companyId.companyName : null,
         "modifiedDate": companiesTasks[index].updatedAt,
         "taxonomyId": (companiesTasks[index].companyId && companiesTasks[index].companyId.clientTaxonomyId) ? companiesTasks[index].companyId.clientTaxonomyId.id : null,
         "taxonomyName": (companiesTasks[index].companyId && companiesTasks[index].companyId.clientTaxonomyId) ? companiesTasks[index].companyId.clientTaxonomyId.taxonomyName : null,
-        "year": yearVal
+        "year": companiesTasks[index].year
       }
       response.pendingCompaniesData.push(obj);
     }
@@ -242,6 +243,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
             Data: []
           };
           let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, status: true })
+          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, status: true })
             .populate('createdBy')
             .populate('companyId')
             .populate('datapointId');
@@ -310,19 +312,12 @@ export const downloadJson = async ({ bodymen: { body } }, res, next) => {
     Key: myKey,
     Expires: signedUrlExpireSeconds
   })
-  return res.status(200).json({ status: "200", signedUrl: url });
+  return res.status(200).json({ status: "200", message: "Json downloaded successfully!", signedUrl: url });
 }
-
 
 async function storeFileInS3(actualJson, type, companyId, year) {
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
-    // AWS.config.update({
-    //   accessKeyId: 'AKIA2B53Z7RFPSTPWYOL', //read from env
-    //   secretAccessKey: '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',
-    //   signatureVersion: 'v4',
-    //   region: 'ap-south-1'
-    // })
     const s3 = new AWS.S3({
       accessKeyId: 'AKIA2B53Z7RFPSTPWYOL',
       secretAccessKey: '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',
@@ -338,7 +333,6 @@ async function storeFileInS3(actualJson, type, companyId, year) {
       if (s3Err) {
         reject(s3Err)
       } else {
-        console.log(`File uploaded successfully at ${data.Location}`);
         resolve({ data, fileName: type + '/' + fileName });
       }
     });

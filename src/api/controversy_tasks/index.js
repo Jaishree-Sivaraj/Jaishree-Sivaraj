@@ -7,7 +7,7 @@ import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
 const router = new Router()
-const { taskNumber, companyId, analystId, taskStatus, completedDate, status } = schema.tree
+const { taskNumber, companyId, analystId, taskStatus, completedDate, status, canGenerateJson, isJsonGenerated } = schema.tree
 const analyst = {}, company = [];
 
 /**
