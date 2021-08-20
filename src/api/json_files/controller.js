@@ -265,7 +265,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
         await JsonFiles.updateOne({ companyId: body.companyId }, { $set: jsonFileObject }, { upsert: true })
           .then(async (updatedJsonfiles) => {
-            await ControversyTasks.updateMany({ companyId: body.companyId }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
+            await ControversyTasks.updateOne({ companyId: body.companyId }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
               .then(async (updatedControversyTasks) => {
                 return res.status(200).json({ status: "200", message: body.type.toUpperCase() + " Json generated successfully!" });
               }).catch(function (err) {
