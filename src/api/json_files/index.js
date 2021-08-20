@@ -2,13 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, retrieveJsonFiles, payLoadGenerationDetails } from './controller'
+import { create, index, show, update, destroy, retrieveJsonFiles, payLoadGenerationDetails, generateJson, downloadJson } from './controller'
 import { schema } from './model'
 export JsonFiles, { schema } from './model'
 
 const router = new Router()
 const { companyId, year, type, fileName, url, status } = schema.tree
-
 /**
  * @api {post} /json_files Create json files
  * @apiName CreateJsonFiles
@@ -30,6 +29,45 @@ router.post('/',
   token({ required: true }),
   body({ companyId, year, type, fileName, url, status }),
   create)
+
+
+/**
+ * @api {post} /json_files/generate-json Create json files
+ * @apiName CreateJsonFiles
+ * @apiGroup JsonFiles
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam companyId Json files's companyId.
+ * @apiParam year Json files's year.
+ * @apiParam type Json files's type.
+ * @apiSuccess {Object} jsonFiles Json files's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Json files not found.
+ * @apiError 401 user access only.
+ */
+router.post('/generate-json',
+  token({ required: true }),
+  body({ companyId, type, year }),
+  generateJson)
+
+/**
+* @api {post} /json_files/generate-json Create json files
+* @apiName CreateJsonFiles
+* @apiGroup JsonFiles
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam companyId Json files's companyId.
+* @apiParam year Json files's year.
+* @apiParam type Json files's type.
+* @apiSuccess {Object} jsonFiles Json files's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Json files not found.
+* @apiError 401 user access only.
+*/
+router.post('/download-json',
+  token({ required: true }),
+  body({ fileName }),
+  downloadJson)
 
 /**
  * @api {get} /json_files Retrieve json files
