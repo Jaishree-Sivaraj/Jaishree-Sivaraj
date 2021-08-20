@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, errorDatapointDetails, collectionDatapointDetails, uploadNewTaxonomyDatapoints } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, repDatapointDetails,  uploadNewTaxonomyDatapoints } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
@@ -194,7 +194,7 @@ router.get('/list/:taskId',
     datapointDetails);
     
   /**
-  * @api {post} /datapoints/errorDpDetails Get datapoints details
+  * @api {post} /datapoints/repDpDetails Get datapoints details
   * @apiName datapointDetails
   * @apiGroup Datapoints
   * @apiPermission user
@@ -209,32 +209,10 @@ router.get('/list/:taskId',
   * @apiError 404 Datapoints not found.
   * @apiError 401 user access only.
   */
-  router.post('/errorDpDetails',
+  router.post('/repDpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName, year}),
-  errorDatapointDetails)
-
-  /**
-  * @api {post} /datapoints/collectionDpDetails Get datapoints details
-  * @apiName datapointDetails
-  * @apiGroup Datapoints
-  * @apiPermission user
- * @apiParam taskId .
- * @apiParam datapointId Datapoints's Id.
- * @apiParam memberName Member's name.
- * @apiParam memberType Member's type.
- * @apiParam year ErrorDatapoint's year
-  * @apiParam {String} access_token user access token.
-  * @apiSuccess {Object} datapoints Datapoints's data.
-  * @apiError {Object} 400 Some parameters may contain invalid values.
-  * @apiError 404 Datapoints not found.
-  * @apiError 401 user access only.
-  */
-  router.post('/collectionDpDetails',
-  token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName, year}),
-  collectionDatapointDetails)
-
+  body({ taskId, datapointId, memberType, memberName}),
+  repDatapointDetails)
 
 /**
  * @api {put} /datapoints/:id Update datapoints

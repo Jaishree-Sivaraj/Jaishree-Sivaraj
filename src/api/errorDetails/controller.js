@@ -785,8 +785,7 @@ export const saveRepErrorDetails = async({
               },
               additionalDetails: object.error.refData.additionalDetails
             }
-          }
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);          
+          }         
           boardDatapoints = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -794,7 +793,7 @@ export const saveRepErrorDetails = async({
             year: object.fiscalYear,
             taskId: body.taskId, 
             memberName: body.memberName,
-            errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+            errorTypeId: null,
             raisedBy: object.error.raisedBy,
             errorStatus: object.error.errorStatus,
             errorCaughtByRep: errorCaughtByRep,            
