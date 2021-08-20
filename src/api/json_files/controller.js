@@ -189,7 +189,10 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
       }
     });
-    await storeFileInS3(jsonResponseObject, 'data', body.companyId, body.year).then(async function (s3Data) {
+    await storeFileInS3({
+      "message": "Success.",
+      "status": 200,
+      "data": jsonResponseObject }, body.companyId, body.year).then(async function (s3Data) {
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
