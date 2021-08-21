@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, type8Validation,type3Validation,extraAddKeys } from './controller'
+import { create, index, show, update, destroy, type8Validation,type3Validation,extraAddKeys, getAllValidation } from './controller'
 import { schema } from './model'
 export Validations, { schema } from './model'
 
@@ -85,6 +85,21 @@ router.post('/',
   token({ required: true }),
   body({ datapointId, companyId, clientTaxonomyId, previousYear, response}),
   type3Validation)
+
+  /**
+   * @api {get} /validations/validateDpDetails/:taskId 
+   * @apiName RetrieveValidations
+   * @apiGroup Validations
+   * @apiPermission user
+   * @apiParam {String} access_token user access token.
+   * @apiSuccess {Object} validations Validations's data.
+   * @apiError {Object} 400 Some parameters may contain invalid values.
+   * @apiError 404 Validations not found.
+   * @apiError 401 user access only.
+   */
+  router.get('/validateDpDetails/:taskId/:previousYear',
+    token({ required: true }),
+    getAllValidation)
   
   /**
    * @api {get} /validations/addCategory add CategoryId
