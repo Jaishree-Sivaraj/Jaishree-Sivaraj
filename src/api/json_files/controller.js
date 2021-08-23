@@ -8,6 +8,7 @@ import { DerivedDatapoints } from '../derived_datapoints'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { Companies } from '../companies'
+import { Cron } from "./cron"
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -192,7 +193,8 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
     await storeFileInS3({
       "message": "Success.",
       "status": 200,
-      "data": jsonResponseObject }, body.companyId, body.year).then(async function (s3Data) {
+      "data": jsonResponseObject
+    }, body.companyId, body.year).then(async function (s3Data) {
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
@@ -274,7 +276,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
 }
 
 export const downloadJson = async ({ bodymen: { body } }, res, next) => {
-  const myBucket = 'esgdsdatajsonfiles'
+  const myBucket = process.env.BUCKET_NAME
   const myKey = body.fileName;
   const signedUrlExpireSeconds = 60 * 5 // your expiry time in seconds.
   const url = s3.getSignedUrl('getObject', {
@@ -289,7 +291,7 @@ async function storeFileInS3(actualJson, type, companyId, year) {
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
     const params = {
-      Bucket: 'esgdsdatajsonfiles', // pass your bucket name
+      Bucket: process.env.BUCKET_NAME, // pass your bucket name
       Key: type + '/' + fileName, // file will be saved in <folderName> folder
       Body: Buffer.from(JSON.stringify(actualJson))
     };
