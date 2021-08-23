@@ -8,6 +8,7 @@ import { DerivedDatapoints } from '../derived_datapoints'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { Companies } from '../companies'
+import { Cron } from "./cron"
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -192,7 +193,8 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
     await storeFileInS3({
       "message": "Success.",
       "status": 200,
-      "data": jsonResponseObject }, body.companyId, body.year).then(async function (s3Data) {
+      "data": jsonResponseObject
+    }, body.companyId, body.year).then(async function (s3Data) {
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
