@@ -276,7 +276,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
 }
 
 export const downloadJson = async ({ bodymen: { body } }, res, next) => {
-  const myBucket = 'esgdsdatajsonfiles'
+  const myBucket = process.env.BUCKET_NAME
   const myKey = body.fileName;
   const signedUrlExpireSeconds = 60 * 5 // your expiry time in seconds.
   const url = s3.getSignedUrl('getObject', {
@@ -291,7 +291,7 @@ async function storeFileInS3(actualJson, type, companyId, year) {
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
     const params = {
-      Bucket: 'esgdsdatajsonfiles', // pass your bucket name
+      Bucket: process.env.BUCKET_NAME, // pass your bucket name
       Key: type + '/' + fileName, // file will be saved in <folderName> folder
       Body: Buffer.from(JSON.stringify(actualJson))
     };

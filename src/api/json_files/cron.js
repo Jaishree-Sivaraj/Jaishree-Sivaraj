@@ -32,7 +32,6 @@ async function handleCron() {
             path: 'clientTaxonomyId'
         }
     });
-    console.log('companiesTasks', companiesTasks);
     for (let index = 0; index < companiesTasks.length; index++) {
         try {
             var result = await generateJson({ type: 'data', companyId: companiesTasks[index].companyId.id, year: companiesTasks[index].year });
@@ -45,7 +44,6 @@ async function handleCron() {
     for (let index = 0; index < controversyTasks.length; index++) {
         try {
             var result = await generateJson({ type: 'controversy', companyId: controversyTasks[index].companyId.id });
-            console.log('controverst', result);
         } catch (e) {
             console.log('error while generating jsons for controversy', e);
         }
@@ -187,11 +185,10 @@ async function storeFileInS3(actualJson, type, companyId, year) {
         var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
         console.log('filName', fileName);
         const params = {
-            Bucket: 'esgdsdatajsonfiles', // pass your bucket name
+            Bucket: process.env.BUCKET_NAME, // pass your bucket name
             Key: type + '/' + fileName, // file will be saved in <folderName> folder
             Body: Buffer.from(JSON.stringify(actualJson))
         };
-        console.log('params', params);
         s3.upload(params, function (s3Err, data) {
             if (s3Err) {
                 console.log('s3', s3Err);
