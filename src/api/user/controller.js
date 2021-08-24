@@ -840,7 +840,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                   const content = `
                     Hai,<br/>
                     Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                    URL: http://d3uci07cs40etq.cloudfront.net${link}?email=${rowObject['email']}<br/><br/>
+                    URL: ${process.env.FRONTEND_URL}${link}?email=${rowObject['email']}<br/><br/>
                     &mdash; ESG Team `;
                   var transporter = nodemailer.createTransport({
                     service: 'Gmail',
@@ -863,7 +863,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
               }
             }
-            return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+            return res.status(200).json({ status: "200", message: "List uploaded and emails sent sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
           } else {
             return res.status(400).json({ status: "400", message: "File has some invalid data please check!" });
           }
@@ -917,7 +917,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         const content = `
           Hai,<br/>
           Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-          URL: http://d3uci07cs40etq.cloudfront.net${link}&email=${rowObject['email']}<br/><br/>
+          URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
