@@ -917,7 +917,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         const content = `
           Hai,<br/>
           Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-          URL: https://unruffled-bhaskara-834a98.netlify.app${link}&email=${rowObject['email']}<br/><br/>
+          URL: http://d3uci07cs40etq.cloudfront.net${link}&email=${rowObject['email']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
