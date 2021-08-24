@@ -394,8 +394,6 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             }
             
           }
-        } else {
-          return res.status(404).json({ message: "Parameters not found" });
         }
       } else if (validationRules[validationIndex].methodName.trim() == 'YES') {
         let parameter = validationRules[validationIndex].dependentCodes;
@@ -467,8 +465,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
               
             }
-          }
-          
+          }          
         }
       } else if (validationRules[validationIndex].methodName.trim() == 'ANDOR') {
         let parameters = validationRules[validationIndex].dependentCodes;
