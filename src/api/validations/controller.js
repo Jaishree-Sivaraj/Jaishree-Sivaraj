@@ -64,7 +64,10 @@ export const extraAddKeys = async({params}, res, next)=>{
      });
       if(validationId && validationId.length > 0){
         for (let validationIndex = 0; validationIndex < validationId.length; validationIndex++) {
-         await Validations.updateOne({_id: validationId[validationIndex].id},{$set:{categoryId: validationId[validationIndex].datapointId.categoryId.id }})        
+          console.log(validationIndex);
+          if(validationId[validationIndex].datapointId !== null){
+            await Validations.updateOne({_id: validationId[validationIndex].id},{$set:{categoryId: validationId[validationIndex].datapointId.categoryId.id }})        
+          }
       //  const element = validationId[validationIndex].parameters[0].split(",");
       //  if(element[0] != ''){
       //    console.log(validationIndex)
@@ -253,14 +256,7 @@ export const type3Validation = async ({ user, body }, res, next) => {
 }
 
 export const getAllValidation =async ({ user, params }, res, next) => {
-  let validationResponseObject = {
-    dpCodeId: '',
-    dpCode: "",
-    isValidResponse: false,
-    errorMessage:"",
-    year: '',
-    validationType: 0
-  }
+ 
   let validationResponse = [];
   let taskDetailsObject = await TaskAssignment.findOne({_id: params.taskId}).populate({
     path: "companyId",
@@ -272,10 +268,11 @@ export const getAllValidation =async ({ user, params }, res, next) => {
   let validationRules = await Validations.find({categoryId: taskDetailsObject.categoryId.id}).populate('datapointId');
   let derivedDatapoints = await DerivedDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
   let standalone_datapoints = await StandaloneDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
-  let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}}).populate('datapointId');
+ // let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}}).populate('datapointId');
   let mergedDetails = _.concat(derivedDatapoints, standalone_datapoints);
   for (let validationIndex = 0; validationIndex < validationRules.length; validationIndex++) {
     if(validationRules[validationIndex].validationType == "3"){
+      
       let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == params.previousYear);
     if(previousResponseIndex > -1){
       let previousResponse = mergedDetails[previousResponseIndex];
@@ -284,25 +281,34 @@ export const getAllValidation =async ({ user, params }, res, next) => {
         let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex]);
         if(currentResponse){
           if (previousResponse.response.toLowerCase() == 'yes' || previousResponse.response.toLowerCase() == 'y') {
-            if (currentResponse[0].response.toLowerCase() == 'yes' || currentResponse[0].response.toLowerCase() == 'y') {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = true
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
+            if (currentResponse.response.toLowerCase() == 'yes' || currentResponse.response.toLowerCase() == 'y') {
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: true,
+                year: distinctYears[yearIndex],
+                validationType: validationRules[validationIndex].validationType
+              }
               validationResponse.push(validationResponseObject);
             } else {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = false
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
-              validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+                    let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: false,
+                      year: distinctYears[yearIndex],                
+                      errorMessage : validationRules[validationIndex].errorMessage,
+                      validationType: validationRules[validationIndex].validationType
+                    }
               validationResponse.push(validationResponseObject);
             }
           } else {
-            validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-            validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-            validationResponseObject.isValidResponse = true
-            validationResponseObject.validationType = validationRules[validationIndex].validationType
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
             validationResponse.push(validationResponseObject);
           }
         }
@@ -312,7 +318,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
     }
   }
     } else if(validationRules[validationIndex].validationType == "8"){
-      let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && year == params.previousYear);
+      let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == params.previousYear);
       if(previousResponseIndex > -1){
 
       if (validationRules[validationIndex].methodName.trim() == 'OR') {
@@ -335,34 +341,46 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
                   if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
                     let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                    if (Number(currentResponse[0].response) > Number(calculatedResponse)) {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = true
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
+                    if (Number(currentResponse.response) > Number(calculatedResponse)) {
+                      let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: true,
+                      year: distinctYears[yearIndex],
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     } else {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = false
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
-                      validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+                    let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: false,
+                      year: distinctYears[yearIndex],                
+                      errorMessage : validationRules[validationIndex].errorMessage,
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     }
                   } else {
                     let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                    if (Number(currentResponse[0].response) < Number(calculatedResponse)) {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = true
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
+                    if (Number(currentResponse.response) < Number(calculatedResponse)) {
+                      let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: true,
+                      year: distinctYears[yearIndex],
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     } else {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = false
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
-                      validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+                    let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: false,
+                      year: distinctYears[yearIndex],                
+                      errorMessage : validationRules[validationIndex].errorMessage,
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     }
                   }
@@ -376,8 +394,6 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             }
             
           }
-        } else {
-          return res.status(404).json({ message: "Parameters not found" });
         }
       } else if (validationRules[validationIndex].methodName.trim() == 'YES') {
         let parameter = validationRules[validationIndex].dependentCodes;
@@ -398,34 +414,46 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
                   if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
                     let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                    if (Number(currentResponse[0].response) > Number(calculatedResponse)) {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = true
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
+                    if (Number(currentResponse.response) > Number(calculatedResponse)) {
+                      let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: true,
+                      year: distinctYears[yearIndex],
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     } else {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = false
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
-                      validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+                    let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: false,
+                      year: distinctYears[yearIndex],                
+                      errorMessage : validationRules[validationIndex].errorMessage,
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     }
                   } else {
                     let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                    if (Number(currentResponse[0].response) < Number(calculatedResponse)) {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = true
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
+                    if (Number(currentResponse.response) < Number(calculatedResponse)) {
+                      let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: true,
+                      year: distinctYears[yearIndex],
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     } else {
-                      validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                      validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                      validationResponseObject.isValidResponse = false
-                      validationResponseObject.validationType = validationRules[validationIndex].validationType
-                      validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+                    let validationResponseObject = {
+                      dpCodeId: validationRules[validationIndex].datapointId.id,
+                      dpCode: validationRules[validationIndex].datapointId.code,
+                      isValidResponse: false,
+                      year: distinctYears[yearIndex],                
+                      errorMessage : validationRules[validationIndex].errorMessage,
+                      validationType: validationRules[validationIndex].validationType
+                    }
                       validationResponse.push(validationResponseObject);
                     }
                   }
@@ -437,8 +465,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
               
             }
-          }
-          
+          }          
         }
       } else if (validationRules[validationIndex].methodName.trim() == 'ANDOR') {
         let parameters = validationRules[validationIndex].dependentCodes;
@@ -463,43 +490,58 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes')) || (param3Value == 'yes' || param3Value == 'Yes')) {
             if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
               let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-              if (Number(currentResponse[0].response) > Number(calculatedResponse)) {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+              if (Number(currentResponse.response) > Number(calculatedResponse)) {
+                  let validationResponseObject = {
+                  dpCodeId: validationRules[validationIndex].datapointId.id,
+                  dpCode: validationRules[validationIndex].datapointId.code,
+                  isValidResponse: true,
+                  year: distinctYears[yearIndex],
+                  validationType: validationRules[validationIndex].validationType
+                }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             } else {
               let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-              if (Number(currentResponse[0].response) < Number(calculatedResponse)) {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+              if (Number(currentResponse.response) < Number(calculatedResponse)) {
+                let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: true,
+                year: distinctYears[yearIndex],
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             }
           } else {
-            validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-            validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-            validationResponseObject.isValidResponse = false
-            validationResponseObject.validationType = validationRules[validationIndex].validationType
-            validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+            let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: false,
+              year: distinctYears[yearIndex],                
+              errorMessage : validationRules[validationIndex].errorMessage,
+              validationType: validationRules[validationIndex].validationType
+            }
             validationResponse.push(validationResponseObject);
           }
           
@@ -526,53 +568,69 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes') && (param3Value == 'yes' || param3Value == 'yes') || (param4Value == 'yes' || param4Value == 'Yes'))) {
             if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
               let calculatedResponse = (Number(validationRules[validationIndex].percentileThresholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-              if (Number(currentResponse[0].response) > Number(calculatedResponse)) {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+              if (Number(currentResponse.response) > Number(calculatedResponse)) {
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             }
           } else {
-            validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-            validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-            validationResponseObject.isValidResponse = false
-            validationResponseObject.validationType = validationRules[validationIndex].validationType
-            validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+            let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: false,
+              year: distinctYears[yearIndex],                
+              errorMessage : validationRules[validationIndex].errorMessage,
+              validationType: validationRules[validationIndex].validationType
+            }
             validationResponse.push(validationResponseObject);
           }
           
         }
       } else if(validationRules[validationIndex].methodName.trim() == 'ResponseCheck'){ 
-        let dpResponse ;       
+        let dpResponse ;          
+        for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {     
         _.filter(mergedDetails, (object, index) => {
-          if (object.year == distinctYears[yearIndex], object.datapointId.id == parameters[parameterIndex].id) {
+          if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
             dpResponse = object;
           }
         });
         if(validationRules[validationIndex].checkResponse.includes(dpResponse.response)){
-          validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-          validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-          validationResponseObject.isValidResponse = false
-          validationResponseObject.validationType = validationRules[validationIndex].validationType
-          validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+          let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: false,
+            year: distinctYears[yearIndex],                
+            errorMessage : validationRules[validationIndex].errorMessage,
+            validationType: validationRules[validationIndex].validationType
+          }
           validationResponse.push(validationResponseObject);
         } else {
-          validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-          validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-          validationResponseObject.isValidResponse = true
-          validationResponseObject.validationType = validationRules[validationIndex].validationType
-          validationResponse.push(validationResponseObject);
-
+          let validationResponseObject = {
+          dpCodeId: validationRules[validationIndex].datapointId.id,
+          dpCode: validationRules[validationIndex].datapointId.code,
+          isValidResponse: true,
+          year: distinctYears[yearIndex],
+          validationType: validationRules[validationIndex].validationType
         }
+          validationResponse.push(validationResponseObject);
+        }
+      }
       }  else if(validationRules[validationIndex].methodName.trim() == 'YesCondition'){
         let dpResponse, dependantCode;
         for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
@@ -588,24 +646,33 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           if(dependantCode.response && dpResponse.response){
             if(dependantCode.response.toLowerCase() == 'yes'){
               if(dpResponse.response.toLowerCase() == 'yes'){
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             } else {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = true
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: true,
+              year: distinctYears[yearIndex],
+              validationType: validationRules[validationIndex].validationType
+            }
               validationResponse.push(validationResponseObject);
             }
           }
@@ -633,24 +700,33 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           if(dpResponse.response){
             if(count > 0){
               if(dpResponse.response.toLowerCase() == 'yes'){
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             } else {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = true
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: true,
+              year: distinctYears[yearIndex],
+              validationType: validationRules[validationIndex].validationType
+            }
               validationResponse.push(validationResponseObject);
             }
           }
@@ -671,24 +747,33 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           if(dependantCode.response && dpResponse.response){
             if(isNumber(dependantCode.response)){              
               if(isNumber(dpResponse.response)){
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             } else {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = true
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: true,
+              year: distinctYears[yearIndex],
+              validationType: validationRules[validationIndex].validationType
+            }
               validationResponse.push(validationResponseObject);
             }
           }
@@ -716,24 +801,33 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           if(dpResponse.response){
             if(count > 0){
               if(isNumber(dpResponse.response)){
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = true
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
+            let validationResponseObject = {
+            dpCodeId: validationRules[validationIndex].datapointId.id,
+            dpCode: validationRules[validationIndex].datapointId.code,
+            isValidResponse: true,
+            year: distinctYears[yearIndex],
+            validationType: validationRules[validationIndex].validationType
+          }
                 validationResponse.push(validationResponseObject);
               } else {
-                validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-                validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-                validationResponseObject.isValidResponse = false
-                validationResponseObject.validationType = validationRules[validationIndex].validationType
-                validationResponseObject.errorMessage = validationRules[validationIndex].errorMessage
+              let validationResponseObject = {
+                dpCodeId: validationRules[validationIndex].datapointId.id,
+                dpCode: validationRules[validationIndex].datapointId.code,
+                isValidResponse: false,
+                year: distinctYears[yearIndex],                
+                errorMessage : validationRules[validationIndex].errorMessage,
+                validationType: validationRules[validationIndex].validationType
+              }
                 validationResponse.push(validationResponseObject);
               }
             } else {
-              validationResponseObject.dpCode = validationRules[validationIndex].datapointId.code
-              validationResponseObject.dpCodeId = validationRules[validationIndex].datapointId.id
-              validationResponseObject.isValidResponse = true
-              validationResponseObject.validationType = validationRules[validationIndex].validationType
+              let validationResponseObject = {
+              dpCodeId: validationRules[validationIndex].datapointId.id,
+              dpCode: validationRules[validationIndex].datapointId.code,
+              isValidResponse: true,
+              year: distinctYears[yearIndex],
+              validationType: validationRules[validationIndex].validationType
+            }
               validationResponse.push(validationResponseObject);
             }
           }
@@ -749,9 +843,9 @@ export const getAllValidation =async ({ user, params }, res, next) => {
   //   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && year == distinctYears[yearIndex]);
   //   let projectedValue = projectedValues.find(object => object.datapointId.id == percentileDataPointsList[pdpIndex].id && year == distinctYears[yearIndex]);
   //  if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
-  //    zscoreValue = (Number(currentResponse[0].response) - Number(projectedValue.average)) / Number(projectedValue.standardDeviation);
+  //    zscoreValue = (Number(currentResponse.response) - Number(projectedValue.average)) / Number(projectedValue.standardDeviation);
   //  } else {
-  //    zscoreValue = (Number(currentResponse[0].average) - Number(projectedValue.response)) / Number(projectedValue.standardDeviation);
+  //    zscoreValue = (Number(currentResponse.average) - Number(projectedValue.response)) / Number(projectedValue.standardDeviation);
   //  }
   //  if (zscoreValue > 4) {
   //    performanceResult = 100
@@ -799,5 +893,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
   //  }
   //   }
     
+  if (validationIndex == validationRules.length - 1) {
+    return res.status(200).json({ message: "Valid Response", Response: validationResponse });
+
   }
+  }
+
 }
