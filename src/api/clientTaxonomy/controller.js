@@ -14,8 +14,6 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
   // let fields = [];
   // if (body.headers && body.headers.length > 0) {
   //   for (let index = 0; index < body.headers.length; index++) {
-  //     const masterTaxonomy = body.headers[index].value;
-  //     fields.push(masterTaxonomy);
   //   }
   // }
   let clientTaxonomyObject = {
@@ -122,8 +120,6 @@ export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, r
       // let fields = [];
       // if (body.headers && body.headers.length > 0) {
       //   for (let index = 0; index < body.headers.length; index++) {
-      //     const masterTaxonomy = body.headers[index].value;
-      //     fields.push(masterTaxonomy);
       //   }
       // }
       let clientTaxonomyObject = {
