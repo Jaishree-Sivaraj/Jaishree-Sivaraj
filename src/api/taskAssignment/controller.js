@@ -14,6 +14,9 @@ import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
 import { Controversy } from "../controversy";
 import { Datapoints } from "../datapoints";
+import { StandaloneDatapoints } from '../standalone_datapoints'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1124,11 +1127,59 @@ export const updateCompanyStatus = async (
   res,
   next
 ) => {
+  let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId');
+  let distinctYears = taskDetails.year.split(',');
   try {
-    //let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId');
+    let allStandaloneDetails = await StandaloneDatapoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
 
-    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
-   // let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
+let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
+
+let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
+  let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId,categoryId: taskDetailsObject.categoryId.id });
+    let hasError = mergedDetails.find(object => object.hasError == true);
+    let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
+    let multipliedValue = datapointsLength.length * distinctYears.length;
+    if(mergedDetails.length == multipliedValue){
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: "Collection Completed"}});
+    } else if(hasError.length > 0){
+      if(body.role == 'QA'){
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: "Correction Pending"}});
+      } else{
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: "Reassignment Pending"}});
+      }
+    } else if(hasCorrection.length > 0){
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: "Correction Completed"}});
+    } else{
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: "Verification Completed"}});
+    }
 
     let categoriesLength = await Categories.find({
       clientTaxonomyId: body.clientTaxonomyId,
@@ -1139,7 +1190,6 @@ export const updateCompanyStatus = async (
       year: body.year,
       taskStatus: "Completed",
     });
-    console.log(categoriesLength.length, taskDetailsObject.length)
     if (categoriesLength.length == taskDetailsObject.length) {
       await CompaniesTasks.updateMany(
         {
