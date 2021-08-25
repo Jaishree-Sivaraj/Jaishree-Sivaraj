@@ -6,12 +6,48 @@ import { DerivedDatapoints } from '../derived_datapoints'
 import _, { concat, isNumber } from 'lodash'
 import { TaskAssignment } from '../taskAssignment'
 import { ProjectedValues } from "../projected_values";
+import * as fs from 'fs'
 
-export const create = ({ user, bodymen: { body } }, res, next) =>
+export const create = ({ user, bodymen: { body } }, res, next) =>{
   Validations.create({ ...body, createdBy: user })
     .then((validations) => validations.view(true))
     .then(success(res, 201))
     .catch(next)
+}
+
+export const includeExtraKeysFromJson = async (req, res, next) => {
+  fs.readFile(__dirname + '/data.json', async (err, data) => {
+    if (err) throw err;
+    let validationsList = JSON.parse(data);
+    for (let index = 0; index < validationsList.length; index++) {
+      let obj = validationsList[index];
+      await Validations.create({
+        "datapointId": obj.datapointId,
+        "dpCode": obj.dpCode,
+        "clientTaxonomyId": obj.clientTaxonomyId,
+        "validationRule": obj.validationRule,
+        "dataType": obj.dataType,
+        "hasDependentCode": obj.hasDependentCode,
+        "dependentCodes": obj.dependentCodes,
+        "validationType": obj.validationType,
+        "percentileThresholdValue": obj.percentileThresholdValue,
+        "parameters": obj.parameters,
+        "methodName": obj.methodName,
+        "checkCondition": obj.checkCondition,
+        "criteria": obj.criteria,
+        "checkResponse": obj.checkResponse,
+        "errorMessage": obj.errorMessage
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message + " for "+ obj.dpCode : "Failed to create validation for "+ obj.dpCode })
+      });
+    }
+    res.status(200).json({
+      message: "Validation added successfully!"
+    });
+  })
+}
+
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Validations.count(query)

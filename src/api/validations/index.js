@@ -2,14 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, type8Validation,type3Validation,extraAddKeys, getAllValidation } from './controller'
+import { create, index, show, update, destroy, type8Validation,type3Validation,extraAddKeys, getAllValidation, includeExtraKeysFromJson } from './controller'
 import { schema } from './model'
 export Validations, { schema } from './model'
 
 const router = new Router()
-const { datapointId, rule, dependantCode, condition, validationAlert} = schema.tree
-const { dpCode, validationRule, dataType, hasDependentCode, dependantCodes, validationType, percentileThreasholdValue, parameters, 
-  methodName, checkCondition, criteria, checkResponse,errorMessage, status } = schema.tree
+const { datapointId, dpCode, validationRule, dataType, hasDependentCode, dependentCodes, validationType, percentileThreasholdValue, parameters, 
+  methodName, checkCondition, criteria, checkResponse, errorMessage, status } = schema.tree
 const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = '', response = '';
 /**
  * @api {post} /validations Create validations
@@ -23,7 +22,7 @@ const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = ''
  * @apiParam validationRule Validations's validationRule.
  * @apiParam dataType Validations's dataType.
  * @apiParam hasDependentCode Validations's hasDependentCode.
- * @apiParam dependantCodes Validations's dependantCodes.
+ * @apiParam dependentCodes Validations's dependentCodes.
  * @apiParam validationType Validations's validationType.
  * @apiParam percentileThreasholdValue Validations's percentileThreasholdValue.
  * @apiParam parameters Validations's parameters.
@@ -39,7 +38,7 @@ const companyId = '', clientTaxonomyId = '', currentYear = '', previousYear = ''
  */
 router.post('/',
   token({ required: true }),
-  body({ datapointId, dpCode, clientTaxonomyId, validationRule, dataType, hasDependentCode, dependantCodes, validationType, percentileThreasholdValue, parameters, 
+  body({ datapointId, dpCode, clientTaxonomyId, validationRule, dataType, hasDependentCode, dependentCodes, validationType, percentileThreasholdValue, parameters, 
     methodName, checkCondition, criteria, checkResponse, errorMessage }),
   create)
 /**
@@ -101,6 +100,21 @@ router.post('/',
     token({ required: true }),
     getAllValidation)
   
+    /**
+   * @api {get} /validations/addValidations
+   * @apiName CreateValidations
+   * @apiGroup Validations
+   * @apiPermission user
+   * @apiParam {String} access_token user access token.
+   * @apiSuccess {Object} validations Validations's data.
+   * @apiError {Object} 400 Some parameters may contain invalid values.
+   * @apiError 404 Validations not found.
+   * @apiError 401 user access only.
+   */
+    router.get('/addValidations',
+    token({ required: true }),
+    includeExtraKeysFromJson)
+
   /**
    * @api {get} /validations/addCategory add CategoryId
    * @apiName RetrieveValidations
@@ -156,11 +170,8 @@ router.get('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam datapointId Validations's datapointId.
  * @apiParam validationRule Validations's validationRule.
- * @apiParam rule Validations's rule.
- * @apiParam dependantCode Validations's dependantCode.
- * @apiParam condition Validations's condition.
+ * @apiParam dependentCodes Validations's dependentCodes.
  * @apiParam criteria Validations's criteria.
- * @apiParam validationAlert Validations's validationAlert.
  * @apiParam status Validations's status.
  * @apiSuccess {Object} validations Validations's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -169,7 +180,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ datapointId, validationRule, rule, dependantCode, condition, criteria, validationAlert, status }),
+  body({ datapointId, validationRule, dependentCodes, criteria, status }),
   update)
 
 /**
