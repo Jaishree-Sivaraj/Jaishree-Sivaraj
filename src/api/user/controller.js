@@ -517,9 +517,9 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       }
     }
   }
-  var userDetailsInRoles = await User.find(filterQuery).
-    populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  var userDetailsInRoles = await User.find(filterQuery)
+  .populate({ path: 'roleDetails.roles' })
+  .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
     return {
       "userDetails": {

@@ -319,6 +319,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
       controversyList: []
     }
   };
+  userRoles = _.uniq(userRoles);
   if (userRoles.length > 0) {
     for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
       let findQuery = {};
@@ -486,6 +487,7 @@ export const getMyTasks = async (
       message: "User role not found!",
     });
   }
+  userRoles = _.uniq(userRoles);
 
   if (userRoles.includes("QA")) {
     await TaskAssignment.find({
@@ -926,193 +928,105 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next);
 
 export const getGroupAndBatches = async ({ user, params }, res, next) => {
-  var groupRoleDetails = await Role.findOne({ roleName: "GroupAdmin" }).catch(() => {
-    return res.status(500).json({ status: "500", message: error.message, });
-  });
-  var superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => {
-    return res.status(500).json({
-      status: "500", message: error.message,
-    });
-  });
-  var adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
+  .catch((error) => {
     return res.status(500).json({
       status: "500",
       message: error.message,
     });
   });
-  console.log("groupRoleDetails", groupRoleDetails);
-  var userDetailWithGroupAdminRole = await User.findOne({
-    _id: user.id,
-    '$or': [
-      {
-        "roleDetails.roles": {
-          '$in': [groupRoleDetails.id],
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
+        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
         }
-      },
-      {
-        "roleDetails.primaryRole": groupRoleDetails.id,
       }
-    ]
-  }).populate({
-    path: "roleDetails.roles"
-  }).populate({
-    path: "roleDetails.primaryRole"
-  }).catch((error) => {
-    return res.status(500).json({
-      status: "500",
-      message: error.message
-    });
-  });
-  console.log('userDetailWithGroupAdminRole', userDetailWithGroupAdminRole);
-  if (userDetailWithGroupAdminRole && Object.keys(userDetailWithGroupAdminRole).length > 0) {
-    console.log("in group admin");
-    await Group.find({
-      groupAdmin: userDetailWithGroupAdminRole._id,
-    }).populate("assignedMembers")
-      .populate("batchList")
-      .then(async (group) => {
-        var resArray = [];
-        for (let index = 0; index < group.length; index++) {
-          var resObject = {};
-          resObject.groupName = group[index].groupName;
-          resObject.groupID = group[index].id;
-          resObject.assignedBatches = [];
-          for (
-            let index1 = 0;
-            index1 < group[index].batchList.length;
-            index1++
-          ) {
-            var categories = await Categories.find({
-              clientTaxonomyId: group[index].batchList[index1].clientTaxonomy,
-            }).catch((err) => {
-              return res.status(500).json({
-                status: "500",
-                message: err.message
-              });
-            });
-            var assignedBatches = group[index].batchList.map((rec) => {
-              return {
-                batchName: rec.batchName,
-                batchID: rec._id,
-                pillars: categories.map((rec) => {
-                  return {
-                    value: rec.id,
-                    label: rec.categoryName
-                  };
-                }),
-                batchYear: rec.years
-              };
-            });
-            resObject.assignedBatches = assignedBatches ? assignedBatches : [];
-          }
-          resArray.push(resObject);
-        }
-        return res.status(200).json({
-          groups: resArray
-        });
-      })
-      .catch((err) => {
-        return res.status(500).json({
-          status: "500",
-          message: err.message
-        });
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
       });
+    }
   } else {
-    var userDetailWithSuperAdminRole = await User.findOne({
-      _id: user.id,
-      '$or': [
-        {
-          "roleDetails.roles": {
-            '$in': [
-              superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null
-            ]
-          }
-        },
-        {
-          '$or': [
-            {
-              "roleDetails.primaryRole": superAdminRoleDetails ? superAdminRoleDetails.id : null
-            },
-            {
-              "roleDetails.primaryRole": adminRoleDetails ? adminRoleDetails.id : null
-            }
-          ]
-        }
-      ]
-    }).populate({
-      path: "roleDetails.roles"
-    }).populate({
-      path: "roleDetails.primaryRole"
-    }).catch((error) => {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  let finalResponseObject = {
+    groupAdminList : [],
+    adminList : []
+  };
+  userRoles = _.uniq(userRoles);
+  if (userRoles.length > 0) {
+    let categories = await Categories.find({
+      status: true
+    }).catch((err) => {
       return res.status(500).json({
         status: "500",
-        message: error.message
+        message: err.message
       });
     });
-    console.log('userDetailWithSuperAdminRole', userDetailWithSuperAdminRole);
-    if (userDetailWithSuperAdminRole) {
-      await Group.find({
-        status: true
-      }).sort({ createdAt: -1 }).populate("assignedMembers")
+    console.log('userRoles', userRoles);
+    for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+      let findQuery = {};
+      if (userRoles[roleIndex] == "GroupAdmin") {
+        findQuery = { groupAdmin: user.id, status: true };
+      } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin") {
+        findQuery = { status: true };
+      }
+      if (findQuery != {}) {
+        await Group.find(findQuery)
+        .populate("assignedMembers")
         .populate("batchList")
         .then(async (group) => {
-          var resArray = [];
           for (let index = 0; index < group.length; index++) {
             var resObject = {};
             resObject.groupName = group[index].groupName;
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
-            for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
-              var categories = await Categories.find({
-                clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
-              }).catch((err) => {
-                return res.status(500).json({
-                  status: "500",
-                  message: err.message
-                });
+            for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
+              let foundCategories = categories.filter(obj => obj.clientTaxonomyId == group[index].batchList[index1].clientTaxonomy );
+              var assignedBatches = group[index].batchList.map((rec) => {
+                return {
+                  batchName: rec.batchName,
+                  batchID: rec._id,
+                  pillars: foundCategories.map((rec) => {
+                    return {
+                      value: rec.id,
+                      label: rec.categoryName
+                    };
+                  }),
+                  batchYear: rec.years
+                };
               });
-              var obj = {
-                batchName: group[index].batchList[index1].batchName,
-                batchID: group[index].batchList[index1]._id,
-                batchYear: group[index].batchList[index1].years,
-                pillars: []
-              };
-              for (let index3 = 0; index3 < categories.length; index3++) {
-                obj.pillars.push({
-                  value: categories[index3].id,
-                  label: categories[index3].categoryName
-                })
-              }
-              resObject.assignedBatches.push(obj);
-              // var assignedBatches = group[index].batchList.map((rec) => {
-              //   return {
-              //     batchName: rec.batchName,
-              //     batchID: rec._id,
-              //     pillars: categories.map((rec1) => {
-              //       return {
-              //         value: rec1.id,
-              //         label: rec1.categoryName
-              //       };
-              //     }),
-              //     batchYear: rec.years
-              //   };
-              // });
-              // resObject.assignedBatches = assignedBatches.length > 0 ? assignedBatches : [];
-              // console.log('res', resObject);
+              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
             }
-            resArray.push(resObject);
+            if (userRoles[roleIndex] == "GroupAdmin") {
+              finalResponseObject.groupAdminList.push(resObject);
+            } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin"){
+              finalResponseObject.adminList.push(resObject);
+            }
           }
-          return res.status(200).json({
-            groups: resArray
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            status: "500",
+            message: err.message
           });
         });
-    } else {
-      return res.status(200).json({
-        groups: []
-      });
+      }
     }
   }
+  return res.status(200).json({ status: "200", message: "Groups retrieved successfully!", data: finalResponseObject });
 };
 
 export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
