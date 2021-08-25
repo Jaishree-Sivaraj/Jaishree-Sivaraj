@@ -14,6 +14,11 @@ import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
 import { Controversy } from "../controversy";
 import { Datapoints } from "../datapoints";
+import { StandaloneDatapoints } from '../standalone_datapoints'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
+import { Notifications } from '../notifications'
+import { TaskHistories } from '../task_histories'
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -877,16 +882,37 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next);
 
 
-export const updateSlaDates = ({ user, bodymen: { body }, params }, res, next) => {
-  TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then(function (updatedRecord) {
-    res.send({
-      status: 200,
-      message: 'Task updated successfully'
-    })
-  }).catch((err) => {
-    return res.status(500).json({
-      status: "500",
-      message: err.message
+export const updateSlaDates = async({ user, bodymen: { body }, params }, res, next) => {
+  await TaskAssignment.findById(body.taskId).populate('companyId').populate('categoryId')
+  .then(async(result) => {
+    if(result.taskStatus == "Reassignment Pending"){
+      body.taskDetails['taskStatus'] = "Correction Pending";
+    }
+    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
+      if(result.taskStatus == "Reassignment Pending"){
+        body.taskDetails['taskStatus'] = "Correction Pending";
+        await TaskHistories.create({
+          taskId: body.taskId,
+          companyId: result.companyId.id,
+          categoryId: result.categoryId.id,
+          submittedByName: user.name,
+          stage: "Correction Pending",
+          comment: '',
+          status: true,
+          createdBy: user
+        }).catch((error) =>{
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
+        });
+      }
+      res.send({
+        status: 200,
+        message: 'Task updated successfully'
+      })
+    }).catch((err) => {
+      return res.status(500).json({
+        status: "500",
+        message: err.message
+      });
     });
   });
 }
@@ -1219,23 +1245,99 @@ export const updateCompanyStatus = async (
   res,
   next
 ) => {
+  let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
+  let distinctYears = taskDetails.year.split(',');
   try {
-    //let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId');
+    let allStandaloneDetails = await StandaloneDatapoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
 
-    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
-   // let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
+let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
 
-    let categoriesLength = await Categories.find({
+let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
+    let taskStatusValue = "";
+    let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetailsObject.categoryId.id, dataCollection: "Yes"});
+    let hasError = mergedDetails.find(object => object.hasError == true);
+    let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
+    let multipliedValue = datapointsLength.length * distinctYears.length;
+    if(mergedDetails.length == multipliedValue && hasError.length > 0){
+      if(body.role == 'QA'){
+        taskStatusValue = "Correction Pending";
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      } else{
+        taskStatusValue = "Reassignment Pending";        
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      }
+    } else if(mergedDetails.length == multipliedValue && hasCorrection.length > 0){      
+      taskStatusValue = "Correction Completed"; 
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+    } else if(mergedDetails.length == multipliedValue && hasError.length == 0 && hasCorrection.length == 0){      
+      taskStatusValue = "Verification Completed"; 
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+    } else {     
+      taskStatusValue = "Collection Completed"; 
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+    }
+    await TaskHistories.create({
+      taskId: body.taskId,
+      companyId: taskDetails.companyId.id,
+      categoryId: taskDetailsObject.categoryId.id,
+      submittedByName: user.name,
+      stage: taskStatusValue,
+      comment: '',
+      status: true,
+      createdBy: user
+    }).catch((error) =>{
+      return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
+    });
+    if(taskStatusValue == 'Reassignment Pending'){
+      await Notifications.create({
+        notifyToUser: taskDetails.groupId.groupAdmin, 
+        notificationType: "/tasklist",
+        content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
+        notificationTitle: "Reassignment Pending",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      });
+    }
+    let categoriesLength = await Categories.count({
       clientTaxonomyId: body.clientTaxonomyId,
       status: true,
     });
-    let taskDetailsObject = await TaskAssignment.find({
+    let taskDetailsObject = await TaskAssignment.count({
       companyId: body.companyId,
       year: body.year,
-      taskStatus: "Completed",
+      taskStatus: "Completed"
     });
-    console.log(categoriesLength.length, taskDetailsObject.length)
-    if (categoriesLength.length == taskDetailsObject.length) {
+    if (categoriesLength == taskDetailsObject) {
       await CompaniesTasks.updateMany(
         {
           companyId: body.companyId,
@@ -1255,7 +1357,7 @@ export const updateCompanyStatus = async (
   } catch (error) {
     return res.status(500).json({
       status: "500",
-      message: error.message,
+      message: error.message ? error.message : "Failed to update task status",
     });
   }
 };

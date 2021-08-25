@@ -676,7 +676,6 @@ export const calculateForACompany = async ({
     })
 }
 
-
 export const jsonGeneration = async ({
   user,
   params
