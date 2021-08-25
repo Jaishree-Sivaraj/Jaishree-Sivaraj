@@ -322,39 +322,68 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             value: keyIssueListObject[keyIssueListIndex].keyIssueId.id
           }
           keyIssuesList.push(keyIssues);
-        }        
+        }   
+        let boardMemberEq = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
+        for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
+          let yearSplit = distinctYears[currentYearIndex].split('-');
+          let endDateString = yearSplit[1]+"-12-31";
+          let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
+          let boardMemberGt = await BoardMembers.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
+          console.log(1614709800 ,  yearTimeStamp)
+          let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
+
+          for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
+            let boardNameValue = {
+              label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
+              value: mergeBoardMemberList[boardMemberNameListIndex].id,
+              year: distinctYears[currentYearIndex]
+            }
+            if(boardDpCodesData.boardMemberList.length > 0){
+              let boardMemberValues = boardDpCodesData.boardMemberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
+                if(boardMemberValues.length > 0){
+                  let memberIndex = boardDpCodesData.boardMemberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
+                  boardDpCodesData.boardMemberList[memberIndex].year = boardDpCodesData.boardMemberList[memberIndex].year + ','+distinctYears[currentYearIndex];
+                } else {
+                  boardDpCodesData.boardMemberList.push(boardNameValue);
+                }
+            } else {
+              boardDpCodesData.boardMemberList.push(boardNameValue);
+            }
+          }
+        }  
+        let kmpMemberEq = await Kmp.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
+        for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
+        let yearSplit = distinctYears[currentYearIndex].split('-');
+        let endDateString = yearSplit[1]+"-12-31";
+        let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
+        let kmpMemberGt = await Kmp.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
+        console.log(1614709800 ,  yearTimeStamp)
+        let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
+
+        for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
+          let kmpNameValue = {
+            label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
+            value: mergeKmpMemberList[kmpMemberNameListIndex].id,
+            year: distinctYears[currentYearIndex]
+          }
+          if(kmpDpCodesData.kmpMemberList.length > 0){
+            let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
+              if(kmpMemberValues.length > 0){
+                let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
+                kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ','+distinctYears[currentYearIndex];
+              } else {
+                kmpDpCodesData.kmpMemberList.push(kmpNameValue);
+              }
+          } else {
+            kmpDpCodesData.kmpMemberList.push(kmpNameValue);
+          }
+        }
+        }   
         for (let validationIndex = 0; validationIndex < validationRules.length; validationIndex++) {
           let validationDpType = keyIssuesCollection.find(obj => obj._id == validationRules[validationIndex].datapointId.id);
           if(validationDpType){
             if(validationDpType.dpType == 'Board Matrix'){
-              let boardMemberEq = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
-              for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
-                let yearSplit = distinctYears[currentYearIndex].split('-');
-                let endDateString = yearSplit[1]+"-12-31";
-                let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-                let boardMemberGt = await BoardMembers.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
-                console.log(1614709800 ,  yearTimeStamp)
-                let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
-
-                for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
-                  let boardNameValue = {
-                    label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
-                    value: mergeBoardMemberList[boardMemberNameListIndex].id,
-                    year: distinctYears[currentYearIndex]
-                  }
-                  if(boardDpCodesData.boardMemberList.length > 0){
-                    let boardMemberValues = boardDpCodesData.boardMemberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
-                      if(boardMemberValues.length > 0){
-                        let memberIndex = boardDpCodesData.boardMemberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
-                        boardDpCodesData.boardMemberList[memberIndex].year = boardDpCodesData.boardMemberList[memberIndex].year + ','+distinctYears[currentYearIndex];
-                      } else {
-                        boardDpCodesData.boardMemberList.push(boardNameValue);
-                      }
-                  } else {
-                    boardDpCodesData.boardMemberList.push(boardNameValue);
-                  }
-                }
-              }
+              
               for (let boardMemberIndex = 0; boardMemberIndex < boardDpCodesData.boardMemberList.length; boardMemberIndex++) {
                 for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                   let dpCodeObject = {
@@ -699,34 +728,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
 
             }else if(validationDpType.dpType == 'Kmp Matrix'){
-            let kmpMemberEq = await Kmp.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
-            for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
-            let yearSplit = distinctYears[currentYearIndex].split('-');
-            let endDateString = yearSplit[1]+"-12-31";
-            let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-            let kmpMemberGt = await Kmp.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
-            console.log(1614709800 ,  yearTimeStamp)
-            let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
-
-            for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
-              let kmpNameValue = {
-                label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
-                value: mergeKmpMemberList[kmpMemberNameListIndex].id,
-                year: distinctYears[currentYearIndex]
-              }
-              if(kmpDpCodesData.kmpMemberList.length > 0){
-                let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
-                  if(kmpMemberValues.length > 0){
-                    let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                    kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ','+distinctYears[currentYearIndex];
-                  } else {
-                    kmpDpCodesData.kmpMemberList.push(kmpNameValue);
-                  }
-              } else {
-                kmpDpCodesData.kmpMemberList.push(kmpNameValue);
-              }
-            }
-            }
+            
             for (let kmpMemberIndex = 0; kmpMemberIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberIndex++) {
               for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                 let dpCodeObject = {
