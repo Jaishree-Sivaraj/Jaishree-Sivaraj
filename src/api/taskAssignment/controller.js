@@ -271,63 +271,158 @@ export const getQaAndAnalystFromGrp = async (
   });
 };
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) => {
-  TaskAssignment.find(query)
-    .sort({
-      createdAt: -1,
-    })
-    .populate("createdBy")
-    .populate("companyId")
-    .populate("categoryId")
-    .populate("groupId")
-    .populate("batchId")
-    .populate("analystId")
-    .populate("qaId")
-    .then((taskAssignments) => {
-      let taskList = [];
-      for (let index = 0; index < taskAssignments.length; index++) {
-        const object = taskAssignments[index];
-        let taskObject = {
-          taskId: object.id,
-          taskNumber: object.taskNumber,
-          pillar: object.categoryId ? object.categoryId.categoryName : null,
-          pillarId: object.categoryId ? object.categoryId.id : null,
-          group: object.groupId ? object.groupId.groupName : null,
-          groupId: object.groupId ? object.groupId.id : null,
-          batch: object.batchId ? object.batchId.batchName : null,
-          batchId: object.batchId ? object.batchId.id : null,
-          company: object.companyId ? object.companyId.companyName : null,
-          companyId: object.companyId ? object.companyId.id : null,
-          analyst: object.analystId ? object.analystId.name : null,
-          analystId: object.analystId ? object.analystId.id : null,
-          qa: object.qaId ? object.qaId.name : null,
-          analystSLA: object.analystSLADate ? object.analystSLADate : null,
-          qaSLA: object.qaSLADate ? object.qaSLADate : null,
-          qaId: object.qaId ? object.qaId.id : null,
-          fiscalYear: object.year,
-          taskStatus: object.taskStatus,
-          overAllCompletedDate: object.overAllCompletedDate,
-          overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
-          createdBy: object.createdBy ? object.createdBy.name : null,
-          createdById: object.createdBy ? object.createdBy.id : null,
-        };
-        taskList.push(taskObject);
+export const index = async({ user, querymen: { query, select, cursor } }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
+  .catch((error) => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message,
+    });
+  });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
+        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
       }
-      return res.status(200).json({
-        status: "200",
-        message: "Tasks retrieved successfully!",
-        data: {
-          count: taskList.length,
-          rows: taskList,
-        },
-      });
-    })
-    .catch((error) => {
+    } else {
       return res.status(400).json({
         status: "400",
-        message: error.message ? error.message : "Failed to retrieve tasks!",
+        message: "User role not found!",
       });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
     });
+  }
+  let finalResponseObject = {
+    groupAdminTaskList : {
+      pendingList: [],
+      completedList: [],
+      controversyList: []
+    },
+    adminTaskList : {
+      pendingList: [],
+      completedList: [],
+      controversyList: []
+    }
+  };
+  if (userRoles.length > 0) {
+    for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+      let findQuery = {};
+      if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
+        findQuery = { status : true };
+      } else if (userRoles[roleIndex] == "GroupAdmin"){
+        let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('id');
+        findQuery = { 
+          groupId: { $in: groupIds },
+          status : true 
+        };
+      }
+      await TaskAssignment.find(findQuery)
+        .sort({
+          createdAt: -1,
+        })
+        .populate("createdBy")
+        .populate("companyId")
+        .populate("categoryId")
+        .populate("groupId")
+        .populate("batchId")
+        .populate("analystId")
+        .populate("qaId")
+        .then((taskAssignments) => {
+          for (let index = 0; index < taskAssignments.length; index++) {
+            const object = taskAssignments[index];
+            let taskObject = {
+              taskId: object.id,
+              taskNumber: object.taskNumber,
+              pillar: object.categoryId ? object.categoryId.categoryName : null,
+              pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
+              batch: object.batchId ? object.batchId.batchName : null,
+              batchId: object.batchId ? object.batchId.id : null,
+              company: object.companyId ? object.companyId.companyName : null,
+              companyId: object.companyId ? object.companyId.id : null,
+              analyst: object.analystId ? object.analystId.name : null,
+              analystId: object.analystId ? object.analystId.id : null,
+              qa: object.qaId ? object.qaId.name : null,
+              analystSLA: object.analystSLADate ? object.analystSLADate : null,
+              qaSLA: object.qaSLADate ? object.qaSLADate : null,
+              qaId: object.qaId ? object.qaId.id : null,
+              fiscalYear: object.year,
+              taskStatus: object.taskStatus,
+              overAllCompletedDate: object.overAllCompletedDate,
+              overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
+              createdBy: object.createdBy ? object.createdBy.name : null,
+              createdById: object.createdBy ? object.createdBy.id : null,
+            };
+
+            if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
+              if (object.taskStatus != "Completed") {
+                finalResponseObject.adminTaskList.pendingList.push(taskObject)
+              } else if (object.taskStatus == "Completed"){
+                finalResponseObject.adminTaskList.completedList.push(taskObject)
+              }
+            } else if (userRoles[roleIndex] == "GroupAdmin"){
+              if (object.taskStatus != "Completed") {
+                finalResponseObject.groupAdminTaskList.pendingList.push(taskObject)
+              } else if (object.taskStatus == "Completed"){
+                finalResponseObject.groupAdminTaskList.completedList.push(taskObject)
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : "Failed to retrieve tasks!",
+          });
+        });     
+    }
+    await ControversyTasks.find({ status: true })
+    .populate('companyId')
+    .populate('analystId')
+    .populate('createdBy')
+    .then((controversyTasks) => {
+      if (controversyTasks && controversyTasks.length > 0) {
+        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let object = {};
+          object.taskNumber = controversyTasks[cIndex].taskNumber;
+          object.taskId = controversyTasks[cIndex].id;
+          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+          object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+          object.status = controversyTasks[cIndex].status;
+          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          if (controversyTasks[cIndex] && object) {
+            finalResponseObject.adminTaskList.controversyList.push(object)
+            finalResponseObject.groupAdminTaskList.controversyList.push(object)
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+    })
+    return res.status(200).json({
+      status: "200",
+      message: "Tasks retrieved successfully!",
+      data: finalResponseObject,
+    });
+  }
 };
 
 export const getMyTasks = async (
