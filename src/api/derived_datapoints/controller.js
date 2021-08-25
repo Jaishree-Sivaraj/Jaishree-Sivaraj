@@ -2899,7 +2899,7 @@ export const derivedCalculation = async ({
             let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) {
               if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA' || foundResponse.response.toLowerCase() == 'nan') {
-                if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
                 } else {
                   await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
@@ -2907,14 +2907,14 @@ export const derivedCalculation = async ({
                 console.log("Step1");
               } else {
                 let zscoreValue;
-                console.log("Step1");
+                console.log("Step1",percentileDataPointsList[pdpIndex].code);
                 if (projectedValue.projectedStdDeviation == 'NA') {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                 } else {
-                  console.log("percentileDatapointsList[pdpIndex].polarity", percentileDataPointsList[pdpIndex].polarity);
+                  console.log("percentileDataPointsList[pdpIndex].polarity\n\n\n\n", percentileDataPointsList[pdpIndex].code);
                   if (percentileDataPointsList[pdpIndex].polarity == 'Positive') {
                     zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
-                  } else if (percentileDatapointsList[pdpIndex].polarity == 'Negative') {
+                  } else if (percentileDataPointsList[pdpIndex].polarity == 'Negative') {
                     zscoreValue = (Number(projectedValue.projectedAverage) - Number(foundResponse.response)) / Number(projectedValue.projectedStdDeviation);
                   }
                   console.log("zscoreValue", zscoreValue);
@@ -2946,13 +2946,13 @@ export const derivedCalculation = async ({
                       let zValues = ztableValue.values[0].split(",");
                       let zScore = zValues[Number(lastDigit)]
                       let percentile = zScore * 100;
-                      if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
                       } else {
                         await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
                       }
                     } else {
-                      if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                       } else {
                         await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
