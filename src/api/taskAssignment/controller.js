@@ -1203,7 +1203,7 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
     console.log(hasError, multipliedValue,mergedDetails )
-    if(mergedDetails.length != multipliedValue && hasError){
+    if(mergedDetails.length == multipliedValue && hasError){
       if(body.role == 'QA'){
         taskStatusValue = "Correction Pending";
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
@@ -1217,18 +1217,20 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
-    } else if(mergedDetails.length !== multipliedValue && hasCorrection){      
+    } else if(mergedDetails.length == multipliedValue && hasCorrection){      
       taskStatusValue = "Correction Completed"; 
       await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-    } else if(mergedDetails.length == multipliedValue && hasError.length == undefined && hasCorrection.length == undefined){      
-      taskStatusValue = "Verification Completed"; 
-      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-    } else {     
-      taskStatusValue = "Collection Completed"; 
-      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+    } else if(mergedDetails.length == multipliedValue && hasError == undefined && hasCorrection == undefined){      
+      if(body.role == 'QA'){
+        taskStatusValue = "Verification Completed"; 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      } else{
+        taskStatusValue = "Collection Completed"; 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      };
     }
     await TaskHistories.create({
       taskId: body.taskId,
