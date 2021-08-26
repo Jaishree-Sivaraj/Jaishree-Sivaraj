@@ -1145,7 +1145,6 @@ export const datapointDetails = async (req, res, next) => {
       year: {
         $in: currentYear
       },
-      categoryId: taskDetails.categoryId.id,
       status: true
     }).populate('errorTypeId');
     let sourceTypeDetails = [];
@@ -1291,8 +1290,7 @@ export const datapointDetails = async (req, res, next) => {
                 }                
               }            
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] );
-            
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] ); 
             currentDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,

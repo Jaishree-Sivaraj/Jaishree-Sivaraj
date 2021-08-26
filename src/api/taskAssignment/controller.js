@@ -1217,7 +1217,7 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
-    } else if(mergedDetails.length == multipliedValue && hasCorrection){      
+    } else if(mergedDetails.length !== multipliedValue && hasCorrection){      
       taskStatusValue = "Correction Completed"; 
       await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
