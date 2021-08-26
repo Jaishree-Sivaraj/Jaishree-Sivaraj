@@ -969,7 +969,8 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
   if (userRoles.length > 0) {
     let categories = await Categories.find({
       status: true
-    }).catch((err) => {
+    })
+    .populate('clientTaxonomyId').catch((err) => {
       return res.status(500).json({
         status: "500",
         message: err.message
@@ -987,6 +988,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
         await Group.find(findQuery)
         .populate("assignedMembers")
         .populate("batchList")
+        .populate("batchList.clientTaxonomy")
         .then(async (group) => {
           for (let index = 0; index < group.length; index++) {
             var resObject = {};
@@ -994,7 +996,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
             for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
-              let foundCategories = categories.filter(obj => obj.clientTaxonomyId == group[index].batchList[index1].clientTaxonomy );
+              let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy );
               var assignedBatches = group[index].batchList.map((rec) => {
                 return {
                   batchName: rec.batchName,

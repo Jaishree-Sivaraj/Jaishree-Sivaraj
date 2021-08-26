@@ -37,7 +37,7 @@ export const includeExtraKeysFromJson = async (req, res, next) => {
         "hasDependentCode": obj.hasDependentCode,
         "dependentCodes": obj.dependentCodes,
         "validationType": obj.validationType,
-        "percentileThreasholdValue": obj.percentileThreasholdValue,
+        "percentileThreasholdValue": obj.percentileThresholdValue, 
         "parameters": obj.parameters,
         "methodName": obj.methodName,
         "checkCondition": obj.checkCondition,
