@@ -1067,11 +1067,11 @@ export const dataCollection = async ({
             additionalDetails: item['additionalDetails'],
             createdBy: user
           }
-          for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+          //for (let index1 = 0; 1 < currentYearValues.length; index1++) {
             //store in s3 bucket with filename
-            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: currentYearValues[index1], status: true },
+            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
-          }
+          //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
           let item = dpHistoricalDpDetails[index];
@@ -1091,18 +1091,45 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
-          for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
-            await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: historicalDataYear[index1], status: true },
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
-          }
+          //}
         }
         res.status('200').json({
           message: "Data inserted Successfully"
         });
 
       } else if (body.memberType == 'Board Matrix') {
-        let boardMemberDatapoints = dpCodesDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            createdBy: user
+          }
+         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+            //store in s3 bucket with filename
+            await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1120,44 +1147,44 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-
-        let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            memberName: body.memberName,
-            memberStatus: true,
-            status: true,
-            createdBy: user
-          }
-        });
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: currentYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
-        await BoardMembersMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
-            }
-          });
       } else if (body.memberType == 'KMP Matrix') {
-        let kmpMemberDatapoints = dpCodesDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            createdBy: user
+          }
+         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+            //store in s3 bucket with filename
+            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1175,40 +1202,14 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-        let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            memberName: body.memberName,
-            memberStatus: true,
-            status: true,
-            createdBy: user
-          }
-        });
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: currentYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
-        await KmpMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
-            }
-          });
       }
     } else if (taskDetailsObject.taskStatus == 'Correction Pending') {
       let dpCodesDetails = body.currentData;
