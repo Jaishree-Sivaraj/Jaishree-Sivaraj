@@ -110,6 +110,10 @@ const standaloneDatapointsSchema = new Schema({
   isSubmitted: {
     type: Boolean
   },
+  dpStatus:{
+    type: String,
+    default:'Collection'
+  },
   standaradDeviation: {
     type: String
   },
@@ -164,6 +168,7 @@ standaloneDatapointsSchema.methods = {
       collectionStatus: this.collectionStatus,
       verificationStatus: this.verificationStatus,
       hasError: this.hasError,
+      dpStatus: this.dpStatus,
       internalFileSource: this.internalFileSource,
       hasCorrection: this.hasCorrection,
       standaradDeviation: this.standaradDeviation,

@@ -548,7 +548,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,             
+              dpStatus: 'Error',             
               status: true
             }).populate([{
               path: 'datapointId',
@@ -622,7 +622,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,
+              dpStatus: 'Error',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -694,7 +694,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let errorDatapoints = await StandaloneDatapoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
-              hasError: true,
+              dpStatus: 'Error',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -745,14 +745,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           let errorDatapoints = await StandaloneDatapoints.find({
             taskId: req.params.taskId,
             companyId: taskDetails.companyId.id,
-            hasError: true,
+            dpStatus : "Error",
             status: true
-          }).populate([{
+          }).populate({
             path: 'datapointId',
             populate: {
               path: 'keyIssueId'
             }
-          }]);
+          });
           console.log(errorDatapoints)
           for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
 
@@ -780,14 +780,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             dpCodesData.push(datapointsObject);
             }
           }
-
           return res.status(200).send({
             status: "200",
             message: "Data correction dp codes retrieved successfully!",
             standalone: {
               dpCodesData: dpCodesData
             }
-
           });
         } catch (error) {
           return res.status(500).json({
@@ -835,7 +833,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,              
+              dpStatus: 'Correction',              
               status: true
             }).populate([{
               path: 'datapointId',
@@ -910,7 +908,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,
+              dpStatus: 'Correction',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -958,7 +956,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,
+              dpStatus: 'Correction',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -1012,7 +1010,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             year:{
               $in:currentYear
             },
-            hasCorrection: true,
+            dpStatus: 'Correction',
             status: true
           }).populate([{
             path: 'datapointId',
