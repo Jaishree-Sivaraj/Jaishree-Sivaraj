@@ -84,7 +84,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
           })
           .then((notify) => {
             if (notify) {
-              return res.status(200).json({ status: 200, message: "Sla extension request sucessful!", data: response });  
+              return res.status(200).json({ status: 200, message: "Sla extension request successful!", data: response });  
             } else {
               return res.status(500).json({ status: "500", message: 'Failed to send SLA extension notification!' });  
             }
