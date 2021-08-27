@@ -492,7 +492,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   _.filter(currentAllStandaloneDetails,(object)=>{
                     if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
-                      datapointsObject.status = 'Completed'
+                      datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                     }
                   })
                 }
@@ -513,7 +513,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     _.filter(currentAllStandaloneDetails,(object)=>{
                       if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
-                        datapointsObject.status = 'Completed'
+                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                       }
                     })
                   }
