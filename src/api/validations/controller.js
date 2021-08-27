@@ -779,52 +779,53 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       }
                     }
                     
-                  } else if(validationRules[validationIndex].validationType == "7"){
-                    let zscoreValue ,performanceResult ;
-                    let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                      let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                      console.log(projectedValue)
-                    if(projectedValue > -1){
-                    if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
-                      zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-                    } else {
-                      zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-                    }
-                    if (zscoreValue > 4) {
-                      performanceResult = 100
-                    } else if (zscoreValue < -4) {
-                      performanceResult = 0
-                    } else if (zscoreValue == 'NA') {
-                      performanceResult = 'NA'
-                    } else {
-                      //round of zscore value to two digit decimal value
-                      if (zscoreValue) {
-                        let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
-                        var lastDigit = twoDigitZscoreValue.toString().slice(-1);
-                        let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
-                        let zValues = ztableValue.values[0].split(",");
-                        let zScore = zValues[Number(lastDigit)]
-                        performanceResult = zScore * 100;
-                      } else {
-                        performanceResult = 'NA'
-                      }
-                    }
-                    if(performanceResult == 'NA'){
-                      dpCodeObject.isValidResponse = false;
-                      let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
-                      dpCodeObject.description.push(validationResponseObject);
-                    } else {
-                      if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
-                        
-                        dpCodeObject.isValidResponse = true;
-                      } else {
-                        dpCodeObject.isValidResponse = false; 
-                        let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
-                        dpCodeObject.description.push(validationResponseObject);
-                      }
-                    }
                   }
-                  }       
+                  //  else if(validationRules[validationIndex].validationType == "7"){
+                  //   let zscoreValue ,performanceResult ;
+                  //   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+                  //     let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+                  //     console.log(projectedValue)
+                  //   if(projectedValue > -1){
+                  //   if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
+                  //     zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+                  //   } else {
+                  //     zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+                  //   }
+                  //   if (zscoreValue > 4) {
+                  //     performanceResult = 100
+                  //   } else if (zscoreValue < -4) {
+                  //     performanceResult = 0
+                  //   } else if (zscoreValue == 'NA') {
+                  //     performanceResult = 'NA'
+                  //   } else {
+                  //     //round of zscore value to two digit decimal value
+                  //     if (zscoreValue) {
+                  //       let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
+                  //       var lastDigit = twoDigitZscoreValue.toString().slice(-1);
+                  //       let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
+                  //       let zValues = ztableValue.values[0].split(",");
+                  //       let zScore = zValues[Number(lastDigit)]
+                  //       performanceResult = zScore * 100;
+                  //     } else {
+                  //       performanceResult = 'NA'
+                  //     }
+                  //   }
+                  //   if(performanceResult == 'NA'){
+                  //     dpCodeObject.isValidResponse = false;
+                  //     let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
+                  //     dpCodeObject.description.push(validationResponseObject);
+                  //   } else {
+                  //     if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
+                        
+                  //       dpCodeObject.isValidResponse = true;
+                  //     } else {
+                  //       dpCodeObject.isValidResponse = false; 
+                  //       let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
+                  //       dpCodeObject.description.push(validationResponseObject);
+                  //     }
+                  //   }
+                  // }
+                  // }       
                   if(boardDpCodesData.dpCodesData.length > 0) {
                     let yearfind = boardDpCodesData.dpCodesData.findIndex(obj => obj.dpCodeId == validationRules[validationIndex].datapointId.id && obj.fiscalYear == distinctYears[yearIndex] && obj.memberId == boardDpCodesData.boardMemberList[boardMemberIndex].value);
                     if(yearfind > -1){
@@ -1197,49 +1198,50 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     }
                   }
                   
-                } else if(validationRules[validationIndex].validationType == "7"){
-                  let zscoreValue ,performanceResult ;
-                  let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                   let projectedValue = projectedValues.find(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                  if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
-                    zscoreValue = (Number(currentResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
-                  } else {
-                    zscoreValue = (Number(projectedValue.projectedAverage) - Number(currentResponse.response)) / Number(projectedValue.projectedStdDeviation);
-                  }
-                  if (zscoreValue > 4) {
-                    performanceResult = 100
-                  } else if (zscoreValue < -4) {
-                    performanceResult = 0
-                  } else if (zscoreValue == 'NA') {
-                    performanceResult = 'NA'
-                  } else {
-                    //round of zscore value to two digit decimal value
-                    if (zscoreValue) {
-                      let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
-                      var lastDigit = twoDigitZscoreValue.toString().slice(-1);
-                      let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
-                      let zValues = ztableValue.values[0].split(",");
-                      let zScore = zValues[Number(lastDigit)]
-                      performanceResult = zScore * 100;
-                    } else {
-                      performanceResult = 'NA'
-                    }
-                  }
-                  if(performanceResult == 'NA'){
-                   dpCodeObject.isValidResponse = false;
-                   let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
-                   dpCodeObject.description.push(validationResponseObject);
-                  } else {
-                    if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
+                }
+                //  else if(validationRules[validationIndex].validationType == "7"){
+                //   let zscoreValue ,performanceResult ;
+                //   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+                //    let projectedValue = projectedValues.find(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+                //   if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
+                //     zscoreValue = (Number(currentResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
+                //   } else {
+                //     zscoreValue = (Number(projectedValue.projectedAverage) - Number(currentResponse.response)) / Number(projectedValue.projectedStdDeviation);
+                //   }
+                //   if (zscoreValue > 4) {
+                //     performanceResult = 100
+                //   } else if (zscoreValue < -4) {
+                //     performanceResult = 0
+                //   } else if (zscoreValue == 'NA') {
+                //     performanceResult = 'NA'
+                //   } else {
+                //     //round of zscore value to two digit decimal value
+                //     if (zscoreValue) {
+                //       let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
+                //       var lastDigit = twoDigitZscoreValue.toString().slice(-1);
+                //       let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
+                //       let zValues = ztableValue.values[0].split(",");
+                //       let zScore = zValues[Number(lastDigit)]
+                //       performanceResult = zScore * 100;
+                //     } else {
+                //       performanceResult = 'NA'
+                //     }
+                //   }
+                //   if(performanceResult == 'NA'){
+                //    dpCodeObject.isValidResponse = false;
+                //    let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
+                //    dpCodeObject.description.push(validationResponseObject);
+                //   } else {
+                //     if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
                      
-                     dpCodeObject.isValidResponse = true;
-                    } else {
-                     dpCodeObject.isValidResponse = false; 
-                     let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
-                     dpCodeObject.description.push(validationResponseObject);
-                    }
-                  }
-                }     
+                //      dpCodeObject.isValidResponse = true;
+                //     } else {
+                //      dpCodeObject.isValidResponse = false; 
+                //      let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
+                //      dpCodeObject.description.push(validationResponseObject);
+                //     }
+                //   }
+                // }     
                 if(kmpDpCodesData.dpCodesData.length > 0) {
                   let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCodeId == validationRules[validationIndex].datapointId.id && obj.fiscalYear == distinctYears[yearIndex] && obj.memberId == kmpDpCodesData.kmpMemberList[kmpMemberIndex].value);
                   if(yearfind > -1){
@@ -1615,52 +1617,53 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           }
         }
         
-      } else if(validationRules[validationIndex].validationType == "7"){
-        let zscoreValue ,performanceResult ;
-        let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-         let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-         console.log(projectedValue)
-        if(projectedValue > -1){
-        if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
-          zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-        } else {
-          zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-        }
-        if (zscoreValue > 4) {
-          performanceResult = 100
-        } else if (zscoreValue < -4) {
-          performanceResult = 0
-        } else if (zscoreValue == 'NA') {
-          performanceResult = 'NA'
-        } else {
-          //round of zscore value to two digit decimal value
-          if (zscoreValue) {
-            let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
-            var lastDigit = twoDigitZscoreValue.toString().slice(-1);
-            let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
-            let zValues = ztableValue.values[0].split(",");
-            let zScore = zValues[Number(lastDigit)]
-            performanceResult = zScore * 100;
-          } else {
-            performanceResult = 'NA'
-          }
-        }
-        if(performanceResult == 'NA'){
-         dpCodeObject.isValidResponse = false;
-         let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
-         dpCodeObject.description.push(validationResponseObject);
-        } else {
-          if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
+      } 
+      // else if(validationRules[validationIndex].validationType == "7"){
+      //   let zscoreValue ,performanceResult ;
+      //   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+      //    let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+      //    console.log(projectedValue)
+      //   if(projectedValue > -1){
+      //   if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
+      //     zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+      //   } else {
+      //     zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+      //   }
+      //   if (zscoreValue > 4) {
+      //     performanceResult = 100
+      //   } else if (zscoreValue < -4) {
+      //     performanceResult = 0
+      //   } else if (zscoreValue == 'NA') {
+      //     performanceResult = 'NA'
+      //   } else {
+      //     //round of zscore value to two digit decimal value
+      //     if (zscoreValue) {
+      //       let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
+      //       var lastDigit = twoDigitZscoreValue.toString().slice(-1);
+      //       let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
+      //       let zValues = ztableValue.values[0].split(",");
+      //       let zScore = zValues[Number(lastDigit)]
+      //       performanceResult = zScore * 100;
+      //     } else {
+      //       performanceResult = 'NA'
+      //     }
+      //   }
+      //   if(performanceResult == 'NA'){
+      //    dpCodeObject.isValidResponse = false;
+      //    let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
+      //    dpCodeObject.description.push(validationResponseObject);
+      //   } else {
+      //     if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
            
-           dpCodeObject.isValidResponse = true;
-          } else {
-           dpCodeObject.isValidResponse = false; 
-           let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
-           dpCodeObject.description.push(validationResponseObject);
-          }
-        }
-      }
-      }       
+      //      dpCodeObject.isValidResponse = true;
+      //     } else {
+      //      dpCodeObject.isValidResponse = false; 
+      //      let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
+      //      dpCodeObject.description.push(validationResponseObject);
+      //     }
+      //   }
+      // }
+      // }       
               if(validationResponse.length > 0) {
                 let yearfind = validationResponse.findIndex(obj => obj.dpCodeId == validationRules[validationIndex].datapointId.id && obj.fiscalYear == distinctYears[yearIndex] );
                 if(yearfind > -1){
@@ -2067,52 +2070,53 @@ export const getAllValidation =async ({ user, params }, res, next) => {
           }
         }
         
-      } else if(validationRules[validationIndex].validationType == "7"){
-        let zscoreValue ,performanceResult ;
-        let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-         let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-         console.log(projectedValue)
-        if(projectedValue > -1){
-        if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
-          zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-        } else {
-          zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
-        }
-        if (zscoreValue > 4) {
-          performanceResult = 100
-        } else if (zscoreValue < -4) {
-          performanceResult = 0
-        } else if (zscoreValue == 'NA') {
-          performanceResult = 'NA'
-        } else {
-          //round of zscore value to two digit decimal value
-          if (zscoreValue) {
-            let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
-            var lastDigit = twoDigitZscoreValue.toString().slice(-1);
-            let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
-            let zValues = ztableValue.values[0].split(",");
-            let zScore = zValues[Number(lastDigit)]
-            performanceResult = zScore * 100;
-          } else {
-            performanceResult = 'NA'
-          }
-        }
-        if(performanceResult == 'NA'){
-         dpCodeObject.isValidResponse = false;
-         let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
-         dpCodeObject.description.push(validationResponseObject);
-        } else {
-          if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
+      } 
+      // else if(validationRules[validationIndex].validationType == "7"){
+      //   let zscoreValue ,performanceResult ;
+      //   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+      //    let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+      //    console.log(projectedValue)
+      //   if(projectedValue > -1){
+      //   if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
+      //     zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+      //   } else {
+      //     zscoreValue = (Number(projectedValues[projectedValue].projectedAverage) - Number(currentResponse.response)) / Number(projectedValues[projectedValue].projectedStdDeviation);
+      //   }
+      //   if (zscoreValue > 4) {
+      //     performanceResult = 100
+      //   } else if (zscoreValue < -4) {
+      //     performanceResult = 0
+      //   } else if (zscoreValue == 'NA') {
+      //     performanceResult = 'NA'
+      //   } else {
+      //     //round of zscore value to two digit decimal value
+      //     if (zscoreValue) {
+      //       let twoDigitZscoreValue = zscoreValue.toFixed(2) + 0.01;
+      //       var lastDigit = twoDigitZscoreValue.toString().slice(-1);
+      //       let ztableValue = await Ztables.findOne({ zScore: zscoreValue.toFixed(1) });
+      //       let zValues = ztableValue.values[0].split(",");
+      //       let zScore = zValues[Number(lastDigit)]
+      //       performanceResult = zScore * 100;
+      //     } else {
+      //       performanceResult = 'NA'
+      //     }
+      //   }
+      //   if(performanceResult == 'NA'){
+      //    dpCodeObject.isValidResponse = false;
+      //    let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - Percentile value is NA" 
+      //    dpCodeObject.description.push(validationResponseObject);
+      //   } else {
+      //     if (Number(performanceResult) < Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', ''))){
            
-           dpCodeObject.isValidResponse = true;
-          } else {
-           dpCodeObject.isValidResponse = false; 
-           let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
-           dpCodeObject.description.push(validationResponseObject);
-          }
-        }
-      }
-      }      
+      //      dpCodeObject.isValidResponse = true;
+      //     } else {
+      //      dpCodeObject.isValidResponse = false; 
+      //      let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
+      //      dpCodeObject.description.push(validationResponseObject);
+      //     }
+      //   }
+      // }
+      // }      
       if(validationResponse.length > 0) {
         let yearfind = validationResponse.findIndex(obj => obj.dpCodeId == validationRules[validationIndex].datapointId.id && obj.fiscalYear == distinctYears[yearIndex] );
         if(yearfind > -1){

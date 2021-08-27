@@ -1165,6 +1165,7 @@ export const updateCompanyStatus = async (
   let distinctYears = taskDetails.year.split(',');
   try {
     let allStandaloneDetails = await StandaloneDatapoints.find({
+    taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
       "$in": distinctYears
@@ -1176,6 +1177,7 @@ export const updateCompanyStatus = async (
   .populate('companyId')
 
 let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
       "$in": distinctYears
@@ -1187,6 +1189,7 @@ let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
   .populate('companyId')
 
 let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+    taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
       "$in": distinctYears
