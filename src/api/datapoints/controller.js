@@ -771,6 +771,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
+              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+              if(dpCodeStatus > -1){
+                datapointsObject.status = 'Completed';
+              }
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
               }else {
@@ -1035,6 +1039,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
+              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+              if(dpCodeStatus > -1){
+                datapointsObject.status = 'Completed';
+              }
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
               }else {
