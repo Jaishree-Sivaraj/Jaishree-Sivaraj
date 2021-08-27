@@ -43,6 +43,7 @@ import taskHistories from './task_histories'
 import sourceSubTypes from './source_sub_types'
 import projectedValues from './projected_values'
 import jsonFiles from './json_files'
+import dashboards from './dashboards'
 
 const router = new Router()
 
@@ -113,5 +114,6 @@ router.use('/task_histories', taskHistories)
 router.use('/source_sub_types', sourceSubTypes)
 router.use('/projected_values', projectedValues)
 router.use('/json_files', jsonFiles)
+router.use('/dashboards', dashboards)
 
 export default router
