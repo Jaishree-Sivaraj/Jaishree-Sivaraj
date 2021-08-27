@@ -162,11 +162,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       dpCodesData: []
     };
     let dpCodesData = [], priorityDpCodes = [];
-    let currentAllBoardMemberMatrixDetails = [],
-      historyAllBoardMemberMatrixDetails = [];
-    let currentAllKmpMatrixDetails = [],
-      historyAllKmpMatrixDetails = [];
-    let errorDataDetails = [];
+    let currentAllBoardMemberMatrixDetails = []
+    let currentAllKmpMatrixDetails = []
     errorDataDetails = await ErrorDetails.find({
       companyId: taskDetails.companyId.id,
       year: {
@@ -599,7 +596,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   fiscalYear: errorboardDatapoints[errorDpIndex].year,
                   memberName: object.label,
                   memberId: object.value,
-                  status:'Yet to Start'
+                  status: errorboardDatapoints[errorDpIndex].correctionStatus
                 }
                 if(boardDpCodesData.dpCodesData.length > 0)
                 {
@@ -673,7 +670,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: errorkmpDatapoints[errorDpIndex].year,
                     memberName: object.label,
                     memberId: object.value,
-                    status: 'Yet to Start'
+                    status: errorkmpDatapoints[errorDpIndex].correctionStatus
                   }
                   if(kmpDpCodesData.dpCodesData.length > 0)
                   {
@@ -714,7 +711,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillarId: taskDetails.categoryId.id,
                 pillar: taskDetails.categoryId.categoryName,
                 fiscalYear: errorDatapoints[errorDpIndex].year,
-                status: ''
+                status: errorDatapoints[errorDpIndex].correctionStatus
               }
               if(dpCodesData.length > 0)
               {
@@ -766,27 +763,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               pillarId: taskDetails.categoryId.id,
               pillar: taskDetails.categoryId.categoryName,
               fiscalYear: errorDatapoints[errorDpIndex].year,
-              status: 'Yet to Start'
+              status: errorDatapoints[errorDpIndex].correctionStatus
             }
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
-              
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
-                 dpCodesData[yearfind].status = 'Completed';
               }else {
-                let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
-                if(dpCodeStatus > -1){
-                  datapointsObject.status = 'Completed';
-                }
                 dpCodesData.push(datapointsObject);
                 }
             } else {
-              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
-              if(dpCodeStatus > -1){
-                datapointsObject.status = 'Completed';
-              }
             dpCodesData.push(datapointsObject);
             }
           }
@@ -867,7 +854,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: errorboardDatapoints[errorDpIndex].year,
                     memberName: object.label,
                     memberId: object.value,
-                    status:'Yet to Start'
+                    status: errorboardDatapoints[errorDpIndex].correctionStatus
                   }
                   if(boardDpCodesData.dpCodesData.length > 0)
                   {
@@ -942,7 +929,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: errorkmpDatapoints[errorDpIndex].year,
                     memberName: object.label,
                     memberId: object.value,
-                    status: 'Yet to Start'
+                    status: errorkmpDatapoints[errorDpIndex].correctionStatus
                   }
                   if(kmpDpCodesData.dpCodesData.length > 0)
                   {
@@ -986,7 +973,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillarId: taskDetails.categoryId.id,
                 pillar: taskDetails.categoryId.categoryName,
                 fiscalYear: errorDatapoints[errorDpIndex].year,
-                status: 'Yet to Start'
+                status: errorDatapoints[errorDpIndex].correctionStatus
               }
               if(dpCodesData.length > 0)
               {
@@ -1040,29 +1027,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               pillarId: taskDetails.categoryId.id,
               pillar: taskDetails.categoryId.categoryName,
               fiscalYear: errorDatapoints[errorDpIndex].year,
-              status: 'Yet to Start'
+              status: errorDatapoints[errorDpIndex].correctionStatus
             }
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
-              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
-              if(dpCodeStatus > -1){
-                datapointsObject.status = 'Completed';
-              }
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year);
-                dpCodesData[yearfind].status = 'Completed';
               }else {
-                let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
-              if(dpCodeStatus > -1){
-                datapointsObject.status = 'Completed';
-              }
                 dpCodesData.push(datapointsObject);
                 }
-            } else {let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
-            if(dpCodeStatus > -1){
-              datapointsObject.status = 'Completed';
-            }
+            } else {
             dpCodesData.push(datapointsObject);
             }
 
@@ -1728,6 +1703,7 @@ export const datapointDetails = async (req, res, next) => {
                   comments: [],
                   additionalDetails: []
                 }
+                currentDatapointsObject.error.refData['additionalDetails'] = [];   
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                     let optionValues = [], optionVal = '', currentValue;
@@ -1757,6 +1733,13 @@ export const datapointDetails = async (req, res, next) => {
                       }
                     }
                     currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                    currentDatapointsObject.error.refData['additionalDetails'].push({
                       fieldName: displayFields[dIndex].fieldName,
                       name: displayFields[dIndex].name,
                       value: currentValue ? currentValue: '',
@@ -1799,6 +1782,7 @@ export const datapointDetails = async (req, res, next) => {
                 comments: [],
                 additionalDetails: []
               }
+              currentDatapointsObject.error.refData['additionalDetails'] = [];
               for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                 if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                   let optionValues = [], optionVal = '', currentValue;
@@ -1828,6 +1812,13 @@ export const datapointDetails = async (req, res, next) => {
                     }
                   }
                   currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                  currentDatapointsObject.error.refData['additionalDetails'].push({
                     fieldName: displayFields[dIndex].fieldName,
                     name: displayFields[dIndex].name,
                     value: currentValue ? currentValue: '',
@@ -1870,6 +1861,7 @@ export const datapointDetails = async (req, res, next) => {
                 comments: [],
                 additionalDetails:[]
               } 
+              currentDatapointsObject.error.refData['additionalDetails'] = [];
               for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                 if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                   let optionValues = [], optionVal = '', currentValue;
@@ -1899,6 +1891,13 @@ export const datapointDetails = async (req, res, next) => {
                     }
                   }
                   currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                  currentDatapointsObject.error.refData['additionalDetails'].push({
                     fieldName: displayFields[dIndex].fieldName,
                     name: displayFields[dIndex].name,
                     value: currentValue ? currentValue: '',
@@ -2155,6 +2154,7 @@ export const datapointDetails = async (req, res, next) => {
                   comments: [],
                   additionalDetails: []
                 }
+                currentDatapointsObject.error.refData['additionalDetails'] = [];
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                     let optionValues = [], optionVal = '', currentValue;
@@ -2184,6 +2184,13 @@ export const datapointDetails = async (req, res, next) => {
                       }
                     }
                     currentDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                    currentDatapointsObject.error.refData['additionalDetails'].push({
                       fieldName: displayFields[dIndex].fieldName,
                       name: displayFields[dIndex].name,
                       value: currentValue ? currentValue: '',
@@ -2227,6 +2234,7 @@ export const datapointDetails = async (req, res, next) => {
                 comments: [],
                 additionalDetails: []
               }
+              currentDatapointsObject.error.refData['additionalDetails'] = [];
               for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                 if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                   let optionValues = [], optionVal = '', currentValue;
@@ -2256,6 +2264,13 @@ export const datapointDetails = async (req, res, next) => {
                     }
                   }
                   currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                  currentDatapointsObject.error.refData['additionalDetails'].push({
                     fieldName: displayFields[dIndex].fieldName,
                     name: displayFields[dIndex].name,
                     value: currentValue ? currentValue: '',
@@ -2298,6 +2313,7 @@ export const datapointDetails = async (req, res, next) => {
                 comments: [],
                 additionalDetails:[]
               } 
+              currentDatapointsObject.error.refData['additionalDetails'] = [];
               for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                 if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                   let optionValues = [], optionVal = '', currentValue;
@@ -2327,6 +2343,13 @@ export const datapointDetails = async (req, res, next) => {
                     }
                   }
                   currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                  currentDatapointsObject.error.refData['additionalDetails'].push({
                     fieldName: displayFields[dIndex].fieldName,
                     name: displayFields[dIndex].name,
                     value: currentValue ? currentValue: '',

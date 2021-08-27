@@ -1249,13 +1249,19 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-      } else{
+      } else if(body.role == 'Analyst'){
         taskStatusValue = "Collection Completed"; 
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
         await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-      };
+      } else{
+        taskStatusValue = "Completed"; 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      }
     }
     await TaskHistories.create({
       taskId: body.taskId,
