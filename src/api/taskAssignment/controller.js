@@ -1168,11 +1168,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   }
 };
 
-export const updateCompanyStatus = async (
-  { user, bodymen: { body } },
-  res,
-  next
-) => {
+export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, next ) => {
   let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
   let distinctYears = taskDetails.year.split(',');
   try {
@@ -1224,12 +1220,20 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
         await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       } else{
         taskStatusValue = "Reassignment Pending"; 
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
         await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
+        
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Completed'}})
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
     } else if(mergedDetails.length == multipliedValue && hasCorrection){      
@@ -1241,9 +1245,9 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
     } else if(mergedDetails.length == multipliedValue && hasError == undefined && hasCorrection == undefined){      
       if(body.role == 'QA'){
         taskStatusValue = "Verification Completed";
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {correctionStatus:'Incomplete'}}) 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       } else{
         taskStatusValue = "Collection Completed"; 
