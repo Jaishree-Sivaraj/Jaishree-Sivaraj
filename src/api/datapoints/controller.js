@@ -548,7 +548,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,             
+              dpStatus: 'Error',             
               status: true
             }).populate([{
               path: 'datapointId',
@@ -622,7 +622,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasError: true,
+              dpStatus: 'Error',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -694,7 +694,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let errorDatapoints = await StandaloneDatapoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
-              hasError: true,
+              dpStatus: 'Error',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -745,14 +745,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           let errorDatapoints = await StandaloneDatapoints.find({
             taskId: req.params.taskId,
             companyId: taskDetails.companyId.id,
-            hasError: true,
+            dpStatus : "Error",
             status: true
-          }).populate([{
+          }).populate({
             path: 'datapointId',
             populate: {
               path: 'keyIssueId'
             }
-          }]);
+          });
           console.log(errorDatapoints)
           for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
 
@@ -771,23 +771,31 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
+              
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
+                 dpCodesData[yearfind].status = 'Completed';
               }else {
+                let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+                if(dpCodeStatus > -1){
+                  datapointsObject.status = 'Completed';
+                }
                 dpCodesData.push(datapointsObject);
                 }
             } else {
+              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+              if(dpCodeStatus > -1){
+                datapointsObject.status = 'Completed';
+              }
             dpCodesData.push(datapointsObject);
             }
           }
-
           return res.status(200).send({
             status: "200",
             message: "Data correction dp codes retrieved successfully!",
             standalone: {
               dpCodesData: dpCodesData
             }
-
           });
         } catch (error) {
           return res.status(500).json({
@@ -835,7 +843,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,              
+              dpStatus: 'Correction',              
               status: true
             }).populate([{
               path: 'datapointId',
@@ -910,7 +918,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,
+              dpStatus: 'Correction',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -958,7 +966,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
-              hasCorrection: true,
+              dpStatus: 'Correction',
               status: true
             }).populate([{
               path: 'datapointId',
@@ -1012,7 +1020,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             year:{
               $in:currentYear
             },
-            hasCorrection: true,
+            dpStatus: 'Correction',
             status: true
           }).populate([{
             path: 'datapointId',
@@ -1037,6 +1045,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if(dpCodesData.length > 0)
             {
               let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
+              let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+              if(dpCodeStatus > -1){
+                datapointsObject.status = 'Completed';
+              }
               if(yearfind > -1){
                 dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
               }else {
@@ -1147,7 +1159,6 @@ export const datapointDetails = async (req, res, next) => {
       year: {
         $in: currentYear
       },
-      categoryId: taskDetails.categoryId.id,
       status: true
     }).populate('errorTypeId');
     let sourceTypeDetails = [];
@@ -1293,8 +1304,7 @@ export const datapointDetails = async (req, res, next) => {
                 }                
               }            
           } else if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == true){
-            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] );
-            
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] ); 
             currentDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,

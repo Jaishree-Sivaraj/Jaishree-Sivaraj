@@ -38,7 +38,7 @@ from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
-const batchid = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [], controversyTaskReports = [];
+const batchid = '', role = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [], controversyTaskReports = [];
 /**
  * @api {post} /taskAssignments Create task assignment
  * @apiName CreateTaskAssignment
@@ -238,7 +238,7 @@ router.put('/updateCompanyStatus',
     year,
     clientTaxonomyId,
     taskId,
-    taskStatus
+    role
   }),
   updateCompanyStatus)
 /**
