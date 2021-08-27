@@ -325,7 +325,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     _.filter(currentAllBoardMemberMatrixDetails,(object)=>{
                       if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == boardDpCodesData.boardMemberList[boarMemberListIndex].label){
-                        boardDatapointsObject.status = 'Completed'
+                        boardDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                       }
                     })
                   }
@@ -382,7 +382,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     _.filter(currentAllKmpMatrixDetails,(object)=>{
                       if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label){
-                        kmpDatapointsObject.status = 'Completed'
+                        kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
                       }
                     })
                   }
@@ -409,7 +409,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   _.filter(currentAllStandaloneDetails,(object)=>{
                     if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
-                      datapointsObject.status = 'Completed'
+                      datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                     }
                   })
                 }
@@ -430,7 +430,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     _.filter(currentAllStandaloneDetails,(object)=>{
                       if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
-                        datapointsObject.status = 'Completed'
+                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                       }
                     })
                   }
