@@ -340,7 +340,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
     let kmpDatapoints = await KmpMatrixDataPoints.find({companyId: taskDetailsObject.companyId.id, status: true}).populate('datapointId').populate('companyId');
     let boardMembersMatrixDataPoints = await BoardMembersMatrixDataPoints.find({companyId: taskDetailsObject.companyId.id, status: true}).populate('datapointId').populate('companyId');
     let standalone_datapoints = await StandaloneDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
-    let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}}).populate('datapointId');
+    //let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}}).populate('datapointId');
     let mergedDetails = _.concat(boardMembersMatrixDataPoints,kmpDatapoints,derivedDatapoints, standalone_datapoints);
     if(dpTypeValues.length > 1){
       for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
