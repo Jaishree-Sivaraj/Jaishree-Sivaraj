@@ -327,7 +327,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
       if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
         findQuery = { status : true };
       } else if (userRoles[roleIndex] == "GroupAdmin"){
-        let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('id');
+        let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
         findQuery = { 
           groupId: { $in: groupIds },
           status : true 
