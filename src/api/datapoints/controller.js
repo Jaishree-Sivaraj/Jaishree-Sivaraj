@@ -1050,11 +1050,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 datapointsObject.status = 'Completed';
               }
               if(yearfind > -1){
-                dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year)
+                dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",",errorDatapoints[errorDpIndex].year);
+                dpCodesData[yearfind].status = 'Completed';
               }else {
+                let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+              if(dpCodeStatus > -1){
+                datapointsObject.status = 'Completed';
+              }
                 dpCodesData.push(datapointsObject);
                 }
-            } else {
+            } else {let dpCodeStatus = errorDatapoints.findIndex(obj => obj.datapointId.code == errorDatapoints[errorDpIndex].datapointId.code && obj.correctionStatus == 'Completed');
+            if(dpCodeStatus > -1){
+              datapointsObject.status = 'Completed';
+            }
             dpCodesData.push(datapointsObject);
             }
 
