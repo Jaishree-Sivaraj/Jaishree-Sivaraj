@@ -147,7 +147,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         "$ne": functionId.id
       },
       clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
-      categoryId: taskDetails.categoryId,
+      categoryId: taskDetails.categoryId.id,
       status: true
     }).distinct('dpType');
 
@@ -415,8 +415,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
-              categoryId: taskDetails.categoryId,
+              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
+              categoryId: taskDetails.categoryId.id,
               dpType: dpTypeValues[dpTypeIndex],
               status: true
             }).populate('keyIssueId').populate('categoryId');

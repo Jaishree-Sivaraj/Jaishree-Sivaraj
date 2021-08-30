@@ -1064,6 +1064,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             createdBy: user
           }
@@ -1116,6 +1117,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
             memberStatus: true,
@@ -1171,6 +1173,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
             memberStatus: true,
