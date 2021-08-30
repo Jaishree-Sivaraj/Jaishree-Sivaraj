@@ -129,7 +129,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
     let taskDetails = await TaskAssignment.findOne({
       _id: req.params.taskId
-    }).populate('companyId').populate('categoryId');
+    }).populate({
+      path: "companyId",
+    populate: {
+      path: "clientTaxonomyId"
+    }}).populate('categoryId');
     console.log(taskDetails)
     let functionId = await Functions.findOne({
       functionType: "Negative News",
@@ -142,15 +146,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       functionId: {
         "$ne": functionId.id
       },
-     // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
       categoryId: taskDetails.categoryId,
       status: true
     }).distinct('dpType');
 
     console.log(dpTypeValues.length);
-    // let dpDetailsList = [];
-    let currentAllStandaloneDetails = [],
-      historyAllStandaloneDetails = [];
     let keyIssuesList = [];
 
     let boardDpCodesData = {
@@ -162,17 +163,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       dpCodesData: []
     };
     let dpCodesData = [], priorityDpCodes = [];
-    let currentAllBoardMemberMatrixDetails = []
-    let currentAllKmpMatrixDetails = []
-    errorDataDetails = await ErrorDetails.find({
-      companyId: taskDetails.companyId.id,
-      year: {
-        $in: currentYear
-      },
-      categoryId: taskDetails.categoryId,
-      status: true
-    }).populate('errorTypeId');
-    currentAllStandaloneDetails = await StandaloneDatapoints.find({
+    let currentAllStandaloneDetails = await StandaloneDatapoints.find({
         taskId: req.params.taskId,
         companyId: taskDetails.companyId.id,
         year: {
@@ -183,18 +174,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-
-    historyAllStandaloneDetails = await StandaloneDatapoints.find({
-        companyId: taskDetails.companyId.id,
-        year: {
-          $nin: currentYear
-        },
-        status: true
-      }).populate('createdBy')
-      .populate('datapointId')
-      .populate('companyId')
-      .populate('taskId');
-    currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({      
+    let currentAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({      
       taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
@@ -206,33 +186,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    historyAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
-        companyId: taskDetails.companyId.id,
-        year: {
-          "$nin": currentYear
-        },
-        
-        status: true
-      }).populate('createdBy')
-      .populate('datapointId')
-      .populate('companyId')
-      .populate('taskId');
-    currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
+      let currentAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
       taskId: req.params.taskId,
       companyId: taskDetails.companyId.id,
       year: {
           "$in": currentYear
-        },
-        
-        status: true
-      }).populate('createdBy')
-      .populate('datapointId')
-      .populate('companyId')
-      .populate('taskId');
-    historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
-        companyId: taskDetails.companyId.id,
-        year: {
-          "$nin": currentYear
         },
         
         status: true
@@ -249,7 +207,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               functionId: {
                 "$ne": functionId.id
               },
-              //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
               categoryId: taskDetails.categoryId,
               status: true
             }).populate('keyIssueId');
@@ -464,7 +422,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }).populate('keyIssueId').populate('categoryId');
             console.log(dpTypeDatapoints.length)
             let keyIssueListObject = _.uniqBy(dpTypeDatapoints, 'keyIssueId');
-            //console.log(keyIssueList);
             for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
               let keyIssues = {
                 label: keyIssueListObject[keyIssueListIndex].keyIssueId.keyIssueName,
