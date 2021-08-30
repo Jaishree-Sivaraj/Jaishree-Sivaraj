@@ -193,7 +193,7 @@ export const uploadControversies = async (req, res, next) => {
       let companyDetails = [], controversyDetails = [];
       if (allFilesObject.length > 0) {
         let currentCompanyName;
-        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "A-Taxonomy" });
+        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
         for (let index = 0; index < allFilesObject.length; index++) {
           console.log(allFilesObject[index].length);
           console.log(allFilesObject[index]);
