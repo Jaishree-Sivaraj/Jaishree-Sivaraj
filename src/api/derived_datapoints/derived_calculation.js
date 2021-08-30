@@ -6,7 +6,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints'
 import { Companies } from '../companies'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
-import { companiesAndAnalyst } from "../controversy_tasks/controller";
+// import { companiesAndAnalyst } from "../controversy_tasks/controller";
 import { BoardMembers } from "../boardMembers";
 
 export const multiplyCalculation = async function (taskId, companyId, distinctYears, allDatapointsList,categoryId, userDetail) {
