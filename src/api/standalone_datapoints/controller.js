@@ -128,7 +128,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             var sheet_name_list = workbook.SheetNames;
 
             sheet_name_list.forEach(function (currentSheetName) {
-              if (currentSheetName != 'Sheet3') {
+              if (currentSheetName != 'Sheet3' && currentSheetName != 'SFDR') {
                 //getting the complete sheet
                 var worksheet = workbook.Sheets[currentSheetName];
                 var idx, allColumnNames = [];
@@ -150,7 +150,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   });
                 }
                 var headers = {};
-                var headers1 = {};
+                var headers1 = {}, headers2 = {};
                 var data = [];
                 if (currentSheetName.toLowerCase() == 'matrix-directors' || currentSheetName.toLowerCase() == 'matrix-kmp') {
                   // for (const [cellIndex, [key, cellId]] of Object.entries(Object.entries(worksheet))) {
@@ -172,108 +172,328 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     var row = parseInt(cellId.match(/(\d+)/));
                     var value = worksheet[cellId].v;
                     //store header names
-                    if (row == 1) {
-                      if (value != "Error types and definitions") {
-                        if (isNaN(value)) {
-                          headers[col] = value.replace('\r\n', ' ');
+                    if (currentSheetName.toLowerCase() == 'matrix-directors') {
+                      if (row == 1) {
+                        if (value != "Error types and definitions") {
+                          if (isNaN(value)) {
+                            headers[col] = value.replace('\r\n', ' ');
+                          }
                         }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 32) {
+                        if (isNaN(value)) {
+                          headers1[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 63) {
+                        if (isNaN(value)) {
+                          headers2[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
                       }
-                      // storing the header names
-                      continue;
-                    } else if (headerRowsNumber.includes(row) && row != 1) {
-                      if (isNaN(value)) {
-                        headers1[col] = value.replace('\r\n', ' ');
-                      }
-                      // storing the header names
-                      continue;
-                    }
-                    // if(headerRowsNumber.includes(row) && row != 1){
-                    if (row > headerRowsNumber[1] && row != 1) {
-                      if (!data[row]) data[row] = {};
-                      if (col != 'A') {
-                        if (headers1['A']) {
-                          if (data[row][headers1['A']]) {
-                            //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
-                            let previousColumnIndex = currentColumnIndex - 1;
-                            let nextColumnIndex = currentColumnIndex + 1;
-                            data[row][headers1[col]] = value;
-                            if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                              data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
-                            }
-                            if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
-                              data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
-                              let nextCellId = allColumnNames[nextColumnIndex] + row;
-                              if (nextCellId) {
-                                let expectedNextCol = allColumnNames[nextColumnIndex];
-                                if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                  let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                  if (difference > 1) {
-                                    for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                      data[row][headers1[allColumnNames[inx]]] = '';
+                      //pushing board members values to headers, headers1 and headers2
+                      if (row > headerRowsNumber[1] && row != 1 && row > 32 && row < 63) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers1['A']) {
+                            if (data[row][headers1['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers1[col]] = value;
+                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
                                     }
                                   }
                                 }
                               }
                             }
                           }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers1[col]] = value;
+                          }
+                        }
+                      } else if (row > headerRowsNumber[1] && row != 1 && row > 63) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers2['A']) {
+                            if (data[row][headers2['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers2[col]] = value;
+                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers2[col]] = value;
+                          }
                         }
                       } else {
-                        if (isNaN(value)) {
-                          data[row][headers1[col]] = value.replace('\r\n', ' ');
+                        if (!data[row]) {
+                          data[row] = {};
+                          data[row][headers[col]] = '';
+                        }
+
+                        if (col != 'A') {
+                          if (headers['A']) {
+                            if (data[row][headers['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers[col]] = value;
+                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                                // if (!worksheet[nextCellId]) {
+                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                // }
+                              }
+                            }
+                          }
                         } else {
-                          data[row][headers1[col]] = value;
+                          if (isNaN(value)) {
+                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers[col]] = value;
+                          }
                         }
                       }
                     } else {
-                      if (!data[row]) {
-                        data[row] = {};
-                        data[row][headers[col]] = '';
+                      if (row == 1) {
+                        if (value != "Error types and definitions") {
+                          if (isNaN(value)) {
+                            headers[col] = value.replace('\r\n', ' ');
+                          }
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 12) {
+                        if (isNaN(value)) {
+                          headers1[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 23) {
+                        if (isNaN(value)) {
+                          headers2[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
                       }
-
-                      if (col != 'A') {
-                        if (headers['A']) {
-                          if (data[row][headers['A']]) {
-                            //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
-                            let previousColumnIndex = currentColumnIndex - 1;
-                            let nextColumnIndex = currentColumnIndex + 1;
-                            data[row][headers[col]] = value;
-                            if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                              data[row][headers[allColumnNames[previousColumnIndex]]] = '';
-                            }
-                            if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
-                              data[row][headers[allColumnNames[nextColumnIndex]]] = '';
-                              let nextCellId = allColumnNames[nextColumnIndex] + row;
-                              if (nextCellId) {
-                                let expectedNextCol = allColumnNames[nextColumnIndex];
-                                if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                  let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                  if (difference > 1) {
-                                    for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                      data[row][headers[allColumnNames[inx]]] = '';
+                      //pushing kmp members values to headers, headers1 and headers2
+                      if (row > headerRowsNumber[1] && row != 1 && row > 12 && row < 23) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers1['A']) {
+                            if (data[row][headers1['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers1[col]] = value;
+                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
                                     }
                                   }
                                 }
                               }
-                              // if (!worksheet[nextCellId]) {
-                              //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
-                              // }
                             }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers1[col]] = value;
+                          }
+                        }
+                      } else if (row > headerRowsNumber[1] && row != 1 && row > 23) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers2['A']) {
+                            if (data[row][headers2['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers2[col]] = value;
+                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers2[col]] = value;
                           }
                         }
                       } else {
-                        if (isNaN(value)) {
-                          data[row][headers[col]] = value.replace('\r\n', ' ');
+                        if (!data[row]) {
+                          data[row] = {};
+                          data[row][headers[col]] = '';
+                        }
+
+                        if (col != 'A') {
+                          if (headers['A']) {
+                            if (data[row][headers['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers[col]] = value;
+                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                                // if (!worksheet[nextCellId]) {
+                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                // }
+                              }
+                            }
+                          }
                         } else {
-                          data[row][headers[col]] = value;
+                          if (isNaN(value)) {
+                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers[col]] = value;
+                          }
                         }
                       }
                     }
+                    // if(headerRowsNumber.includes(row) && row != 1){
                   }
                   //drop those first two rows which are empty
                   data.shift();
@@ -297,7 +517,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     if (!data[row] && value) data[row] = {};
                     if (col != 'A') {
                       if (headers['A']) {
-                        console.log(data[row][headers['A']]);
                         if (data[row][headers['A']]) {
                           //take all column names in an array
                           let currentColumnIndex = allColumnNames.indexOf(col);
@@ -458,8 +677,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                console.log(item);
-                console.log(categoriesObjectValues)
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -715,8 +932,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                console.log(item);
-                console.log(categoriesObjectValues)
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -772,7 +987,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   status: true,
                   createdBy: userDetail
                 }
-                console.log(kmpMembersList, memberDetail)
                 kmpMembersList.push(memberDetail);
               });
 
@@ -896,8 +1110,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            if (missingDPList.length !== 0) {
-              const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
+            if (missingDPList.length == 0) {
+              await StandaloneDatapoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds
                 },
