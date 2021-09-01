@@ -20,8 +20,8 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .catch(next)
 
 export const getMyNotifications = ({ params, querymen: { query, select, cursor } }, res, next) =>
-  Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null })
-    .then(count => Notifications.find({ notifyToUser: params.notifyToUser ? params.notifyToUser : null }, select, cursor)
+  Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false })
+    .then(count => Notifications.find({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false }, select, cursor)
     .sort({ createdAt: -1 })
       .populate('notifyToUser')
       .then((notifications) => ({
