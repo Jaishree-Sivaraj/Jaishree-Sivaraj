@@ -145,6 +145,7 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.superAdminStats[4].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": groupAdminRoleId.id } }, { "roleDetails.primaryRole": groupAdminRoleId.id }]});
           finalResponseObject.superAdminStats[4].data[4].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
           finalResponseObject.superAdminStats[4].data[5].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
+          finalResponseObject.superAdminStats[4].data[6].value = await User.count({ isUserActive: true, isAssignedToGroup: false, isRoleAssigned: false, status: true });
         } else if (userRoles[roleIndex] == "GroupAdmin") {
           let groupIds = await Group.find({groupAdmin: user.id, status: true}).distinct('id');
           findQuery = {

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, allocateTasksFromJson } from './controller'
 import { schema } from './model'
 export CompaniesTasks, { schema } from './model'
 
@@ -60,6 +60,23 @@ router.get('/',
 router.get('/:id',
   token({ required: true }),
   show)
+
+/**
+ * @api {get} /companies_tasks/import/tasks Import companies tasks
+ * @apiName ImportCompaniesTasks
+ * @apiGroup CompaniesTasks
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of companies tasks.
+ * @apiSuccess {Object[]} rows List of companies tasks.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/import/tasks',
+  token({ required: true }),
+  query(),
+  allocateTasksFromJson)
 
 /**
  * @api {put} /companies_tasks/:id Update companies tasks
