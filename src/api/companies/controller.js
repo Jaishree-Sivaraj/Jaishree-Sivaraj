@@ -158,6 +158,7 @@ export const uploadCompaniesFile = async (req, res, next) => {
         if (sheetAsJson.length > 0) {
           for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
             const rowObject = sheetAsJson[index1];
+            rowObject['NIC Code'] = String(rowObject['NIC Code']);
             let companyObject = {
               companyName: rowObject['Company Name'].replace(/[\\r\\n]/g,''),
               cin: rowObject['CIN'].replace(/[\\n\\r]/g, ''),
