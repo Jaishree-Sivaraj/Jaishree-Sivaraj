@@ -1226,7 +1226,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -1305,7 +1305,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -1384,7 +1384,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -1455,7 +1455,7 @@ export const datapointDetails = async (req, res, next) => {
                 optionVal = displayFields[dIndex].inputValues;
               }
               if(displayFields[dIndex].inputType == 'Static'){
-                currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
               } else {
               //  let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                 if(displayFields[dIndex].inputType == 'Select'){
@@ -1533,7 +1533,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = historyAllStandaloneDetails.find((obj) => obj.year == historyYear[historicalYearIndex].year);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -1680,7 +1680,7 @@ export const datapointDetails = async (req, res, next) => {
                       optionVal = displayFields[dIndex].inputValues;
                     }
                     if(displayFields[dIndex].inputType == 'Static'){
-                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                      currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                     } else {
                       let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                       if(displayFields[dIndex].inputType == 'Select'){
@@ -1759,7 +1759,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -1838,7 +1838,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -1912,7 +1912,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                  // let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -1984,7 +1984,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = historyAllBoardMemberMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -2131,7 +2131,7 @@ export const datapointDetails = async (req, res, next) => {
                       optionVal = displayFields[dIndex].inputValues;
                     }
                     if(displayFields[dIndex].inputType == 'Static'){
-                      currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                      currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                     } else {
                       let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                       if(displayFields[dIndex].inputType == 'Select'){
@@ -2211,7 +2211,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -2290,7 +2290,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -2363,7 +2363,7 @@ export const datapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                  // let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -2438,7 +2438,7 @@ export const datapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -2544,8 +2544,7 @@ export const repDatapointDetails = async (req, res, next) => {
       status: true
     }).populate('keyIssueId').populate('categoryId');
 
-    let errorDataDetails = [];
-    errorDataDetails = await ErrorDetails.find({
+    let errorDataDetails = await ErrorDetails.find({
       taskId: req.body.taskId,
       companyId: taskDetails.companyId.id,
       year: {
@@ -2625,8 +2624,9 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : '';
-           // if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasCorrection == false && object.hasError == false){
-            currentDatapointsObject = {
+            if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+              currentDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,
               dpCodeId: dpTypeValues.id,
@@ -2648,16 +2648,7 @@ export const repDatapointDetails = async (req, res, next) => {
               },
               error: {
                 hasError: object.hasError,
-                refData: {                  
-                  description: dpTypeValues.description,
-                  dataType: dpTypeValues.dataType,
-                  textSnippet: '',
-                  pageNo: '',
-                  screenShot: null,
-                  response: '',
-                  source: null,
-                  additionalDetails:[]
-                },
+                refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
                 comment: '',
                 errorStatus: object.correctionStatus
               },
@@ -2683,7 +2674,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -2698,17 +2689,95 @@ export const repDatapointDetails = async (req, res, next) => {
                   value: currentValue ? currentValue: '',
                   inputType: displayFields[dIndex].inputType,
                   inputValues: optionValues.length > 0 ? optionValues : optionVal
-                })                
-                currentDatapointsObject.error.refData.additionalDetails.push({
-                  fieldName: displayFields[dIndex].fieldName,
-                  name: displayFields[dIndex].name,
-                  value: currentValue ? currentValue: '',
-                  inputType: displayFields[dIndex].inputType,
-                  inputValues: optionValues.length > 0 ? optionValues : optionVal
                 })
               }                
-            }          
-          datapointsObject.status = 'Completed';
+            } 
+            } else{
+
+              currentDatapointsObject = {
+                status: 'Completed',
+                dpCode: dpTypeValues.code,
+                dpCodeId: dpTypeValues.id,
+                fiscalYear: currentYear[currentYearIndex],
+                description: dpTypeValues.description,
+                dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
+                textSnippet: object.textSnippet,
+                pageNo: object.pageNumber,
+                screenShot: object.screenShot,
+                response: object.response,
+                memberName: object.memberName,
+                sourceList: sourceTypeDetails,
+                source: {
+                  url: object.url ? object.url : '',
+                  sourceName: sourceName,
+                  value: sourceId,
+                  publicationDate: object.publicationDate ? object.publicationDate : ''
+                },
+                error: {
+                  hasError: object.hasError,
+                  refData: {                  
+                    description: dpTypeValues.description,
+                    dataType: dpTypeValues.dataType,
+                    textSnippet: '',
+                    pageNo: '',
+                    screenShot: null,
+                    response: '',
+                    source: null,
+                    additionalDetails:[]
+                  },
+                  comment: '',
+                  errorStatus: object.correctionStatus
+                },
+                comments: [],
+                additionalDetails:[]
+              }              
+              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                  let optionValues = [], optionVal = '', currentValue;
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    let options = displayFields[dIndex].inputValues.split(',');
+                    if(options.length > 0){
+                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                        optionValues.push({
+                          value: options[optIndex],
+                          label: options[optIndex]
+                        });                        
+                      }
+                    } else {
+                      optionValues = [];
+                    }
+                  } else {
+                    optionVal = displayFields[dIndex].inputValues;
+                  }
+                  if(displayFields[dIndex].inputType == 'Static'){
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                  } else {
+                    let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    } else {
+                      currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
+                    }
+                  }
+                  currentDatapointsObject.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })                
+                  currentDatapointsObject.error.refData.additionalDetails.push({
+                    fieldName: displayFields[dIndex].fieldName,
+                    name: displayFields[dIndex].name,
+                    value: currentValue ? currentValue: '',
+                    inputType: displayFields[dIndex].inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                  })
+                }                
+              } 
+            }         
+          datapointsObject.status = object.correctionStatus;
         });
         datapointsObject.currentData.push(currentDatapointsObject);
       }
@@ -2768,7 +2837,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   optionVal = displayFields[dIndex].inputValues;
                 }
                 if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                 } else {
                   let standaloneDetail = historyAllStandaloneDetails.find((obj) => obj.year == historyYear[historicalYearIndex].year);
                   if(displayFields[dIndex].inputType == 'Select'){
@@ -2861,7 +2930,76 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
-            currentDatapointsObject = {
+            if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+              currentDatapointsObject = {
+                status: 'Completed',
+                dpCode: dpTypeValues.code,
+                dpCodeId: dpTypeValues.id,
+                fiscalYear: currentYear[currentYearIndex],
+                description: dpTypeValues.description,
+                dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
+                textSnippet: object.textSnippet,
+                pageNo: object.pageNumber,
+                screenShot: object.screenShot,
+                response: object.response,
+                memberName: object.memberName,
+                sourceList: sourceTypeDetails,
+                source: {
+                  url: object.url ? object.url : '',
+                  sourceName: sourceName,
+                  value: sourceId,
+                  publicationDate: object.publicationDate ? object.publicationDate : ''
+                },
+                error: {
+                  hasError: object.hasError,
+                  refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
+                  comment: '',
+                  errorStatus: object.correctionStatus
+                },
+                comments: [],
+                additionalDetails:[]
+              } 
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }
+            }  
+            } else{
+              currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
                 dpCodeId: dpTypeValues.id,
@@ -2898,51 +3036,52 @@ export const repDatapointDetails = async (req, res, next) => {
                 },
                 comments: [],
                 additionalDetails:[]
-              } 
-              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
-                  let optionValues = [], optionVal = '', currentValue;
-                  if(displayFields[dIndex].inputType == 'Select'){
-                    let options = displayFields[dIndex].inputValues.split(',');
-                    if(options.length > 0){
-                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                        optionValues.push({
-                          value: options[optIndex],
-                          label: options[optIndex]
-                        });                        
-                      }
-                    } else {
-                      optionValues = [];
+            } 
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
                     }
                   } else {
-                    optionVal = displayFields[dIndex].inputValues;
+                    optionValues = [];
                   }
-                  if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
-                  } else {
-                    let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
-                    if(displayFields[dIndex].inputType == 'Select'){
-                      currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                    } else {
-                      currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
-                    }
-                  }
-                  currentDatapointsObject.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
-                  currentDatapointsObject.error.refData.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
                 }
-              }        
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+                currentDatapointsObject.error.refData.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }
+            }
+            }                   
              boardDatapointsObject.status = 'Completed';
           });
           boardDatapointsObject.currentData.push(currentDatapointsObject);        
@@ -2996,7 +3135,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = historyAllBoardMemberMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
                     if(displayFields[dIndex].inputType == 'Select'){
@@ -3089,7 +3228,77 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
-            currentDatapointsObject = {
+            if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+              currentDatapointsObject = {
+                status: 'Completed',
+                dpCode: dpTypeValues.code,
+                dpCodeId: dpTypeValues.id,
+                fiscalYear: currentYear[currentYearIndex],
+                description: dpTypeValues.description,
+                dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
+                textSnippet: object.textSnippet,
+                pageNo: object.pageNumber,
+                screenShot: object.screenShot,
+                response: object.response,
+                memberName: object.memberName,
+                sourceList: sourceTypeDetails,
+                source: {
+                  url: object.url ? object.url : '',
+                  sourceName: sourceName,
+                  value: sourceId,
+                  publicationDate: object.publicationDate ? object.publicationDate : ''
+                },
+                error: {
+                  hasError: object.hasError,
+                  refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
+                  comment: '',
+                  errorStatus: object.correctionStatus
+                },
+                comments: [],
+                additionalDetails:[]
+              } 
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value:responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
+              }
+            } 
+            }
+            else{
+              currentDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
                 dpCodeId: dpTypeValues.id,
@@ -3127,50 +3336,52 @@ export const repDatapointDetails = async (req, res, next) => {
                 comments: [],
                 additionalDetails:[]
               } 
-              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
-                  let optionValues = [], optionVal = '', currentValue;
-                  if(displayFields[dIndex].inputType == 'Select'){
-                    let options = displayFields[dIndex].inputValues.split(',');
-                    if(options.length > 0){
-                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                        optionValues.push({
-                          value: options[optIndex],
-                          label: options[optIndex]
-                        });                        
-                      }
-                    } else {
-                      optionValues = [];
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
                     }
                   } else {
-                    optionVal = displayFields[dIndex].inputValues;
+                    optionValues = [];
                   }
-                  if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
-                  } else {
-                    let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
-                    if(displayFields[dIndex].inputType == 'Select'){
-                      currentValue = { value:responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                    } else {
-                      currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
-                    }
-                  }
-                  currentDatapointsObject.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  });                  
-                  currentDatapointsObject.error.refData.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  });
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
                 }
-              } 
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let responseDetails = currentAllKmpMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value:responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });                  
+                currentDatapointsObject.error.refData.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
+              }
+            } 
+            }
+            
           });
           kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
@@ -3227,7 +3438,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     optionVal = displayFields[dIndex].inputValues;
                   }
                   if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues[displayFields[dIndex].fieldName];
+                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                   } else {
                     let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
                     if(displayFields[dIndex].inputType == 'Select'){

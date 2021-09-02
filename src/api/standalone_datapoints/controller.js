@@ -1455,10 +1455,19 @@ export const dataCollection = async ({
             additionalDetails: item['additionalDetails'],
             createdBy: user
           }
-          //for (let index1 = 0; 1 < currentYearValues.length; index1++) {
-            //store in s3 bucket with filename
-            await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: {isErrorAccepted: item.isAccepted} });
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
+            }
             await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
           //}
@@ -1514,10 +1523,19 @@ export const dataCollection = async ({
             memberStatus: true,
             createdBy: user
           }
-         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
-            //store in s3 bucket with filename
-            await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: {isErrorAccepted: item.isAccepted} });
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
+            }
             await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
           //}
@@ -1574,10 +1592,19 @@ export const dataCollection = async ({
             memberStatus: true,
             createdBy: user
           }
-         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
-            //store in s3 bucket with filename
-            await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-            {$set: {isErrorAccepted: item.isAccepted}});
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
+            }
             await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
           //}

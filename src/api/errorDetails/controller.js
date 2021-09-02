@@ -189,13 +189,51 @@ export const saveErrorDetails = async({
             status: true,
             createdBy: user
           } 
+          let obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: body.taskId,
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: item['screenShot'],
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            additionalDetails: item['additionalDetails'],
+            status: true,
+            hasError: true,
+            hasCorrection: false,
+            correctionStatus: 'Completed',
+            createdBy: user
+          }
           await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: {hasCorrection: false, hasError: true, correctionStatus: 'Completed'} });
+          { $set: obj });
           await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
           { $set: standaloneDatapoints }, { upsert: true });
         } else{
+          let obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: body.taskId,
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: item['screenShot'],
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            additionalDetails: item['additionalDetails'],
+            status: true,
+            hasError: false,
+            hasCorrection: false,
+            correctionStatus: 'Completed',
+            createdBy: user
+          }
           await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'} });
+          { $set: obj });
         }
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -216,10 +254,8 @@ export const saveErrorDetails = async({
         status: true,
         createdBy: user
       }
-     // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
-        await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: obj }, { upsert: true });
-      //}
+      await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+      { $set: obj }, { upsert: true });
     }
     res.status('200').json({
       message: "Data inserted Successfully"
@@ -228,7 +264,7 @@ export const saveErrorDetails = async({
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
       if(item.error.isThere == true){
-        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);  
+        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
         let errorDp = {
           datapointId: body.dpCodeId,
           companyId: body.companyId,
@@ -250,16 +286,56 @@ export const saveErrorDetails = async({
           status: true,
           createdBy: user
         }
+        let obj = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          status: true,
+          hasCorrection: false,
+          hasError: true,
+          correctionStatus: 'Completed',
+          createdBy: user
+        }
         await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-        { $set: {hasCorrection: false, hasError: true, correctionStatus: 'Completed'}});
+        { $set: obj});
         await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
       } else{
+        let obj = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          status: true,
+          hasCorrection: false,
+          hasError: false,
+          correctionStatus: 'Completed',
+          createdBy: user
+        }
         await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-        { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'}});
+        { $set: obj});
       }    
-     // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
-        //store in s3 bucket with filename
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
@@ -293,7 +369,253 @@ export const saveErrorDetails = async({
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
       if(item.error.isThere == true){
-        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);  
+        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
+        let errorDp = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item.fiscalYear,
+          taskId: body.taskId, 
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error.raisedBy,
+          errorStatus: item.error.errorStatus,
+          errorCaughtByRep: errorCaughtByRep,            
+          isErrorRejected: false,
+          isErrorAccepted: null,
+          comments: {            
+          author: item.error.raisedBy,
+          fiscalYear: item.fiscalYear,
+          dateTime: Date.now(),
+          content: item.error.comment
+          },
+          status: true,
+          createdBy: user
+        }
+        let obj = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          hasCorrection: false, 
+          hasError: true , 
+          correctionStatus: 'Completed',
+          status: true,
+          createdBy: user
+        }
+        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: obj});
+        await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: errorDp }, { upsert: true });
+      } else{
+        let obj = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          hasCorrection: false, 
+          hasError: false, 
+          correctionStatus: 'Completed',
+          status: true,
+          createdBy: user
+        }
+        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: obj});
+      }
+    }
+    for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+      let item = dpHistoricalDpDetails[index];
+      let obj = {
+        datapointId: body.dpCodeId,
+        companyId: body.companyId,
+        taskId: body.taskId,
+        year: item['fiscalYear'],
+        response: item['response'],
+        screenShot: item['screenShot'],
+        textSnippet: item['textSnippet'],
+        pageNumber: item['pageNo'],
+        publicationDate: item.source['publicationDate'],
+        url: item.source['url'],
+        sourceName: item.source['sourceName'] + ";" + item.source['value'],
+        additionalDetails: item['additionalDetails'],
+        memberName: body.memberName,
+        memberStatus: true,
+        status: true,
+        createdBy: user
+      }
+      await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: obj }, { upsert: true });
+    }
+    res.status('200').json({
+      message: "Data inserted Successfully"
+    });
+  }
+}
+
+export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res, next) =>{  
+  let dpCodesDetails = body.currentData;
+  let errorTypeDetails = await Errors.find({
+    status: true
+  });
+  let errorCaughtByRep = {};
+  if(body.memberType == 'Standalone'){      
+      for (let index = 0; index < dpCodesDetails.length; index++) {
+        let item = dpCodesDetails[index];
+          //store in s3 bucket with filename       
+          if(item.error.isThere == true){
+            let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
+            if(item.error.refData === '' || item.error.refData === ""){
+              errorCaughtByRep == null
+            } else {
+            errorCaughtByRep = {
+              description: item.error.refData.description,
+              response: item.error.refData.response,
+              screenShot: item.error.refData.screenShot,
+              dataType: item.error.refData.dataType,
+              fiscalYear: item.error.refData.fiscalYear,
+              textSnippet: item.error.refData.textSnippet,
+              pageNo: item.error.refData.pageNo,
+              source:{
+                publicationDate: item.error.refData.source.publicationDate,
+                url: item.error.refData.source.url,
+                sourceName: item.error.refData.source.sourceName
+              },
+              additionalDetails: item.error.refData.additionalDetails
+            }
+            }
+            let standaloneDatapoints = {
+              datapointId: body.dpCodeId,
+              companyId: body.companyId,
+              categoryId: body.pillarId,
+              year: item.fiscalYear,
+              taskId: body.taskId, 
+              errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+              raisedBy: item.error.raisedBy,
+              errorStatus: item.error.errorStatus,
+              errorCaughtByRep: errorCaughtByRep,
+              isErrorAccepted: null,
+              isErrorRejected: false,
+              comments: {            
+              author: item.error.raisedBy,
+              fiscalYear: item.fiscalYear,
+              dateTime: Date.now(),
+              content: item.error.comment
+              },
+              status: true,
+              createdBy: user
+            } 
+            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+            { $set: {hasCorrection: false, hasError: true, correctionStatus: 'Completed'} });
+            await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+            { $set: standaloneDatapoints }, { upsert: true });
+          } else{
+            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+            { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'} });
+          }
+      }
+      res.status('200').json({
+        message: "Data inserted Successfully"
+      });
+  } else if(body.memberType == 'Board Matrix'){      
+    for (let index = 0; index < dpCodesDetails.length; index++) {
+      let item = dpCodesDetails[index];
+      if(item.error.isThere == true){
+        if(item.error.refData == null || item.error.refData === '' || item.error.refData === ""){
+          errorCaughtByRep == null
+        } else {
+          errorCaughtByRep = {
+            description: item.error.refData.description,
+            response: item.error.refData.response,
+            screenShot: item.error.refData.screenShot,
+            dataType: item.error.refData.dataType,
+            fiscalYear: item.error.refData.fiscalYear,
+            textSnippet: item.error.refData.textSnippet,
+            pageNo: item.error.refData.pageNo,
+            source:{
+              publicationDate: item.error.refData.source.publicationDate,
+              url: item.error.refData.source.url,
+              sourceName: item.error.refData.source.sourceName
+            },
+            additionalDetails: item.error.refData.additionalDetails
+          }
+        }
+        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
+        let errorDp = {
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          categoryId: body.pillarId,
+          year: item.fiscalYear,
+          taskId: body.taskId, 
+          errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+          raisedBy: item.error.raisedBy,
+          errorStatus: item.error.errorStatus,
+          errorCaughtByRep: errorCaughtByRep,
+          isErrorRejected: false,
+          isErrorAccepted: null,
+          comments: {            
+          author: item.error.raisedBy,
+          fiscalYear: item.fiscalYear,
+          dateTime: Date.now(),
+          content: item.error.comment
+          },
+          status: true,
+          createdBy: user
+        }
+        await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: {hasCorrection: false, hasError: true, correctionStatus: 'Completed'}});
+        await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: errorDp }, { upsert: true });
+      } else{
+        await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+        { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'}});
+      }    
+    }
+    res.status('200').json({
+      message: "Data inserted Successfully"
+    });
+  } else if(body.memberType == 'KMP Matrix'){     
+    for (let index = 0; index < dpCodesDetails.length; index++) {
+      let item = dpCodesDetails[index];
+      if(item.error.isThere == true){
+        if(item.error.refData == null || item.error.refData === '' || item.error.refData === ""){
+          errorCaughtByRep == null
+        } else {
+          errorCaughtByRep = {
+            description: item.error.refData.description,
+            response: item.error.refData.response,
+            screenShot: item.error.refData.screenShot,
+            dataType: item.error.refData.dataType,
+            fiscalYear: item.error.refData.fiscalYear,
+            textSnippet: item.error.refData.textSnippet,
+            pageNo: item.error.refData.pageNo,
+            source:{
+              publicationDate: item.error.refData.source.publicationDate,
+              url: item.error.refData.source.url,
+              sourceName: item.error.refData.source.sourceName
+            },
+            additionalDetails: item.error.refData.additionalDetails
+          }
+        } 
+        let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
         let errorDp = {
           datapointId: body.dpCodeId,
           companyId: body.companyId,
@@ -323,291 +645,9 @@ export const saveErrorDetails = async({
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'}});
       }
-      
-     // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
-        //store in s3 bucket with filename
-        
-        
-      //}
-    }
-    for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
-      let item = dpHistoricalDpDetails[index];
-      let obj = {
-        datapointId: body.dpCodeId,
-        companyId: body.companyId,
-        taskId: body.taskId,
-        year: item['fiscalYear'],
-        response: item['response'],
-        screenShot: item['screenShot'],
-        textSnippet: item['textSnippet'],
-        pageNumber: item['pageNo'],
-        publicationDate: item.source['publicationDate'],
-        url: item.source['url'],
-        sourceName: item.source['sourceName'] + ";" + item.source['value'],
-        additionalDetails: item['additionalDetails'],
-        memberName: body.memberName,
-        memberStatus: true,
-        status: true,
-        createdBy: user
-      }
-     // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
-        await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-          { $set: obj }, { upsert: true });
-      //}
     }
     res.status('200').json({
       message: "Data inserted Successfully"
-    });
-  }
-}
-
-export const saveRepErrorDetails = async({
-  user,
-  bodymen: {
-    body
-  },
-  params
-}, res, next) =>{
-  
-  let dpCodesDetails = body.currentData;
-  let errorDpcodes = dpCodesDetails.filter(obj => obj.error.isThere == true);
-  let errorYearValues = [...new Set( errorDpcodes.map(obj => obj.fiscalYear)) ]; 
-  let currentYearValues = [...new Set( dpCodesDetails.map(obj => obj.fiscalYear)) ];  
-  let errorTypeDetails = await Errors.find({
-    status: true
-  });
-  let errorCaughtByRep = {}, dpCodeDetails = [];
-  if(body.memberType == 'Standalone'){
-    let standaloneErrorDetails = [];
-    //for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
-      let standaloneDatapoints = {}
-      _.filter(dpCodesDetails, (object,index)=>{
-        if(object.error.isThere == true){
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);     
-            if(object.error.refData === '' || object.error.refData === ""){
-              errorCaughtByRep == null
-            } else {
-            errorCaughtByRep = {
-              description: object.error.refData.description,
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              dataType: object.error.refData.dataType,
-              fiscalYear: object.error.refData.fiscalYear,
-              textSnippet: object.error.refData.textSnippet,
-              pageNo: object.error.refData.pageNo,
-              source:{
-                publicationDate: object.error.refData.source.publicationDate,
-                url: object.error.refData.source.url,
-                sourceName: object.error.refData.source.sourceName
-              },
-              additionalDetails: object.error.refData.additionalDetails
-            }
-            }
-            standaloneDatapoints = {
-              datapointId: body.dpCodeId,
-              companyId: body.companyId,
-              categoryId: body.pillarId,
-              year: object.fiscalYear,
-              taskId: body.taskId, 
-              errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-              raisedBy: object.error.raisedBy,
-              errorStatus: object.error.errorStatus,
-              errorCaughtByRep: errorCaughtByRep,
-              comments: {            
-              author: object.error.raisedBy,
-              fiscalYear: object.fiscalYear,
-              dateTime: Date.now(),
-              content: object.error.comment
-              },
-              status: true,
-              createdBy: user
-            }
-            standaloneErrorDetails.push(standaloneDatapoints);
-        } else if( object.error.isThere == false){
-          standaloneDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: object.fiscalYear,            
-            taskId: body.taskId, 
-            errorTypeId: null,
-            raisedBy: object.error.raisedBy,
-            errorStatus: object.error.errorStatus,
-            status: true,
-            createdBy: user
-          }
-          standaloneErrorDetails.push(standaloneDatapoints);
-        }
-      })
-
-    await StandaloneDatapoints.updateMany({taskId: body.taskId, datapointId: body.dpCodeId, year: {$in: errorYearValues }, status:true},{$set: {hasError: true, hasCorrection:false, correctionStatus: 'Completed'}});   
-    await ErrorDetails.updateMany({datapointId: body.dpCodeId,  year: {$in: currentYearValues }, companyId: body.companyId, status: true},{$set:{status: false}});
-    await ErrorDetails.insertMany(standaloneErrorDetails)
-    .then((result, err ) => {
-      if (err) {
-        res.status(500).json({
-          message: err.message
-        });
-      } else {
-        res.status(200).json({
-          message: "Error Data inserted Successfully"
-        });
-      }
-    });
-  } else if(body.memberType == 'Board Matrix'){
-    let boardMemberErrorDetails = [];
-    //for (let errorIndex = 0; errorIndex < dpCodesDetails.length; errorIndex++) {
-      let boardDatapoints = {}
-      _.filter(dpCodesDetails, (object,index)=>{
-        if(object.error.isThere == true){
-          if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
-            errorCaughtByRep == null
-          } else {
-            errorCaughtByRep = {
-              description: object.error.refData.description,
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              dataType: object.error.refData.dataType,
-              fiscalYear: object.error.refData.fiscalYear,
-              textSnippet: object.error.refData.textSnippet,
-              pageNo: object.error.refData.pageNo,
-              source:{
-                publicationDate: object.error.refData.source.publicationDate,
-                url: object.error.refData.source.url,
-                sourceName: object.error.refData.source.sourceName
-              },
-              additionalDetails: object.error.refData.additionalDetails
-            }
-          }
-          let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == object.error['type']);
-          boardDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: object.fiscalYear,
-            taskId: body.taskId,             
-            memberName: body.memberName,
-            errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-            raisedBy: object.error.raisedBy,
-            errorStatus: object.error.errorStatus,
-            errorCaughtByRep: errorCaughtByRep,
-            comments: {            
-            author: object.error.raisedBy,
-            fiscalYear: object.fiscalYear,
-            dateTime: Date.now(),
-            content: object.error.comment
-            },
-            status: true,
-            createdBy: user
-          }
-          boardMemberErrorDetails.push(boardDatapoints);
-        } else if( object.error.isThere == false){
-          boardDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: object.fiscalYear,            
-            memberName: body.memberName,
-            taskId: body.taskId, 
-            errorTypeId: null,
-            raisedBy: object.error.raisedBy,
-            errorStatus: object.error.errorStatus,
-            status: true,
-            createdBy: user
-          }
-          boardMemberErrorDetails.push(boardDatapoints);
-        }
-      })
-    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})
-    await BoardMembersMatrixDataPoints.updateMany({companyId: body.companyId, datapointId: body.dpCodeId, year : {$in : errorYearValues},memberName: body.memberName, status: true},{$set:{hasError: true, hasCorrection:false, correctionStatus: 'Completed'}});
-     await ErrorDetails.insertMany(boardMemberErrorDetails)
-    .then((result, err ) => {
-      if (err) {
-        res.status(500).json({
-          message: err.message
-        });
-      } else {
-        res.status(200).json({
-          message: "Error Data inserted Successfully"
-        });
-      }
-    });
-  } else if(body.memberType == 'KMP Matrix'){
-    let kmpMemberErrorDetails = [];
-      let boardDatapoints = {}
-      _.filter(dpCodesDetails, (object,index)=>{
-        if(object.error.isThere == true){
-          if(object.error.refData == null || object.error.refData === '' || object.error.refData === ""){
-            errorCaughtByRep == null
-          } else {
-            errorCaughtByRep = {
-              description: object.error.refData.description,
-              response: object.error.refData.response,
-              screenShot: object.error.refData.screenShot,
-              dataType: object.error.refData.dataType,
-              fiscalYear: object.error.refData.fiscalYear,
-              textSnippet: object.error.refData.textSnippet,
-              pageNo: object.error.refData.pageNo,
-              source:{
-                publicationDate: object.error.refData.source.publicationDate,
-                url: object.error.refData.source.url,
-                sourceName: object.error.refData.source.sourceName
-              },
-              additionalDetails: object.error.refData.additionalDetails
-            }
-          }         
-          boardDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: object.fiscalYear,
-            taskId: body.taskId, 
-            memberName: body.memberName,
-            errorTypeId: null,
-            raisedBy: object.error.raisedBy,
-            errorStatus: object.error.errorStatus,
-            errorCaughtByRep: errorCaughtByRep,            
-            comments: {            
-            author: object.error.raisedBy,
-            fiscalYear: object.fiscalYear,
-            dateTime: Date.now(),
-            content: object.error.comment
-            },
-            status: true,
-            createdBy: user
-          }
-          kmpMemberErrorDetails.push(boardDatapoints);
-        } else if(object.error.isThere == false){
-          boardDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: object.fiscalYear,
-            memberName: body.memberName,            
-            taskId: body.taskId, 
-            errorTypeId: null,
-            raisedBy: object.error.raisedBy,
-            errorStatus: object.error.errorStatus,
-            status: true,
-            createdBy: user
-          }
-          kmpMemberErrorDetails.push(boardDatapoints);
-        }
-      })
-      
-    await ErrorDetails.updateMany({datapointId: body.dpCodeId, year : {$in : currentYearValues},memberName: body.memberName, companyId: body.companyId, status: true},{$set:{status: false}})    
-    await KmpMatrixDataPoints.updateMany({companyId:body.companyId, datapointId: body.dpCodeId, year : {$in : errorYearValues},memberName: body.memberName, status:true},{$set:{hasError: true, hasCorrection:false, correctionStatus: 'Completed'}});
-    await ErrorDetails.insertMany(kmpMemberErrorDetails)
-    .then((result, err ) => {
-      if (err) {
-        res.status(500).json({
-          message: err.message
-        });
-      } else {
-        res.status(200).json({
-          message: "Error Data inserted Successfully"
-        });
-      }
     });
   }
 }
