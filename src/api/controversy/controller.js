@@ -581,14 +581,14 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               }
               return res.status(200).json({ status: "200", message: "Datapoint Controversies retrieved successfully!", data: responseObject });
             } else {
-              return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" });
+              return res.status(200).json({ status: "200", message: "No controversy added yet!", data: responseObject });
             }
           })
           .catch((error) => {
-            return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" })
+            return res.status(500).json({ status: "500", message: "Controversy not found for the company and dpcode!" })
           })
       })
-      .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoint not found!' }) })
+      .catch((error) => { return res.status(500).json({ status: "500", message: 'Datapoint not found!' }) })
   } else {
     return res.status(404).json({ status: "404", message: "Controversy not found for the company and dpcode!" })
   }
