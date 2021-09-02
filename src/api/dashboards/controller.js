@@ -56,10 +56,6 @@ export const dashboardStats = async ({user, req}, res, next) => {
           data: [{ label: 'Breaches(Analyst)', value: '' }, { label: 'Breaches(QA)', value: '' }, { label: 'Change requests(Analyst)', value: '' }, { label: 'Change requests(QA)', value: '' }],
         },
         {
-          title: 'Batch',
-          data: [{ label: 'SLA extensions', value: '' }, { label: 'SLA breaches', value: '' }],
-        },
-        {
           title: 'Employees',
           data: [{ label: 'Analysts', value: '' }, { label: 'QA', value: '' }, { label: 'Group Admin', value: '' }, { label: 'Admin', value: '' }, { label: 'Company Representatives', value: '' }, { label: 'Client Representatives', value: '' }, { label: 'Idle employees', value: '' }],
         }
@@ -76,10 +72,6 @@ export const dashboardStats = async ({user, req}, res, next) => {
         {
           title: 'SLA',
           data: [{ label: 'Breaches(Analyst)', value: '' }, { label: 'Breaches(QA)', value: '' }, { label: 'Change requests(Analyst)', value: '' }, { label: 'Change requests(QA)', value: '' }],
-        },
-        {
-          title: 'Batch',
-          data: [{ label: 'SLA extensions', value: '' }, { label: 'SLA breaches', value: '' }],
         },
         {
           title: 'Employees',
@@ -139,13 +131,13 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.superAdminStats[2].data[1].value = await TaskSlaLog.count({ requestedBy: "QA", isAccepted: true, status: true });
           finalResponseObject.superAdminStats[2].data[2].value = await TaskSlaLog.count({ requestedBy: "Analyst", status: true });
           finalResponseObject.superAdminStats[2].data[3].value = await TaskSlaLog.count({ requestedBy: "QA", status: true });
-          finalResponseObject.superAdminStats[4].data[0].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[1].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": qaRoleId.id } }, { "roleDetails.primaryRole": qaRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[2].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": adminRoleId.id } }, { "roleDetails.primaryRole": adminRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": groupAdminRoleId.id } }, { "roleDetails.primaryRole": groupAdminRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[4].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[5].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
-          finalResponseObject.superAdminStats[4].data[6].value = await User.count({ isUserActive: true, isAssignedToGroup: false, isRoleAssigned: false, status: true });
+          finalResponseObject.superAdminStats[3].data[0].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[1].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": qaRoleId.id } }, { "roleDetails.primaryRole": qaRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[2].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": adminRoleId.id } }, { "roleDetails.primaryRole": adminRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": groupAdminRoleId.id } }, { "roleDetails.primaryRole": groupAdminRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[4].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[5].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
+          finalResponseObject.superAdminStats[3].data[6].value = await User.count({ isUserActive: true, isAssignedToGroup: false, isRoleAssigned: false, status: true });
         } else if (userRoles[roleIndex] == "GroupAdmin") {
           let groupIds = await Group.find({groupAdmin: user.id, status: true}).distinct('id');
           findQuery = {
@@ -175,10 +167,10 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.groupAdminStats[2].data[1].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "QA", isAccepted: true, status: true });
           finalResponseObject.groupAdminStats[2].data[2].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "Analyst", status: true });
           finalResponseObject.groupAdminStats[2].data[3].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "QA", status: true });
-          finalResponseObject.groupAdminStats[4].data[0].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
-          finalResponseObject.groupAdminStats[4].data[1].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": qaRoleId.id } }, { "roleDetails.primaryRole": qaRoleId.id }]});
-          finalResponseObject.groupAdminStats[4].data[2].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
-          finalResponseObject.groupAdminStats[4].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
+          finalResponseObject.groupAdminStats[3].data[0].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
+          finalResponseObject.groupAdminStats[3].data[1].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": qaRoleId.id } }, { "roleDetails.primaryRole": qaRoleId.id }]});
+          finalResponseObject.groupAdminStats[3].data[2].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
+          finalResponseObject.groupAdminStats[3].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
         } else if (userRoles[roleIndex] == "Analyst") {
           let taskIds = await TaskAssignment.find({ analystId: user.id, status: true }).distinct('id');
           finalResponseObject.analystStats[0].data[0].value = await TaskAssignment.count({ analystId: user.id, taskStatus: 'Completed', status: true});
