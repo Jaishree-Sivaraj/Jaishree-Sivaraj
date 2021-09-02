@@ -422,6 +422,9 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'} });
           }
       }
+      res.status('200').json({
+        message: "Data inserted Successfully"
+      });
   } else if(body.memberType == 'Board Matrix'){      
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
@@ -476,6 +479,9 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
         { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'}});
       }    
     }
+    res.status('200').json({
+      message: "Data inserted Successfully"
+    });
   } else if(body.memberType == 'KMP Matrix'){     
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
@@ -530,5 +536,8 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
         { $set: {hasCorrection: false, hasError: false, correctionStatus: 'Completed'}});
       }
     }
+    res.status('200').json({
+      message: "Data inserted Successfully"
+    });
   }
 }
