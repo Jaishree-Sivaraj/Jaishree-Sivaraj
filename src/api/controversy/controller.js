@@ -581,7 +581,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               }
               return res.status(200).json({ status: "200", message: "Datapoint Controversies retrieved successfully!", data: responseObject });
             } else {
-              return res.status(500).json({ status: "500", message: "Controversy not found for the company and dpcode!", data: responseObject });
+              return res.status(200).json({ status: "500", message: "No controversy added yet!", data: responseObject });
             }
           })
           .catch((error) => {
