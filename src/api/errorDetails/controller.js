@@ -491,7 +491,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
               response: item.error.refData.response,
               screenShot: item.error.refData.screenShot,
               dataType: item.error.refData.dataType,
-              fiscalYear: item.error.refData.fiscalYear,
+              fiscalYear: item.fiscalYear,
               textSnippet: item.error.refData.textSnippet,
               pageNo: item.error.refData.pageNo,
               source:{
