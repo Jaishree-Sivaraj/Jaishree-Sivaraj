@@ -710,6 +710,10 @@ export const jsonGeneration = async ({
       {
         year: distinctYears[1],
         Data: []
+      },
+      {
+        year: distinctYears[2],
+        Data: []
       }
     ]
   }
@@ -736,7 +740,7 @@ export const jsonGeneration = async ({
               }
               // responseList1 = _.concat(responseList1, result);
               jsonResponseObject.fiscalYear[0].Data.push(objectToPush);
-            } else {
+            } else if (yearIndex == 1) {
               let objectToPush = {
                 Year: element.year,
                 DPCode: element.datapointId.code,
@@ -745,6 +749,15 @@ export const jsonGeneration = async ({
               }
               // responseList2 = _.concat(responseList2, result);
               jsonResponseObject.fiscalYear[1].Data.push(objectToPush);
+            } else {
+              let objectToPush = {
+                Year: element.year,
+                DPCode: element.datapointId.code,
+                Response: element.response,
+                PerformanceResponse: element.performanceResult
+              }
+              // responseList2 = _.concat(responseList2, result);
+              jsonResponseObject.fiscalYear[2].Data.push(objectToPush);
             }
           }
         }
@@ -771,7 +784,7 @@ export const jsonGeneration = async ({
               }
               // responseList1 = _.concat(responseList1, result);
               jsonResponseObject.fiscalYear[0].Data.push(objectToPush);
-            } else {
+            } else if (yearIndex == 1) {
               let objectToPush = {
                 Year: element.year,
                 DPCode: element.datapointId.code,
@@ -780,6 +793,15 @@ export const jsonGeneration = async ({
               }
               // responseList2 = _.concat(responseList2, result);
               jsonResponseObject.fiscalYear[1].Data.push(objectToPush);
+            } else {
+              let objectToPush = {
+                Year: element.year,
+                DPCode: element.datapointId.code,
+                Response: element.response,
+                PerformanceResponse: element.performanceResult
+              }
+              // responseList2 = _.concat(responseList2, result);
+              jsonResponseObject.fiscalYear[2].Data.push(objectToPush);
             }
           }
         }
