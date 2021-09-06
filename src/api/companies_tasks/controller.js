@@ -9,6 +9,7 @@ import { Group } from '../group'
 import { Batches } from '../batches'
 import { User } from '../user'
 import { TaskAssignment } from '../taskAssignment'
+import { TaskHistories } from '../task_histories'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints  } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
@@ -68,14 +69,13 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next)
 
 export const allocateTasksFromJson = async({ user, params }, res, next) => {
-  console.log('allocateTasksFromJson function called!');
   try {
     fs.readFile(__dirname + '/task_allocation.json', async (err, data) => {
       if (err) throw err;
       let allTaskList = JSON.parse(data);
       console.log('allTaskList', allTaskList);
       let clientTaxonomyDetail = await ClientTaxonomy.findOne({ taxonomyName: "Acuite", status: true });
-      let allExistingCompanies =  await Companies.find({ clientTaxonomyId : clientTaxonomyDetail.id, status: true });
+      let allExistingCompanies =  await Companies.find({ clientTaxonomyId : clientTaxonomyDetail.id, status: true }).populate('companyId');
       let allExistingCategories =  await Categories.find({ clientTaxonomyId : clientTaxonomyDetail.id, status: true });
       let allExistingGroups =  await Group.find({ status: true });
       let allExistingEmployees =  await User.find({ 
@@ -88,18 +88,17 @@ export const allocateTasksFromJson = async({ user, params }, res, next) => {
       let yearsList = _.uniqBy(allTaskList, 'BatchYears');
       let distinctYears = [];
       for (let yearsListIndex = 0; yearsListIndex < yearsList.length; yearsListIndex++) {
-        let years = yearsList[yearsListIndex].split(',');
+        let years = yearsList[yearsListIndex].BatchYears.split(',');
         for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
           distinctYears.push(years[yearIndex]);
         }
       }
       for (let taskListIndex = 0; taskListIndex < allTaskList.length; taskListIndex++) {
-        let companyDetail = allExistingCompanies.map((obj) => {return obj.cin == allTaskList[taskListIndex]['CIN'] } );
+        let companyDetail = allExistingCompanies.find(obj =>  obj.cin == allTaskList[taskListIndex]['CIN']  );
         let categoryDetail = allExistingCategories.find(obj => obj.categoryName == allTaskList[taskListIndex]['Pillar']);
         let groupDetail = allExistingGroups.find(obj => obj.groupName == allTaskList[taskListIndex]['Group']);
         let analystDetail = allExistingEmployees.find(obj => obj.email == allTaskList[taskListIndex]['Analyst']);
         let qaDetail = allExistingEmployees.find(obj => obj.email == allTaskList[taskListIndex]['QA']);
-        console.log('companyDetail', companyDetail);
         if(companyDetail && companyDetail.id){
           allTaskList[taskListIndex]['taskNumber'] = `DT${taskListIndex+1}`;
           allTaskList[taskListIndex]['taskStatus'] = "Completed";
@@ -107,9 +106,10 @@ export const allocateTasksFromJson = async({ user, params }, res, next) => {
           allTaskList[taskListIndex]['status'] = true;
           allTaskList[taskListIndex]['categoryId'] = categoryDetail.id;
           allTaskList[taskListIndex]['groupId'] = groupDetail.id;
+          allTaskList[taskListIndex]['batchId'] = "";
           allTaskList[taskListIndex]['year'] = allTaskList[taskListIndex]['BatchYears'];
-          allTaskList[taskListIndex]['analystSLADate'] = new Date(allTaskList[taskListIndex]['analystSLADate']);
-          allTaskList[taskListIndex]['qaSLADate'] = new Date(allTaskList[taskListIndex]['qaSLADate']);
+          allTaskList[taskListIndex]['analystSLADate'] = allTaskList[taskListIndex]['AnalystSLADate'];
+          allTaskList[taskListIndex]['qaSLADate'] = allTaskList[taskListIndex]['QaSLADate'];
           allTaskList[taskListIndex]['analystId'] = analystDetail.id;
           allTaskList[taskListIndex]['qaId'] = qaDetail.id;
           allTaskList[taskListIndex]['createdBy'] = user.id;
@@ -135,33 +135,80 @@ export const allocateTasksFromJson = async({ user, params }, res, next) => {
           "createdAt" : new Date(),
           "updatedAt" : new Date()
         }
-        let batchCompaniesTasks = allTaskList.map((obj) => obj[Batch] == uniqBatches[batchIndex]['batchName'])
+        let batchCompaniesTasks = allTaskList.find(obj => obj['Batch'] == uniqBatches[batchIndex]['Batch'])
         let batchCompanies = _.uniqBy(batchCompaniesTasks, 'companyId');
         for (let index = 0; index < batchCompanies.length; index++) {
           batchObject.companiesList.push(batchCompanies[index].id);        
         }
         await Batches.create(batchObject)
         .then(async(batchDtl) => {
+          console.log("Batch Details", batchDtl);
           allTaskList.map((obj) => {
-            return obj.batchId = batchDtl.id;
-          });
+            if (obj.Batch == batchDtl.batchName) {
+              obj.batchId = batchDtl.id;
+            }
+          })
+          // allTaskList.find(obj => {
+          //   console.log("obj.batchId", obj.batchId);
+          //   return obj.batchId = batchDtl.id;
+          // });
           await Group.updateOne({ "_id": uniqBatches[batchIndex]['groupId'] }, { $push: { batchList: batchDtl.id } })
         })
       }
-
       for (let taskAssignmentIndex = 0; taskAssignmentIndex < allTaskList.length; taskAssignmentIndex++) {
         const taskObjectToInsert = allTaskList[taskAssignmentIndex];
         await TaskAssignment.create(taskObjectToInsert)
         .then(async(taskDtl) => {
-          let years = taskDtl.years.split(',');
+          console.log("taskDtl.year", taskDtl.year);
+          let taskDetail = await TaskAssignment.findById(taskDtl.id).populate('analystId').populate('qaId');
+          for (let historyIndex = 0; historyIndex < 4; historyIndex++) {
+            let historyObject = {
+              taskId: taskDtl.id, 
+              companyId: taskObjectToInsert.companyId, 
+              categoryId: taskObjectToInsert.categoryId, 
+              submittedByName: '', 
+              stage: '', 
+              comment: '', 
+              status: true, 
+              createdBy: user.id
+            }
+            if (historyIndex == 0) {
+              historyObject.stage = 'Assigned';
+              historyObject.createdAt = taskDtl.analystSLADate;
+              historyObject.updatedAt = taskDtl.analystSLADate;
+              historyObject.submittedByName = taskDetail.analystId.name;
+            } else if(historyIndex == 1){
+              historyObject.stage = 'Collection Completed';
+              historyObject.createdAt = taskDtl.analystSLADate;
+              historyObject.updatedAt = taskDtl.analystSLADate;
+              historyObject.submittedByName = taskDetail.analystId.name;
+            } else if(historyIndex == 2){
+              historyObject.stage = 'Verification Completed';
+              historyObject.createdAt = taskDtl.qaSLADate;
+              historyObject.updatedAt = taskDtl.qaSLADate;
+              historyObject.submittedByName = taskDetail.qaId.name;
+            } else if(historyIndex == 3){
+              historyObject.stage = 'Completed';
+              historyObject.createdAt = taskDtl.qaSLADate;
+              historyObject.updatedAt = taskDtl.qaSLADate;
+              historyObject.submittedByName = taskDetail.qaId.name;
+            }
+            if ( historyIndex > 1) {
+              if (taskObjectToInsert.year != "2020-2021") {
+                await TaskHistories.create(historyObject);    
+              }
+            }
+            await TaskHistories.create(historyObject);
+          }
+          let years = taskDtl.year.split(',');
           for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
             let companiesTaskObject = {
               taskId: taskDtl.id,
               companyId: taskDtl.companyId,
-              year: taskDtl[yearIndex].year,
+              year: years[yearIndex],
               categoryId: taskDtl.categoryId,
               overAllCompanyTaskStatus: true,
-              completedDate: qaSLADate,
+              completedDate: taskDtl.qaSLADate,
               canGenerateJson: false,
               isJsonGenerated: true,
               status: true,
