@@ -4,11 +4,20 @@ import { ClientTaxonomy } from '.'
 import { Categories } from '../categories'
 import { Companies } from '../companies'
 
-export const create = ({ user, bodymen: { body } }, res, next) =>
-  ClientTaxonomy.create({ ...body, createdBy: user })
+export const create = async ({ user, bodymen: { body } }, res, next) =>{
+  let taxonomyDetails = await ClientTaxonomy.find({taxonomyName: body.taxonomyName});
+  if(taxonomyDetails.length > 0){
+    res.status(409).json({
+      message: 'TaxonomyName Already Exists'
+    });
+  }else {
+    ClientTaxonomy.create({ ...body, createdBy: user })
     .then((clientTaxonomy) => clientTaxonomy.view(true))
     .then(success(res, 201))
     .catch(next)
+  }
+}
+ 
 
 export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next) => {
   // let fields = [];
