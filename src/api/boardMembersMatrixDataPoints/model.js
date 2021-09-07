@@ -30,6 +30,10 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   fiscalYearEndDate: {
     type: String
   },
+  dpStatus:{
+    type: String,
+    default:'Collection'
+  },
   memberStatus: {
     type: Boolean
   },
@@ -133,6 +137,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
       comments: this.comments,
+      dpStatus: this.dpStatus,
       correctionStatus: this.correctionStatus,
       internalFileSource: this.internalFileSource,
       collectionStatus: this.collectionStatus,

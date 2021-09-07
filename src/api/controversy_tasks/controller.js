@@ -184,6 +184,16 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next)
 
+export const updateControversyTask = ({ user, bodymen: { body }, params }, res, next) => {
+  ControversyTasks.updateOne({"_id": body.taskId}, { $set: { analystId: body.analystId } })
+  .then((result) => {
+    return res.status(200).json({ status: "200", message: "Updated controversy task!" });
+  })
+  .catch((error) => {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update controversy task!" });
+  })
+}
+
 export const destroy = ({ user, params }, res, next) =>
   ControversyTasks.findById(params.id)
     .then(notFound(res))

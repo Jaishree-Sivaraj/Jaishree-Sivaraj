@@ -193,7 +193,7 @@ export const uploadControversies = async (req, res, next) => {
       let companyDetails = [], controversyDetails = [];
       if (allFilesObject.length > 0) {
         let currentCompanyName;
-        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "A-Taxonomy" });
+        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
         for (let index = 0; index < allFilesObject.length; index++) {
           console.log(allFilesObject[index].length);
           console.log(allFilesObject[index]);
@@ -581,14 +581,14 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               }
               return res.status(200).json({ status: "200", message: "Datapoint Controversies retrieved successfully!", data: responseObject });
             } else {
-              return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" });
+              return res.status(200).json({ status: "200", message: "No controversy added yet!", data: responseObject });
             }
           })
           .catch((error) => {
-            return res.status(500).json({ status: "500", message: error.message ? error.message : "Controversy not found for the company and dpcode!" })
+            return res.status(500).json({ status: "500", message: "Controversy not found for the company and dpcode!" })
           })
       })
-      .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoint not found!' }) })
+      .catch((error) => { return res.status(500).json({ status: "500", message: 'Datapoint not found!' }) })
   } else {
     return res.status(404).json({ status: "404", message: "Controversy not found for the company and dpcode!" })
   }

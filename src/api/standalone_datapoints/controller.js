@@ -128,7 +128,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             var sheet_name_list = workbook.SheetNames;
 
             sheet_name_list.forEach(function (currentSheetName) {
-              if (currentSheetName != 'Sheet3') {
+              if (currentSheetName != 'Sheet3' && currentSheetName != 'SFDR') {
                 //getting the complete sheet
                 var worksheet = workbook.Sheets[currentSheetName];
                 var idx, allColumnNames = [];
@@ -150,7 +150,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   });
                 }
                 var headers = {};
-                var headers1 = {};
+                var headers1 = {}, headers2 = {};
                 var data = [];
                 if (currentSheetName.toLowerCase() == 'matrix-directors' || currentSheetName.toLowerCase() == 'matrix-kmp') {
                   // for (const [cellIndex, [key, cellId]] of Object.entries(Object.entries(worksheet))) {
@@ -172,108 +172,328 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     var row = parseInt(cellId.match(/(\d+)/));
                     var value = worksheet[cellId].v;
                     //store header names
-                    if (row == 1) {
-                      if (value != "Error types and definitions") {
-                        if (isNaN(value)) {
-                          headers[col] = value.replace('\r\n', ' ');
+                    if (currentSheetName.toLowerCase() == 'matrix-directors') {
+                      if (row == 1) {
+                        if (value != "Error types and definitions") {
+                          if (isNaN(value)) {
+                            headers[col] = value.replace('\r\n', ' ');
+                          }
                         }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 32) {
+                        if (isNaN(value)) {
+                          headers1[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 63) {
+                        if (isNaN(value)) {
+                          headers2[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
                       }
-                      // storing the header names
-                      continue;
-                    } else if (headerRowsNumber.includes(row) && row != 1) {
-                      if (isNaN(value)) {
-                        headers1[col] = value.replace('\r\n', ' ');
-                      }
-                      // storing the header names
-                      continue;
-                    }
-                    // if(headerRowsNumber.includes(row) && row != 1){
-                    if (row > headerRowsNumber[1] && row != 1) {
-                      if (!data[row]) data[row] = {};
-                      if (col != 'A') {
-                        if (headers1['A']) {
-                          if (data[row][headers1['A']]) {
-                            //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
-                            let previousColumnIndex = currentColumnIndex - 1;
-                            let nextColumnIndex = currentColumnIndex + 1;
-                            data[row][headers1[col]] = value;
-                            if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                              data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
-                            }
-                            if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
-                              data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
-                              let nextCellId = allColumnNames[nextColumnIndex] + row;
-                              if (nextCellId) {
-                                let expectedNextCol = allColumnNames[nextColumnIndex];
-                                if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                  let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                  if (difference > 1) {
-                                    for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                      data[row][headers1[allColumnNames[inx]]] = '';
+                      //pushing board members values to headers, headers1 and headers2
+                      if (row > headerRowsNumber[1] && row != 1 && row > 32 && row < 63) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers1['A']) {
+                            if (data[row][headers1['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers1[col]] = value;
+                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
                                     }
                                   }
                                 }
                               }
                             }
                           }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers1[col]] = value;
+                          }
+                        }
+                      } else if (row > headerRowsNumber[1] && row != 1 && row > 63) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers2['A']) {
+                            if (data[row][headers2['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers2[col]] = value;
+                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers2[col]] = value;
+                          }
                         }
                       } else {
-                        if (isNaN(value)) {
-                          data[row][headers1[col]] = value.replace('\r\n', ' ');
+                        if (!data[row]) {
+                          data[row] = {};
+                          data[row][headers[col]] = '';
+                        }
+
+                        if (col != 'A') {
+                          if (headers['A']) {
+                            if (data[row][headers['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers[col]] = value;
+                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                                // if (!worksheet[nextCellId]) {
+                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                // }
+                              }
+                            }
+                          }
                         } else {
-                          data[row][headers1[col]] = value;
+                          if (isNaN(value)) {
+                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers[col]] = value;
+                          }
                         }
                       }
                     } else {
-                      if (!data[row]) {
-                        data[row] = {};
-                        data[row][headers[col]] = '';
+                      if (row == 1) {
+                        if (value != "Error types and definitions") {
+                          if (isNaN(value)) {
+                            headers[col] = value.replace('\r\n', ' ');
+                          }
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 12) {
+                        if (isNaN(value)) {
+                          headers1[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
+                      } else if (headerRowsNumber.includes(row) && row != 1 && row == 23) {
+                        if (isNaN(value)) {
+                          headers2[col] = value.replace('\r\n', ' ');
+                        }
+                        // storing the header names
+                        continue;
                       }
-
-                      if (col != 'A') {
-                        if (headers['A']) {
-                          if (data[row][headers['A']]) {
-                            //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
-                            let previousColumnIndex = currentColumnIndex - 1;
-                            let nextColumnIndex = currentColumnIndex + 1;
-                            data[row][headers[col]] = value;
-                            if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                              data[row][headers[allColumnNames[previousColumnIndex]]] = '';
-                            }
-                            if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
-                              data[row][headers[allColumnNames[nextColumnIndex]]] = '';
-                              let nextCellId = allColumnNames[nextColumnIndex] + row;
-                              if (nextCellId) {
-                                let expectedNextCol = allColumnNames[nextColumnIndex];
-                                if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                  let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                  if (difference > 1) {
-                                    for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                      data[row][headers[allColumnNames[inx]]] = '';
+                      //pushing kmp members values to headers, headers1 and headers2
+                      if (row > headerRowsNumber[1] && row != 1 && row > 12 && row < 23) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers1['A']) {
+                            if (data[row][headers1['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers1[col]] = value;
+                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers1[allColumnNames[inx]]] = '';
+                                      }
                                     }
                                   }
                                 }
                               }
-                              // if (!worksheet[nextCellId]) {
-                              //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
-                              // }
                             }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers1[col]] = value;
+                          }
+                        }
+                      } else if (row > headerRowsNumber[1] && row != 1 && row > 23) {
+                        if (!data[row]) data[row] = {};
+                        if (col != 'A') {
+                          if (headers2['A']) {
+                            if (data[row][headers2['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers2[col]] = value;
+                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers2[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        } else {
+                          if (isNaN(value)) {
+                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers2[col]] = value;
                           }
                         }
                       } else {
-                        if (isNaN(value)) {
-                          data[row][headers[col]] = value.replace('\r\n', ' ');
+                        if (!data[row]) {
+                          data[row] = {};
+                          data[row][headers[col]] = '';
+                        }
+
+                        if (col != 'A') {
+                          if (headers['A']) {
+                            if (data[row][headers['A']]) {
+                              //take all column names in an array
+                              let currentColumnIndex = allColumnNames.indexOf(col);
+                              let previousColumnIndex = currentColumnIndex - 1;
+                              let nextColumnIndex = currentColumnIndex + 1;
+                              data[row][headers[col]] = value;
+                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                              }
+                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                if (nextCellId) {
+                                  let expectedNextCol = allColumnNames[nextColumnIndex];
+                                  if (nextCol != expectedNextCol) {
+                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                    if (difference > 1) {
+                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    } else {
+                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                        data[row][headers[allColumnNames[inx]]] = '';
+                                      }
+                                    }
+                                  }
+                                }
+                                // if (!worksheet[nextCellId]) {
+                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                // }
+                              }
+                            }
+                          }
                         } else {
-                          data[row][headers[col]] = value;
+                          if (isNaN(value)) {
+                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                          } else {
+                            data[row][headers[col]] = value;
+                          }
                         }
                       }
                     }
+                    // if(headerRowsNumber.includes(row) && row != 1){
                   }
                   //drop those first two rows which are empty
                   data.shift();
@@ -297,7 +517,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     if (!data[row] && value) data[row] = {};
                     if (col != 'A') {
                       if (headers['A']) {
-                        console.log(data[row][headers['A']]);
                         if (data[row][headers['A']]) {
                           //take all column names in an array
                           let currentColumnIndex = allColumnNames.indexOf(col);
@@ -369,7 +588,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({
-            taxonomyName: "A-Taxonomy"
+            taxonomyName: "Acuite"
           });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
@@ -458,8 +677,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                console.log(item);
-                console.log(categoriesObjectValues)
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -715,8 +932,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
               let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                console.log(item);
-                console.log(categoriesObjectValues)
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
                 let errorListObject = {
@@ -772,7 +987,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   status: true,
                   createdBy: userDetail
                 }
-                console.log(kmpMembersList, memberDetail)
                 kmpMembersList.push(memberDetail);
               });
 
@@ -896,8 +1110,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-            if (missingDPList.length !== 0) {
-              const markExistingRecordsAsFalse = await StandaloneDatapoints.updateMany({
+            if (missingDPList.length == 0) {
+              await StandaloneDatapoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds
                 },
@@ -1064,14 +1278,15 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             createdBy: user
           }
-          for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+          //for (let index1 = 0; 1 < currentYearValues.length; index1++) {
             //store in s3 bucket with filename
-            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: currentYearValues[index1], status: true },
+            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
-          }
+          //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
           let item = dpHistoricalDpDetails[index];
@@ -1091,18 +1306,46 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
-          for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
-            await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: historicalDataYear[index1], status: true },
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               { $set: obj }, { upsert: true });
-          }
+          //}
         }
         res.status('200').json({
           message: "Data inserted Successfully"
         });
 
       } else if (body.memberType == 'Board Matrix') {
-        let boardMemberDatapoints = dpCodesDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            createdBy: user
+          }
+         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+            //store in s3 bucket with filename
+            await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1120,44 +1363,45 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-
-        let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            memberName: body.memberName,
-            memberStatus: true,
-            status: true,
-            createdBy: user
-          }
-        });
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: currentYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
-        await BoardMembersMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
-            }
-          });
       } else if (body.memberType == 'KMP Matrix') {
-        let kmpMemberDatapoints = dpCodesDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            createdBy: user
+          }
+         // for (let index1 = 0; 1 < currentYearValues.length; index1++) {
+            //store in s3 bucket with filename
+            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1175,81 +1419,62 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-        let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            memberName: body.memberName,
-            memberStatus: true,
-            status: true,
-            createdBy: user
-          }
-        });
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: currentYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
-        await KmpMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
-            }
-          });
       }
     } else if (taskDetailsObject.taskStatus == 'Correction Pending') {
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
       let acceptYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
-      let standaloneDpDetails = [], boardMemberDatapoints = [], kmpMemberDatapoints = [];
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];
       if (body.memberType == 'Standalone') {
-        for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-          const object = dpCodesDetails[dpIndex];
-          if (object.isAccepted == true) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, status: true }, { $set: { isErrorAccepted: true, errorStatus: 'Incomplete' } });
-            let standaloneAcceptDpDetails = {
-              datapointId: body.dpCodeId,
-              companyId: body.companyId,
-              taskId: body.taskId,
-              year: object.fiscalYear,
-              response: object.response,
-              screenShot: object.screenShot,
-              textSnippet: object.textSnippet,
-              pageNumber: object.pageNo,
-              hasError: false,
-              hasCorrection: true,
-              correctionStatus: 'Completed',
-              publicationDate: object.source.publicationDate,
-              url: object.source.url,
-              sourceName: object.source.sourceName + ";" + object.source.value,
-              additionalDetails: object.additionalDetails,
-              status: true,
-              createdBy: user
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            hasError: false,
+            hasCorrection: true,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            createdBy: user
+          }
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
             }
-            standaloneDpDetails.push(standaloneAcceptDpDetails);
-          }
-          if (object.isAccepted == false) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, status: true }, { $set: { isErrorAccepted: false, isErrorRejected: true, rejectComment: object.rejectComment } });
-          }
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
+            }
+            await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
         }
-
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: acceptYearValues }, status: true }, { $set: { status: false } });
-        let historicalStandaloneDetails = dpHistoricalDpDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1265,119 +1490,59 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
-        })
-        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(historicalStandaloneDetails, standaloneDpDetails);
-        await StandaloneDatapoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
-            }
-          });
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
+        });
+
       } else if (body.memberType == 'Board Matrix') {
-        for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-          const object = dpCodesDetails[dpIndex];
-          if (object.isAccepted == true) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, memberName: body.memberName, status: true }, { $set: { isErrorAccepted: true, errorStatus: 'Incomplete' } });
-            let acceptDpDetails = {
-              datapointId: body.dpCodeId,
-              companyId: body.companyId,
-              taskId: body.taskId,
-              year: object.fiscalYear,
-              response: object.response,
-              screenShot: object.screenShot,
-              textSnippet: object.textSnippet,
-              pageNumber: object.pageNo,
-              hasError: false,
-              hasCorrection: true,
-              correctionStatus: 'Completed',
-              memberName: body.memberName,
-              publicationDate: object.source.publicationDate,
-              url: object.source.url,
-              sourceName: object.source.sourceName + ";" + object.source.value,
-              additionalDetails: object.additionalDetails,
-              status: true,
-              createdBy: user
-            }
-            boardMemberDatapoints.push(acceptDpDetails);
-          }
-          if (object.isAccepted == false) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, memberName: body.memberName, companyId: body.companyId, status: true }, { $set: { isErrorAccepted: false, isErrorRejected: true, rejectComment: object.rejectComment } })
-
-          }
-
-        }
-        let boardMemberHostoricalDp = dpHistoricalDpDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
-            taskId: body.taskId,
-            memberName: body.memberName,
             year: item['fiscalYear'],
+            taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
             status: true,
+            hasError: false,
+            hasCorrection: true,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
             createdBy: user
           }
-        })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: acceptYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(boardMemberHostoricalDp, boardMemberDatapoints);
-        await BoardMembersMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
             }
-          });
-      } else if (body.memberType == 'KMP Matrix') {
-        for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-          const object = dpCodesDetails[dpIndex];
-          if (object.isAccepted == true) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, companyId: body.companyId, memberName: body.memberName, status: true }, { $set: { isErrorAccepted: true, errorStatus: 'Incomplete' } });
-            let acceptDpDetails = {
-              datapointId: body.dpCodeId,
-              companyId: body.companyId,
-              taskId: body.taskId,
-              year: object.fiscalYear,
-              response: object.response,
-              screenShot: object.screenShot,
-              textSnippet: object.textSnippet,
-              pageNumber: object.pageNo,
-              hasError: false,
-              hasCorrection: true,
-              correctionStatus: 'Completed',
-              memberName: body.memberName,
-              publicationDate: object.source.publicationDate,
-              url: object.source.url,
-              sourceName: object.source.sourceName + ";" + object.source.value,
-              additionalDetails: object.additionalDetails,
-              status: true,
-              createdBy: user
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
             }
-            kmpMemberDatapoints.push(acceptDpDetails);
-          }
-          if (object.isAccepted == false) {
-            await ErrorDetails.updateMany({ datapointId: body.dpCodeId, year: object.fiscalYear, memberName: body.memberName, companyId: body.companyId, status: true }, { $set: { isErrorAccepted: false, isErrorRejected: true, rejectComment: object.rejectComment } })
-
-          }
-
+            await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
         }
-        let kmpMemberHistoricalDp = dpCodesDetails.map(function (item) {
-          return {
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
@@ -1395,20 +1560,83 @@ export const dataCollection = async ({
             status: true,
             createdBy: user
           }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: { $in: acceptYearValues }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: { $in: historicalDataYear }, memberName: body.memberName, status: true }, { $set: { status: false } });
-        let mergedDetails = _.concat(kmpMemberHistoricalDp, kmpMemberDatapoints);
-        await KmpMatrixDataPoints.insertMany(mergedDetails)
-          .then((result, err) => {
-            if (err) {
-              console.log('error', err);
-            } else {
-              res.status('200').json({
-                message: "Data inserted Successfully"
-              });
+      } else if (body.memberType == 'KMP Matrix') {
+        for (let index = 0; index < dpCodesDetails.length; index++) {
+          let item = dpCodesDetails[index];
+          var obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            hasError: false,
+            hasCorrection: true,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            createdBy: user
+          }
+          let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
             }
-          });
+            if(item.isAccepted == false){
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+            } else{              
+              await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              {$set: {isErrorAccepted: item.isAccepted}});
+            }
+            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
+          let item = dpHistoricalDpDetails[index];
+          let obj = {
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: body.taskId,
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: item['screenShot'],
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            memberStatus: true,
+            status: true,
+            createdBy: user
+          }
+         // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
+            await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: obj }, { upsert: true });
+          //}
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
+        });
       }
     }
 

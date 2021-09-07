@@ -676,11 +676,7 @@ export const calculateForACompany = async ({
     })
 }
 
-
-export const jsonGeneration = async ({
-  user,
-  params
-}, res, next) => {
+export const jsonGeneration = async ({ user, params }, res, next) => {
   let requiredDataPoints = await Datapoints.find({
     standaloneOrMatrix: {
       "$ne": "Matrix"
@@ -690,8 +686,6 @@ export const jsonGeneration = async ({
     }
   }).distinct('_id')
   let companyID = params.companyId ? params.companyId : '';
-  let responseList1 = [],
-    responseList2 = [];
   let companyDetails = await Companies.findOne({
     _id: companyID
   });
@@ -704,137 +698,60 @@ export const jsonGeneration = async ({
     companyID: companyDetails.cin ? companyDetails.cin : '',
     NIC_CODE: companyDetails.nicCode ? companyDetails.nicCode : '',
     NIC_industry: companyDetails.nicIndustry ? companyDetails.nicIndustry : '',
-    fiscalYear: [{
-        year: distinctYears[0],
-        Data: []
-      },
-      {
-        year: distinctYears[1],
-        Data: []
-      }
-    ]
+    fiscalYear: []
+  }
+  for (let distYearIndex = 0; distYearIndex < distinctYears.length; distYearIndex++) {
+    let year = distinctYears[distYearIndex];
+    jsonResponseObject.fiscalYear.push({ year: year, Data: [] });
   }
   for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
     await StandaloneDatapoints.find({
-        datapointId: {
-          "$in": requiredDataPoints
-        },
-        year: distinctYears[yearIndex],
-        status: true,
-        companyId: companyID
-      })
-      .populate('datapointId')
-      .then((result) => {
-        if (result.length > 0) {
-          for (let index = 0; index < result.length; index++) {
-            const element = result[index];
-            if (yearIndex == 0) {
-              let objectToPush = {
-                Year: element.year,
-                DPCode: element.datapointId.code,
-                Response: element.response,
-                PerformanceResponse: element.performanceResult
-              }
-              // responseList1 = _.concat(responseList1, result);
-              jsonResponseObject.fiscalYear[0].Data.push(objectToPush);
-            } else {
-              let objectToPush = {
-                Year: element.year,
-                DPCode: element.datapointId.code,
-                Response: element.response,
-                PerformanceResponse: element.performanceResult
-              }
-              // responseList2 = _.concat(responseList2, result);
-              jsonResponseObject.fiscalYear[1].Data.push(objectToPush);
-            }
+      datapointId: {
+        "$in": requiredDataPoints
+      },
+      year: distinctYears[yearIndex],
+      status: true,
+      companyId: companyID
+    })
+    .populate('datapointId')
+    .then((result) => {
+      if (result.length > 0) {
+        for (let index = 0; index < result.length; index++) {
+          const element = result[index];
+          let objectToPush = {
+            Year: element.year,
+            DPCode: element.datapointId.code,
+            Response: element.response,
+            PerformanceResponse: element.performanceResult
           }
+          jsonResponseObject.fiscalYear[yearIndex].Data.push(objectToPush);
         }
-      });
+      }
+    });
     await DerivedDatapoints.find({
-        datapointId: {
-          "$in": requiredDataPoints
-        },
-        year: distinctYears[yearIndex],
-        status: true,
-        companyId: companyID
-      })
-      .populate('datapointId')
-      .then((result) => {
-        if (result.length > 0) {
-          for (let index = 0; index < result.length; index++) {
-            const element = result[index];
-            if (yearIndex == 0) {
-              let objectToPush = {
-                Year: element.year,
-                DPCode: element.datapointId.code,
-                Response: element.response,
-                PerformanceResponse: element.performanceResult
-              }
-              // responseList1 = _.concat(responseList1, result);
-              jsonResponseObject.fiscalYear[0].Data.push(objectToPush);
-            } else {
-              let objectToPush = {
-                Year: element.year,
-                DPCode: element.datapointId.code,
-                Response: element.response,
-                PerformanceResponse: element.performanceResult
-              }
-              // responseList2 = _.concat(responseList2, result);
-              jsonResponseObject.fiscalYear[1].Data.push(objectToPush);
-            }
+      datapointId: {
+        "$in": requiredDataPoints
+      },
+      year: distinctYears[yearIndex],
+      status: true,
+      companyId: companyID
+    })
+    .populate('datapointId')
+    .then((result) => {
+      if (result.length > 0) {
+        for (let index = 0; index < result.length; index++) {
+          const element = result[index];
+          let objectToPush = {
+            Year: element.year,
+            DPCode: element.datapointId.code,
+            Response: element.response,
+            PerformanceResponse: element.performanceResult
           }
+          jsonResponseObject.fiscalYear[yearIndex].Data.push(objectToPush);
         }
-      });
-    // await StandaloneDatapoints.aggregate([
-    //   { "$match": { datapointId: { "$in": requiredDataPoints }, year: distinctYears[yearIndex], status: true, companyId:companyID} },
-    //   {
-    //     $lookup:
-    //     {
-    //       from: "datapoints",
-    //       localField: "datapointId",
-    //       foreignField: "_id",
-    //       as: "dpCode"
-    //     }
-    //   },
-    //   {
-    //     $unwind: '$dpCode'
-    //   },
-    //   { $project: { dpCode: '$dpCode.code', year: 1, performanceResult: 1, response: 1, _id: 0 } }
-
-    // ]).then((result) => {
-    //   if (yearIndex == 0) {
-    //     responseList1 = _.concat(responseList1, result);
-    //   } else {
-    //     responseList2 = _.concat(responseList2, result);
-    //   }
-    // });
-    // await DerivedDatapoints.aggregate([
-    //   { "$match": { datapointId: { "$in": requiredDataPoints }, year: distinctYears[yearIndex], status: true, companyId:companyID } },
-    //   {
-    //     $lookup:
-    //     {
-    //       from: "datapoints",
-    //       localField: "datapointId",
-    //       foreignField: "_id",
-    //       as: "dpCode"
-    //     }
-    //   },
-    //   {
-    //     $unwind: '$dpCode'
-    //   },
-    //   { $project: { dpCode: '$dpCode.code', year: 1, performanceResult: 1, response: 1, _id: 0 } }
-
-    // ]).then((result) => {
-    //   if (yearIndex == 0) {
-    //     responseList1 = _.concat(responseList1, result);
-    //   } else {
-    //     responseList2 = _.concat(responseList2, result);
-    //   }
-    // });
-
-
+      }
+    });
   }
-  // [ year:20{} ,{}]
 
   return res.status(200).json({
     message: "Success.",
@@ -2900,7 +2817,7 @@ export const derivedCalculation = async ({
             let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) {
               if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response == 'NA' || foundResponse.response.toLowerCase() == 'nan') {
-                if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
                 } else {
                   await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult : 'NA'} });
@@ -2908,14 +2825,14 @@ export const derivedCalculation = async ({
                 console.log("Step1");
               } else {
                 let zscoreValue;
-                console.log("Step1");
+                console.log("Step1",percentileDataPointsList[pdpIndex].code);
                 if (projectedValue.projectedStdDeviation == 'NA') {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                 } else {
-                  console.log("percentileDatapointsList[pdpIndex].polarity", percentileDataPointsList[pdpIndex].polarity);
+                  console.log("percentileDataPointsList[pdpIndex].polarity\n\n\n\n", percentileDataPointsList[pdpIndex].code);
                   if (percentileDataPointsList[pdpIndex].polarity == 'Positive') {
                     zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
-                  } else if (percentileDatapointsList[pdpIndex].polarity == 'Negative') {
+                  } else if (percentileDataPointsList[pdpIndex].polarity == 'Negative') {
                     zscoreValue = (Number(projectedValue.projectedAverage) - Number(foundResponse.response)) / Number(projectedValue.projectedStdDeviation);
                   }
                   console.log("zscoreValue", zscoreValue);
@@ -2947,13 +2864,13 @@ export const derivedCalculation = async ({
                       let zValues = ztableValue.values[0].split(",");
                       let zScore = zValues[Number(lastDigit)]
                       let percentile = zScore * 100;
-                      if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
                       } else {
                         await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile} });
                       }
                     } else {
-                      if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
+                      if (percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDataPointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                       } else {
                         await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });

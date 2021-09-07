@@ -4,11 +4,13 @@ import { ClientTaxonomy } from '.'
 import { Categories } from '../categories'
 import { Companies } from '../companies'
 
-export const create = ({ user, bodymen: { body } }, res, next) =>
-  ClientTaxonomy.create({ ...body, createdBy: user })
+export const create = async({ user, bodymen: { body } }, res, next) =>{
+    ClientTaxonomy.create({ ...body, createdBy: user })
     .then((clientTaxonomy) => clientTaxonomy.view(true))
     .then(success(res, 201))
     .catch(next)
+}
+ 
 
 export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next) => {
   // let fields = [];
@@ -21,15 +23,23 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
     fields: body.headers ? body.headers : [],
     status: true
   }
-  await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
-  .then((clientTaxonomy) => {
-    return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy});
-  })
-  .catch((err) => {
-    res.status(400).json({
-      message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+  let taxonomyDetails = await ClientTaxonomy.find({taxonomyName: body.taxonomyName});
+  if(taxonomyDetails.length > 0){
+    res.status(409).json({
+      message: 'TaxonomyName Already Exists'
+    });
+  } else{
+    await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
+    .then((clientTaxonomy) => {
+      return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy});
     })
-  })
+    .catch((err) => {
+      res.status(400).json({
+        message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+      })
+    })
+    
+  }
 }
 
 export const index = async({ querymen: { query, select, cursor } }, res, next) =>{

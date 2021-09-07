@@ -517,9 +517,9 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       }
     }
   }
-  var userDetailsInRoles = await User.find(filterQuery).
-    populate({ path: 'roleDetails.roles' }).
-    populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  var userDetailsInRoles = await User.find(filterQuery)
+  .populate({ path: 'roleDetails.roles' })
+  .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
     return {
       "userDetails": {
@@ -601,7 +601,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
-        var link = 'https://unruffled-bhaskara-834a98.netlify.app/onboard/new-user?';
+        var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
         link = link + `role=${userDetails.userType || userDetails.role}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
         const content = `
@@ -840,7 +840,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                   const content = `
                     Hai,<br/>
                     Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                    URL: https://unruffled-bhaskara-834a98.netlify.app${link}?email=${rowObject['email']}<br/><br/>
+                    URL: ${process.env.FRONTEND_URL}${link}?email=${rowObject['email']}<br/><br/>
                     &mdash; ESG Team `;
                   var transporter = nodemailer.createTransport({
                     service: 'Gmail',
@@ -857,13 +857,13 @@ export const uploadEmailsFile = async (req, res, next) => {
                     html: content
                   });
                 } else {
-                  return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" })
+                  return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits`})
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
               }
             }
-            return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+            return res.status(200).json({ status: "200", message: "List uploaded and emails sent successfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
           } else {
             return res.status(400).json({ status: "400", message: "File has some invalid data please check!" });
           }
@@ -917,7 +917,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         const content = `
           Hai,<br/>
           Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-          URL: https://unruffled-bhaskara-834a98.netlify.app${link}&email=${rowObject['email']}<br/><br/>
+          URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
           &mdash; ESG Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
@@ -936,7 +936,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
       }
     }
     if (existingEmails.length > 0) {
-      return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" });
+      return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
     } else {
       return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
     }

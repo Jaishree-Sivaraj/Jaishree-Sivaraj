@@ -14,6 +14,12 @@ import { TaskSlaLog } from "../taskSlaLog"
 import { Companies } from "../companies"
 import { Controversy } from "../controversy";
 import { Datapoints } from "../datapoints";
+import { StandaloneDatapoints } from '../standalone_datapoints'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
+import { Notifications } from '../notifications'
+import { TaskHistories } from '../task_histories'
+import { Validations } from '../validations'
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -268,63 +274,159 @@ export const getQaAndAnalystFromGrp = async (
   });
 };
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) => {
-  TaskAssignment.find(query)
-    .sort({
-      createdAt: -1,
-    })
-    .populate("createdBy")
-    .populate("companyId")
-    .populate("categoryId")
-    .populate("groupId")
-    .populate("batchId")
-    .populate("analystId")
-    .populate("qaId")
-    .then((taskAssignments) => {
-      let taskList = [];
-      for (let index = 0; index < taskAssignments.length; index++) {
-        const object = taskAssignments[index];
-        let taskObject = {
-          taskId: object.id,
-          taskNumber: object.taskNumber,
-          pillar: object.categoryId ? object.categoryId.categoryName : null,
-          pillarId: object.categoryId ? object.categoryId.id : null,
-          group: object.groupId ? object.groupId.groupName : null,
-          groupId: object.groupId ? object.groupId.id : null,
-          batch: object.batchId ? object.batchId.batchName : null,
-          batchId: object.batchId ? object.batchId.id : null,
-          company: object.companyId ? object.companyId.companyName : null,
-          companyId: object.companyId ? object.companyId.id : null,
-          analyst: object.analystId ? object.analystId.name : null,
-          analystId: object.analystId ? object.analystId.id : null,
-          qa: object.qaId ? object.qaId.name : null,
-          analystSLA: object.analystSLADate ? object.analystSLADate : null,
-          qaSLA: object.qaSLADate ? object.qaSLADate : null,
-          qaId: object.qaId ? object.qaId.id : null,
-          fiscalYear: object.year,
-          taskStatus: object.taskStatus,
-          overAllCompletedDate: object.overAllCompletedDate,
-          overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
-          createdBy: object.createdBy ? object.createdBy.name : null,
-          createdById: object.createdBy ? object.createdBy.id : null,
-        };
-        taskList.push(taskObject);
+export const index = async({ user, querymen: { query, select, cursor } }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
+  .catch((error) => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message,
+    });
+  });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
+        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
       }
-      return res.status(200).json({
-        status: "200",
-        message: "Tasks retrieved successfully!",
-        data: {
-          count: taskList.length,
-          rows: taskList,
-        },
-      });
-    })
-    .catch((error) => {
+    } else {
       return res.status(400).json({
         status: "400",
-        message: error.message ? error.message : "Failed to retrieve tasks!",
+        message: "User role not found!",
       });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
     });
+  }
+  let finalResponseObject = {
+    groupAdminTaskList : {
+      pendingList: [],
+      completedList: [],
+      controversyList: []
+    },
+    adminTaskList : {
+      pendingList: [],
+      completedList: [],
+      controversyList: []
+    }
+  };
+  userRoles = _.uniq(userRoles);
+  if (userRoles.length > 0) {
+    for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+      let findQuery = {};
+      if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
+        findQuery = { status : true };
+      } else if (userRoles[roleIndex] == "GroupAdmin"){
+        let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+        findQuery = { 
+          groupId: { $in: groupIds },
+          status : true 
+        };
+      }
+      await TaskAssignment.find(findQuery)
+        .sort({
+          createdAt: -1,
+        })
+        .populate("createdBy")
+        .populate("companyId")
+        .populate("categoryId")
+        .populate("groupId")
+        .populate("batchId")
+        .populate("analystId")
+        .populate("qaId")
+        .then((taskAssignments) => {
+          for (let index = 0; index < taskAssignments.length; index++) {
+            const object = taskAssignments[index];
+            let taskObject = {
+              taskId: object.id,
+              taskNumber: object.taskNumber,
+              pillar: object.categoryId ? object.categoryId.categoryName : null,
+              pillarId: object.categoryId ? object.categoryId.id : null,
+              group: object.groupId ? object.groupId.groupName : null,
+              groupId: object.groupId ? object.groupId.id : null,
+              batch: object.batchId ? object.batchId.batchName : null,
+              batchId: object.batchId ? object.batchId.id : null,
+              company: object.companyId ? object.companyId.companyName : null,
+              companyId: object.companyId ? object.companyId.id : null,
+              analyst: object.analystId ? object.analystId.name : null,
+              analystId: object.analystId ? object.analystId.id : null,
+              qa: object.qaId ? object.qaId.name : null,
+              analystSLA: object.analystSLADate ? object.analystSLADate : null,
+              qaSLA: object.qaSLADate ? object.qaSLADate : null,
+              qaId: object.qaId ? object.qaId.id : null,
+              fiscalYear: object.year,
+              taskStatus: object.taskStatus,
+              overAllCompletedDate: object.overAllCompletedDate,
+              overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
+              createdBy: object.createdBy ? object.createdBy.name : null,
+              createdById: object.createdBy ? object.createdBy.id : null,
+            };
+
+            if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
+              if (object.taskStatus != "Completed") {
+                finalResponseObject.adminTaskList.pendingList.push(taskObject)
+              } else if (object.taskStatus == "Completed"){
+                finalResponseObject.adminTaskList.completedList.push(taskObject)
+              }
+            } else if (userRoles[roleIndex] == "GroupAdmin"){
+              if (object.taskStatus != "Completed") {
+                finalResponseObject.groupAdminTaskList.pendingList.push(taskObject)
+              } else if (object.taskStatus == "Completed"){
+                finalResponseObject.groupAdminTaskList.completedList.push(taskObject)
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          return res.status(400).json({
+            status: "400",
+            message: error.message ? error.message : "Failed to retrieve tasks!",
+          });
+        });     
+    }
+    await ControversyTasks.find({ status: true })
+    .populate('companyId')
+    .populate('analystId')
+    .populate('createdBy')
+    .then((controversyTasks) => {
+      if (controversyTasks && controversyTasks.length > 0) {
+        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let object = {};
+          object.taskNumber = controversyTasks[cIndex].taskNumber;
+          object.taskId = controversyTasks[cIndex].id;
+          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+          object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+          object.status = controversyTasks[cIndex].status;
+          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          if (controversyTasks[cIndex] && object) {
+            finalResponseObject.adminTaskList.controversyList.push(object)
+            finalResponseObject.groupAdminTaskList.controversyList.push(object)
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+    })
+    return res.status(200).json({
+      status: "200",
+      message: "Tasks retrieved successfully!",
+      data: finalResponseObject,
+    });
+  }
 };
 
 export const getMyTasks = async (
@@ -386,6 +488,7 @@ export const getMyTasks = async (
       message: "User role not found!",
     });
   }
+  userRoles = _.uniq(userRoles);
 
   if (userRoles.includes("QA")) {
     await TaskAssignment.find({
@@ -476,9 +579,16 @@ export const getMyTasks = async (
       .populate("batchId")
       .populate("analystId")
       .populate("qaId")
-      .then((taskAssignments) => {
+      .then(async (taskAssignments) => {
         for (let index = 0; index < taskAssignments.length; index++) {
           const object = taskAssignments[index];
+          let categoryValidationRules = await Validations.find({categoryId: object.categoryId.id})
+          .populate({
+            path: "datapointId",
+            populate: {
+              path: "keyIssueId"
+            }
+          });
           let taskObject = {
             taskId: object.id,
             taskNumber: object.taskNumber,
@@ -499,9 +609,13 @@ export const getMyTasks = async (
             qaSLADate: object.qaSLADate ? object.qaSLADate : null,
             fiscalYear: object.year,
             taskStatus: object.taskStatus,
+            isValidationRequired: false,
             createdBy: object.createdBy ? object.createdBy.name : null,
-            createdById: object.createdBy ? object.createdBy.id : null,
+            createdById: object.createdBy ? object.createdBy.id : null
           };
+          if (categoryValidationRules.length > 0) {
+            taskObject.isValidationRequired = true;
+          }
           if (taskAssignments[index].taskStatus == "Verification Pending" || taskAssignments[index].taskStatus == "Correction Pending") {
             analystCorrectionTaskList.push(taskObject);
           } else {
@@ -782,16 +896,37 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next);
 
 
-export const updateSlaDates = ({ user, bodymen: { body }, params }, res, next) => {
-  TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then(function (updatedRecord) {
-    res.send({
-      status: 200,
-      message: 'Task updated successfully'
-    })
-  }).catch((err) => {
-    return res.status(500).json({
-      status: "500",
-      message: err.message
+export const updateSlaDates = async({ user, bodymen: { body }, params }, res, next) => {
+  await TaskAssignment.findById(body.taskId).populate('companyId').populate('categoryId')
+  .then(async(result) => {
+    if(result.taskStatus == "Reassignment Pending"){
+      body.taskDetails['taskStatus'] = "Correction Pending";
+    }
+    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
+      if(result.taskStatus == "Reassignment Pending"){
+        body.taskDetails['taskStatus'] = "Correction Pending";
+        await TaskHistories.create({
+          taskId: body.taskId,
+          companyId: result.companyId.id,
+          categoryId: result.categoryId.id,
+          submittedByName: user.name,
+          stage: "Correction Pending",
+          comment: '',
+          status: true,
+          createdBy: user
+        }).catch((error) =>{
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
+        });
+      }
+      res.send({
+        status: 200,
+        message: 'Task updated successfully'
+      })
+    }).catch((err) => {
+      return res.status(500).json({
+        status: "500",
+        message: err.message
+      });
     });
   });
 }
@@ -805,193 +940,107 @@ export const destroy = ({ user, params }, res, next) =>
     .catch(next);
 
 export const getGroupAndBatches = async ({ user, params }, res, next) => {
-  var groupRoleDetails = await Role.findOne({ roleName: "GroupAdmin" }).catch(() => {
-    return res.status(500).json({ status: "500", message: error.message, });
-  });
-  var superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => {
-    return res.status(500).json({
-      status: "500", message: error.message,
-    });
-  });
-  var adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
+  .catch((error) => {
     return res.status(500).json({
       status: "500",
       message: error.message,
     });
   });
-  console.log("groupRoleDetails", groupRoleDetails);
-  var userDetailWithGroupAdminRole = await User.findOne({
-    _id: user.id,
-    '$or': [
-      {
-        "roleDetails.roles": {
-          '$in': [groupRoleDetails.id],
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
+        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
         }
-      },
-      {
-        "roleDetails.primaryRole": groupRoleDetails.id,
       }
-    ]
-  }).populate({
-    path: "roleDetails.roles"
-  }).populate({
-    path: "roleDetails.primaryRole"
-  }).catch((error) => {
-    return res.status(500).json({
-      status: "500",
-      message: error.message
-    });
-  });
-  console.log('userDetailWithGroupAdminRole', userDetailWithGroupAdminRole);
-  if (userDetailWithGroupAdminRole && Object.keys(userDetailWithGroupAdminRole).length > 0) {
-    console.log("in group admin");
-    await Group.find({
-      groupAdmin: userDetailWithGroupAdminRole._id,
-    }).populate("assignedMembers")
-      .populate("batchList")
-      .then(async (group) => {
-        var resArray = [];
-        for (let index = 0; index < group.length; index++) {
-          var resObject = {};
-          resObject.groupName = group[index].groupName;
-          resObject.groupID = group[index].id;
-          resObject.assignedBatches = [];
-          for (
-            let index1 = 0;
-            index1 < group[index].batchList.length;
-            index1++
-          ) {
-            var categories = await Categories.find({
-              clientTaxonomyId: group[index].batchList[index1].clientTaxonomy,
-            }).catch((err) => {
-              return res.status(500).json({
-                status: "500",
-                message: err.message
-              });
-            });
-            var assignedBatches = group[index].batchList.map((rec) => {
-              return {
-                batchName: rec.batchName,
-                batchID: rec._id,
-                pillars: categories.map((rec) => {
-                  return {
-                    value: rec.id,
-                    label: rec.categoryName
-                  };
-                }),
-                batchYear: rec.years
-              };
-            });
-            resObject.assignedBatches = assignedBatches ? assignedBatches : [];
-          }
-          resArray.push(resObject);
-        }
-        return res.status(200).json({
-          groups: resArray
-        });
-      })
-      .catch((err) => {
-        return res.status(500).json({
-          status: "500",
-          message: err.message
-        });
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
       });
+    }
   } else {
-    var userDetailWithSuperAdminRole = await User.findOne({
-      _id: user.id,
-      '$or': [
-        {
-          "roleDetails.roles": {
-            '$in': [
-              superAdminRoleDetails.id,
-              adminRoleDetails ? adminRoleDetails.id : null
-            ]
-          }
-        },
-        {
-          '$or': [
-            {
-              "roleDetails.primaryRole": superAdminRoleDetails ? superAdminRoleDetails.id : null
-            },
-            {
-              "roleDetails.primaryRole": adminRoleDetails ? adminRoleDetails.id : null
-            }
-          ]
-        }
-      ]
-    }).populate({
-      path: "roleDetails.roles"
-    }).populate({
-      path: "roleDetails.primaryRole"
-    }).catch((error) => {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  let finalResponseObject = {
+    groupAdminList : [],
+    adminList : []
+  };
+  userRoles = _.uniq(userRoles);
+  if (userRoles.length > 0) {
+    let categories = await Categories.find({
+      status: true
+    })
+    .populate('clientTaxonomyId').catch((err) => {
       return res.status(500).json({
         status: "500",
-        message: error.message
+        message: err.message
       });
     });
-    console.log('userDetailWithSuperAdminRole', userDetailWithSuperAdminRole);
-    if (userDetailWithSuperAdminRole) {
-      await Group.find({
-        status: true
-      }).sort({ createdAt: -1 }).populate("assignedMembers")
+    console.log('userRoles', userRoles);
+    for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
+      let findQuery = {};
+      if (userRoles[roleIndex] == "GroupAdmin") {
+        findQuery = { groupAdmin: user.id, status: true };
+      } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin") {
+        findQuery = { status: true };
+      }
+      if (findQuery != {}) {
+        await Group.find(findQuery)
+        .populate("assignedMembers")
         .populate("batchList")
+        .populate("batchList.clientTaxonomy")
         .then(async (group) => {
-          var resArray = [];
           for (let index = 0; index < group.length; index++) {
             var resObject = {};
             resObject.groupName = group[index].groupName;
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
-            for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
-              var categories = await Categories.find({
-                clientTaxonomyId: group[index].batchList[index1].clientTaxonomy
-              }).catch((err) => {
-                return res.status(500).json({
-                  status: "500",
-                  message: err.message
-                });
+            for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
+              let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy );
+              var assignedBatches = group[index].batchList.map((rec) => {
+                return {
+                  batchName: rec.batchName,
+                  batchID: rec._id,
+                  pillars: foundCategories.map((rec) => {
+                    return {
+                      value: rec.id,
+                      label: rec.categoryName
+                    };
+                  }),
+                  batchYear: rec.years
+                };
               });
-              var obj = {
-                batchName: group[index].batchList[index1].batchName,
-                batchID: group[index].batchList[index1]._id,
-                batchYear: group[index].batchList[index1].years,
-                pillars: []
-              };
-              for (let index3 = 0; index3 < categories.length; index3++) {
-                obj.pillars.push({
-                  value: categories[index3].id,
-                  label: categories[index3].categoryName
-                })
-              }
-              resObject.assignedBatches.push(obj);
-              // var assignedBatches = group[index].batchList.map((rec) => {
-              //   return {
-              //     batchName: rec.batchName,
-              //     batchID: rec._id,
-              //     pillars: categories.map((rec1) => {
-              //       return {
-              //         value: rec1.id,
-              //         label: rec1.categoryName
-              //       };
-              //     }),
-              //     batchYear: rec.years
-              //   };
-              // });
-              // resObject.assignedBatches = assignedBatches.length > 0 ? assignedBatches : [];
-              // console.log('res', resObject);
+              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
             }
-            resArray.push(resObject);
+            if (userRoles[roleIndex] == "GroupAdmin") {
+              finalResponseObject.groupAdminList.push(resObject);
+            } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin"){
+              finalResponseObject.adminList.push(resObject);
+            }
           }
-          return res.status(200).json({
-            groups: resArray
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            status: "500",
+            message: err.message
           });
         });
-    } else {
-      return res.status(200).json({
-        groups: []
-      });
+      }
     }
   }
+  return res.status(200).json({ status: "200", message: "Groups retrieved successfully!", data: finalResponseObject });
 };
 
 export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
@@ -1119,28 +1168,135 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   }
 };
 
-export const updateCompanyStatus = async (
-  { user, bodymen: { body } },
-  res,
-  next
-) => {
+export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, next ) => {
+  let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
+  let distinctYears = taskDetails.year.split(',');
   try {
-    //let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId');
+    let allStandaloneDetails = await StandaloneDatapoints.find({
+    taskId: body.taskId,
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
 
-    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: body.taskStatus } });
-   // let datapointsLength = await Datapoints.find({categoryId: taskDetailsObject.categoryId.id })
+let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+    taskId: body.taskId,
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
 
-    let categoriesLength = await Categories.find({
+let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+    taskId: body.taskId,
+    companyId: taskDetails.companyId.id,
+    year: {
+      "$in": distinctYears
+    },
+    status: true
+  })
+  .populate('createdBy')
+  .populate('datapointId')
+  .populate('companyId')
+    let taskStatusValue = "";
+    let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes"});
+    let hasError = mergedDetails.find(object => object.hasError == true);
+    let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
+    let multipliedValue = datapointsLength.length * distinctYears.length;
+    console.log(hasError, multipliedValue,mergedDetails )
+    if(mergedDetails.length == multipliedValue && hasError){
+      if(body.role == 'QA'){
+        taskStatusValue = "Correction Pending";
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      } else{
+        taskStatusValue = "Reassignment Pending"; 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
+        
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      }
+    } else if(mergedDetails.length == multipliedValue && hasCorrection){      
+      taskStatusValue = "Correction Completed"; 
+      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+    } else if(mergedDetails.length == multipliedValue && hasError == undefined && hasCorrection == undefined){      
+      if(body.role == 'QA'){
+        taskStatusValue = "Verification Completed";
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      } else if(body.role == 'Analyst'){
+        taskStatusValue = "Collection Completed"; 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      } else{
+        taskStatusValue = "Completed"; 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+      }
+    }
+    await TaskHistories.create({
+      taskId: body.taskId,
+      companyId: taskDetails.companyId.id,
+      categoryId: taskDetails.categoryId.id,
+      submittedByName: user.name,
+      stage: taskStatusValue,
+      comment: '',
+      status: true,
+      createdBy: user
+    }).catch((error) =>{
+      return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
+    });
+    if(taskStatusValue == 'Reassignment Pending'){
+      await Notifications.create({
+        notifyToUser: taskDetails.groupId.groupAdmin, 
+        notificationType: "/tasklist",
+        content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
+        notificationTitle: "Reassignment Pending",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      });
+    }
+    let categoriesLength = await Categories.count({
       clientTaxonomyId: body.clientTaxonomyId,
       status: true,
     });
-    let taskDetailsObject = await TaskAssignment.find({
+    let taskDetailsObject = await TaskAssignment.count({
       companyId: body.companyId,
       year: body.year,
-      taskStatus: "Completed",
+      taskStatus: "Completed"
     });
-    console.log(categoriesLength.length, taskDetailsObject.length)
-    if (categoriesLength.length == taskDetailsObject.length) {
+    if (categoriesLength == taskDetailsObject) {
       await CompaniesTasks.updateMany(
         {
           companyId: body.companyId,
@@ -1160,7 +1316,7 @@ export const updateCompanyStatus = async (
   } catch (error) {
     return res.status(500).json({
       status: "500",
-      message: error.message,
+      message: error.message ? error.message : "Failed to update task status",
     });
   }
 };
