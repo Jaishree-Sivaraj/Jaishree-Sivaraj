@@ -601,7 +601,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
-        var link = 'https://unruffled-bhaskara-834a98.netlify.app/onboard/new-user?';
+        var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
         link = link + `role=${userDetails.userType || userDetails.role}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
         const content = `
@@ -936,7 +936,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
       }
     }
     if (existingEmails.length > 0) {
-      return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" });
+      return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
     } else {
       return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
     }

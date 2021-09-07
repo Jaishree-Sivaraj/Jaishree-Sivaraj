@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer'
 import { PasswordReset } from '.'
 import { User } from '../user'
 
-export const create = async({ bodymen: { body: { email, link } } }, res, next) => {
+export const create = async({ bodymen: { body: { email } } }, res, next) => {
   User.findOne({ email })
     .then(async (user) => {
       if (user) {
@@ -12,12 +12,13 @@ export const create = async({ bodymen: { body: { email, link } } }, res, next) =
         .then((reset) => {
           if (!reset) return res.status(400).json({ status: "400", message: 'Failed to send password reset mail!' })
           const { user, token } = reset
-          link = `${link.replace(/\/$/, '')}/${token}`
+          let Link = `${process.env.FRONTEND_URL}/password-resets`;
+          Link = `${Link.replace(/\/$/, '')}/${token}`
           const content = `
             Hey, ${user.name}.<br><br>
             You requested a new password for your esgapi account.<br>
             Please use the following link to set a new password. It will expire in 1 hour.<br><br>
-            <a href="${link}">click here</a><br><br>
+            <a href="${Link}">click here</a><br><br>
             If you didn't make this request then you can safely ignore this email. :)<br><br>
             &mdash; esgapi Team
           `
