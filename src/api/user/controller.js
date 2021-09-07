@@ -936,7 +936,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
       }
     }
     if (existingEmails.length > 0) {
-      return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" });
+      return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
     } else {
       return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
     }
