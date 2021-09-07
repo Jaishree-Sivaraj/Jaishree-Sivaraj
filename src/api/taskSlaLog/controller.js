@@ -77,7 +77,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
           await Notifications.create({
             notifyToUser: taskDetail.groupId ? taskDetail.groupId.groupAdmin : null,
             notificationType: '/tasklist',
-            content: `${user.name ? user.name : 'Employee'} has raised SLA extension request for ${body.days ? body.days : ''} days of TaskID - ${taskDetail.taskNumber ? taskDetail.taskNumber : ''}`,
+            content: `${user.name ? user.name : 'Employee'} has raised SLA extension request for ${body.days ? body.days : ''} of TaskID - ${taskDetail.taskNumber ? taskDetail.taskNumber : ''}`,
             notificationTitle: `${taskObject.requestedBy} SLA extension requested`,
             isRead: false,
             status: true
