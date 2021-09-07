@@ -17,3 +17,4 @@ DOCS.md
 src/api/standalone_datapoints/uploads/
 src/api/controversy/uploads/
 uploads
+src/config.js

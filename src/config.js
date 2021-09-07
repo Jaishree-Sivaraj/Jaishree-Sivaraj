@@ -2,6 +2,8 @@
 import path from 'path'
 import merge from 'lodash/merge'
 
+
+
 /* istanbul ignore next */
 const requireProcessEnv = (name) => {
   if (!process.env[name]) {
@@ -9,6 +11,8 @@ const requireProcessEnv = (name) => {
   }
   return process.env[name]
 }
+
+
 
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
@@ -18,6 +22,8 @@ if (process.env.NODE_ENV !== 'production') {
     example: path.join(__dirname, '../.env.example')
   })
 }
+
+
 
 const config = {
   all: {
@@ -38,7 +44,7 @@ const config = {
       }
     }
   },
-  test: { },
+  test: {},
   development: {
     mongo: {
       uri: 'mongodb://localhost/esgapi-dev',
@@ -49,12 +55,15 @@ const config = {
   },
   production: {
     ip: process.env.IP || undefined,
-    port: process.env.PORT || 8080,
+    port: process.env.PORT || 9010,
     mongo: {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost/esgapi'
+      uri: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/esgapi-dev?authSource=admin`,
+      options: {
+        debug: true
+      }
     }
   }
 }
 
 module.exports = merge(config.all, config[config.all.env])
-export default module.exports
+export default module.export
