@@ -857,7 +857,7 @@ export const uploadEmailsFile = async (req, res, next) => {
                     html: content
                   });
                 } else {
-                  return res.status(409).json({ status: "409", message: "Duplicate emails present in file please check!", duplicateEmailsList: existingEmails.length > 0 ? existingEmails : "Nil" })
+                  return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits`})
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
