@@ -58,7 +58,8 @@ const userSchema = new Schema({
     trim: true
   },
   phoneNumber: {
-    type: String,
+    type: String,    
+    unique: true,
     default: ''
   },
   comments: {
