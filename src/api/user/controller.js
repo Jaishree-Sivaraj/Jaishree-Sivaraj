@@ -601,7 +601,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
-        var link = 'https://unruffled-bhaskara-834a98.netlify.app/onboard/new-user?';
+        var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
         link = link + `role=${userDetails.userType || userDetails.role}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
         const content = `
