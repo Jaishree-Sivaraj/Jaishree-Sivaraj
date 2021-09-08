@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, updateSourceUrls } from './controller'
 import { schema } from './model'
 export Functions, { schema } from './model'
 
@@ -41,7 +41,22 @@ router.post('/',
 router.get('/',
   token({ required: true }),
   query(),
-  index)
+  index)/**
+
+* @api {get} /functions/test Retrieve functions
+* @apiName RetrieveFunctions
+* @apiGroup Functions
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of functions.
+* @apiSuccess {Object[]} rows List of functions.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/test',
+  query(),
+  updateSourceUrls)
 
 /**
  * @api {get} /functions/:id Retrieve functions

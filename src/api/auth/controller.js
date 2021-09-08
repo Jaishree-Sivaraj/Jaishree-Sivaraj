@@ -52,10 +52,12 @@ export const login = async ({ user }, res, next) => {
           //nodemail code will come here to send OTP
           const content = `
             Hey, ${user.name}.<br/><br/>
-            You requested a OTP for your esgapi account.<br/>
-            Please use the following code as your OTP - <b>${otpNumber}</b>.<br/>
-            If you didn't make this request then you can safely ignore this email or contact admin. <br/><br/>
-            &mdash; ESG Team
+            Please use the below OTP to login into your ESG API account.<br/>
+            OTP - <b>${otpNumber}</b>.<br/>
+            (The OTP will expire in 1 hour)<br/><br/>
+            Kindly contact your system administrator if you have not raised this request.<br/><br/>
+            Thanks<br/>
+            ESG API Team
           `;
           var transporter = nodemailer.createTransport({
             service: 'Gmail',
