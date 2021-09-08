@@ -16,11 +16,12 @@ export const create = async({ bodymen: { body: { email } } }, res, next) => {
           Link = `${Link.replace(/\/$/, '')}/${token}`
           const content = `
             Hey, ${user.name}.<br><br>
-            You requested a new password for your esgapi account.<br>
-            Please use the following link to set a new password. It will expire in 1 hour.<br><br>
+            You requested for a new password for your ESG API account.<br>
+            Please use the below link to set a new password. The link will expire in 1 hour.<br><br>
             <a href="${Link}">click here</a><br><br>
-            If you didn't make this request then you can safely ignore this email. :)<br><br>
-            &mdash; esgapi Team
+            Kindly contact your system administrator if you have not raised this request.<br><br>
+            Thanks<br>
+            ESG API Team
           `
           var transporter = nodemailer.createTransport({
             service: 'Gmail',

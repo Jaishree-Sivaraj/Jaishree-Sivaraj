@@ -602,13 +602,18 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
       User.findById(body.userId).then(function (userDetails) {
         var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
-        link = link + `role=${userDetails.userType || userDetails.role}&email=${userDetails.email}&id=${userDetails.id}`;
+        if (userDetails && userDetails.userType) {
+          userDetails.userType = userDetails.userType.split(" ").join("");
+        }
+        link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
         const content = `
-                  Hai,<br/>
-                  Please use the following link to submit your ${userDetails.userType} onboarding details:<br/>
+                  Hai,<br/><br/>
+                  Please use the below link to submit your onboarding details::<br/><br/>
                   URL: ${link}<br/><br/>
-                  &mdash; ESG Team `;
+                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+                  Thanks<br/>
+                  ESG Team`;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
           auth: {
@@ -838,12 +843,10 @@ export const uploadEmailsFile = async (req, res, next) => {
                 //nodemail code will come here to send OTP  
                 if (!isEmailExisting) {
                   const content = `
-                  Hai,<br/>
-                  Please use the below link to submit your onboarding details:<br/>
-                  URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
-        
-                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>
-                  
+                  Hai,<br/><br/>
+                  Please use the below link to submit your onboarding details:<br/><br/>
+                  URL: ${process.env.FRONTEND_URL}${link}<br/><br/>        
+                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
                   Thanks<br/>
                   ESGDS Team `;
                   var transporter = nodemailer.createTransport({
@@ -919,12 +922,10 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
       if (!isEmailExisting) {
         //nodemail code will come here to send OTP
         const content = `
-          Hai,<br/>
-          Please use the below link to submit your onboarding details:<br/>
+          Hai,<br/><br/>
+          Please use the below link to submit your onboarding details:<br/><br/>
           URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
-
-          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>
-          
+          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
           Thanks<br/>
           ESGDS Team `;
         var transporter = nodemailer.createTransport({
