@@ -838,10 +838,14 @@ export const uploadEmailsFile = async (req, res, next) => {
                 //nodemail code will come here to send OTP  
                 if (!isEmailExisting) {
                   const content = `
-                    Hai,<br/>
-                    Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
-                    URL: ${process.env.FRONTEND_URL}${link}?email=${rowObject['email']}<br/><br/>
-                    &mdash; ESG Team `;
+                  Hai,<br/>
+                  Please use the below link to submit your onboarding details:<br/>
+                  URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
+        
+                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>
+                  
+                  Thanks<br/>
+                  ESGDS Team `;
                   var transporter = nodemailer.createTransport({
                     service: 'Gmail',
                     auth: {
@@ -916,9 +920,13 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/>
-          Please use the following link to submit your ${rolesDetails.roleName} onboarding details:<br/>
+          Please use the below link to submit your onboarding details:<br/>
           URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
-          &mdash; ESG Team `;
+
+          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>
+          
+          Thanks<br/>
+          ESGDS Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
           auth: {
