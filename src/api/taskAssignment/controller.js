@@ -908,8 +908,8 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
       { $set: { isAccepted: true, isReviewed: true }});      
       await Notifications.create({
         notifyToUser: result.analystId, 
-        notificationType: "/tasklist",
-        content: `${user.name ? user.name : 'GroupAdmin'} SLA request accepted for TaskID - `+ result.taskNumber, 
+        notificationType: "/pendingtasks",
+        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
         notificationTitle: "SLA request accepted",
         status: true,
         isRead: false
@@ -922,8 +922,8 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
       { $set: { isAccepted: true, isReviewed: true }});
       await Notifications.create({
         notifyToUser: result.qaId, 
-        notificationType: "/tasklist",
-        content: `${user.name ? user.name : 'GroupAdmin'} SLA request accepted for TaskID - `+ result.taskNumber, 
+        notificationType: "/pendingtasks",
+        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
         notificationTitle: "SLA request accepted",
         status: true,
         isRead: false
@@ -934,8 +934,8 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
     if(result.analystSLADate != body.taskDetails.analystSLADate && body.isfromNotification == false){
       await Notifications.create({
         notifyToUser: result.analystId, 
-        notificationType: "/tasklist",
-        content: `${user.name ? user.name : 'GroupAdmin'} SLA date extended for TaskID - `+ result.taskNumber, 
+        notificationType: "/pendingtasks",
+        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
         notificationTitle: "SLA Date Extended",
         status: true,
         isRead: false
@@ -946,8 +946,8 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
     if(result.qaSLADate != body.taskDetails.qaSLADate && body.isfromNotification == false){
       await Notifications.create({
         notifyToUser: result.qaId, 
-        notificationType: "/tasklist",
-        content: `${user.name ? user.name : 'GroupAdmin'} SLA date extended for TaskID - `+ result.taskNumber, 
+        notificationType: "/pendingtasks",
+        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
         notificationTitle: "SLA Date Extended",
         status: true,
         isRead: false
