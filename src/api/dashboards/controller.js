@@ -118,7 +118,7 @@ export const dashboardStats = async ({user, req}, res, next) => {
     if (userRoles.length > 0) {
       for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
         let findQuery = {};
-        if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
+        if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") { 
           findQuery = { status: true };
           finalResponseObject.superAdminStats[0].data[0].value = await TaskAssignment.count({ taskStatus: 'Completed', status: true});
           finalResponseObject.superAdminStats[0].data[1].value = await TaskAssignment.count({ taskStatus: { $ne: 'Completed'}, status: true});
@@ -127,8 +127,8 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.superAdminStats[1].data[2].value = await ErrorDetails.count({ raisedBy: 'Company Representative', status: true });
           finalResponseObject.superAdminStats[1].data[3].value = await ErrorDetails.count({ raisedBy: 'Client Representative', isAccepted: true, status: true });
           finalResponseObject.superAdminStats[1].data[4].value = await ErrorDetails.count({ raisedBy: 'Company Representative', isAccepted: true, status: true});
-          finalResponseObject.superAdminStats[2].data[0].value = await TaskSlaLog.count({ requestedBy: "Analyst", isAccepted: true, status: true });
-          finalResponseObject.superAdminStats[2].data[1].value = await TaskSlaLog.count({ requestedBy: "QA", isAccepted: true, status: true });
+          finalResponseObject.superAdminStats[2].data[0].value = await TaskSlaLog.count({ requestedBy: "Analyst", isAccepted: true, isReviewed: true, status: true });
+          finalResponseObject.superAdminStats[2].data[1].value = await TaskSlaLog.count({ requestedBy: "QA", isAccepted: true, isReviewed: true, status: true });
           finalResponseObject.superAdminStats[2].data[2].value = await TaskSlaLog.count({ requestedBy: "Analyst", status: true });
           finalResponseObject.superAdminStats[2].data[3].value = await TaskSlaLog.count({ requestedBy: "QA", status: true });
           finalResponseObject.superAdminStats[3].data[0].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
@@ -163,8 +163,8 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.groupAdminStats[1].data[2].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: 'Company Representative', status: true });
           finalResponseObject.groupAdminStats[1].data[3].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: 'Client Representative', isAccepted: true, status: true });
           finalResponseObject.groupAdminStats[1].data[4].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: 'Company Representative', isAccepted: true, status: true});
-          finalResponseObject.groupAdminStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "Analyst", isAccepted: true, status: true });
-          finalResponseObject.groupAdminStats[2].data[1].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "QA", isAccepted: true, status: true });
+          finalResponseObject.groupAdminStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "Analyst", isAccepted: true, isReviewed: true, status: true });
+          finalResponseObject.groupAdminStats[2].data[1].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "QA", isAccepted: true, isReviewed: true, status: true });
           finalResponseObject.groupAdminStats[2].data[2].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "Analyst", status: true });
           finalResponseObject.groupAdminStats[2].data[3].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, requestedBy: "QA", status: true });
           finalResponseObject.groupAdminStats[3].data[0].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": analystRoleId.id } }, { "roleDetails.primaryRole": analystRoleId.id }]});
@@ -178,7 +178,7 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.analystStats[0].data[1].value = await TaskAssignment.count({ analystId: user.id, taskStatus: { $ne: 'Completed'}, status: true});
           finalResponseObject.analystStats[1].data[0].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: 'QA', status: true });
           finalResponseObject.analystStats[1].data[1].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: { $in: ['Client Representative', 'Company Representative'] }, status: true });
-          finalResponseObject.analystStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, isAccepted: true, status: true });
+          finalResponseObject.analystStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, isAccepted: true, isReviewed: true, status: true });
           finalResponseObject.analystStats[2].data[1].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, status: true });
         } else if (userRoles[roleIndex] == "QA") {
           let taskIds = await TaskAssignment.find({ qaId: user.id, status: true }).distinct('id');
@@ -186,7 +186,7 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.qaStats[0].data[1].value = await TaskAssignment.count({ qaId: user.id, taskStatus: { $ne: 'Completed'}, status: true});
           finalResponseObject.qaStats[1].data[0].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: 'QA', status: true });
           finalResponseObject.qaStats[1].data[1].value = await ErrorDetails.count({ taskId: { $in: taskIds }, raisedBy: { $in: ['Client Representative', 'Company Representative'] }, status: true });
-          finalResponseObject.qaStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, isAccepted: true, status: true });
+          finalResponseObject.qaStats[2].data[0].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, isAccepted: true, isReviewed: true, status: true });
           finalResponseObject.qaStats[2].data[1].value = await TaskSlaLog.count({ taskId: { $in: taskIds }, status: true });
         }
       }
