@@ -20,6 +20,7 @@ import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { Notifications } from '../notifications'
 import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
+import { Functions } from '../functions'
 import _ from 'lodash'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -1171,7 +1172,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, next ) => {
   let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
   let distinctYears = taskDetails.year.split(',');
-  try {
+  try {    
+    let functionId = await Functions.findOne({ functionType: "Negative News", status: true});
     let allStandaloneDetails = await StandaloneDatapoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
@@ -1209,7 +1211,7 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
   .populate('companyId')
     let taskStatusValue = "";
     let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
-    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes"});
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" })//,functionId: {"$ne": functionId.id}});
     let hasError = mergedDetails.find(object => object.hasError == true);
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
