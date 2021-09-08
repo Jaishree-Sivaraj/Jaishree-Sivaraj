@@ -174,11 +174,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               });
             }).catch((err) => {
               if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
+                if(err.keyPattern.phoneNumber){
+                  res.status(409).json({
+                    valid: false,
+                    param: 'phoneNumber',
+                    message: 'phoneNumber already registered'
+                  })
+                } else{
+                  res.status(409).json({
+                    valid: false,
+                    param: 'email',
+                    message: 'email already registered'
+                  })
+                }
               } else {
                 next(err)
               }
@@ -209,11 +217,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             }).catch((err) => {
               /* istanbul ignore else */
               if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
+                if(err.keyPattern.phoneNumber){
+                  res.status(409).json({
+                    valid: false,
+                    param: 'phoneNumber',
+                    message: 'phoneNumber already registered'
+                  })
+                } else{
+                  res.status(409).json({
+                    valid: false,
+                    param: 'email',
+                    message: 'email already registered'
+                  })
+                }
               } else {
                 next(err)
               }
@@ -246,11 +262,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               })
               .catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
+                  if(err.keyPattern.phoneNumber){
+                    res.status(409).json({
+                      valid: false,
+                      param: 'phoneNumber',
+                      message: 'phoneNumber already registered'
+                    })
+                  } else{
+                    res.status(409).json({
+                      valid: false,
+                      param: 'email',
+                      message: 'email already registered'
+                    })
+                  }
                 } else {
                   next(err)
                 }
@@ -313,11 +337,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             })
             .catch((err) => {
               if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
+                if(err.keyPattern.phoneNumber){
+                  res.status(409).json({
+                    valid: false,
+                    param: 'phoneNumber',
+                    message: 'phoneNumber already registered'
+                  })
+                } else{
+                  res.status(409).json({
+                    valid: false,
+                    param: 'email',
+                    message: 'email already registered'
+                  })
+                }
               } else {
                 next(err)
               }
@@ -357,11 +389,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             .catch((err) => {
               /* istanbul ignore else */
               if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
+                if(err.keyPattern.phoneNumber){
+                  res.status(409).json({
+                    valid: false,
+                    param: 'phoneNumber',
+                    message: 'phoneNumber already registered'
+                  })
+                } else{
+                  res.status(409).json({
+                    valid: false,
+                    param: 'email',
+                    message: 'email already registered'
+                  })
+                }
               } else {
                 next(err)
               }
@@ -401,11 +441,19 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             })
             .catch((err) => {
               if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(409).json({
-                  valid: false,
-                  param: 'email',
-                  message: 'email already registered'
-                })
+                if(err.keyPattern.phoneNumber){
+                  res.status(409).json({
+                    valid: false,
+                    param: 'phoneNumber',
+                    message: 'phoneNumber already registered'
+                  })
+                } else{
+                  res.status(409).json({
+                    valid: false,
+                    param: 'email',
+                    message: 'email already registered'
+                  })
+                }
               } else {
                 next(err)
               }
