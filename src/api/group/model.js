@@ -7,7 +7,8 @@ const groupSchema = new Schema({
     required: true
   },
   groupName: {
-    type: String
+    type: String,
+    unique: true
   },
   groupAdmin: {
     type: Schema.ObjectId,

@@ -171,6 +171,7 @@ export const dashboardStats = async ({user, req}, res, next) => {
           finalResponseObject.groupAdminStats[3].data[1].value = await User.count({ "id": { $in: groupMemberIds }, "$or" : [{ "roleDetails.roles": { "$in": qaRoleId.id } }, { "roleDetails.primaryRole": qaRoleId.id }]});
           finalResponseObject.groupAdminStats[3].data[2].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": clientRepRoleId.id } }, { "roleDetails.primaryRole": clientRepRoleId.id }]});
           finalResponseObject.groupAdminStats[3].data[3].value = await User.count({ "$or" : [{ "roleDetails.roles": { "$in": companyRepRoleId.id } }, { "roleDetails.primaryRole": companyRepRoleId.id }]});
+          finalResponseObject.groupAdminStats[3].data[4].value = await User.count({ isUserActive: true, isAssignedToGroup: false, isRoleAssigned: false, status: true });
         } else if (userRoles[roleIndex] == "Analyst") {
           let taskIds = await TaskAssignment.find({ analystId: user.id, status: true }).distinct('id');
           finalResponseObject.analystStats[0].data[0].value = await TaskAssignment.count({ analystId: user.id, taskStatus: 'Completed', status: true});
