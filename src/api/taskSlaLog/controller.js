@@ -108,3 +108,38 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
     res.status(500).json({ status: (500), message: " No task details available please check!"});        
   }
 }
+
+export const getAllRequestsOfaTask = async ({user, params}, res, next) => {
+  await TaskSlaLog.find({ taskId: params.taskId ? params.taskId : null, isReviewed: false })
+  .populate('taskId')
+  .then((logs) => {
+    //for loop to form the structure
+    //TODO
+    return res.status(200).json({ status: "200", message: "SLA requests retrieved", data: logs });
+  })
+}
+
+export const rejectRequest = async ({user, params, bodymen: { body } }, res, next) => {
+  await TaskSlaLog.updateOne({_id: params.id}, { $set: { isRejected: true, isReviewed: true } })
+  .then(async()=> {
+    let taskDetail = await TaskSlaLog.findById(params.id).populate('taskId');
+    await Notifications.create({
+      notifyToUser: taskDetail.createdBy ? taskDetail.createdBy : null,
+      notificationType: '/tasklist',
+      content: `Your SLA extension request for TaskID - ${taskDetail.taskId.taskNumber ? taskDetail.taskId.taskNumber : ''}`,
+      notificationTitle: 'SLA request rejected',
+      isRead: false,
+      status: true
+    })
+    .then((notify) => {
+      if (notify) {
+        return res.status(200).json({ status: 200, message: "Rejected SLA extension request!" });  
+      } else {
+        return res.status(500).json({ status: "500", message: 'Failed to send SLA extension reject notification!' });  
+      }
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to send SLA extension reject notification!' });
+    })
+  });
+}
