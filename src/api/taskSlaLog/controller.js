@@ -61,15 +61,16 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
       if (taskDetail) {
         let taskObject = {
           taskId: body.taskId,
-          requestedBy: "",
+          requestedBy: '',
           days: body.days,
           isAccepted: false,
           status: true,
           createdBy: user
         }
-        if (taskDetail.analystId == user) {
+        console.log(taskDetail.analystId.email == user.email);
+        if (taskDetail.analystId.email == user.email) {
           taskObject.requestedBy = "Analyst";
-        } else if (taskDetail.qaId == user) {
+        } else if (taskDetail.qaId.email == user.email) {
           taskObject.requestedBy = "QA";
         }
         await TaskSlaLog.create(taskObject)
