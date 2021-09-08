@@ -14,10 +14,6 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 
 export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
   try {
-    let groupDetails = await Group.find({groupName: body.grpName});
-    if(groupDetails.length > 0){
-      res.status(409).json({ status: "409", message: "GroupName already exists" });
-    } else{
       let membersList = [];
       if (body.grpMembers && body.grpMembers.length > 0) {
         for (let grpIndex = 0; grpIndex < body.grpMembers.length; grpIndex++) {
@@ -89,7 +85,6 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
           })
           .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to update group!'}) });
       }
-    }
   } catch (error) {
     res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create Group!" });
   }
