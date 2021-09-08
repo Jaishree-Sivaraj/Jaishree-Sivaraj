@@ -20,6 +20,14 @@ const taskSlaLogSchema = new Schema({
     type: Boolean,
     default: false
   },
+  isRejected: {
+    type: Boolean,
+    default: false
+  },
+  isReviewed: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: Boolean,
     default: true
@@ -41,6 +49,8 @@ taskSlaLogSchema.methods = {
       days: this.days,
       requestedBy: this.requestedBy,
       isAccepted: this.isAccepted,
+      isRejected: this.isRejected,
+      isReviewed: isReviewed,
       status: this.status,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,

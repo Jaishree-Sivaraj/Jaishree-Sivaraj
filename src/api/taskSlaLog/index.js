@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, slaDateExtensionRequest } from './controller'
+import { create, index, show, update, destroy, slaDateExtensionRequest, rejectRequest, getAllRequestsOfaTask } from './controller'
 import { schema } from './model'
 export TaskSlaLog, { schema } from './model'
 
 const router = new Router()
-const { taskId, requestedBy, days, isAccepted, status } = schema.tree
+const { taskId, requestedBy, days, isAccepted, isRejected, isReviewed, status } = schema.tree
 
 /**
  * @api {post} /taskSlaLogs Create task sla log
@@ -82,6 +82,22 @@ router.get('/:id',
   show)
 
 /**
+ * @api {get} /taskSlaLogs/task-requests/:taskId Retrieve task sla log of a taskId
+ * @apiName RetrieveAllTaskSlaLogOfaTask
+ * @apiGroup TaskSlaLog
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} taskSlaLog Task sla log's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Task sla log not found.
+ * @apiError 401 user access only.
+ */
+router.get('/task-requests/:taskId',
+  token({ required: true }),
+  query(),
+  getAllRequestsOfaTask)
+
+/**
  * @api {put} /taskSlaLogs/:id Update task sla log
  * @apiName UpdateTaskSlaLog
  * @apiGroup TaskSlaLog
@@ -101,6 +117,21 @@ router.put('/:id',
   token({ required: true }),
   body({ taskId,days, requestedBy, isAccepted, status }),
   update)
+
+/**
+ * @api {put} /taskSlaLogs/reject/:id Reject Sla request
+ * @apiName RejectTaskSlaLog
+ * @apiGroup TaskSlaLog
+ * @apiPermission user
+ * @apiSuccess {Object} taskSlaLog Task sla log's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Task sla log not found.
+ * @apiError 401 user access only.
+ */
+router.put('/reject/:id',
+  token({ required: true }),
+  body({}),
+  rejectRequest)
 
 /**
  * @api {delete} /taskSlaLogs/:id Delete task sla log
