@@ -903,6 +903,58 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
     if(result.taskStatus == "Reassignment Pending"){
       body.taskDetails['taskStatus'] = "Correction Pending";
     }
+    if(result.analystSLADate != body.taskDetails.analystSLADate && body.isfromNotification == true){
+      await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'Analyst', status: true},
+      { $set: { isAccepted: true, isReviewed: true }});      
+      await Notifications.create({
+        notifyToUser: result.analystId, 
+        notificationType: "/pendingtasks",
+        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "SLA request accepted",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    } 
+    if(result.qaSLADate != body.taskDetails.qaSLADate && body.isfromNotification == true){
+      await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'QA', status: true},
+      { $set: { isAccepted: true, isReviewed: true }});
+      await Notifications.create({
+        notifyToUser: result.qaId, 
+        notificationType: "/pendingtasks",
+        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "SLA request accepted",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
+    if(result.analystSLADate != body.taskDetails.analystSLADate && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.analystId, 
+        notificationType: "/pendingtasks",
+        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "SLA Date Extended",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      });     
+    } 
+    if(result.qaSLADate != body.taskDetails.qaSLADate && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.qaId, 
+        notificationType: "/pendingtasks",
+        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "SLA Date Extended",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
     await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
       if(result.taskStatus == "Reassignment Pending"){
         body.taskDetails['taskStatus'] = "Correction Pending";
