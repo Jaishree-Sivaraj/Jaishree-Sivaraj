@@ -1463,7 +1463,7 @@ export const dataCollection = async ({
             }
             if(item.isAccepted == false){
               await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+              {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
               await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted}});
@@ -1531,7 +1531,7 @@ export const dataCollection = async ({
             }
             if(item.isAccepted == false){
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+              {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted}});
@@ -1600,7 +1600,7 @@ export const dataCollection = async ({
             }
             if(item.isAccepted == false){
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              {$set: {isErrorAccepted: item.isAccepted, comments: comments}});
+              {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted}});

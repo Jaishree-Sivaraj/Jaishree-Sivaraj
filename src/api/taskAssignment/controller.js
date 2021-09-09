@@ -955,6 +955,31 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
+    if(result.analystId != body.taskDetails.analystId && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.analystId, 
+        notificationType: "/pendingtasks",
+        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "New Task Assigned",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
+
+    if(result.qaId != body.taskDetails.qaId && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.qaId, 
+        notificationType: "/pendingtasks",
+        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "New Task Assigned",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
     await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
       if(result.taskStatus == "Reassignment Pending"){
         body.taskDetails['taskStatus'] = "Correction Pending";
@@ -1263,7 +1288,7 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
   .populate('companyId')
     let taskStatusValue = "";
     let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
-    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" })//,functionId: {"$ne": functionId.id}});
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" ,functionId: {"$ne": functionId.id}});
     let hasError = mergedDetails.find(object => object.hasError == true);
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
