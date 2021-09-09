@@ -287,7 +287,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                 }
               }
-            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
               let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -569,7 +569,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             })
           }
-          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
@@ -828,7 +828,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               })
             }  
           }
-          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
