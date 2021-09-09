@@ -1264,7 +1264,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
   .populate('datapointId')
   .populate('companyId')
   datapointsCount = datapointsCount + allStandaloneDetails;
-  let allBoardMemberMatrixDetails1 =  await BoardMembersMatrixDataPoints.distinct('datapointId',{
+  let allBoardMemberMatrixDetails1 =  await BoardMembersMatrixDataPoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
@@ -1272,7 +1272,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
     },
     status: true
   });
-  let allKmpMatrixDetails1 = await KmpMatrixDataPoints.distinct('datapointId',{
+  let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year:  {
@@ -1472,7 +1472,6 @@ export const reports = async ({ user, params }, res, next) => {
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
-
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
   for (var index = 0; index < body.companyTaskReports.length; index++) {
@@ -1517,7 +1516,6 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   return res.status(200).json({ data: result });
 }
 
-
 export const controversyReports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
@@ -1539,8 +1537,6 @@ export const controversyReports = async ({ user, params }, res, next) => {
   }
   return res.status(200).json({ controversy: controversy });
 }
-
-
 
 export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
