@@ -892,8 +892,8 @@ export const uploadEmailsFile = async (req, res, next) => {
                 if (!isEmailExisting) {
                   const content = `
                   Hai,<br/><br/>
-                  Please use the below link to submit your onboarding details:<br/><br/>
-                  URL: ${process.env.FRONTEND_URL}${link}<br/><br/>        
+                  Please click below to submit your onboarding details:<br/><br/>
+                  <a href="${process.env.FRONTEND_URL}${link}">click here</a><br><br>       
                   Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
                   Thanks<br/>
                   ESGDS Team `;
@@ -968,11 +968,12 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
         link = `/onboard/new-user?role=ClientRepresentative`
       }
       if (!isEmailExisting) {
+        let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
         //nodemail code will come here to send OTP
         const content = `
           Hai,<br/><br/>
-          Please use the below link to submit your onboarding details:<br/><br/>
-          URL: ${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}<br/><br/>
+          Please click below to submit your onboarding details:<br/><br/>
+          <a href="${url}">click here</a><br><br>
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
           Thanks<br/>
           ESGDS Team `;
