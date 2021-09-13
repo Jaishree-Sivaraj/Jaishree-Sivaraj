@@ -15,7 +15,7 @@ export const create = async({ bodymen: { body: { email } } }, res, next) => {
           let Link = `${process.env.FRONTEND_URL}/password-resets`;
           Link = `${Link.replace(/\/$/, '')}/${token}`
           const content = `
-            Hey, ${user.name}.<br><br>
+            Hi ${user.name},<br><br>
             You requested for a new password for your ESG API account.<br>
             Please use the below link to set a new password. The link will expire in 1 hour.<br><br>
             <a href="${Link}">click here</a><br><br>
@@ -34,7 +34,7 @@ export const create = async({ bodymen: { body: { email } } }, res, next) => {
           transporter.sendMail({
             from: 'testmailer09876@gmail.com',
             to: email,
-            subject: 'esgapi - Password Reset',
+            subject: 'ESGAPI - Password Reset',
             html: content.toString()
           });
           return res.status(200).json({ status: "200", message: "Email sent successfully!" })
