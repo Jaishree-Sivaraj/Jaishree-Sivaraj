@@ -51,7 +51,7 @@ export const login = async ({ user }, res, next) => {
 
           //nodemail code will come here to send OTP
           const content = `
-            Hi, ${user.name}.<br/><br/>
+            Hi ${user.name},<br/><br/>
             Please use the below OTP to login into your ESG API account.<br/>
             OTP - <b>${otpNumber}</b>.<br/>
             Kindly contact your system administrator if you have not raised this request.<br/><br/>
