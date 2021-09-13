@@ -7,8 +7,8 @@ const taskSlaLogSchema = new Schema({
   },
   taskId: {
    type: Schema.ObjectId,
-    ref: 'TaskAssigment',
-    required: true
+   ref: 'TaskAssigment',
+   required: true
   },
   days: {
     type: String
@@ -50,7 +50,7 @@ taskSlaLogSchema.methods = {
       requestedBy: this.requestedBy,
       isAccepted: this.isAccepted,
       isRejected: this.isRejected,
-      isReviewed: isReviewed,
+      isReviewed: this.isReviewed,
       status: this.status,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
       createdAt: this.createdAt,
