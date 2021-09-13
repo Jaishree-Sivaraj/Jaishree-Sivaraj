@@ -112,7 +112,6 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
 
 export const getAllRequestsOfaTask = async ({user, params}, res, next) => {
   await TaskSlaLog.find({ taskId: params.taskId ? params.taskId : null, isReviewed: false })
-  .populate('taskId')
   .then((logs) => {
     //for loop to form the structure
     //TODO
