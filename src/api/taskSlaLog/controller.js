@@ -61,7 +61,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
       if (taskDetail) {
         let taskObject = {
           taskId: body.taskId,
-          requestedBy: '',
+          requestedBy: "",
           days: body.days,
           isAccepted: false,
           status: true,

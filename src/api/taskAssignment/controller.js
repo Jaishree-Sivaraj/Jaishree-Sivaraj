@@ -967,7 +967,6 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
-
     if(result.qaId != body.taskDetails.qaId && body.isfromNotification == false){
       await Notifications.create({
         notifyToUser: result.qaId, 
