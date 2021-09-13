@@ -21,8 +21,11 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const getMyNotifications = ({ params, querymen: { query, select, cursor } }, res, next) =>
   Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false })
-    .then(count => Notifications.find({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false }, select, cursor)
-    .sort({ createdAt: -1 })
+    .then(count => Notifications.find({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false, 
+      createdAt: {
+        $gte: new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)))
+      }
+    }).sort({ "createdAt": -1 }).limit(10)
       .populate('notifyToUser')
       .then((notifications) => ({
         count,
