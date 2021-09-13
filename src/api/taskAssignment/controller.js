@@ -1251,7 +1251,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
   let datapointsCount = 0;
   try {    
     let functionId = await Functions.findOne({ functionType: "Negative News", status: true});
-    let allStandaloneDetails = await StandaloneDatapoints.count({
+    let allStandaloneDetails = await StandaloneDatapoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
@@ -1262,7 +1262,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
   .populate('createdBy')
   .populate('datapointId')
   .populate('companyId')
-  datapointsCount = datapointsCount + allStandaloneDetails;
+  datapointsCount = datapointsCount + allStandaloneDetails.length;
   let allBoardMemberMatrixDetails1 =  await BoardMembersMatrixDataPoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
