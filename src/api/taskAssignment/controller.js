@@ -955,6 +955,31 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
+    if(result.analystId != body.taskDetails.analystId && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.analystId, 
+        notificationType: "/pendingtasks",
+        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "New Task Assigned",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
+
+    if(result.qaId != body.taskDetails.qaId && body.isfromNotification == false){
+      await Notifications.create({
+        notifyToUser: result.qaId, 
+        notificationType: "/pendingtasks",
+        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
+        notificationTitle: "New Task Assigned",
+        status: true,
+        isRead: false
+      }).catch((error) =>{
+        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }); 
+    }
     await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
       if(result.taskStatus == "Reassignment Pending"){
         body.taskDetails['taskStatus'] = "Correction Pending";
@@ -1224,9 +1249,10 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, next ) => {
   let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
   let distinctYears = taskDetails.year.split(',');
+  let datapointsCount = 0;
   try {    
     let functionId = await Functions.findOne({ functionType: "Negative News", status: true});
-    let allStandaloneDetails = await StandaloneDatapoints.find({
+    let allStandaloneDetails = await StandaloneDatapoints.count({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
@@ -1237,38 +1263,47 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
   .populate('createdBy')
   .populate('datapointId')
   .populate('companyId')
-
-let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
+  datapointsCount = datapointsCount + allStandaloneDetails;
+  let allBoardMemberMatrixDetails1 =  await BoardMembersMatrixDataPoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
     year: {
       "$in": distinctYears
     },
     status: true
-  })
-  .populate('createdBy')
-  .populate('datapointId')
-  .populate('companyId')
-
-let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
+  });
+  let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
     taskId: body.taskId,
     companyId: taskDetails.companyId.id,
-    year: {
+    year:  {
       "$in": distinctYears
     },
     status: true
-  })
-  .populate('createdBy')
-  .populate('datapointId')
-  .populate('companyId')
+  });
+  for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+    let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.distinct('datapointId',{
+        taskId: body.taskId,
+        companyId: taskDetails.companyId.id,
+        year: distinctYears[yearIndex],
+        status: true
+      });
+    datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length;    
+    let allKmpMatrixDetails = await KmpMatrixDataPoints.distinct('datapointId',{
+        taskId: body.taskId,
+        companyId: taskDetails.companyId.id,
+        year:  distinctYears[yearIndex],
+        status: true
+      });
+    datapointsCount = datapointsCount + allKmpMatrixDetails.length;
+  }
     let taskStatusValue = "";
-    let mergedDetails = _.concat(allKmpMatrixDetails,allBoardMemberMatrixDetails,allStandaloneDetails);
-    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" })//,functionId: {"$ne": functionId.id}});
+    let mergedDetails = _.concat(allKmpMatrixDetails1,allBoardMemberMatrixDetails1,allStandaloneDetails);
+    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" ,functionId: {"$ne": functionId.id}});
     let hasError = mergedDetails.find(object => object.hasError == true);
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
-    console.log(hasError, multipliedValue,mergedDetails )
-    if(mergedDetails.length == multipliedValue && hasError){
+    console.log(hasError, multipliedValue,mergedDetails,datapointsCount )
+    if(datapointsCount == multipliedValue && hasError){
       if(body.role == 'QA'){
         taskStatusValue = "Correction Pending";
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
@@ -1290,13 +1325,13 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
-    } else if(mergedDetails.length == multipliedValue && hasCorrection){      
+    } else if(datapointsCount == multipliedValue && hasCorrection){      
       taskStatusValue = "Correction Completed"; 
       await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-    } else if(mergedDetails.length == multipliedValue && hasError == undefined && hasCorrection == undefined){      
+    } else if(datapointsCount == multipliedValue && hasError == undefined && hasCorrection == undefined){      
       if(body.role == 'QA'){
         taskStatusValue = "Verification Completed";
         await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
@@ -1316,6 +1351,10 @@ let allKmpMatrixDetails = await KmpMatrixDataPoints.find({
         await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
+    } else{      
+      return res.status(402).json({
+        message: "Task Status not updated. Check all DPcodes completed",
+      });
     }
     await TaskHistories.create({
       taskId: body.taskId,
@@ -1433,7 +1472,6 @@ export const reports = async ({ user, params }, res, next) => {
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
-
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
   for (var index = 0; index < body.companyTaskReports.length; index++) {
@@ -1478,7 +1516,6 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   return res.status(200).json({ data: result });
 }
 
-
 export const controversyReports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
@@ -1500,8 +1537,6 @@ export const controversyReports = async ({ user, params }, res, next) => {
   }
   return res.status(200).json({ controversy: controversy });
 }
-
-
 
 export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];

@@ -287,7 +287,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                 }
               }
-            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
               let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -569,7 +569,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             })
           }
-          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+          } else if(dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
@@ -828,7 +828,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               })
             }  
           }
-          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix') {
+          } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
             let kmpMemberEq = await Kmp.find({companyId: taskDetails.companyId.id, endDateTimeStamp: 0});
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               let yearSplit = currentYear[currentYearIndex].split('-');
@@ -2578,7 +2578,7 @@ export const repDatapointDetails = async (req, res, next) => {
       })      
     }
     if (req.body.memberType == 'Standalone') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id, datapointId: req.body.datapointId});
+      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id, datapointId: req.body.datapointId, raisedBy: 'Analyst'});
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
           taskId: req.body.taskId,
           companyId: taskDetails.companyId.id,
@@ -2925,7 +2925,7 @@ export const repDatapointDetails = async (req, res, next) => {
         dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId,memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName, raisedBy: 'Analyst'});
       let historyAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
@@ -3270,7 +3270,7 @@ export const repDatapointDetails = async (req, res, next) => {
         dpCodeData: boardDatapointsObject
       });
     } else if (req.body.memberType == 'KMP Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName, raisedBy: 'Analyst'});
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
