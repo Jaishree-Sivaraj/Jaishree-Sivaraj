@@ -54,7 +54,6 @@ export const login = async ({ user }, res, next) => {
             Hey, ${user.name}.<br/><br/>
             Please use the below OTP to login into your ESG API account.<br/>
             OTP - <b>${otpNumber}</b>.<br/>
-            (The OTP will expire in 1 hour)<br/><br/>
             Kindly contact your system administrator if you have not raised this request.<br/><br/>
             Thanks<br/>
             ESG API Team
