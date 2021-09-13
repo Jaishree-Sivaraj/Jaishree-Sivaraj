@@ -73,6 +73,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
         } else if (taskDetail.qaId.email == user.email) {
           taskObject.requestedBy = "QA";
         }
+        await TaskSlaLog.updateMany({ taskId: body.taskId, createdBy: user.id, status: true}, { $set: { status: false } });
         await TaskSlaLog.create(taskObject)
         .then(async(response) => {
           await Notifications.create({

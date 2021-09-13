@@ -135,10 +135,10 @@ export const allocateTasksFromJson = async({ user, params }, res, next) => {
           "createdAt" : new Date(),
           "updatedAt" : new Date()
         }
-        let batchCompaniesTasks = allTaskList.find(obj => obj['Batch'] == uniqBatches[batchIndex]['Batch'])
+        let batchCompaniesTasks = allTaskList.filter(obj => obj['Batch'] == uniqBatches[batchIndex]['Batch'])
         let batchCompanies = _.uniqBy(batchCompaniesTasks, 'companyId');
         for (let index = 0; index < batchCompanies.length; index++) {
-          batchObject.companiesList.push(batchCompanies[index].id);        
+          batchObject.companiesList.push(batchCompanies[index].companyId);        
         }
         await Batches.create(batchObject)
         .then(async(batchDtl) => {
