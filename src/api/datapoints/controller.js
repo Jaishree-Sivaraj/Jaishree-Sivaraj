@@ -3826,7 +3826,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
               let staticHeaders = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static').map(ele => ele.name);
               let missingHeaders = _.difference(staticHeaders, inputFileHeaders);
               if (missingHeaders.length > 0) {
-                return res.status(400).json({ status: "400", message: "Required headers are missing in the uploaded file!", data: missingHeaders });
+                return res.status(400).json({ status: "400", message: missingHeaders.join() + " fields are required but missing in the uploaded file!" });
               }
             }
             for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
