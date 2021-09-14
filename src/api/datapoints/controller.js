@@ -3818,12 +3818,15 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
       });
       let newDatapoints = [], masterLevelMandatoryNamesList = [], masterLevelOptionalNamesList = [], additionalFieldNamesList = [];
       let newCategoriesList = [], newThemesList = [], newKeyIssuesList = [], newFunctionsList = [];
+      let staticHeaders = [], staticFieldNames = [], taxonomyFields = [];
       await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
         .then(async(clientTaxonomies) => {
           if (clientTaxonomies) {
             if (clientTaxonomies.fields && clientTaxonomies.fields.length > 0 && allSheetsObject && allSheetsObject.length > 0) {
               let inputFileHeaders = Object.keys(allSheetsObject[0][0]);
-              let staticHeaders = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static').map(ele => ele.name);
+              taxonomyFields = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static' && obj.applicableFor != 'Only Controversy');
+              staticHeaders = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static' && obj.applicableFor != 'Only Controversy').map(ele => ele.name);
+              staticFieldNames = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static' && obj.applicableFor != 'Only Controversy').map(ele => ele.fieldName);
               let missingHeaders = _.difference(staticHeaders, inputFileHeaders);
               if (missingHeaders.length > 0) {
                 return res.status(400).json({ status: "400", message: missingHeaders.join() + " fields are required but missing in the uploaded file!" });
@@ -3902,6 +3905,11 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 status: true
               };
               const rowObject = rowObjects[rindex];
+              for (let shIndex = 0; shIndex < staticHeaders.length; shIndex++) {
+                if (!rowObject[staticHeaders[shIndex]] || rowObject[staticHeaders[shIndex]] == '' || rowObject[staticHeaders[shIndex]] == ' ' || rowObject[staticHeaders[shIndex]] == null) {
+                  return res.status(400).json({ status: "400", message: "Found empty value for "+staticHeaders[shIndex]});    
+                }
+              }
               for (let mlmIndex = 0; mlmIndex < masterLevelMandatoryNamesList.length; mlmIndex++) {
                 const headerObject = masterLevelMandatoryNamesList[mlmIndex];
                 if (headerObject.fieldName == "categoryName") {
