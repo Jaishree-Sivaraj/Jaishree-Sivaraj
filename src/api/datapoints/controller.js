@@ -3821,6 +3821,14 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
       await ClientTaxonomy.findOne({ _id: req.body.clientTaxonomyId })
         .then(async(clientTaxonomies) => {
           if (clientTaxonomies) {
+            if (clientTaxonomies.fields && clientTaxonomies.fields.length > 0 && allSheetsObject && allSheetsObject.length > 0) {
+              let inputFileHeaders = Object.keys(allSheetsObject[0][0]);
+              let staticHeaders = clientTaxonomies.fields.filter((obj) => obj.inputType == 'Static').map(ele => ele.name);
+              let missingHeaders = _.difference(staticHeaders, inputFileHeaders);
+              if (missingHeaders.length > 0) {
+                return res.status(400).json({ status: "400", message: "Required headers are missing in the uploaded file!", data: missingHeaders });
+              }
+            }
             for (let nameIndex = 0; nameIndex < clientTaxonomies.fields.length; nameIndex++) {
               const fieldNameObject = clientTaxonomies.fields[nameIndex];
               let taxonomyDetail = await Taxonomies.findOne({ "fieldName": fieldNameObject.fieldName ? fieldNameObject.fieldName : "", "status": true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to find the taxonomy detail!" }) });
