@@ -105,6 +105,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         comments: body.comments,
       };
       controversyObject.controversyDetails.push(controversyDetailsObject)
+      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
       await Controversy.updateOne({ _id: params.id }, { $set: controversyObject })
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
