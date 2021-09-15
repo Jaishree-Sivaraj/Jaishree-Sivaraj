@@ -903,7 +903,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
     if(result.taskStatus == "Reassignment Pending"){
       body.taskDetails['taskStatus'] = "Correction Pending";
     }
-    if(result.analystSLADate != body.taskDetails.analystSLADate && body.isfromNotification == true){
+    if(body.taskDetails.analystRequestedDate == body.taskDetails.analystSLADate){
       await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'Analyst', status: true},
       { $set: { isAccepted: true, isReviewed: true }});      
       await Notifications.create({
@@ -917,7 +917,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     } 
-    if(result.qaSLADate != body.taskDetails.qaSLADate && body.isfromNotification == true){
+    if(body.taskDetails.qaRequestedDate == body.taskDetails.qaSLADate){
       await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'QA', status: true},
       { $set: { isAccepted: true, isReviewed: true }});
       await Notifications.create({
@@ -931,7 +931,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
-    if(result.analystSLADate != body.taskDetails.analystSLADate && body.isfromNotification == false){
+    if(result.analystSLADate != body.taskDetails.analystSLADate){
       await Notifications.create({
         notifyToUser: result.analystId, 
         notificationType: "/pendingtasks",
@@ -943,7 +943,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       });     
     } 
-    if(result.qaSLADate != body.taskDetails.qaSLADate && body.isfromNotification == false){
+    if(result.qaSLADate != body.taskDetails.qaSLADate){
       await Notifications.create({
         notifyToUser: result.qaId, 
         notificationType: "/pendingtasks",
@@ -955,7 +955,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
-    if(result.analystId != body.taskDetails.analystId && body.isfromNotification == false){
+    if(result.analystId != body.taskDetails.analystId){
       await Notifications.create({
         notifyToUser: result.analystId, 
         notificationType: "/pendingtasks",
@@ -967,7 +967,7 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       }); 
     }
-    if(result.qaId != body.taskDetails.qaId && body.isfromNotification == false){
+    if(result.qaId != body.taskDetails.qaId){
       await Notifications.create({
         notifyToUser: result.qaId, 
         notificationType: "/pendingtasks",
