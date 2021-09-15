@@ -58,7 +58,8 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         screenShot: body.screenShot,
         comments: body.comments,
       };
-      controversyObject.controversyDetails.push(controversyDetailsObject)
+      controversyObject.controversyDetails.push(controversyDetailsObject);
+      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
