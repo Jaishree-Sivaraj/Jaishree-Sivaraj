@@ -1461,7 +1461,9 @@ export const dataCollection = async ({
             dateTime: Date.now(),
             content: item.rejectComment
             }
-            if(item.isAccepted == false){
+            if(item.isAccepted == false){                
+              await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: { hasError: false, hasCorrection: false}});
               await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
@@ -1469,7 +1471,7 @@ export const dataCollection = async ({
               {$set: {isErrorAccepted: item.isAccepted}});
             }
             await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              { $set: obj }, { upsert: true });
+            { $set: obj }, { upsert: true });
           //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -1530,6 +1532,9 @@ export const dataCollection = async ({
             content: item.rejectComment
             }
             if(item.isAccepted == false){
+              
+            await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+            { $set: { hasError: false, hasCorrection: false} });
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
@@ -1599,6 +1604,8 @@ export const dataCollection = async ({
             content: item.rejectComment
             }
             if(item.isAccepted == false){
+              await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              { $set: { hasError: false, hasCorrection: false}});
               await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
               {$set: {isErrorAccepted: item.isAccepted, raisedBy: 'Analyst', comments: comments}});
             } else{              
