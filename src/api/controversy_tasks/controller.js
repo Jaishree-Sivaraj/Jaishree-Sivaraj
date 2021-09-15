@@ -1,6 +1,7 @@
 import { success, notFound } from '../../services/response/'
 import { Companies } from '../companies'
 import { User } from '../user'
+import { Functions } from '../functions'
 import { TaskAssignment } from "../taskAssignment";
 import { Datapoints } from '../datapoints'
 import { ControversyTasks } from '.'
@@ -126,9 +127,18 @@ export const companiesAndAnalyst = async ({ params }, res, next) => {
 }
 
 export const show = async ({ params }, res, next) => {
-  try {
+  try {    
+    let functionId = await Functions.findOne({
+      functionType: "Negative News",
+      status: true
+    });
     await ControversyTasks.findById(params.id)
-      .populate('companyId')
+      .populate({
+        path: 'companyId',
+        populate: {
+          path: 'clientTaxonomyId'
+        }
+       })
       .populate('analystId')
       .populate('createdBy')
       .then(async (controversyTasks) => {
@@ -141,7 +151,8 @@ export const show = async ({ params }, res, next) => {
             dpCodesList: []
           }
           await Datapoints.find({
-            "functionId": "609bcceb1d64cd01eeda092c",
+            "functionId": functionId,
+            clientTaxonomyId: controversyTasks.companyId.clientTaxonomyId.id,
             status: true
           })
             .populate('keyIssueId')
