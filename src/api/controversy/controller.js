@@ -8,6 +8,7 @@ import { Controversy } from '.'
 import { Companies } from '../companies'
 import { ClientTaxonomy } from '../clientTaxonomy'
 import { Datapoints } from '../datapoints'
+import { ControversyTasks } from "../controversy_tasks"
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Controversy.create({ ...body, createdBy: user })
