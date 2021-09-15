@@ -570,35 +570,6 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
   .populate({ path: 'roleDetails.roles' })
   .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
-    let userName;
-    let employeeDetails = employeeCompleteDetails.find((obj) => obj.userId == rec.id );
-    if (employeeDetails) {
-      if (rec.userType == 'Employee') {
-        userName = `${employeeDetails.firstName}${employeeDetails.lastName}`;
-        return {
-          "userDetails": {
-            "value": rec._id,
-            "label": userName,
-          },
-          "roleDetails": {
-            "role": rec.roleDetails.roles.map((rec1) => {
-              return { value: rec1.id, label: rec1.roleName }
-            }),
-            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-          },
-          "role": rec.role,
-          "userType": rec.userType,
-          "email": rec.email,
-          "phoneNumber": rec.phoneNumber,
-          "isUserApproved": rec.isUserApproved,
-          "isRoleAssigned": rec.isRoleAssigned,
-          "isAssignedToGroup": rec.isAssignedToGroup,
-          "createdAt": rec.createdAt,
-          "status": rec.status,
-          "isUserRejected": rec.isUserRejected,
-          "isUserActive": rec.isUserActive
-        }
-      }else {
         return {
           "userDetails": {
             "value": rec._id,
@@ -622,8 +593,8 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
           "isUserRejected": rec.isUserRejected,
           "isUserActive": rec.isUserActive
         }
-      }      
-    }
+      // }      
+    // }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
 }
