@@ -112,7 +112,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
 }
 
 export const getAllRequestsOfaTask = async ({user, params}, res, next) => {
-  await TaskSlaLog.find({ taskId: params.taskId ? params.taskId : null, isReviewed: false })
+  await TaskSlaLog.find({ taskId: params.taskId ? params.taskId : null, isReviewed: false, status: true})
   .then((logs) => {
     //for loop to form the structure
     //TODO
