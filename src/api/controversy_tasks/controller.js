@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import { success, notFound } from '../../services/response/'
 import { Companies } from '../companies'
 import { User } from '../user'
@@ -5,8 +6,10 @@ import { Functions } from '../functions'
 import { TaskAssignment } from "../taskAssignment";
 import { Datapoints } from '../datapoints'
 import { ControversyTasks } from '.'
-import { Role } from "../role";
-
+import { Role } from "../role"
+import { Controversy } from '../controversy'
+import { ControversyTaskHistories } from '../controversy_task_histories'
+   
 export const create = ({ user, bodymen: { body } }, res, next) =>
   ControversyTasks.create({ ...body, createdBy: user })
     .then((controversyTasks) => controversyTasks.view(true))
@@ -203,7 +206,7 @@ export const updateControversyTask = ({ user, bodymen: { body }, params }, res, 
   .catch((error) => {
     return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update controversy task!" });
   })
-}
+} 
 
 export const destroy = ({ user, params }, res, next) =>
   ControversyTasks.findById(params.id)
@@ -248,4 +251,39 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
     .catch((error) => {
       return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create group!' })
     })
+}
+
+export const allocateTasksFromJson = async ({ user, params }, res, next) => {
+  try {
+    fs.readFile(__dirname + '/controversy_task_allocation.json', async (err, data) => {
+      if (err) throw err;
+      let allTaskList = JSON.parse(data);
+      for (let index = 0; index < allTaskList.length; index++) {
+        let completeUserDetails = await User.find({ email: allTaskList[index].analystEmail, status: true });
+        let companyDetail = await Companies.find({ cin: allTaskList[index].cin, status: true });
+        let controversyObject = {
+        taskNumber: `CT${index+1}`,
+        companyId: companyDetail[0].id,
+        analystId: completeUserDetails[0].id,
+        taskStatus: 'Completed',
+        createdBy: user.id
+        }
+        await ControversyTasks.create(controversyObject)
+        .then(async(controversyTaskDtl) => {
+          let taskHistoriesObject = {
+            taskId: controversyTaskDtl._id,
+            companyId: controversyTaskDtl.companyId,
+            analystId: controversyTaskDtl.analystId,
+            stage: 'Assigned',
+            createdBy: user.id,
+          }
+          await Controversy.updateMany({ companyId: controversyTaskDtl.companyId, status: true}, { $set: { taskId: controversyTaskDtl._id } })
+          await ControversyTaskHistories.create(taskHistoriesObject)
+        });
+      }
+      return res.status(200).json({ status: "200", message: "Controversy tasks created sucessfully" })
+    })
+  } catch (error) {
+    return res.status(400).json({ status: "400", message: "Failed to create the controversy tasks" })
+  }
 }

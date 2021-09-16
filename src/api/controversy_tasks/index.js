@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, newControversyTask, updateControversyTask, getMyPendingTasks, companiesAndAnalyst } from './controller'
+import { create, index, show, update, destroy, newControversyTask, updateControversyTask, getMyPendingTasks, companiesAndAnalyst, allocateTasksFromJson } from './controller'
 import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
@@ -132,6 +132,23 @@ router.get('/fetch_new_task_data/:taxonomyId',
   companiesAndAnalyst)
 
 /**
+* @api {get} /controversy_tasks/import/tasks Retrieve my pending controversy tasks
+* @apiName Allocate Controversy tasks
+* @apiGroup ControversyTasks
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of controversy tasks.
+* @apiSuccess {Object[]} rows List of controversy tasks.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/import/tasks',
+  token({ required: true }),
+  query(),
+  allocateTasksFromJson)
+
+/**
  * @api {put} /controversy_tasks/:id Update controversy tasks
  * @apiName UpdateControversyTasks
  * @apiGroup ControversyTasks
@@ -142,7 +159,7 @@ router.get('/fetch_new_task_data/:taxonomyId',
  * @apiParam analystId Controversy tasks's analystId.
  * @apiParam taskStatus Controversy tasks's taskStatus.
  * @apiParam completedDate Controversy tasks's completedDate.
- * @apiParam status Controversy tasks's status.
+ * @apiParam status Controversy tasks's status. 
  * @apiSuccess {Object} controversyTasks Controversy tasks's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Controversy tasks not found.

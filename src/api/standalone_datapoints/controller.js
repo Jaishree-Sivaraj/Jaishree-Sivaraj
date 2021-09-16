@@ -43,6 +43,7 @@ import {
 import {
   TaskAssignment
 } from '../taskAssignment'
+import { CompaniesTasks } from '../companies_tasks'
 
 var utils = require('../../services/utils/aws-s3')
 
@@ -614,6 +615,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             let taskObject = await TaskAssignment.find({
               status: true
             });
+            let companyTaskObject = await CompaniesTasks.find({
+              status: true
+            });
             let errorTypeDetails = await Errors.find({
               status: true
             });
@@ -675,17 +679,18 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue, hasError;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
-              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
+                // console.log("companyTaskObjectValue[0].taskId", companyTaskObjectValue[0].taskId);
                 let errorListObject = {
                   datapointId: datapointObject[0] ? datapointObject[0].id : null,
                   dpCode: item['DP Code'] ? item['DP Code'] : '',
                   year: item['Fiscal Year'],
                   companyId: companyObject[0] ? companyObject[0].id : null,
                   categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                   errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
                   raisedBy: "",
                   comments: [],
@@ -742,7 +747,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 hasCorrection: true,
                 performanceResult: '',
                 standaloneStatus: '',
-                taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                 submittedBy: '',
                 submittedDate: '',
                 standaradDeviation: '',
@@ -800,7 +805,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               });
               let hasError;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
-              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
@@ -810,7 +815,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   year: item['Fiscal Year'],
                   companyId: companyObject[0] ? companyObject[0].id : null,
                   categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                   errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
                   raisedBy: "",
                   comments: [],
@@ -851,7 +856,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   comments: [],
                   hasError: hasError,
                   hasCorrection: true,
-                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                   memberStatus: true,
                   status: true,
                   createdBy: userDetail
@@ -930,7 +935,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               });
               let hasError;
               let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
-              let taskObjectValue = taskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id);
+              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
                 hasError = true;
@@ -940,7 +945,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   year: item['Fiscal Year'],
                   companyId: companyObject[0] ? companyObject[0].id : null,
                   categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                   errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
                   raisedBy: "",
                   comments: [],
@@ -983,7 +988,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   hasCorrection: true,
                   comments: [],
                   hasError: hasError,
-                  taskId: taskObjectValue[0] ? taskObjectValue[0].id : null,
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
                   status: true,
                   createdBy: userDetail
                 }
