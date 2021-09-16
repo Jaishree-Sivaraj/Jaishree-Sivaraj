@@ -357,6 +357,7 @@ export const uploadControversies = async (req, res, next) => {
       let insertedCompanies = await Companies.find({ cin: { $in: uniqueInsertedCinList } });
       let insertedCompanyIds = await Companies.find({ cin: { $in: uniqueInsertedCinList } }).distinct('_id');
       let allDatapointsList = await Datapoints.find({ status: true });
+      let allTaskDetails = await ControversyTasks.find({ status: true });
       await Controversy.updateMany({
         "companyId": { $in: insertedCompanyIds }
       }, { $set: { status: false } }, {});
@@ -383,6 +384,12 @@ export const uploadControversies = async (req, res, next) => {
             //  console.log('result', result);
           }
         });
+      for (let compIndex = 0; compIndex < insertedCompanies.length; compIndex++) {
+        let completeTaskDetails = allTaskDetails.filter(obj => obj.companyId == insertedCompanies[compIndex].id);
+        console.log("completeTaskDetails",completeTaskDetails);
+        await Controversy.updateMany({ companyId: completeTaskDetails[0].companyId, status: true }, { $set: { taskId: completeTaskDetails[0].id } })
+      }
+
       return res.json({ message: "Files upload success", companies: insertedCompanies, data: controversyDetails });
     });
   } catch (error) {
