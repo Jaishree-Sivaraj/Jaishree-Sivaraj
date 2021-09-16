@@ -1,0 +1,3074 @@
+[
+    {
+      "companyId": "60b64f09b09656fa36dc10fc",
+      "cin": "L65990MH1945PLC004558",
+      "companyName": "Mahindra & Mahindra Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b65625b09656fa36dc1b97",
+      "cin": "L17110MH1973PLC019786",
+      "companyName": "Reliance Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b661b0b09656fa36dc26e2",
+      "cin": "L11100GJ1996PLC029880",
+      "companyName": "Hindustan Oil Exploration Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b71e8bb09656fa36dc3daa",
+      "cin": "L34103DL1981PLC011375",
+      "companyName": "Maruti Suzuki India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b86324b09656fa36dc6374",
+      "cin": "L23201MH1952GOI008858",
+      "companyName": "Hindustan Petroleum Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8656ab09656fa36dc659d",
+      "cin": "L23209KA1988GOI008959",
+      "companyName": "Mangalore Refinery and Petrochemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b865d7b09656fa36dc6679",
+      "cin": "L23201MH1959GOI011388",
+      "companyName": "Indian Oil Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b86c83b09656fa36dc7874",
+      "cin": "L23220MH1952GOI008931",
+      "companyName": "Bharat Petroleum Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b86d88b09656fa36dc84ab",
+      "cin": "L27102MH1994PLC152925",
+      "companyName": "JSW Steel Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8a4afb09656fa36dcc09c",
+      "cin": "L28920MH1945PLC004520",
+      "companyName": "Tata Motors Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8b26db09656fa36dce557",
+      "cin": "L23109WB1973GOI028844",
+      "companyName": "Coal India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8bf68b09656fa36dcf11d",
+      "cin": "L74899DL1993GOI054155",
+      "companyName": "Oil & Natural Gas Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8d843b09656fa36dd0834",
+      "cin": "L11101AS1959GOI001148",
+      "companyName": "Oil India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8df9ab09656fa36dd0a0b",
+      "cin": "L65110MH2000PLC128245",
+      "companyName": "HDFC Life Insurance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8fc51b09656fa36dd0b60",
+      "cin": "L26940MH1936PLC002515",
+      "companyName": "ACC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8fc51b09656fa36dd0b63",
+      "cin": "L63090GJ1998PLC034182",
+      "companyName": "Adani Ports and Special Economic Zone Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b8fc51b09656fa36dd0b65",
+      "cin": "L26942GJ1981PLC004717",
+      "companyName": "Ambuja Cements Ltd.",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b99cf6b09656fa36e17bb7",
+      "cin": "L61100GJ1982PLC105654",
+      "companyName": "SEACOAST SHIPPING SERVICES LIMITED",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b99d1eb09656fa36e17bd6",
+      "cin": "L63030MH1950GOI008033",
+      "companyName": "Shipping Corporation Of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b99d37b09656fa36e17bef",
+      "cin": "L35110MH1948PLC006472",
+      "companyName": "The Great Eastern Shipping Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9afedb09656fa36ea3ff4",
+      "cin": "L24220MH1945PLC004598",
+      "companyName": "Asian Paints Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9c2b1b09656fa36ea43d9",
+      "cin": "L23201DL1998PLC097614",
+      "companyName": "Indraprastha Gas Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9c2d7b09656fa36ea43e6",
+      "cin": "L64201HR2006PLC073821",
+      "companyName": "Indus Towers Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9e075b09656fa36f25fca",
+      "cin": "L74899DL1998PLC093073",
+      "companyName": "Petronet LNG Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9e2e6b09656fa36f2608e",
+      "cin": "L27020MH1958PLC011238",
+      "companyName": "Hindalco Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9f3c5b09656fa36fc9e40",
+      "cin": "L26102DL1984PLC019542",
+      "companyName": "Asahi India Glass Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9fc57b09656fa36fca91b",
+      "cin": "L65191PN1994PLC076333",
+      "companyName": "IndusInd Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60b9fc57b09656fa36fca91d",
+      "cin": "L85110KA1981PLC013115",
+      "companyName": "Infosys Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba0367b09656fa36fcac01",
+      "cin": "L65110GJ1993PLC020769",
+      "companyName": "Axis Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba0367b09656fa36fcac03",
+      "cin": "L65993PN2007PLC130076",
+      "companyName": "Bajaj Auto Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba03fcb09656fa36fcac1b",
+      "cin": "L65923PN2007PLC130075",
+      "companyName": "Bajaj Finserv Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba04a0b09656fa36fcac39",
+      "cin": "L40200DL1984GOI018976",
+      "companyName": "GAIL (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba04a0b09656fa36fcac3c",
+      "cin": "L16004MH1936PLC008587",
+      "companyName": "Godfrey Phillips India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba071fb09656fa36fcae5e",
+      "cin": "L65910MH1987PLC042961",
+      "companyName": "Bajaj Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba128cb09656fa36fcb0ac",
+      "cin": "L01132WB1919PLC003334",
+      "companyName": "Birla Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba2924b09656fa36fcb6ec",
+      "cin": "L25111KL1972PLC002449",
+      "companyName": "Apollo Tyres Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba2a6ab09656fa36fcba93",
+      "cin": "L32100GJ1996PLC030976",
+      "companyName": "Vodafone Idea Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba2a73b09656fa36fcbaab",
+      "cin": "L67120RJ1951PLC045966",
+      "companyName": "JK Tyre & Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ba2c71b09656fa36fcc05b",
+      "cin": "L23200MH1979PLC021359",
+      "companyName": "Castrol India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bba3c1b09656fa36ff4550",
+      "cin": "L22210GJ1995PLC047208",
+      "companyName": "D.B.Corp Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bba3c1b09656fa36ff4552",
+      "cin": "L22219UP1975PLC004147",
+      "companyName": "Jagran Prakashan Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bba3c1b09656fa36ff4554",
+      "cin": "L22200MH1984PLC034055",
+      "companyName": "Navneet Education Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc96bcb09656fa360006b5",
+      "cin": "L85110TN1979PLC008035",
+      "companyName": "Apollo Hospitals Enterprise Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc96f0b09656fa360006cf",
+      "cin": "L85110KL2008PLC021703",
+      "companyName": "Aster DM Healthcare Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc9718b09656fa360006e8",
+      "cin": "L74899DL1995PLC065388",
+      "companyName": "Dr. Lal Path Labs Ltd.",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc97b9b09656fa3600070e",
+      "cin": "L85110PB1996PLC045933",
+      "companyName": "Fortis Healthcare Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc97b9b09656fa36000710",
+      "cin": "L85110KA2000PLC027497",
+      "companyName": "Narayana Hrudayalaya Ltd.",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc97b9b09656fa36000712",
+      "cin": "L85110MH2000PLC123882",
+      "companyName": "Thyrocare Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc97b9b09656fa36000714",
+      "cin": "L73100MH2000PLC192798",
+      "companyName": "Metropolis Healthcare Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bc97b9b09656fa36000716",
+      "cin": "L85100MH2015PLC330122",
+      "companyName": "Max India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bcaeb0b09656fa36006856",
+      "cin": "L65190GJ1994PLC021012",
+      "companyName": "ICICI Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bcaeb0b09656fa36006858",
+      "cin": "L65920MH1994PLC080618",
+      "companyName": "HDFC Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bcaeb0b09656fa3600685a",
+      "cin": "L65999DL1998PLC093849",
+      "companyName": "SBI Cards and Payment Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bda8ccb09656fa3600f024",
+      "cin": "L74899DL1983PLC014942",
+      "companyName": "Tata Steel Bsl Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bddac5b09656fa36025ff9",
+      "cin": "L62200DL1998PLC093225",
+      "companyName": "Global Vectra Helicorp Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bddac5b09656fa36025ffb",
+      "cin": "L51909DL1984PLC288239",
+      "companyName": "Spicejet Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bddac5b09656fa36025ffd",
+      "cin": "L62100DL2004PLC129768",
+      "companyName": "InterGlobe Aviation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bde24eb09656fa3602a20c",
+      "cin": "L22213WB1946PLC014346",
+      "companyName": "Saregama India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bde24eb09656fa3602a20f",
+      "cin": "L92199GJ1999PLC044045",
+      "companyName": "INOX Leisure Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bde24eb09656fa3602a211",
+      "cin": "L74899DL1995PLC067827",
+      "companyName": "PVR Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60be1332b09656fa36034c52",
+      "cin": "L74899DL1995PLC070609",
+      "companyName": "Bharti Airtel Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf2401b09656fa360418aa",
+      "cin": "L26943RJ1979PLC001935",
+      "companyName": "SHREE CEMENT LIMITED",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf39e3b09656fa360429d0",
+      "cin": "L40101DL1975GOI007966",
+      "companyName": "NTPC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf3e90b09656fa36042a6d",
+      "cin": "L45201MP2006PLC018689",
+      "companyName": "Dilip Buildcon Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf3e90b09656fa36042a6f",
+      "cin": "L45203DL1976GOI008171",
+      "companyName": "Ircon International Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf7d08b09656fa36050322",
+      "cin": "L35911DL1984PLC017354",
+      "companyName": "Hero MotoCorp Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf7e34b09656fa36051232",
+      "cin": "L32102KA1945PLC020800",
+      "companyName": "Wipro Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf9845b09656fa3605412f",
+      "cin": "L28920MH1949PLC006870",
+      "companyName": "Blue Star Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60bf9845b09656fa36054131",
+      "cin": "L45203MH1996PLC281138",
+      "companyName": "GMR Infrastructure Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0476cb09656fa36060f09",
+      "cin": "L65110MH1985PLC038137",
+      "companyName": "Kotak Mahindra Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa36067159",
+      "cin": "L15412WB1918PLC002964",
+      "companyName": "Britannia Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa3606715b",
+      "cin": "L24110TG1990PLC011854",
+      "companyName": "Divi's Laboratories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa3606715d",
+      "cin": "L34102DL1982PLC129877",
+      "companyName": "Eicher Motors Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa3606715f",
+      "cin": "L85195TG1984PLC004507",
+      "companyName": "Dr. Reddy's Laboratories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa36067164",
+      "cin": "L24239MH1935PLC002380",
+      "companyName": "Cipla Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa36067167",
+      "cin": "L17124MP1947PLC000410",
+      "companyName": "Grasim Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa3606716a",
+      "cin": "L74140DL1991PLC046369",
+      "companyName": "HCL Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c0a4bdb09656fa3606716d",
+      "cin": "L63010GJ1992PLC018106",
+      "companyName": "Gujarat Pipavav Port Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c20cf7b09656fa36084c79",
+      "cin": "L65922RJ2011PLC034297",
+      "companyName": "Aavas Financiers Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c2f039b09656fa3608af75",
+      "cin": "L26942TG1974PLC001693",
+      "companyName": "Rain Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c2f039b09656fa3608af79",
+      "cin": "L23203MH2008PLC267060",
+      "companyName": "Gulf Oil Lubricants India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c2f039b09656fa3608af7c",
+      "cin": "L23200MH1989PLC054633",
+      "companyName": "Supreme Petrochem Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c2f039b09656fa3608af7e",
+      "cin": "L23209WB1921PLC004357",
+      "companyName": "Tide Water Oil Company (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d2f",
+      "cin": "L99999PB1990PLC010307",
+      "companyName": "Trident Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d32",
+      "cin": "L17117MH1925PLC001208",
+      "companyName": "Raymond Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d34",
+      "cin": "L25209MH1976PLC018939",
+      "companyName": "Garware Technical Fibres Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d36",
+      "cin": "L17100MH1909PLC000294",
+      "companyName": "Swan Energy Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d38",
+      "cin": "L17111TZ2003PLC010518",
+      "companyName": "K.P.R. Mill Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d3a",
+      "cin": "L24239MH1964PLC012971",
+      "companyName": "Procter & Gamble Hygiene and Health Care Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d3c",
+      "cin": "L17111PB1973PLC003345",
+      "companyName": "Vardhman Textiles Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c89221b09656fa36095d3e",
+      "cin": "L17110GJ1985PLC033271",
+      "companyName": "Welspun India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c893a1b09656fa36095e66",
+      "cin": "L99999MH1863PLC000002",
+      "companyName": "Bombay Burmah Trading Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c893a1b09656fa36095e68",
+      "cin": "L01120TG1986PLC006728",
+      "companyName": "Kaveri Seed Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c893a1b09656fa36095e6b",
+      "cin": "L01222PN1976PLC017422",
+      "companyName": "Venky's (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c98bcfb09656fa3609f270",
+      "cin": "L74899HR1989PLC051918",
+      "companyName": "Omaxe Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbc1",
+      "cin": "L70109GJ1983PLC006460",
+      "companyName": "Ratnamani Metals & Tubes Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbc4",
+      "cin": "L35999TN1962PLC004792",
+      "companyName": "Sundaram Clayton Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbc6",
+      "cin": "L99999MH1988PLC080545",
+      "companyName": "Maharashtra Seamless Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbc8",
+      "cin": "L14292TG1973GOI001660",
+      "companyName": "Mishra Dhatu Nigam Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbca",
+      "cin": "L74899DL1986PLC023443",
+      "companyName": "APL Apollo Tubes Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbcc",
+      "cin": "L29259GJ1991PLC015182",
+      "companyName": "AIA Engineering Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbce",
+      "cin": "L27203OR1981GOI000920",
+      "companyName": "National Aluminium Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbd0",
+      "cin": "L35100TN2008PLC069496",
+      "companyName": "Tube Investments of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbd2",
+      "cin": "L27100GJ1995PLC025609",
+      "companyName": "Welspun Corp Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbd5",
+      "cin": "L27109DL1973GOI006454",
+      "companyName": "Steel Authority of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbd7",
+      "cin": "L27201WB1967GOI028825",
+      "companyName": "Hindustan Copper Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbd9",
+      "cin": "L34102MH1999PLC123296",
+      "companyName": "Endurance Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbdb",
+      "cin": "L27204RJ1966PLC001208",
+      "companyName": "Hindustan Zinc Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbde",
+      "cin": "L26922HR1980PLC010901",
+      "companyName": "Jindal Stainless Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbe0",
+      "cin": "L27105HR1979PLC009913",
+      "companyName": "Jindal Steel & Power Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbe2",
+      "cin": "L27104UP1984PLC023979",
+      "companyName": "Jindal Saw Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99050b09656fa3609fbe5",
+      "cin": "L13209MH1965PLC291394",
+      "companyName": "Vedanta Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99168b09656fa3609fcd2",
+      "cin": "L74899DL1974GOI007227",
+      "companyName": "RITES Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9991ab09656fa360a5930",
+      "cin": "L35301KA1963GOI001622",
+      "companyName": "Hindustan Aeronautics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9991ab09656fa360a5932",
+      "cin": "L63032KL1972GOI002414",
+      "companyName": "Cochin Shipyard Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9991ab09656fa360a5934",
+      "cin": "L35921TN1992PLC022845",
+      "companyName": "TVS Motor Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9991ab09656fa360a5938",
+      "cin": "L35111WB1934GOI007891",
+      "companyName": "Garden Reach Shipbuilders & Engineers Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c999c8b09656fa360a598e",
+      "cin": "L67200MH1972GOI016133",
+      "companyName": "General Insurance Corporation of India",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c999c8b09656fa360a5992",
+      "cin": "L67200MH2000PLC129408",
+      "companyName": "ICICI Lombard General Insurance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c999c8b09656fa360a5994",
+      "cin": "L66010MH2000PLC127837",
+      "companyName": "ICICI Prudential Life Insurance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c999c8b09656fa360a5996",
+      "cin": "L66000MH1919GOI000526",
+      "companyName": "The New India Assurance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c999c8b09656fa360a5998",
+      "cin": "L99999MH2000PLC129113",
+      "companyName": "SBI Life Insurance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99afdb09656fa360a68d0",
+      "cin": "L21016AS2013PLC011624",
+      "companyName": "Greenlam Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99afdb09656fa360a68d3",
+      "cin": "L20211AS1990PLC003484",
+      "companyName": "Greenply Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99afdb09656fa360a68d5",
+      "cin": "L20101WB1982PLC034435",
+      "companyName": "Century Plyboards (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99d60b09656fa360a7b70",
+      "cin": "L92132MH1982PLC028767",
+      "companyName": "Zee Entertainment Enterprises Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99d60b09656fa360a7b72",
+      "cin": "L74300MH2005PLC281753",
+      "companyName": "TV18 Broadcast Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99d60b09656fa360a7b75",
+      "cin": "L22110TN1985PLC012491",
+      "companyName": "Sun TV Network Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c99d60b09656fa360a7b77",
+      "cin": "L92200DL1999PLC103001",
+      "companyName": "TV Today Network Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7b0",
+      "cin": "U74140MH2008PLC177884",
+      "companyName": "IIFL Wealth Management Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7b3",
+      "cin": "L65991MH1999PLC123027",
+      "companyName": "HDFC Asset Management Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7b8",
+      "cin": "L67120MH1995PLC086241",
+      "companyName": "ICICI Securities Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7bc",
+      "cin": "L67120MH2005PLC155188",
+      "companyName": "BSE Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7bf",
+      "cin": "L67190MH2005PLC153397",
+      "companyName": "Motilal Oswal Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7c2",
+      "cin": "L74999DL2007PLC277039",
+      "companyName": "Indian Energy Exchange Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7c5",
+      "cin": "L65910MH1995PLC220793",
+      "companyName": "Nippon Life India Asset Management Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7c7",
+      "cin": "L67120MH1986PLC038784",
+      "companyName": "JM Financial Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a16eb09656fa360ad7c9",
+      "cin": "L74899DL1970GOI005276",
+      "companyName": "Housing & Urban Development Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a3c5b09656fa360af3fc",
+      "cin": "L16005WB1910PLC001985",
+      "companyName": "ITC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a3c5b09656fa360af3ff",
+      "cin": "L20101WB1919PLC003557",
+      "companyName": "THE INDIAN WOOD PRODUCTS CO LTD",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9a3c5b09656fa360af401",
+      "cin": "L29150TG1930PLC000576",
+      "companyName": "VST Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a8a",
+      "cin": "L29299TN1987PLC058738",
+      "companyName": "Esab India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a8d",
+      "cin": "L15492WB1924GOI004835",
+      "companyName": "Balmer Lawrie & Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a90",
+      "cin": "L74899DL1964GOI004281",
+      "companyName": "Bharat Heavy Electricals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a92",
+      "cin": "L25209PN1961PLC012046",
+      "companyName": "Bharat Forge Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a94",
+      "cin": "L29299PN1980PLC022787",
+      "companyName": "Thermax Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a96",
+      "cin": "L85110KA1989PLC009968",
+      "companyName": "Tata Elxsi Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9aa51b09656fa360b7a98",
+      "cin": "L28931MH1984PLC267130",
+      "companyName": "Gillette India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b529b09656fa360c0f8c",
+      "cin": "L21010GJ1960PLC018099",
+      "companyName": "JK Paper Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b529b09656fa360c0f8e",
+      "cin": "L17120MH1897PLC000163",
+      "companyName": "Century Textiles & Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b529b09656fa360c0f90",
+      "cin": "L02101KA1955PLC001936",
+      "companyName": "West Coast Paper Mills Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b529b09656fa360c0f92",
+      "cin": "L21011MH1950FLC145537",
+      "companyName": "Huhtamaki India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fdf",
+      "cin": "L72200MH2000PLC125319",
+      "companyName": "eClerx Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fe2",
+      "cin": "L74140MH1993PLC150054",
+      "companyName": "Just Dial Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fe4",
+      "cin": "L74899DL1999PLC101534",
+      "companyName": "Indiamart Intermesh Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fe6",
+      "cin": "L65910MH1996PLC280969",
+      "companyName": "Network18 Media & Investments Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fe8",
+      "cin": "L74899DL1995PLC068021",
+      "companyName": "Info Edge (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fea",
+      "cin": "L64202MH2001PLC134147",
+      "companyName": "Firstsource Solutions Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9b5d2b09656fa360c0fec",
+      "cin": "L65990MH1990PLC056669",
+      "companyName": "Vakrangee Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c07eb09656fa360c85b8",
+      "cin": "L64204MH1959PLC011421",
+      "companyName": "Hathway Cable & Datacom Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c07eb09656fa360c85bb",
+      "cin": "L32202KA1950GOI000640",
+      "companyName": "ITI Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c07eb09656fa360c85bd",
+      "cin": "L64200MH1986PLC039266",
+      "companyName": "Tata Communications Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c07eb09656fa360c85c0",
+      "cin": "L92490MH2007PLC344765",
+      "companyName": "Den Networks Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c218b09656fa360c863b",
+      "cin": "L63011DL1988GOI030915",
+      "companyName": "Container Corporation of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c218b09656fa360c863d",
+      "cin": "L60210KA1983PLC005247",
+      "companyName": "VRL Logistics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c218b09656fa360c863f",
+      "cin": "L40200GJ1998SGC035188",
+      "companyName": "Gujarat State Petronet Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c34ab09656fa360c8d50",
+      "cin": "L85110TZ1955PLC015049",
+      "companyName": "TTK Prestige Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c3f6b09656fa360c93c8",
+      "cin": "L24292TG1970GOI001353",
+      "companyName": "Bharat Dynamics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c3f6b09656fa360c93ca",
+      "cin": "L32309KA1954GOI000787",
+      "companyName": "Bharat Electronics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c3f6b09656fa360c93ce",
+      "cin": "L32101UP1993PLC066581",
+      "companyName": "Dixon Technologies (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c3f6b09656fa360c93d0",
+      "cin": "L29299PN1984PLC017951",
+      "companyName": "Honeywell Automation India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c518b09656fa360cacd9",
+      "cin": "L18101MH2007PLC233901",
+      "companyName": "Aditya Birla Fashion and Retail Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c519b09656fa360cacdc",
+      "cin": "L17309WB1995PLC073053",
+      "companyName": "Lux Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c519b09656fa360cace0",
+      "cin": "L18101KA1994PLC016554",
+      "companyName": "Page Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c519b09656fa360cace3",
+      "cin": "L17299WB1985PLC038517",
+      "companyName": "Rupa & Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c519b09656fa360cace5",
+      "cin": "L99999DL1997PLC090978",
+      "companyName": "TCNS Clothing Co. Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24d7",
+      "cin": "L52100MH2012PLC231654",
+      "companyName": "Future Lifestyle Fashions Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24da",
+      "cin": "L51900MH2000PLC126473",
+      "companyName": "Avenue Supermarts Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24de",
+      "cin": "L24240MH1952PLC008951",
+      "companyName": "Trent Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24e2",
+      "cin": "L51900MH1997PLC108798",
+      "companyName": "Shoppers Stop Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24e6",
+      "cin": "L51909DL2002PLC163727",
+      "companyName": "V-Mart Retail Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24ea",
+      "cin": "L51909MH2007PLC268269",
+      "companyName": "Future Retail Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c963b09656fa360d24ed",
+      "cin": "L19201WB1931PLC007261",
+      "companyName": "Bata India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27d2",
+      "cin": "L85110KA1995PLC019126",
+      "companyName": "Brigade Enterprises Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27d4",
+      "cin": "L70101HR1963PLC002484",
+      "companyName": "DLF Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27d8",
+      "cin": "L74899DL1960GOI003335",
+      "companyName": "NBCC (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27db",
+      "cin": "L45200MH1998PLC114818",
+      "companyName": "Oberoi Realty Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27de",
+      "cin": "L45201GJ2008PLC054868",
+      "companyName": "PSP Projects Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27e1",
+      "cin": "L45201KA1995PLC018475",
+      "companyName": "Sobha Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27e5",
+      "cin": "L72200TG1990PLC011146",
+      "companyName": "NCC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27e8",
+      "cin": "L07010KA1997PLC022322",
+      "companyName": "Prestige Estates Projects Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27ea",
+      "cin": "L32100MH1981PLC025346",
+      "companyName": "Sunteck Realty Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27ec",
+      "cin": "L74120MH1985PLC035308",
+      "companyName": "Godrej Properties Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9c983b09656fa360d27ee",
+      "cin": "L17100MH1905PLC000200",
+      "companyName": "The Phoenix Mills Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d6e4b09656fa360df355",
+      "cin": "L27100MH1907PLC000260",
+      "companyName": "Tata Steel Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df493",
+      "cin": "L74899DL1965GOI004352",
+      "companyName": "Engineers India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df498",
+      "cin": "L45201RJ2003PLC018049",
+      "companyName": "H.G. Infra Engineering Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df49a",
+      "cin": "L64200HP1987PLC007466",
+      "companyName": "HFCL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df49c",
+      "cin": "L65910MH1998PLC115967",
+      "companyName": "IRB Infrastructure Developers Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df49e",
+      "cin": "L74210TG1995PLC130199",
+      "companyName": "KNR Constructions Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4a0",
+      "cin": "L45201DL1999PLC195937",
+      "companyName": "PNC Infratech Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4a2",
+      "cin": "L74999DL2003GOI118633",
+      "companyName": "Rail Vikas Nigam Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4a4",
+      "cin": "L40108UP2005PLC094368",
+      "companyName": "Techno Electric & Engineering Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4a6",
+      "cin": "L45101DL1979PLC009654",
+      "companyName": "Ahluwalia Contracts (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4a8",
+      "cin": "L45200MH1993PLC071970",
+      "companyName": "Ashoka Buildcon Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4aa",
+      "cin": "L31102DL1957PLC193993",
+      "companyName": "GE T&D India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4ad",
+      "cin": "L40100GJ1981PLC004281",
+      "companyName": "Kalpataru Power Transmission Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4af",
+      "cin": "L45200MH2005PLC152061",
+      "companyName": "KEC International Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4b1",
+      "cin": "L99999MH1946PLC004768",
+      "companyName": "Larsen & Toubro Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4b3",
+      "cin": "U74999MH2017PLC292281",
+      "companyName": "Sterling And Wilson Solar Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9d7feb09656fa360df4b5",
+      "cin": "L74140MH1992PLC068379",
+      "companyName": "GE Power India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9db3bb09656fa360e2935",
+      "cin": "L74899DL1995PLC069839",
+      "companyName": "Varun Beverages Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9db3bb09656fa360e2937",
+      "cin": "L01551KA1999PLC024991",
+      "companyName": "United Spirits Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9db3bb09656fa360e293a",
+      "cin": "L36999KA1999PLC025195",
+      "companyName": "United Breweries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9db3cb09656fa360e293d",
+      "cin": "L26941UP1983PLC027278",
+      "companyName": "Radico Khaitan Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9db3cb09656fa360e2940",
+      "cin": "L67120GJ2007PLC058890",
+      "companyName": "Aditya Birla Capital Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dbacb09656fa360e2d35",
+      "cin": "L36911RJ1996PLC011381",
+      "companyName": "AU Small Finance Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dbe4b09656fa360e2db5",
+      "cin": "L35911PN1945PLC004656",
+      "companyName": "Bajaj Holdings & Investment Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dbe4b09656fa360e2db7",
+      "cin": "L67190WB2014PLC204622",
+      "companyName": "Bandhan Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4650",
+      "cin": "L31200GJ2004PLC044068",
+      "companyName": "Torrent Power Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4654",
+      "cin": "L40105DL1999PLC099328",
+      "companyName": "PTC India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e465f",
+      "cin": "L40100GJ2005PLC046553",
+      "companyName": "Adani Total Gas Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4662",
+      "cin": "L74999MH1994PLC077041",
+      "companyName": "JSW Energy Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4665",
+      "cin": "L93090TN1956GOI003507",
+      "companyName": "NLC India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4667",
+      "cin": "L40101DL1989GOI038121",
+      "companyName": "Power Grid Corporation of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4669",
+      "cin": "L40200MH1995PLC088133",
+      "companyName": "Mahanagar Gas Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e466b",
+      "cin": "L40101HR1975GOI032564",
+      "companyName": "NHPC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e466d",
+      "cin": "L40101HP1988GOI008409",
+      "companyName": "SJVN Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e466f",
+      "cin": "L28920MH1919PLC000567",
+      "companyName": "Tata Power Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4671",
+      "cin": "L40200GJ2012SGC069118",
+      "companyName": "Gujarat Gas Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4674",
+      "cin": "L31901WB1978PLC031411",
+      "companyName": "CESC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dd94b09656fa360e4676",
+      "cin": "L40100GJ1996PLC030533",
+      "companyName": "Adani Power Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9de7cb09656fa360e4cc6",
+      "cin": "U99999MH1911PLC007676",
+      "companyName": "Bank of Baroda",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9de7db09656fa360e4ccb",
+      "cin": "U99999MH1935PTC002399",
+      "companyName": "Bank of Maharashtra",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9de7db09656fa360e4ccf",
+      "cin": "U99999MH1906PLC000243",
+      "companyName": "Bank of India",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dea6b09656fa360e50bb",
+      "cin": "L85110KA1987PLC008699",
+      "companyName": "Can Fin Homes Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dea6b09656fa360e50be",
+      "cin": "U67190KA1906PLC001069",
+      "companyName": "Canara Bank",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9dea6b09656fa360e50c0",
+      "cin": "L65921MH1994PLC173469",
+      "companyName": "Capri Global Capital Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9defbb09656fa360e54b7",
+      "cin": "L13100KA1976GOI002974",
+      "companyName": "KIOCL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9defbb09656fa360e54bc",
+      "cin": "L13100TG1958GOI001674",
+      "companyName": "NMDC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9defbb09656fa360e54c0",
+      "cin": "L99999MH1962GOI012398",
+      "companyName": "MOIL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e042b09656fa360e6e84",
+      "cin": "U99999MH1911PTC000337",
+      "companyName": "Central Bank of India",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e09bb09656fa360e7623",
+      "cin": "L67120MH1997PLC112443",
+      "companyName": "Central Depository Services (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e09bb09656fa360e7627",
+      "cin": "L65100TN1949PLC002905",
+      "companyName": "Cholamandalam Financial Holdings Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e0b9b09656fa360e7d53",
+      "cin": "L65993TN1978PLC007576",
+      "companyName": "Cholamandalam Investment and Finance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e104b09656fa360e809a",
+      "cin": "L65110TN1904PLC001287",
+      "companyName": "City Union Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e104b09656fa360e809c",
+      "cin": "L51216KA1991PLC053425",
+      "companyName": "CREDITACCESS GRAMEEN LIMITED",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e104b09656fa360e809e",
+      "cin": "L65191KL1920PLC000175",
+      "companyName": "CSB Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e203b09656fa360e930b",
+      "cin": "L99999MH1995PLC089008",
+      "companyName": "DCB Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e21db09656fa360e969c",
+      "cin": "L74999DL1995PLC069631",
+      "companyName": "Dhani Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e25cb09656fa360e98a8",
+      "cin": "L99999MH1995PLC094641",
+      "companyName": "Edelweiss Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e28bb09656fa360ea167",
+      "cin": "L65100TN2007PLC064069",
+      "companyName": "Equitas Holdings Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e28bb09656fa360ea16c",
+      "cin": "L70100MH1977PLC019916",
+      "companyName": "Housing Development Finance Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e2d8b09656fa360ea3fd",
+      "cin": "L65190MH2004GOI148838",
+      "companyName": "IDBI Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e2d8b09656fa360ea400",
+      "cin": "L65110TN2014PLC097792",
+      "companyName": "IDFC First Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e31ab09656fa360eac18",
+      "cin": "L65191TN1997PLC037415",
+      "companyName": "IDFC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e3e4b09656fa360ebcd5",
+      "cin": "L67100MH1995PLC093797",
+      "companyName": "IIFL Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e3f9b09656fa360ec320",
+      "cin": "L65922DL2005PLC136029",
+      "companyName": "Indiabulls Housing Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd88",
+      "cin": "L52399GJ2016PLC085595",
+      "companyName": "Arvind Fashions Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd8b",
+      "cin": "L40300DL1995PLC066923",
+      "companyName": "Poly Medicure Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd8f",
+      "cin": "L52599TN1961PLC028758",
+      "companyName": "Redington (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd92",
+      "cin": "L51909DL1963GOI004033",
+      "companyName": "MMTC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd95",
+      "cin": "L32201GJ1988PLC010331",
+      "companyName": "Symphony Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd99",
+      "cin": "L51100GJ1993PLC019067",
+      "companyName": "Adani Enterprises Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd9c",
+      "cin": "L31500MH1938PLC009887",
+      "companyName": "Bajaj Electricals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecd9e",
+      "cin": "L40300GJ2013PLC077803",
+      "companyName": "Adani Transmission Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e46fb09656fa360ecda0",
+      "cin": "L63090GJ1956PLC001032",
+      "companyName": "Aegis Logistics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e4d8b09656fa360edd6c",
+      "cin": "FAKECIB98668",
+      "companyName": "Indian Bank",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e500b09656fa360ee5e1",
+      "cin": "FAKEIOB98918",
+      "companyName": "Indian Overseas Bank",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e500b09656fa360ee5e5",
+      "cin": "L65100MH2009PLC268160",
+      "companyName": "IndoStar Capital Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e557b09656fa360eed55",
+      "cin": "L67120MH2001PLC217751",
+      "companyName": "JSW Holdings Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e557b09656fa360eed57",
+      "cin": "L65110TN1916PLC001295",
+      "companyName": "Karur Vysya Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e588b09656fa360ef4a3",
+      "cin": "L67120MH2008PLC181833",
+      "companyName": "L&T Finance Holdings Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e588b09656fa360ef4a6",
+      "cin": "L65922MH1989PLC052257",
+      "companyName": "LIC Housing Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e638b09656fa360f025e",
+      "cin": "L35912MH1975PLC018376",
+      "companyName": "Maharashtra Scooters Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e66eb09656fa360f090d",
+      "cin": "L65921MH1991PLC059642",
+      "companyName": "Mahindra & Mahindra Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e66eb09656fa360f0911",
+      "cin": "L65910KL1992PLC006623",
+      "companyName": "Manappuram Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e66eb09656fa360f0914",
+      "cin": "L65910GJ1995PLC026064",
+      "companyName": "MAS Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e693b09656fa360f0df2",
+      "cin": "L65910KL1997PLC011300",
+      "companyName": "Muthoot Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e693b09656fa360f0df4",
+      "cin": "L65922DL1988PLC033856",
+      "companyName": "PNB Housing Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e693b09656fa360f0df6",
+      "cin": "L65910DL1986GOI024862",
+      "companyName": "Power Finance Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e6c6b09656fa360f0f31",
+      "cin": "FAKEPNB183861",
+      "companyName": "Punjab National Bank",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e6c6b09656fa360f0f34",
+      "cin": "L65191PN1943PLC007308",
+      "companyName": "RBL Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e6c6b09656fa360f0f37",
+      "cin": "L40101DL1969GOI005095",
+      "companyName": "REC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e6f8b09656fa360f1314",
+      "cin": "L65191TN1986PLC012840",
+      "companyName": "Shriram City Union Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e6f8b09656fa360f1319",
+      "cin": "L65191TN1979PLC007874",
+      "companyName": "Shriram Transport Finance Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e72fb09656fa360f151a",
+      "cin": "L65929TG2003PLC040648",
+      "companyName": "Spandana Sphoorty Financial Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e72fb09656fa360f151d",
+      "cin": "L65191TN1954PLC002429",
+      "companyName": "Sundaram Finance Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e730b09656fa360f1520",
+      "cin": "FAKESBI236328",
+      "companyName": "State Bank of India",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e75bb09656fa360f1604",
+      "cin": "L67200MH1937PLC002622",
+      "companyName": "Tata Investment Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e75bb09656fa360f1606",
+      "cin": "L85110KA1924PLC001128",
+      "companyName": "The Karnataka Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e75bb09656fa360f1608",
+      "cin": "L65191KL1931PLC000368",
+      "companyName": "The Federal Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e7ccb09656fa360f16a6",
+      "cin": "FAKEUCO256249",
+      "companyName": "UCO Bank",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e7ccb09656fa360f16a8",
+      "cin": "L65999KA2004PLC035329",
+      "companyName": "Ujjivan Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e846b09656fa360f17ae",
+      "cin": "L65110KA2016PLC142162",
+      "companyName": "Ujjivan Small Finance Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e846b09656fa360f17b0",
+      "cin": "U99999MH1919PTC000615",
+      "companyName": "Union Bank of India",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e866b09656fa360f184c",
+      "cin": "L65190MH2003PLC143249",
+      "companyName": "Yes Bank Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f24",
+      "cin": "L85110KA1951PLC000761",
+      "companyName": "Bosch Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f26",
+      "cin": "L27100MH1999PLC121285",
+      "companyName": "Mahindra CIE Automotive Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f2a",
+      "cin": "L74899DL1985PLC020401",
+      "companyName": "Minda Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f2c",
+      "cin": "L74899DL1992PLC050333",
+      "companyName": "Minda Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f2f",
+      "cin": "L35999TN1962PLC004943",
+      "companyName": "Sundram Fasteners Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f31",
+      "cin": "L34300MH1986PLC284510",
+      "companyName": "Motherson Sumi Systems Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f33",
+      "cin": "L34103TN2004PLC054667",
+      "companyName": "WABCO India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f35",
+      "cin": "L28920MH1988PLC047335",
+      "companyName": "Varroc Engineering Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9e8b9b09656fa360f1f37",
+      "cin": "L34101TN1948PLC000105",
+      "companyName": "Ashok Leyland Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9ee05b09656fa360f6924",
+      "cin": "L25200MH1980PLC022812",
+      "companyName": "Safari Industries (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9ee05b09656fa360f6927",
+      "cin": "L25200MH1968PLC013914",
+      "companyName": "VIP Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9ee05b09656fa360f692a",
+      "cin": "L74899DL1984PLC019097",
+      "companyName": "Relaxo Footwears Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9eebeb09656fa360f7432",
+      "cin": "L74899DL1971PLC005679",
+      "companyName": "Sheela Foam Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9f221b09656fa360fa05f",
+      "cin": "L36911KA1995PLC017077",
+      "companyName": "Rajesh Exports Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9f221b09656fa360fa061",
+      "cin": "L36911RJ1989PLC004945",
+      "companyName": "Vaibhav Global Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60c9f221b09656fa360fa065",
+      "cin": "L74999TZ1984PLC001456",
+      "companyName": "Titan Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b69",
+      "cin": "L31300KA1987PLC013543",
+      "companyName": "3M India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b6c",
+      "cin": "L24119DL1989PLC036264",
+      "companyName": "Bharat Rasayan Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b6e",
+      "cin": "L24110MH1998PLC115499",
+      "companyName": "Navin Fluorine International Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b70",
+      "cin": "L51434WB1923PLC004793",
+      "companyName": "Berger Paints (I) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b72",
+      "cin": "L24241MH1988PLC097781",
+      "companyName": "Godrej Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b74",
+      "cin": "U24220MH2016PLC283393",
+      "companyName": "Privi Speciality Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b76",
+      "cin": "L15140MH1933PLC002030",
+      "companyName": "Hindustan Unilever Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b78",
+      "cin": "L24110GJ1973PLC002247",
+      "companyName": "Gujarat Alkalies and Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b7a",
+      "cin": "L24129KL1943GOI000371",
+      "companyName": "Fertilizers and Chemicals Travancore Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b7c",
+      "cin": "L24240MH1992PLC128651",
+      "companyName": "Jyothy Labs Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b7e",
+      "cin": "L24246MH2000PLC129806",
+      "companyName": "Godrej Consumer Products Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b80",
+      "cin": "L24119PN1951PLC008409",
+      "companyName": "Sudarshan Chemical Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b82",
+      "cin": "L24100MH1969PLC014336",
+      "companyName": "Pidilite Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b84",
+      "cin": "L74999MH1995PLC085878",
+      "companyName": "Solar Industries India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b86",
+      "cin": "L36992MH1948PLC014083",
+      "companyName": "Rallis India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b88",
+      "cin": "L24110GJ1976PLC002903",
+      "companyName": "Gujarat Narmada Valley Fertilizers and Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b8b",
+      "cin": "L24116UP1978PLC004624",
+      "companyName": "Jubilant Pharmova Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b8d",
+      "cin": "L24120TG1961PLC000892",
+      "companyName": "Coromandel International Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b8f",
+      "cin": "L18101DL1970PLC005197",
+      "companyName": "SRF Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b91",
+      "cin": "L99999GJ1962PLC001121",
+      "companyName": "Gujarat State Fertilizers & Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b93",
+      "cin": "L24119MH2002PLC136003",
+      "companyName": "Fine Organic Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b95",
+      "cin": "L24110MH1978GOI020185",
+      "companyName": "Rashtriya Chemicals and Fertilizers Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b97",
+      "cin": "L24124RJ1985PLC003293",
+      "companyName": "Chambal Fertilizers & Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b99",
+      "cin": "L24202MH1920PLC000825",
+      "companyName": "Kansai Nerolac Paints Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b9b",
+      "cin": "L39877MH1986PLC039877",
+      "companyName": "Galaxy Surfactants Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b9d",
+      "cin": "L40200WB1935PLC008184",
+      "companyName": "Linde India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109b9f",
+      "cin": "L99999MH1979PLC021796",
+      "companyName": "Alkyl Amines Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109ba1",
+      "cin": "L24211RJ1946PLC000469",
+      "companyName": "PI Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109ba3",
+      "cin": "L99999GJ1975PLC002859",
+      "companyName": "Atul Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109ba5",
+      "cin": "L24110MH2000PLC124224",
+      "companyName": "Sumitomo Chemical India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109ba7",
+      "cin": "L24110GJ1984PLC007301",
+      "companyName": "Aarti Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109ba9",
+      "cin": "L24219GJ1985PLC025132",
+      "companyName": "UPL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bab",
+      "cin": "L24116MH1989PLC052224",
+      "companyName": "Vinati Organics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bad",
+      "cin": "L24200MH1937PLC002700",
+      "companyName": "Colgate Palmolive (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109baf",
+      "cin": "L01110RJ2006PLC047173",
+      "companyName": "Bajaj Consumer Care Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bb2",
+      "cin": "L24219DL1985PLC020126",
+      "companyName": "Dhanuka Agritech Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bb4",
+      "cin": "L24292WB1954PLC021516",
+      "companyName": "Akzo Nobel India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bb6",
+      "cin": "L24110GJ1970PLC001735",
+      "companyName": "Deepak Nitrite Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bb8",
+      "cin": "L24239MH1939PLC002893",
+      "companyName": "Tata Chemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bba",
+      "cin": "L24304GJ2018PLC105479",
+      "companyName": "Gujarat Fluorochemicals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bbc",
+      "cin": "L24230DL1975PLC007908",
+      "companyName": "Dabur India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60ca0956b09656fa36109bbe",
+      "cin": "L33112MH1943FLC003972",
+      "companyName": "BASF India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd45b09656fa3611306d",
+      "cin": "L40106GJ2015PLC082007",
+      "companyName": "Adani Green Energy Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd76b09656fa36113096",
+      "cin": "L14200TN2013PLC112346",
+      "companyName": "Dalmia Bharat Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd76b09656fa36113098",
+      "cin": "L67120MH1987PLC042363",
+      "companyName": "CRISIL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd76b09656fa3611309a",
+      "cin": "L45101DL2006PLC148314",
+      "companyName": "Indiabulls Real Estate Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd76b09656fa3611309c",
+      "cin": "L74999DL1991PLC042749",
+      "companyName": "ICRA Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cacd76b09656fa3611309e",
+      "cin": "L24223PB1988PLC008031",
+      "companyName": "Max Financial Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148e8",
+      "cin": "L10101WB1974PLC094602",
+      "companyName": "Graphite India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148ed",
+      "cin": "L26593MH1950PLC008163",
+      "companyName": "Grindwell Norton Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148f2",
+      "cin": "L29224TN1954PLC000318",
+      "companyName": "Carborundum Universal Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148f5",
+      "cin": "L26942HR1958FLC042301",
+      "companyName": "HeidelbergCement India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148f7",
+      "cin": "L23109MP1972PLC008290",
+      "companyName": "HEG Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148f9",
+      "cin": "L26910GJ1998PLC034400",
+      "companyName": "Cera Sanitaryware Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148fb",
+      "cin": "L27106WB1987PLC042756",
+      "companyName": "Himadri Speciality Chemical Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148fd",
+      "cin": "L26924HR1985PLC056150",
+      "companyName": "Kajaria Ceramics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa361148ff",
+      "cin": "L74999RJ1938PLC019511",
+      "companyName": "JK Lakshmi Cement Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114901",
+      "cin": "L17229UP1994PLC017199",
+      "companyName": "JK Cement Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114903",
+      "cin": "L26101WB1987PLC042512",
+      "companyName": "La Opala RG Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114905",
+      "cin": "L28113MH2010PLC312871",
+      "companyName": "Orient Refractories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114907",
+      "cin": "L26942ML2001PLC006663",
+      "companyName": "Star Cement Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114909",
+      "cin": "L26933WB1991PLC052968",
+      "companyName": "Vesuvius India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa3611490b",
+      "cin": "L26942TG1992PLC014033",
+      "companyName": "Prism Johnson Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa3611490d",
+      "cin": "L26941TN1957PLC003566",
+      "companyName": "The Ramco Cements Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa3611490f",
+      "cin": "L26942TN1946PLC000931",
+      "companyName": "The India Cements Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cad1c1b09656fa36114912",
+      "cin": "L26940MH2000PLC128420",
+      "companyName": "UltraTech Cement Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193ae",
+      "cin": "L16001AP1993PLC095778",
+      "companyName": "Avanti Feeds Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193b2",
+      "cin": "L15421WB1975PLC030118",
+      "companyName": "Balrampur Chini Mills Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193b6",
+      "cin": "L15421TZ1983PLC001358",
+      "companyName": "Bannari Amman Sugars Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193b9",
+      "cin": "L15311MP2009PLC021746",
+      "companyName": "Prataap Snacks Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193bd",
+      "cin": "L24211TN1975PLC006989",
+      "companyName": "EID Parry India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193c1",
+      "cin": "L15110AP1961PLC000874",
+      "companyName": "CCL Products (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193c4",
+      "cin": "L15419PN1985PLC037347",
+      "companyName": "Tasty Bite Eatables Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193c8",
+      "cin": "L52602MH1996PLC192090",
+      "companyName": "Future Consumer Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193ce",
+      "cin": "L15410MH1991PLC135359",
+      "companyName": "Godrej Agrovet Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193d2",
+      "cin": "L15140GJ1991PLC016151",
+      "companyName": "Gujarat Ambuja Exports Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193da",
+      "cin": "L15499TN1986PLC012747",
+      "companyName": "Hatsun Agro Product Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193dd",
+      "cin": "L74899DL1989PLC034923",
+      "companyName": "DCM Shriram Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193e0",
+      "cin": "L15491WB1962PLC031425",
+      "companyName": "TATA CONSUMER PRODUCTS LIMITED",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193e3",
+      "cin": "L01111DL1993PLC052845",
+      "companyName": "KRBL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193e6",
+      "cin": "L15202DL1959PLC003786",
+      "companyName": "Nestle India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193e9",
+      "cin": "L01542KA1995PLC019046",
+      "companyName": "Shree Renuka Sugars Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193ec",
+      "cin": "L15201GJ1994PLC023490",
+      "companyName": "Zydus Wellness Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cadf91b09656fa361193ef",
+      "cin": "L15140MH1988PLC049208",
+      "companyName": "Marico Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60caeb57b09656fa3611e048",
+      "cin": "L75230BR1985PLC002083",
+      "companyName": "Security and Intelligence Services (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60caee0db09656fa3611ead6",
+      "cin": "L74140KA2007PLC043909",
+      "companyName": "Quess Corp Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60caf1a7b09656fa36120226",
+      "cin": "L74899DL1981PLC015865",
+      "companyName": "NIIT Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb002fb09656fa361239ca",
+      "cin": "L24200MH1989PLC051018",
+      "companyName": "Advanced Enzyme Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb007db09656fa36123a47",
+      "cin": "L24230MH1979PLC022059",
+      "companyName": "Ajanta Pharma Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb00a7b09656fa36123a75",
+      "cin": "L24230GJ2010PLC061123",
+      "companyName": "Alembic Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb00c1b09656fa36123a9b",
+      "cin": "L00305MH1973PLC174201",
+      "companyName": "Alkem Laboratories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb00d7b09656fa36123aba",
+      "cin": "L24231KA1979PLC003563",
+      "companyName": "AstraZeneca Pharma India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb00f4b09656fa36123afd",
+      "cin": "L63993WB1983PLC036030",
+      "companyName": "Emami Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0102b09656fa36123b21",
+      "cin": "L24232GJ2007PLC049867",
+      "companyName": "Eris Lifesciences Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0113b09656fa36123b3b",
+      "cin": "L24299MH1977PLC019982",
+      "companyName": "Glenmark Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0122b09656fa36123b56",
+      "cin": "L24110TG1991PLC012471",
+      "companyName": "Granules India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0131b09656fa36123b70",
+      "cin": "L85190MH1947PLC005913",
+      "companyName": "Indoco Remedies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0146b09656fa36123b8b",
+      "cin": "L24239MH1949PLC007837",
+      "companyName": "IPCA Laboratories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0157b09656fa36123ba6",
+      "cin": "L24390MH1976PLC019380",
+      "companyName": "JB Chemicals & Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0181b09656fa36123bdb",
+      "cin": "L24239MH1956PLC009794",
+      "companyName": "Sanofi India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb018fb09656fa36123bf6",
+      "cin": "L99999MH1985PLC036685",
+      "companyName": "Sequent Scientific Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb019eb09656fa36123c10",
+      "cin": "L24230MH2017PLC291636",
+      "companyName": "Solara Active Pharma Sciences Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb01b0b09656fa36123c2b",
+      "cin": "L24230MH1990PLC057062",
+      "companyName": "Strides Pharma Science Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb01d5b09656fa36123c48",
+      "cin": "L24230GJ1972PLC002126",
+      "companyName": "Torrent Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb01e6b09656fa36123c62",
+      "cin": "L24230MH1999PLC120720",
+      "companyName": "Wockhardt Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb01f7b09656fa36123c7d",
+      "cin": "L37060MH1984PLC055433",
+      "companyName": "Aarti Drugs Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0210b09656fa36123ca4",
+      "cin": "L24239MH1944PLC007330",
+      "companyName": "Abbott India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0225b09656fa36123cc3",
+      "cin": "L24239TG1986PLC015190",
+      "companyName": "Aurobindo Pharma Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0236b09656fa36123ce8",
+      "cin": "L24234KA1978PLC003417",
+      "companyName": "Biocon Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0249b09656fa36123d03",
+      "cin": "L24230GJ1995PLC025878",
+      "companyName": "Cadila Healthcare Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb026db09656fa36123d20",
+      "cin": "L24231TN1990PLC019053",
+      "companyName": "Caplin Point Laboratories Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb02eab09656fa36123d92",
+      "cin": "L24239MH1940PLC003176",
+      "companyName": "FDC Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0321b09656fa36123db6",
+      "cin": "L24239MH1924PLC001151",
+      "companyName": "GlaxoSmithKline Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0348b09656fa36123dd3",
+      "cin": "L24239AP2005PLC047518",
+      "companyName": "Laurus Labs Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb035ab09656fa36123df2",
+      "cin": "L24100MH1983PLC029442",
+      "companyName": "Lupin Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0373b09656fa36123e0d",
+      "cin": "L24230TG1981PLC003201",
+      "companyName": "Natco Pharma Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0382b09656fa36123e28",
+      "cin": "L24110MH1947PLC005719",
+      "companyName": "Piramal Enterprises Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb0396b09656fa36123e4e",
+      "cin": "L99999MH1967PLC013726",
+      "companyName": "Procter & Gamble Health Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb03a8b09656fa36123e68",
+      "cin": "L85110KA1987PLC008739",
+      "companyName": "Shilpa Medicare Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb03bdb09656fa36123e83",
+      "cin": "L24230GJ1993PLC019050",
+      "companyName": "Sun Pharmaceutical Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb03f7b09656fa36123e96",
+      "cin": "L24299TG2018PLC128171",
+      "companyName": "Suven Pharmaceuticals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb122db09656fa361268a5",
+      "cin": "L32202KA1949PLC032923",
+      "companyName": "ABB India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1236b09656fa361268af",
+      "cin": "L31904KA2019PLC121597",
+      "companyName": "ABB Power Products and Systems India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1286b09656fa361268fb",
+      "cin": "L31402AP1985PLC005305",
+      "companyName": "Amara Raja Batteries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb128fb09656fa36126909",
+      "cin": "L91110GJ1989PLC012802",
+      "companyName": "Apar Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb12b0b09656fa36126939",
+      "cin": "L31900MH2015PLC262254",
+      "companyName": "Crompton Greaves Consumer Electricals Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb12bbb09656fa36126943",
+      "cin": "L31402WB1947PLC014919",
+      "companyName": "Exide Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb12fab09656fa36126978",
+      "cin": "L31300MH1967PLC016531",
+      "companyName": "Finolex Cables Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1302b09656fa36126981",
+      "cin": "L31900DL1983PLC016304",
+      "companyName": "Havells India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb13cbb09656fa361269c6",
+      "cin": "L74899DL1992PLC051527",
+      "companyName": "KEI Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb13d4b09656fa361269d0",
+      "cin": "L31100OR2016PLC025892",
+      "companyName": "Orient Electric Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb13fbb09656fa361269fd",
+      "cin": "L31900GJ2011PLC064420",
+      "companyName": "Schneider Electric Infrastructure Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb140ab09656fa36126a08",
+      "cin": "L31300GJ1996PLC114183",
+      "companyName": "Polycab India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb14b6b09656fa36126b71",
+      "cin": "L28920MH1957PLC010839",
+      "companyName": "Siemens Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb14c0b09656fa36126b96",
+      "cin": "L31300MH2000PLC269261",
+      "companyName": "Sterlite Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1509b09656fa36127025",
+      "cin": "L29199KA1985PLC006934",
+      "companyName": "Suprajit Engineering Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1531b09656fa36127108",
+      "cin": "L29191PN1960PLC020063",
+      "companyName": "Whirlpool of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb1540b09656fa36127173",
+      "cin": "L31200KL1996PLC010010",
+      "companyName": "V-Guard Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb15f9b09656fa36127725",
+      "cin": "L28910PB1990PLC010265",
+      "companyName": "Amber Enterprises India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb15fbb09656fa36127766",
+      "cin": "L35202KA1964GOI001530",
+      "companyName": "BEML Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb29cfb09656fa3612fb64",
+      "cin": "L29120TZ1960PLC000351",
+      "companyName": "Elgi Equipments Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb29cfb09656fa3612fb66",
+      "cin": "L29112PN1962PLC012276",
+      "companyName": "Cummins India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a56b09656fa361300eb",
+      "cin": "L74899DL1999GOI101707",
+      "companyName": "Indian Railway Catering And Tourism Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a56b09656fa361300ed",
+      "cin": "L74899UP1995PLC043677",
+      "companyName": "Jubilant Foodworks Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a56b09656fa361300ef",
+      "cin": "L55101WB1999PLC090672",
+      "companyName": "Speciality Restaurants Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a5eb09656fa3613010d",
+      "cin": "L74899DL1954PLC002452",
+      "companyName": "Federal-Mogul Goetze (India) Limited.",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a60b09656fa3613011a",
+      "cin": "L74899HR1944PLC039088",
+      "companyName": "Escorts Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a90b09656fa3613033c",
+      "cin": "L29199GJ1962PLC001171",
+      "companyName": "GMM Pfaudler Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2a99b09656fa36130423",
+      "cin": "L99999MH1922PLC000987",
+      "companyName": "Greaves Cotton Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2b2fb09656fa361309bb",
+      "cin": "L05190KA1921PLC036321",
+      "companyName": "Ingersoll Rand (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2b3db09656fa36130a6a",
+      "cin": "L29300GJ1984PLC007470",
+      "companyName": "Johnson Controls - Hitachi Air Conditioning India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2c29b09656fa36131a93",
+      "cin": "L29100PN2009PLC133351",
+      "companyName": "Kirloskar Oil Engines Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2c9bb09656fa36131e8b",
+      "cin": "L29269TZ1962PLC000463",
+      "companyName": "Lakshmi Machine Works Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2c9cb09656fa36131ea4",
+      "cin": "L29120MH1960PLC011635",
+      "companyName": "Ksb Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2cc3b09656fa36132172",
+      "cin": "L29130MH1962PLC012340",
+      "companyName": "Schaeffler India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2cdeb09656fa361325ce",
+      "cin": "L29130MH1961PLC011980",
+      "companyName": "SKF India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2d8fb09656fa361331a7",
+      "cin": "L50210PB1985PLC006473",
+      "companyName": "Swaraj Engines Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2d92b09656fa361331c6",
+      "cin": "L29130KA1996PLC048230",
+      "companyName": "Timken India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2e1db09656fa36133670",
+      "cin": "L29110UP1995PLC041834",
+      "companyName": "Triveni Turbine Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb2e36b09656fa36133771",
+      "cin": "L29308MH1954PLC009371",
+      "companyName": "Voltas Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cb379ab09656fa361365e1",
+      "cin": "L24231MH1950PLC008311",
+      "companyName": "Pfizer Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc347db09656fa361456f9",
+      "cin": "L74899MH1994PLC164024",
+      "companyName": "Gateway Distriparks Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc34ebb09656fa36145ca5",
+      "cin": "L63000MH2007PLC173466",
+      "companyName": "Mahindra Logistics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc352db09656fa361460e0",
+      "cin": "L62200TG2008PLC061781",
+      "companyName": "TCI Express Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc3581b09656fa3614610e",
+      "cin": "L70109TG1995PLC019116",
+      "companyName": "Transport Corporation of India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4552b09656fa3614b7e3",
+      "cin": "L74140PN1986PLC041033",
+      "companyName": "Accelya Solutions India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4580b09656fa3614b810",
+      "cin": "L65990MH1994PLC080451",
+      "companyName": "Affle (India) Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4689b09656fa3614b93b",
+      "cin": "L72200PN1990PLC059594",
+      "companyName": "BIRLASOFT LIMITED",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc46bab09656fa3614b960",
+      "cin": "L72100DL1992PLC048753",
+      "companyName": "Coforge Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc46e2b09656fa3614b988",
+      "cin": "L72200TG1991PLC013134",
+      "companyName": "Cyient Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc47a6b09656fa3614b9df",
+      "cin": "L72900MH1992PLC069662",
+      "companyName": "Hexaware Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc47c7b09656fa3614ba02",
+      "cin": "L64203GJ2010PLC061366",
+      "companyName": "Infibeam Avenues Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc48a9b09656fa3614ba43",
+      "cin": "L72900MH2012PLC232169",
+      "companyName": "L&T Technology Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc48f4b09656fa3614ba6b",
+      "cin": "L72900MH1996PLC104693",
+      "companyName": "Larsen & Toubro Infotech Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4916b09656fa3614ba94",
+      "cin": "L72200KA1999PLC025564",
+      "companyName": "MindTree Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4937b09656fa3614bab7",
+      "cin": "L30007KA1992PLC025294",
+      "companyName": "MphasiS Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc499eb09656fa3614baeb",
+      "cin": "L72200MH1989PLC053666",
+      "companyName": "Oracle Financial Services Software Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc49c6b09656fa3614bb0f",
+      "cin": "L72300PN1990PLC056696",
+      "companyName": "Persistent Systems Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc49eab09656fa3614bb33",
+      "cin": "L72200MH1994PLC082110",
+      "companyName": "Sonata Software Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4a7bb09656fa3614bb84",
+      "cin": "L22210MH1995PLC084781",
+      "companyName": "Tata Consultancy Services Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4b1ab09656fa3614bbd3",
+      "cin": "L64200MH1986PLC041370",
+      "companyName": "Tech Mahindra Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc4bafb09656fa3614bc25",
+      "cin": "L72200PN1963PLC012621",
+      "companyName": "Zensar Technologies Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8d07b09656fa3614f233",
+      "cin": "L99999MH1961PLC012185",
+      "companyName": "Balkrishna Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8d27b09656fa3614f25b",
+      "cin": "L25100MH1958PLC011041",
+      "companyName": "CEAT Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8d57b09656fa3614f27f",
+      "cin": "L74950MH1982PLC028947",
+      "companyName": "Essel Propack Limited/EPL Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8d82b09656fa3614f2a4",
+      "cin": "L40108PN1981PLC024153",
+      "companyName": "Finolex Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8dd7b09656fa3614f2eb",
+      "cin": "L25111TN1960PLC004306",
+      "companyName": "MRF Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8e06b09656fa3614f30c",
+      "cin": "L25209DN1985PLC000162",
+      "companyName": "Nilkamal Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8e36b09656fa3614f331",
+      "cin": "L26932GA1987PLC006287",
+      "companyName": "Prince Pipes And Fittings Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8ec3b09656fa3614f8c9",
+      "cin": "L65100MH1982PLC027797",
+      "companyName": "Responsive Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60cc8ee4b09656fa3614f9e2",
+      "cin": "L35920MH1942PLC003554",
+      "companyName": "Supreme Industries Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60daeb9b53944fa2b26d7086",
+      "cin": "L63010MH2004PLC073508",
+      "companyName": "Allcargo Logistics Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dafd1f53944fa2b26d9e75",
+      "cin": "L25200GJ1996PLC029134",
+      "companyName": "Astral Poly Technik Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c76",
+      "cin": "L74899DL1965GOI004363",
+      "companyName": "India Tourism Development Corporation Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c78",
+      "cin": "L55101WB1949PLC017981",
+      "companyName": "EIH Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c7a",
+      "cin": "L74999MH1902PLC000183",
+      "companyName": "The Indian Hotels Company Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c7c",
+      "cin": "L55101TN1996PLC036595",
+      "companyName": "Mahindra Holidays & Resorts India Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c7e",
+      "cin": "L74899DL1992PLC049022",
+      "companyName": "Lemon Tree Hotels Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    },
+    {
+      "companyId": "60dc15d753944fa2b26e7c80",
+      "cin": "L55101MH1986PLC038538",
+      "companyName": "Chalet Hotels Limited",
+      "analystEmail": "smriti.srivastava@esgds.io"
+    }
+  ]
