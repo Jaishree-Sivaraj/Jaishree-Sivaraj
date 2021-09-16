@@ -1,6 +1,9 @@
+import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { BoardMembers } from '.'
-import _ from 'lodash'
+import { Kmp } from '../kmp'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 
 export const create = async({ user, bodymen: { body } }, res, next) =>{
   // BoardMembers.create({ ...body, createdBy: user })
@@ -164,4 +167,76 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
   //     status: 500
   //   });    
   // }
+}
+
+export const getDistinctBoardMembersCompanywise = async({ user, params }, res, next) => {
+  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  if (distinctYears.length > 0) {
+    let distinctBoardMembers = [], distinctKmpMembers = [];
+    // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      let year = distinctYears[1];
+      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: year, status: true })
+      .populate('companyId');
+      console.log('allBoardMembersofYear.length', allBoardMembersofYear.length);
+      let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
+      console.log('uniqBoardMembers length', uniqBoardMembers.length);
+      for (let bmIndex = 0; bmIndex < uniqBoardMembers.length; bmIndex++) {
+        let memberDetail = uniqBoardMembers[bmIndex];
+        let memberObject = {
+          // boardMemberMatrixId: memberDetail.id,
+          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+          memberName: memberDetail.memberName,
+          expectedName: memberDetail.memberName,
+          year: year
+        };
+        console.log('memberObject', memberObject);
+        let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
+        if (foundBoardMemberIndex == -1) {
+          distinctBoardMembers.push(memberObject);
+        }
+      }
+      // if (distinctYears.length-1 == yearIndex) {
+      //   return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+      // }
+    // }
+    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+  }
+}
+
+
+export const getDistinctKmpMembersCompanywise = async({ user, params }, res, next) => {
+  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  if (distinctYears.length > 0) {
+    let distinctBoardMembers = [], distinctKmpMembers = [];
+    // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      let year = distinctYears[1];
+      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: year, status: true })
+      .populate('companyId');
+      console.log('allKmpMembersofYear.length', allKmpMembersofYear.length);
+      let uniqKmpMembers = _.uniqBy(allKmpMembersofYear, 'memberName');
+      console.log('uniqKmpMembers length', uniqKmpMembers.length);
+      for (let kmpmIndex = 0; kmpmIndex < uniqKmpMembers.length; kmpmIndex++) {
+        let memberDetail = uniqKmpMembers[kmpmIndex];
+        console.log('kmp member', kmpmIndex, memberDetail);
+        let memberObject = {
+          // kmpMemberMatrixId: memberDetail.id,
+          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+          memberName: memberDetail.memberName,
+          expectedName: memberDetail.memberName,
+          year: year
+        };
+        let foundKmpMemberIndex = distinctKmpMembers.indexOf(memberObject);
+        console.log('foundKmpMemberIndex', foundKmpMemberIndex);
+        if (foundKmpMemberIndex == -1) {
+          distinctKmpMembers.push(memberObject);
+        }
+      }
+    //   if (distinctYears.length-1 == yearIndex) {
+    //     return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+    //   }
+    // }
+    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+  }
 }

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, activeMemberlist, updateEndDate } from './controller'
+import { create, index, show, update, destroy, activeMemberlist, updateEndDate, getDistinctBoardMembersCompanywise, getDistinctKmpMembersCompanywise } from './controller'
 import { schema } from './model'
 export BoardMembers, { schema } from './model'
 
@@ -97,6 +97,36 @@ updateEndDate)
 router.get('/:id',
   token({ required: true }),
   show)
+
+/**
+ * @api {get} /boardMembers/all/board-members/allyears Retrieve All board members
+ * @apiName RetrieveAllBoardMembers
+ * @apiGroup BoardMembers
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} boardMembers Board members's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Board members not found.
+ * @apiError 401 user access only.
+ */
+  router.get('/all/board-members/allyears',
+  token({ required: true }),
+  getDistinctBoardMembersCompanywise)
+
+/**
+ * @api {get} /boardMembers/all/kmp-members/allyears Retrieve All kmp members
+ * @apiName RetrieveAllKmpMembers
+ * @apiGroup BoardMembers
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} boardMembers Board members's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Board members not found.
+ * @apiError 401 user access only.
+ */
+  router.get('/all/kmp-members/allyears',
+  token({ required: true }),
+  getDistinctKmpMembersCompanywise)
 
 /**
  * @api {put} /boardMembers/:id Update board members

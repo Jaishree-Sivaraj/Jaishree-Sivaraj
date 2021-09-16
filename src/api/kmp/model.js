@@ -21,7 +21,7 @@ const kmpSchema = new Schema({
     type: String
   },
   memberStatus: {
-    type: String
+    type: Boolean
   },
   dob: {
     type: String
