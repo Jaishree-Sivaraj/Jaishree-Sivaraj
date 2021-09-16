@@ -8,7 +8,7 @@ export BoardMembers, { schema } from './model'
 
 const router = new Router()
 const { companyId, clientTaxonomyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus, status } = schema.tree
-let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[];
+let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[], isExecutiveType = '';
 /**
  * @api {post} /boardMembers Create board members
  * @apiName CreateBoardMembers
@@ -31,7 +31,7 @@ let memberName = "", nationality = "", gender = "", industrialExp = "", financia
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, memberName, startDate, endDate, endDateTimeStamp, dob, gender, nationality, financialExp, industrialExp, clientTaxonomyId }),
+  body({ companyId, memberName, startDate, endDate, endDateTimeStamp, dob, gender, nationality, financialExp, industrialExp, clientTaxonomyId , isExecutiveType}),
   create)
 
 /**

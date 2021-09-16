@@ -1,5 +1,6 @@
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { BoardMembers } from '.'
+import { Kmp } from '../kmp'
 import _ from 'lodash'
 
 export const create = async({ user, bodymen: { body } }, res, next) =>{
@@ -7,55 +8,50 @@ export const create = async({ user, bodymen: { body } }, res, next) =>{
   //   .then((boardMembers) => boardMembers.view(true))
   //   .then(success(res, 201))
   //   .catch(next)
-  try {
-  
+  try {  
+    let yearTimeStamp = 0;
   console.log(body.companyId, body.memberName, body.startDate, body.endDate, body.dob, body.gender, body.nationality, body.financialExp, body.industrialExp)
   let checkBoardMember = await BoardMembers.find({companyId:body.companyId, BOSP004: body.memberName})
   if(checkBoardMember.length > 0){    
     return res.status(402).json({
       message: "BoardMember already exists",
-    });
-       
+    });       
   } else {
     if(body.endDate != ""){      
-      let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
-      await BoardMembers.create({
+      yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);    
+    }
+    if(body.isExecutiveType = true){
+      await Kmp.create({
         companyId: body.companyId,
-        BOSP004: body.memberName, 
+        MASP003: body.memberName, 
         startDate: body.startDate, 
         endDate:body.endDate, 
         endDateTimeStamp: yearTimeStamp, 
         dob: body.dob, 
-        BODR005:body.gender, 
-        BODP001: body.nationality, 
-        BOSP005: body.financialExp, 
-        BOSP006: body.industrialExp,
+        MASR008:body.gender, 
         clientTaxonomyId: body.clientTaxonomyId,
         createdBy:user
-      });      
-      return res.status(200).json({
-        message: "BoardMember saved successfully"
-      });
-
-    } else{
-      await BoardMembers.create({
-        companyId: body.companyId,
-        BOSP004: body.memberName, 
-        startDate: body.startDate, 
-        endDate:body.endDate, 
-        endDateTimeStamp: 0, 
-        dob: body.dob, 
-        BODR005:body.gender, 
-        BODP001: body.nationality, 
-        BOSP005: body.financialExp, 
-        BOSP006: body.industrialExp,
-        clientTaxonomyId: body.clientTaxonomyId,
-        createdBy:user
-      });      
-      return res.status(200).json({
-        message: "BoardMember saved successfully"
-      });
-    } 
+      }).catch(err =>{
+        return res.status(500).json({ message: err.messgae ? err.message : "Failed to created executive user" })
+      })
+    }
+    await BoardMembers.create({
+      companyId: body.companyId,
+      BOSP004: body.memberName, 
+      startDate: body.startDate, 
+      endDate:body.endDate, 
+      endDateTimeStamp: yearTimeStamp, 
+      dob: body.dob, 
+      BODR005:body.gender, 
+      BODP001: body.nationality, 
+      BOSP005: body.financialExp, 
+      BOSP006: body.industrialExp,
+      clientTaxonomyId: body.clientTaxonomyId,
+      createdBy:user
+    });      
+    return res.status(200).json({
+      message: "BoardMember saved successfully"
+    }); 
   }  
  } catch (error) {
   return res.status(500).json({

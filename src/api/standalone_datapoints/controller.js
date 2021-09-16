@@ -1471,7 +1471,7 @@ export const dataCollection = async ({
               {$set: {isErrorAccepted: item.isAccepted}});
             }
             await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-            { $set: obj }, { upsert: true });
+            { $set: obj });
           //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -1542,7 +1542,7 @@ export const dataCollection = async ({
               {$set: {isErrorAccepted: item.isAccepted}});
             }
             await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              { $set: obj }, { upsert: true });
+              { $set: obj });
           //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -1613,7 +1613,7 @@ export const dataCollection = async ({
               {$set: {isErrorAccepted: item.isAccepted}});
             }
             await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-              { $set: obj }, { upsert: true });
+              { $set: obj });
           //}
         }
         for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
