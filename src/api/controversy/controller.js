@@ -8,6 +8,7 @@ import { Controversy } from '.'
 import { Companies } from '../companies'
 import { ClientTaxonomy } from '../clientTaxonomy'
 import { Datapoints } from '../datapoints'
+import { ControversyTasks } from "../controversy_tasks"
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Controversy.create({ ...body, createdBy: user })
@@ -47,6 +48,18 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         status: true,
         createdBy: user
       };
+      let controversyDetailsObject = {        
+        sourceName: body.source.sourceName,
+        sourceURL: body.source.url,
+        sourcePublicationDate: body.source.publicationDate,
+        response: body.response,
+        textSnippet: body.textSnippet,
+        pageNumber: body.pageNo,
+        screenShot: body.screenShot,
+        comments: body.comments,
+      };
+      controversyObject.controversyDetails.push(controversyDetailsObject);
+      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
@@ -83,6 +96,18 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         status: true,
         createdBy: user
       };
+      let controversyDetailsObject = {        
+        sourceName: body.source.sourceName,
+        sourceURL: body.source.url,
+        sourcePublicationDate: body.source.publicationDate,
+        response: body.response,
+        textSnippet: body.textSnippet,
+        pageNumber: body.pageNo,
+        screenShot: body.screenShot,
+        comments: body.comments,
+      };
+      controversyObject.controversyDetails.push(controversyDetailsObject)
+      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
       await Controversy.updateOne({ _id: params.id }, { $set: controversyObject })
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
