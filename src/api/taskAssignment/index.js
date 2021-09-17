@@ -322,8 +322,8 @@ router.delete('/:id',
   destroy)
 
 /**
-* @api {post} /getUsers to get 
-* @apiName CreateTaskAssignment
+* @api {post} /getAllAssignedUsers to get list of group members
+* @apiName GetGroupMembersListInTaskCreatePage
 * @apiGroup TaskAssignment
 * @apiPermission user
 * @apiParam {String} access_token user access token.
