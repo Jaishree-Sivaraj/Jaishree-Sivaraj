@@ -6,18 +6,14 @@
 	- [Authenticate](#authenticate)
 	- [AuthenticateOTP](#authenticateotp)
 	
-- [AverageSd](#averagesd)
-	- [Create average sd](#create-average-sd)
-	- [Delete average sd](#delete-average-sd)
-	- [Retrieve average sd](#retrieve-average-sd)
-	- [Retrieve average sds](#retrieve-average-sds)
-	- [Update average sd](#update-average-sd)
-	
 - [Batches](#batches)
 	- [Create batches](#create-batches)
+	- [Create batches from UI](#create-batches-from-ui)
 	- [Delete batches](#delete-batches)
 	- [Retrieve batches](#retrieve-batches)
+	- [Retrieve unassigned batches](#retrieve-unassigned-batches)
 	- [Update batches](#update-batches)
+	- [Update batch from UI](#update-batch-from-ui)
 	
 - [BoardMembers](#boardmembers)
 	- [Create board members](#create-board-members)
@@ -45,24 +41,28 @@
 	
 - [ClientTaxonomy](#clienttaxonomy)
 	- [Create client taxonomy](#create-client-taxonomy)
+	- [Create client taxonomy from UI](#create-client-taxonomy-from-ui)
 	- [Delete client taxonomy](#delete-client-taxonomy)
 	- [Retrieve client taxonomies](#retrieve-client-taxonomies)
 	- [Retrieve client taxonomy](#retrieve-client-taxonomy)
 	- [Update client taxonomy](#update-client-taxonomy)
+	- [Update client taxonomy from UI](#update-client-taxonomy-from-ui)
 	
 - [Companies](#companies)
 	- [Create companies](#create-companies)
 	- [Delete companies](#delete-companies)
 	- [Retrieve companies](#retrieve-companies)
+	- [Retrieve All unassingned companies of taxonomy](#retrieve-all-unassingned-companies-of-taxonomy)
 	- [Retrieve NIC](#retrieve-nic)
 	- [Update companies](#update-companies)
+	- [Update company members](#update-company-members)
+	- [Create companies](#create-companies)
 	
-- [CompanyRepAssignment](#companyrepassignment)
-	- [Create company rep assignment](#create-company-rep-assignment)
-	- [Delete company rep assignment](#delete-company-rep-assignment)
-	- [Retrieve company rep assignment](#retrieve-company-rep-assignment)
-	- [Retrieve company rep assignments](#retrieve-company-rep-assignments)
-	- [Update company rep assignment](#update-company-rep-assignment)
+- [CompaniesTasks](#companiestasks)
+	- [Create companies tasks](#create-companies-tasks)
+	- [Delete companies tasks](#delete-companies-tasks)
+	- [Retrieve companies tasks](#retrieve-companies-tasks)
+	- [Update companies tasks](#update-companies-tasks)
 	
 - [CompanyRepresentatives](#companyrepresentatives)
 	- [Create company representatives](#create-company-representatives)
@@ -70,28 +70,52 @@
 	- [Retrieve company representatives](#retrieve-company-representatives)
 	- [Update company representatives](#update-company-representatives)
 	
-- [CompanyTaxonomies](#companytaxonomies)
-	- [Create company taxonomies](#create-company-taxonomies)
-	- [Delete company taxonomies](#delete-company-taxonomies)
-	- [Retrieve company taxonomies](#retrieve-company-taxonomies)
-	- [Update company taxonomies](#update-company-taxonomies)
+- [CompanySources](#companysources)
+	- [Create company sources](#create-company-sources)
+	- [Delete company sources](#delete-company-sources)
+	- [Retrieve company sources](#retrieve-company-sources)
+	- [Update company sources](#update-company-sources)
 	
 - [Controversy](#controversy)
+	- [Add New controversy](#add-new-controversy)
 	- [Create controversy](#create-controversy)
 	- [Delete controversy](#delete-controversy)
+	- [Fetch Controversy for a datapoint](#fetch-controversy-for-a-datapoint)
 	- [Generate controversy JSON](#generate-controversy-json)
 	- [Retrieve controversies](#retrieve-controversies)
 	- [Retrieve controversy](#retrieve-controversy)
 	- [Update controversy](#update-controversy)
+	- [Update controversy from UI](#update-controversy-from-ui)
 	- [Upload controversy](#upload-controversy)
+	
+- [ControversyTaskHistories](#controversytaskhistories)
+	- [Create controversy task histories](#create-controversy-task-histories)
+	- [Delete controversy task histories](#delete-controversy-task-histories)
+	- [Retrieve controversy task histories](#retrieve-controversy-task-histories)
+	- [Update controversy task histories](#update-controversy-task-histories)
+	
+- [ControversyTasks](#controversytasks)
+	- [Create controversy tasks](#create-controversy-tasks)
+	- [Delete controversy tasks](#delete-controversy-tasks)
+	- [Retrieve controversy tasks](#retrieve-controversy-tasks)
+	- [Retrieve my pending controversy tasks](#retrieve-my-pending-controversy-tasks)
+	- [Update controversy task](#update-controversy-task)
+	- [Update controversy tasks](#update-controversy-tasks)
+	
+- [Dashboards](#dashboards)
+	- [Retrieve dashboards](#retrieve-dashboards)
 	
 - [Datapoints](#datapoints)
 	- [Add categoryId for datapoints](#add-categoryid-for-datapoints)
+	- [Add extraKeys for datapoints](#add-extrakeys-for-datapoints)
 	- [Add polarity for datapoints](#add-polarity-for-datapoints)
 	- [Create datapoints](#create-datapoints)
 	- [Delete datapoints](#delete-datapoints)
+	- [Get categorywise datapoints](#get-categorywise-datapoints)
 	- [Retrieve datapoints](#retrieve-datapoints)
 	- [Update datapoints](#update-datapoints)
+	- [Upload datapoints for a taxonomy](#upload-datapoints-for-a-taxonomy)
+	- [Get datapoints details](#get-datapoints-details)
 	
 - [DerivedDatapoints](#deriveddatapoints)
 	- [Calculate derived datapoints for a company](#calculate-derived-datapoints-for-a-company)
@@ -100,6 +124,7 @@
 	- [Generate JSON](#generate-json)
 	- [Retrieve derived datapoints](#retrieve-derived-datapoints)
 	- [Update derived datapoints](#update-derived-datapoints)
+	- [Update derived datapoints of AUDR002 for a NIC](#update-derived-datapoints-of-audr002-for-a-nic)
 	
 - [Employees](#employees)
 	- [Create employees](#create-employees)
@@ -107,18 +132,18 @@
 	- [Retrieve employees](#retrieve-employees)
 	- [Update employees](#update-employees)
 	
-- [Error](#error)
-	- [Create error](#create-error)
-	- [Delete error](#delete-error)
-	- [Retrieve error](#retrieve-error)
-	- [Retrieve errors](#retrieve-errors)
-	- [Update error](#update-error)
-	
 - [ErrorDetails](#errordetails)
 	- [Create error details](#create-error-details)
 	- [Delete error details](#delete-error-details)
 	- [Retrieve error details](#retrieve-error-details)
 	- [Update error details](#update-error-details)
+	
+- [Errors](#errors)
+	- [Create error](#create-error)
+	- [Delete error](#delete-error)
+	- [Retrieve error](#retrieve-error)
+	- [Retrieve errors](#retrieve-errors)
+	- [Update error](#update-error)
 	
 - [Functions](#functions)
 	- [Create functions](#create-functions)
@@ -126,26 +151,20 @@
 	- [Retrieve functions](#retrieve-functions)
 	- [Update functions](#update-functions)
 	
-- [GroupAnalyst](#groupanalyst)
-	- [Create group analyst](#create-group-analyst)
-	- [Delete group analyst](#delete-group-analyst)
-	- [Retrieve group analyst](#retrieve-group-analyst)
-	- [Retrieve group analysts](#retrieve-group-analysts)
-	- [Update group analyst](#update-group-analyst)
-	
 - [Group](#group)
 	- [Create group](#create-group)
+	- [Create group from UI](#create-group-from-ui)
 	- [Delete group](#delete-group)
-	- [Retrieve group](#retrieve-group)
+	- [Retrieve group by id](#retrieve-group-by-id)
 	- [Retrieve groups](#retrieve-groups)
 	- [Update group](#update-group)
+	- [Update group from UI](#update-group-from-ui)
 	
-- [GroupQa](#groupqa)
-	- [Create group qa](#create-group-qa)
-	- [Delete group qa](#delete-group-qa)
-	- [Retrieve group qa](#retrieve-group-qa)
-	- [Retrieve group qas](#retrieve-group-qas)
-	- [Update group qa](#update-group-qa)
+- [JsonFiles](#jsonfiles)
+	- [Create json files](#create-json-files)
+	- [Delete json files](#delete-json-files)
+	- [Retrieve json files](#retrieve-json-files)
+	- [Update json files](#update-json-files)
 	
 - [KeyIssues](#keyissues)
 	- [Create key issues](#create-key-issues)
@@ -166,12 +185,12 @@
 	- [Retrieve kmp matrix data points](#retrieve-kmp-matrix-data-points)
 	- [Update kmp matrix data points](#update-kmp-matrix-data-points)
 	
-- [MasterTaxonomy](#mastertaxonomy)
-	- [Create master taxonomy](#create-master-taxonomy)
-	- [Delete master taxonomy](#delete-master-taxonomy)
-	- [Retrieve master taxonomies](#retrieve-master-taxonomies)
-	- [Retrieve master taxonomy](#retrieve-master-taxonomy)
-	- [Update master taxonomy](#update-master-taxonomy)
+- [Notifications](#notifications)
+	- [Create notifications](#create-notifications)
+	- [Delete notifications](#delete-notifications)
+	- [Retrieve My notifications](#retrieve-my-notifications)
+	- [Retrieve notifications](#retrieve-notifications)
+	- [Update notifications](#update-notifications)
 	
 - [PasswordReset](#passwordreset)
 	- [Send email](#send-email)
@@ -179,18 +198,19 @@
 	- [Verify token](#verify-token)
 	
 - [PolarityRules](#polarityrules)
+	- [Add Extra Keys](#add-extra-keys)
 	- [Create polarity rules](#create-polarity-rules)
 	- [Delete polarity rules](#delete-polarity-rules)
+	- [Retrieve mock percentile calculation](#retrieve-mock-percentile-calculation)
 	- [Retrieve percentile calculation](#retrieve-percentile-calculation)
 	- [Retrieve polarity rules](#retrieve-polarity-rules)
 	- [Update polarity rules](#update-polarity-rules)
 	
-- [Reference](#reference)
-	- [Create reference](#create-reference)
-	- [Delete reference](#delete-reference)
-	- [Retrieve reference](#retrieve-reference)
-	- [Retrieve references](#retrieve-references)
-	- [Update reference](#update-reference)
+- [ProjectedValues](#projectedvalues)
+	- [Create projected values](#create-projected-values)
+	- [Delete projected values](#delete-projected-values)
+	- [Retrieve projected values](#retrieve-projected-values)
+	- [Update projected values](#update-projected-values)
 	
 - [Role](#role)
 	- [Create role](#create-role)
@@ -200,10 +220,23 @@
 	- [Update role](#update-role)
 	
 - [Rules](#rules)
+	- [Add extra-keys for rules](#add-extra-keys-for-rules)
 	- [Create rules](#create-rules)
 	- [Delete rules](#delete-rules)
 	- [Retrieve rules](#retrieve-rules)
 	- [Update rules](#update-rules)
+	
+- [SourceSubTypes](#sourcesubtypes)
+	- [Create source sub types](#create-source-sub-types)
+	- [Delete source sub types](#delete-source-sub-types)
+	- [Retrieve source sub types](#retrieve-source-sub-types)
+	- [Update source sub types](#update-source-sub-types)
+	
+- [SourceTypes](#sourcetypes)
+	- [Create source types](#create-source-types)
+	- [Delete source types](#delete-source-types)
+	- [Retrieve source types](#retrieve-source-types)
+	- [Update source types](#update-source-types)
 	
 - [StandaloneDatapoints](#standalonedatapoints)
 	- [Create standalone datapoints](#create-standalone-datapoints)
@@ -216,12 +249,19 @@
 	- [Create task assignment](#create-task-assignment)
 	- [Delete task assignment](#delete-task-assignment)
 	- [Retrieve task assignment](#retrieve-task-assignment)
-	- [Retrieve task assignments](#retrieve-task-assignments)
+	- [Retrieve my task assignments](#retrieve-my-task-assignments)
 	- [Update task assignment](#update-task-assignment)
+	
+- [TaskHistories](#taskhistories)
+	- [Create task histories](#create-task-histories)
+	- [Delete task histories](#delete-task-histories)
+	- [Retrieve task histories](#retrieve-task-histories)
+	- [Update task histories](#update-task-histories)
 	
 - [TaskSlaLog](#taskslalog)
 	- [Create task sla log](#create-task-sla-log)
 	- [Delete task sla log](#delete-task-sla-log)
+	- [Request for extension of task sla date](#request-for-extension-of-task-sla-date)
 	- [Retrieve task sla log](#retrieve-task-sla-log)
 	- [Retrieve task sla logs](#retrieve-task-sla-logs)
 	- [Update task sla log](#update-task-sla-log)
@@ -241,15 +281,27 @@
 - [User](#user)
 	- [Create user](#create-user)
 	- [Delete user](#delete-user)
+	- [Upload EmailsFile](#upload-emailsfile)
 	- [Onboard new user](#onboard-new-user)
 	- [Retrieve current user](#retrieve-current-user)
 	- [Retrieve user](#retrieve-user)
 	- [Retrieve users](#retrieve-users)
 	- [Retrieve users approvals](#retrieve-users-approvals)
-	- [Retrieve users by role](#retrieve-users-by-role)
+	- [Retrieve User by roles](#retrieve-user-by-roles)
+	- [send onboarding links](#send-onboarding-links)
 	- [Update password](#update-password)
 	- [Update user](#update-user)
+	- [Update user roles](#update-user-roles)
 	- [Update user status](#update-user-status)
+	- [to get](#to-get)
+	- [user filter](#user-filter)
+	
+- [UserPillarAssignments](#userpillarassignments)
+	- [Create user pillar assignments](#create-user-pillar-assignments)
+	- [Delete user pillar assignments](#delete-user-pillar-assignments)
+	- [Retrieve user pillar assignments](#retrieve-user-pillar-assignments)
+	- [Update user pillar assignments](#update-user-pillar-assignments)
+	- [User pillar assignments from UI](#user-pillar-assignments-from-ui)
 	
 - [ValidationRules](#validationrules)
 	- [Create validation rules](#create-validation-rules)
@@ -260,7 +312,9 @@
 - [Validations](#validations)
 	- [Create validations](#create-validations)
 	- [Delete validations](#delete-validations)
-	- [Retrieve validations](#retrieve-validations)
+	- [](#)
+	- [Type3 Validations](#type3-validations)
+	- [Type8 Validations](#type8-validations)
 	- [Update validations](#update-validations)
 	
 - [Ztables](#ztables)
@@ -285,12 +339,6 @@
 |---------|-----------|--------------------------------------|
 | Authorization			| String			|  <p>Basic authorization with email and password.</p>							|
 
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>Master access_token.</p>							|
-
 ## AuthenticateOTP
 
 
@@ -306,86 +354,6 @@
 | email			| String			|  <p>User's email.</p>							|
 | otp			| String			|  <p>User's otp.</p>							|
 
-# AverageSd
-
-## Create average sd
-
-
-
-	POST /average_sd
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| companyId			| 			|  <p>Average sd's companyId.</p>							|
-| year			| 			|  <p>Average sd's year.</p>							|
-| stdDeviation			| 			|  <p>Average sd's stdDeviation.</p>							|
-| status			| 			|  <p>Average sd's status.</p>							|
-
-## Delete average sd
-
-
-
-	DELETE /average_sd/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve average sd
-
-
-
-	GET /average_sd/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve average sds
-
-
-
-	GET /average_sd
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
-
-## Update average sd
-
-
-
-	PUT /average_sd/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| companyId			| 			|  <p>Average sd's companyId.</p>							|
-| year			| 			|  <p>Average sd's year.</p>							|
-| stdDeviation			| 			|  <p>Average sd's stdDeviation.</p>							|
-| status			| 			|  <p>Average sd's status.</p>							|
-
 # Batches
 
 ## Create batches
@@ -400,8 +368,27 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| clientTaxonomy			| 			|  <p>Batches's clientTaxonomy.</p>							|
 | batchName			| 			|  <p>Batches's batchName.</p>							|
-| batchSLA			| 			|  <p>Batches's batchSLA.</p>							|
+| years			| 			|  <p>Batches's years.</p>							|
+| companiesList			| 			|  <p>Batches's companiesList.</p>							|
+
+## Create batches from UI
+
+
+
+	POST /batches/create
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taxonomy			| 			|  <p>Batches's taxonomy.</p>							|
+| batchName			| 			|  <p>Batches's batchName.</p>							|
+| years			| 			|  <p>Batches's years.</p>							|
+| companies			| 			|  <p>Batches's companies.</p>							|
 
 ## Delete batches
 
@@ -434,6 +421,24 @@
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
+## Retrieve unassigned batches
+
+
+
+	GET /batches/all/unassigned
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
 ## Update batches
 
 
@@ -446,8 +451,28 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| clientTaxonomy			| 			|  <p>Batches's clientTaxonomy.</p>							|
 | batchName			| 			|  <p>Batches's batchName.</p>							|
-| batchSLA			| 			|  <p>Batches's batchSLA.</p>							|
+| years			| 			|  <p>Batches's years.</p>							|
+| companiesList			| 			|  <p>Batches's companiesList.</p>							|
+| status			| 			|  <p>Batches's status.</p>							|
+
+## Update batch from UI
+
+
+
+	PUT /batches/update/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taxonomy			| 			|  <p>Batches's taxonomy.</p>							|
+| batchName			| 			|  <p>Batches's batchName.</p>							|
+| years			| 			|  <p>Batches's years.</p>							|
+| companies			| 			|  <p>Batches's companies.</p>							|
 | status			| 			|  <p>Batches's status.</p>							|
 
 # BoardMembers
@@ -465,9 +490,14 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | companyId			| 			|  <p>Board members's companyId.</p>							|
-| boardMemberName			| 			|  <p>Board members's boardMemberName.</p>							|
-| year			| 			|  <p>Board members's year.</p>							|
-| memberStatus			| 			|  <p>Board members's memberStatus.</p>							|
+| memberName			| 			|  <p>Board members's name.</p>							|
+| startDate			| 			|  <p>Board members's startDate.</p>							|
+| dob			| 			|  <p>Board members's dob.</p>							|
+| gender			| 			|  <p>Board members's Gender.</p>							|
+| nationality			| 			|  <p>Board members's Nationality.</p>							|
+| industrialExp			| 			|  <p>Board members's IndustryExperience.</p>							|
+| financialExp			| 			|  <p>Board members's FinanicialExpertise.</p>							|
+| endDateTimeStamp			| 			|  <p>EndDate TimeStamp</p>							|
 
 ## Delete board members
 
@@ -513,10 +543,14 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | companyId			| 			|  <p>Board members's companyId.</p>							|
-| boardMemberName			| 			|  <p>Board members's boardMemberName.</p>							|
-| year			| 			|  <p>Board members's year.</p>							|
-| memberStatus			| 			|  <p>Board members's memberStatus.</p>							|
-| status			| 			|  <p>Board members's status.</p>							|
+| BOSP004			| 			|  <p>Board members's name.</p>							|
+| startDate			| 			|  <p>Board members's startDate.</p>							|
+| dob			| 			|  <p>Board members's dob.</p>							|
+| BODR005			| 			|  <p>Board members's Gender.</p>							|
+| BODP001			| 			|  <p>Board members's Nationality.</p>							|
+| BOSP005			| 			|  <p>Board members's IndustryExperience.</p>							|
+| BOSP006			| 			|  <p>Board members's FinanicialExpertise.</p>							|
+| endDateTimeStamp			| 			|  <p>EndDate TimeStamp</p>							|
 
 # BoardMembersMatrixDataPoints
 
@@ -609,6 +643,7 @@
 | categoryName			| 			|  <p>Categories's categoryName.</p>							|
 | categoryCode			| 			|  <p>Categories's categoryCode.</p>							|
 | categoryDescription			| 			|  <p>Categories's categoryDescription.</p>							|
+| clientTaxonomyId			| 			|  <p>Categories's clientTaxonomyId.</p>							|
 
 ## Delete categories
 
@@ -657,6 +692,7 @@
 | categoryCode			| 			|  <p>Categories's categoryCode.</p>							|
 | categoryDescription			| 			|  <p>Categories's categoryDescription.</p>							|
 | status			| 			|  <p>Categories's status.</p>							|
+| clientTaxonomyId			| 			|  <p>Categories's clientTaxonomyId.</p>							|
 
 # ClientRepresentatives
 
@@ -674,7 +710,7 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | userId			| 			|  <p>Client representatives's userId.</p>							|
 | name			| 			|  <p>Client representatives's name.</p>							|
-| companyId			| 			|  <p>Client representatives's companyId.</p>							|
+| CompanyName			| 			|  <p>Client representatives's CompanyName.</p>							|
 | authenticationLetterForClientUrl			| 			|  <p>Client representatives's authenticationLetterForClientUrl.</p>							|
 | companyIdForClient			| 			|  <p>Client representatives's companyIdForClient.</p>							|
 | status			| 			|  <p>Client representatives's status.</p>							|
@@ -724,7 +760,7 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | userId			| 			|  <p>Client representatives's userId.</p>							|
 | name			| 			|  <p>Client representatives's name.</p>							|
-| companyId			| 			|  <p>Client representatives's companyId.</p>							|
+| CompanyName			| 			|  <p>Client representatives's CompanyName.</p>							|
 | authenticationLetterForClientUrl			| 			|  <p>Client representatives's authenticationLetterForClientUrl.</p>							|
 | companyIdForClient			| 			|  <p>Client representatives's companyIdForClient.</p>							|
 | status			| 			|  <p>Client representatives's status.</p>							|
@@ -745,6 +781,21 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | taxonomyName			| 			|  <p>Client taxonomy's taxonomyName.</p>							|
 | fields			| 			|  <p>Client taxonomy's fields.</p>							|
+
+## Create client taxonomy from UI
+
+
+
+	POST /clientTaxonomies/create
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taxonomyName			| 			|  <p>Client taxonomy's taxonomyName.</p>							|
+| headers			| 			|  <p>Client taxonomy's headers.</p>							|
 
 ## Delete client taxonomy
 
@@ -804,6 +855,23 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | taxonomyName			| 			|  <p>Client taxonomy's taxonomyName.</p>							|
 | fields			| 			|  <p>Client taxonomy's fields.</p>							|
+| status			| 			|  <p>Client taxonomy's status.</p>							|
+
+## Update client taxonomy from UI
+
+
+
+	PUT /clientTaxonomies/update/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taxonomyName			| 			|  <p>Client taxonomy's taxonomyName.</p>							|
+| fields			| 			|  <p>Client taxonomy's fields.</p>							|
+| status			| 			|  <p>Client taxonomy's status.</p>							|
 
 # Companies
 
@@ -819,6 +887,7 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| clientTaxonomyId			| 			|  <p>Companies's clientTaxonomyId.</p>							|
 | companyName			| 			|  <p>Companies's companyName.</p>							|
 | cin			| 			|  <p>Companies's cin.</p>							|
 | nicCode			| 			|  <p>Companies's nicCode.</p>							|
@@ -826,8 +895,6 @@
 | nicIndustry			| 			|  <p>Companies's nicIndustry.</p>							|
 | isinCode			| 			|  <p>Companies's isinCode.</p>							|
 | cmieProwessCode			| 			|  <p>Companies's cmieProwessCode.</p>							|
-| socialAnalystName			| 			|  <p>Companies's socialAnalystName.</p>							|
-| socialQAName			| 			|  <p>Companies's socialQAName.</p>							|
 
 ## Delete companies
 
@@ -847,6 +914,23 @@
 
 
 	GET /companies
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Retrieve All unassingned companies of taxonomy
+
+
+
+	GET /companies/all/unassigned/:clientTaxonomyId
 
 
 ### Parameters
@@ -890,6 +974,7 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| clientTaxonomyId			| 			|  <p>Companies's clientTaxonomyId.</p>							|
 | companyName			| 			|  <p>Companies's companyName.</p>							|
 | cin			| 			|  <p>Companies's cin.</p>							|
 | nicCode			| 			|  <p>Companies's nicCode.</p>							|
@@ -897,93 +982,109 @@
 | nicIndustry			| 			|  <p>Companies's nicIndustry.</p>							|
 | isinCode			| 			|  <p>Companies's isinCode.</p>							|
 | cmieProwessCode			| 			|  <p>Companies's cmieProwessCode.</p>							|
-| socialAnalystName			| 			|  <p>Companies's socialAnalystName.</p>							|
-| socialQAName			| 			|  <p>Companies's socialQAName.</p>							|
+| companyMemberDetails			| 			|  <p>Companies's companyMemberDetails.</p>							|
+| fiscalYearEndDate			| 			|  <p>Companies's fiscalYearEndDate.</p>							|
+| fiscalYearEndMonth			| 			|  <p>Companies's fiscalYearEndMonth.</p>							|
+| isAssignedToBatch			| 			|  <p>Companies's isAssignedToBatch.</p>							|
 | status			| 			|  <p>Companies's status.</p>							|
 
-# CompanyRepAssignment
-
-## Create company rep assignment
+## Update company members
 
 
 
-	POST /companyRepAssignment
+	PUT /companies/add/member
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
-| userId			| 			|  <p>Company rep assignment's userId.</p>							|
-| assignedId			| 			|  <p>Company rep assignment's assignedId.</p>							|
-| assignedDate			| 			|  <p>Company rep assignment's assignedDate.</p>							|
-| status			| 			|  <p>Company rep assignment's status.</p>							|
-| createdAt			| 			|  <p>Company rep assignment's createdAt.</p>							|
-| updatedAt			| 			|  <p>Company rep assignment's updatedAt.</p>							|
+| access_token			| String			|  <p>user access token.</p>							|
+| companyId			| 			|  <p>Companies's companyId.</p>							|
+| name			| 			|  <p>Companies's name.</p>							|
+| years			| 			|  <p>Companies's years.</p>							|
+| memberType			| 			|  <p>Companies's memberType.</p>							|
 
-## Delete company rep assignment
+## Create companies
 
 
 
-	DELETE /companyRepAssignment/:id
+	POST /companies/upload-companies-file
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
+| access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve company rep assignment
+# CompaniesTasks
 
-
-
-	GET /companyRepAssignment/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
-
-## Retrieve company rep assignments
+## Create companies tasks
 
 
 
-	GET /companyRepAssignment
+	POST /companies_tasks
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Companies tasks's taskId.</p>							|
+| companyId			| 			|  <p>Companies tasks's companyId.</p>							|
+| year			| 			|  <p>Companies tasks's year.</p>							|
+| categoryId			| 			|  <p>Companies tasks's categoryId.</p>							|
+
+## Delete companies tasks
+
+
+
+	DELETE /companies_tasks/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve companies tasks
+
+
+
+	GET /companies_tasks
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
 | q			| String			| **optional** <p>Query to search.</p>							|
 | page			| Number			| **optional** <p>Page number.</p>							|
 | limit			| Number			| **optional** <p>Amount of returned items.</p>							|
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
-## Update company rep assignment
+## Update companies tasks
 
 
 
-	PUT /companyRepAssignment/:id
+	PUT /companies_tasks/:id
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
-| userId			| 			|  <p>Company rep assignment's userId.</p>							|
-| assignedId			| 			|  <p>Company rep assignment's assignedId.</p>							|
-| assignedDate			| 			|  <p>Company rep assignment's assignedDate.</p>							|
-| status			| 			|  <p>Company rep assignment's status.</p>							|
-| createdAt			| 			|  <p>Company rep assignment's createdAt.</p>							|
-| updatedAt			| 			|  <p>Company rep assignment's updatedAt.</p>							|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Companies tasks's taskId.</p>							|
+| companyId			| 			|  <p>Companies tasks's companyId.</p>							|
+| year			| 			|  <p>Companies tasks's year.</p>							|
+| categoryId			| 			|  <p>Companies tasks's categoryId.</p>							|
+| status			| 			|  <p>Companies tasks's status.</p>							|
 
 # CompanyRepresentatives
 
@@ -1056,71 +1157,79 @@
 | companyIdForCompany			| 			|  <p>Company representatives's companyIdForCompany.</p>							|
 | status			| 			|  <p>Company representatives's status.</p>							|
 
-# CompanyTaxonomies
+# CompanySources
 
-## Create company taxonomies
-
-
-
-	POST /company_taxonomies
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| companyId			| 			|  <p>Company taxonomies's companyId.</p>							|
-| taxonomies			| 			|  <p>Company taxonomies's taxonomies.</p>							|
-
-## Delete company taxonomies
+## Create company sources
 
 
 
-	DELETE /company_taxonomies/:id
+	POST /companySources
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
+| sourceTypeId			| 			|  <p>Company sources's sourceTypeId.</p>							|
+| sourceurl			| 			|  <p>Company sources's sourceurl.</p>							|
+| sourceFile			| 			|  <p>Company sources's sourceFile.</p>							|
+| publicationDate			| 			|  <p>Company sources's publicationDate.</p>							|
 
-## Retrieve company taxonomies
+## Delete company sources
 
 
 
-	GET /company_taxonomies
+	DELETE /companySources/:id
+
+
+## Retrieve company sources
+
+
+
+	GET /companySources/:id
+
+
+## Update company sources
+
+
+
+	PUT /companySources/:id
 
 
 ### Parameters
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
-
-## Update company taxonomies
-
-
-
-	PUT /company_taxonomies/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| companyId			| 			|  <p>Company taxonomies's companyId.</p>							|
-| taxonomies			| 			|  <p>Company taxonomies's taxonomies.</p>							|
-| status			| 			|  <p>Company taxonomies's status.</p>							|
+| sourceTypeId			| 			|  <p>Company sources's sourceTypeId.</p>							|
+| sourceurl			| 			|  <p>Company sources's sourceurl.</p>							|
+| sourceFile			| 			|  <p>Company sources's sourceFile.</p>							|
+| publicationDate			| 			|  <p>Company sources's publicationDate.</p>							|
 
 # Controversy
+
+## Add New controversy
+
+
+
+	POST /controversies/add/new-controversy
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| dpCodeId			| 			|  <p>Controversy's dpCodeId.</p>							|
+| companyId			| 			|  <p>Controversy's companyId.</p>							|
+| taskId			| 			|  <p>Controversy's taskId.</p>							|
+| source			| 			|  <p>Controversy's source.</p>							|
+| response			| 			|  <p>Controversy's response.</p>							|
+| textSnippet			| 			|  <p>Controversy's textSnippet.</p>							|
+| screenShot			| 			|  <p>Controversy's screenShot.</p>							|
+| pageNo			| 			|  <p>Controversy's pageNo.</p>							|
+| comments			| 			|  <p>Controversy's comments.</p>							|
+| additionalDetails			| 			|  <p>Controversy's additionalDetails.</p>							|
+| nextReviewDate			| 			|  <p>Controversy's nextReviewDate.</p>							|
 
 ## Create controversy
 
@@ -1138,14 +1247,30 @@
 | companyId			| 			|  <p>Controversy's companyId.</p>							|
 | year			| 			|  <p>Controversy's year.</p>							|
 | controversyDetails			| 			|  <p>Controversy's controversyDetails.</p>							|
+| comments			| 			|  <p>Controversy's comments.</p>							|
 | submittedDate			| 			|  <p>Controversy's submittedDate.</p>							|
 | response			| 			|  <p>Controversy's response.</p>							|
+| additionalDetails			| 			|  <p>Controversy's additionalDetails.</p>							|
+| nextReviewDate			| 			|  <p>Controversy's nextReviewDate.</p>							|
 
 ## Delete controversy
 
 
 
 	DELETE /controversies/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Fetch Controversy for a datapoint
+
+
+
+	GET /controversies/fetch/:companyId/:datapointId
 
 
 ### Parameters
@@ -1214,8 +1339,33 @@
 | companyId			| 			|  <p>Controversy's companyId.</p>							|
 | year			| 			|  <p>Controversy's year.</p>							|
 | controversyDetails			| 			|  <p>Controversy's controversyDetails.</p>							|
+| comments			| 			|  <p>Controversy's comments.</p>							|
 | submittedDate			| 			|  <p>Controversy's submittedDate.</p>							|
+| nextReviewDate			| 			|  <p>Controversy's nextReviewDate.</p>							|
 | response			| 			|  <p>Controversy's response.</p>							|
+| additionalDetails			| 			|  <p>Controversy's additionalDetails.</p>							|
+
+## Update controversy from UI
+
+
+
+	PUT /controversies/update/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| datapointId			| 			|  <p>Controversy's datapointId.</p>							|
+| companyId			| 			|  <p>Controversy's companyId.</p>							|
+| year			| 			|  <p>Controversy's year.</p>							|
+| controversyDetails			| 			|  <p>Controversy's controversyDetails.</p>							|
+| comments			| 			|  <p>Controversy's comments.</p>							|
+| submittedDate			| 			|  <p>Controversy's submittedDate.</p>							|
+| nextReviewDate			| 			|  <p>Controversy's nextReviewDate.</p>							|
+| response			| 			|  <p>Controversy's response.</p>							|
+| additionalDetails			| 			|  <p>Controversy's additionalDetails.</p>							|
 
 ## Upload controversy
 
@@ -1230,6 +1380,201 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
+# ControversyTaskHistories
+
+## Create controversy task histories
+
+
+
+	POST /controversy_task_histories
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Controversy task histories's taskId.</p>							|
+| companyId			| 			|  <p>Cotories's companyId.</p>							|
+| analystId			| 			|  <p>Controversy task hid.</p>							|
+| stage			| 			|  <p>Controversy task histories's stage.</p>							|
+| status			| 			|  <p>Controversy task histories's status.</p>							|
+| createdBy			| 			|  <p>Controversy task histories's createdBy.</p>							|
+
+## Delete controversy task histories
+
+
+
+	DELETE /controversy_task_histories/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve controversy task histories
+
+
+
+	GET /controversy_task_histories
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update controversy task histories
+
+
+
+	PUT /controversy_task_histories/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Controversy task histories's taskId.</p>							|
+| companyId			| 			|  <p>Controversy task histories's companyId.</p>							|
+| analystId			| 			|  <p>Controversy task histories's analystId.</p>							|
+| stage			| 			|  <p>Controversy task histories's stage.</p>							|
+| status			| 			|  <p>Controversy task histories's status.</p>							|
+| createdBy			| 			|  <p>Controversy task histories's createdBy.</p>							|
+
+# ControversyTasks
+
+## Create controversy tasks
+
+
+
+	POST /controversy_tasks
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskNumber			| 			|  <p>Controversy tasks's taskNumber.</p>							|
+| companyId			| 			|  <p>Controversy tasks's companyId.</p>							|
+| analystId			| 			|  <p>Controversy tasks's analystId.</p>							|
+| taskStatus			| 			|  <p>Controversy tasks's taskStatus.</p>							|
+| completedDate			| 			|  <p>Controversy tasks's completedDate.</p>							|
+| status			| 			|  <p>Controversy tasks's status.</p>							|
+
+## Delete controversy tasks
+
+
+
+	DELETE /controversy_tasks/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve controversy tasks
+
+
+
+	GET /controversy_tasks
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Retrieve my pending controversy tasks
+
+
+
+	GET /controversy_tasks/my/pending-tasks
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update controversy task
+
+
+
+	POST /controversy_tasks/update-task
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| analyst			| 			|  <p>Controversy tasks's analyst.</p>							|
+| company			| 			|  <p>Controversy tasks's company.</p>							|
+
+## Update controversy tasks
+
+
+
+	PUT /controversy_tasks/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskNumber			| 			|  <p>Controversy tasks's taskNumber.</p>							|
+| companyId			| 			|  <p>Controversy tasks's companyId.</p>							|
+| analystId			| 			|  <p>Controversy tasks's analystId.</p>							|
+| taskStatus			| 			|  <p>Controversy tasks's taskStatus.</p>							|
+| completedDate			| 			|  <p>Controversy tasks's completedDate.</p>							|
+| status			| 			|  <p>Controversy tasks's status.</p>							|
+
+# Dashboards
+
+## Retrieve dashboards
+
+
+
+	GET /dashboards
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
 # Datapoints
 
 ## Add categoryId for datapoints
@@ -1237,6 +1582,19 @@
 
 
 	GET /datapoints/import-from-json/categoryId
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Add extraKeys for datapoints
+
+
+
+	GET /datapoints/addExtraKeys/:clientTaxonomyId
 
 
 ### Parameters
@@ -1279,7 +1637,6 @@
 | dataCollectionGuide			| 			|  <p>Datapoints's dataCollectionGuide.</p>							|
 | normalizedBy			| 			|  <p>Datapoints's normalizedBy.</p>							|
 | weighted			| 			|  <p>Datapoints's weighted.</p>							|
-| relevantForIndia			| 			|  <p>Datapoints's relevantForIndia.</p>							|
 | standaloneOrMatrix			| 			|  <p>Datapoints's standaloneOrMatrix.</p>							|
 | reference			| 			|  <p>Datapoints's reference.</p>							|
 | industryRelevant			| 			|  <p>Datapoints's industryRelevant.</p>							|
@@ -1296,6 +1653,19 @@
 
 
 	DELETE /datapoints/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Get categorywise datapoints
+
+
+
+	GET /datapoints/list/:taskId
 
 
 ### Parameters
@@ -1343,7 +1713,6 @@
 | dataCollectionGuide			| 			|  <p>Datapoints's dataCollectionGuide.</p>							|
 | normalizedBy			| 			|  <p>Datapoints's normalizedBy.</p>							|
 | weighted			| 			|  <p>Datapoints's weighted.</p>							|
-| relevantForIndia			| 			|  <p>Datapoints's relevantForIndia.</p>							|
 | standaloneOrMatrix			| 			|  <p>Datapoints's standaloneOrMatrix.</p>							|
 | reference			| 			|  <p>Datapoints's reference.</p>							|
 | industryRelevant			| 			|  <p>Datapoints's industryRelevant.</p>							|
@@ -1356,6 +1725,36 @@
 | dpType			| 			|  <p>Datapoints's dpType.</p>							|
 | dpStatus			| 			|  <p>Datapoints's dpStatus.</p>							|
 | status			| 			|  <p>Datapoints's status.</p>							|
+
+## Upload datapoints for a taxonomy
+
+
+
+	POST /datapoints/upload
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Get datapoints details
+
+
+
+	POST /datapoints/dpDetails
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| taskId			| 			|  <p>.</p>							|
+| datapointId			| 			|  <p>Datapoints's Id.</p>							|
+| memberName			| 			|  <p>Member's name.</p>							|
+| memberType			| 			|  <p>Member's type.</p>							|
+| access_token			| String			|  <p>user access token.</p>							|
 
 # DerivedDatapoints
 
@@ -1458,6 +1857,19 @@
 | lastModifiedDate			| 			|  <p>Derived datapoints's lastModifiedDate.</p>							|
 | status			| 			|  <p>Derived datapoints's status.</p>							|
 
+## Update derived datapoints of AUDR002 for a NIC
+
+
+
+	GET /derived_datapoints/update/audr002/:nic
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
 # Employees
 
 ## Create employees
@@ -1543,7 +1955,81 @@
 | cancelledChequeUrl			| 			|  <p>Employees's cancelledChequeUrl.</p>							|
 | status			| 			|  <p>Employees's status.</p>							|
 
-# Error
+# ErrorDetails
+
+## Create error details
+
+
+
+	POST /errorDetails/saveErrorDetails
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| pillarId			| 			|  <p>Error details's pillarId.</p>							|
+| taskId			| 			|  <p>Error details's taskId.</p>							|
+| companyId			| 			|  <p>Error details's companyId.</p>							|
+| dpCodeId			| 			|  <p>Error details's dpCodeId.</p>							|
+| memberName			| 			|  <p>Error details's memberName.</p>							|
+| memberType			| 			|  <p>Error details's memberType.</p>							|
+| currentData			| 			|  <p>Error details's currentData.</p>							|
+
+## Delete error details
+
+
+
+	DELETE /errorDetails/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve error details
+
+
+
+	GET /errorDetails
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update error details
+
+
+
+	PUT /errorDetails/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| errorTypeId			| 			|  <p>Error details's errorTypeId.</p>							|
+| taskId			| 			|  <p>Error details's taskId.</p>							|
+| loggedBy			| 			|  <p>Error details's loggedBy.</p>							|
+| comments			| 			|  <p>Error details's comments.</p>							|
+| errorLoggedDate			| 			|  <p>Error details's errorLoggedDate.</p>							|
+| errorStatus			| 			|  <p>Error details's errorStatus.</p>							|
+| standaloneId			| 			|  <p>Error details's standaloneId.</p>							|
+| status			| 			|  <p>Error details's status.</p>							|
+
+# Errors
 
 ## Create error
 
@@ -1623,80 +2109,6 @@
 | errorDefenition			| 			|  <p>Error's errorDefenition.</p>							|
 | status			| 			|  <p>Error's status.</p>							|
 
-# ErrorDetails
-
-## Create error details
-
-
-
-	POST /errorDetails
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| errorTypeId			| 			|  <p>Error details's errorTypeId.</p>							|
-| taskId			| 			|  <p>Error details's taskId.</p>							|
-| loggedBy			| 			|  <p>Error details's loggedBy.</p>							|
-| comments			| 			|  <p>Error details's comments.</p>							|
-| errorLoggedDate			| 			|  <p>Error details's errorLoggedDate.</p>							|
-| errorStatus			| 			|  <p>Error details's errorStatus.</p>							|
-| standaloneId			| 			|  <p>Error details's standaloneId.</p>							|
-
-## Delete error details
-
-
-
-	DELETE /errorDetails/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve error details
-
-
-
-	GET /errorDetails
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
-
-## Update error details
-
-
-
-	PUT /errorDetails/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| errorTypeId			| 			|  <p>Error details's errorTypeId.</p>							|
-| taskId			| 			|  <p>Error details's taskId.</p>							|
-| loggedBy			| 			|  <p>Error details's loggedBy.</p>							|
-| comments			| 			|  <p>Error details's comments.</p>							|
-| errorLoggedDate			| 			|  <p>Error details's errorLoggedDate.</p>							|
-| errorStatus			| 			|  <p>Error details's errorStatus.</p>							|
-| standaloneId			| 			|  <p>Error details's standaloneId.</p>							|
-| status			| 			|  <p>Error details's status.</p>							|
-
 # Functions
 
 ## Create functions
@@ -1759,83 +2171,6 @@
 | functionType			| 			|  <p>Functions's functionType.</p>							|
 | status			| 			|  <p>Functions's status.</p>							|
 
-# GroupAnalyst
-
-## Create group analyst
-
-
-
-	POST /groupAnalysts
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| userId			| 			|  <p>Group analyst's userId.</p>							|
-| groupId			| 			|  <p>Group analyst's groupId.</p>							|
-
-## Delete group analyst
-
-
-
-	DELETE /groupAnalysts/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve group analyst
-
-
-
-	GET /groupAnalysts/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve group analysts
-
-
-
-	GET /groupAnalysts
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
-
-## Update group analyst
-
-
-
-	PUT /groupAnalysts/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| userId			| 			|  <p>Group analyst's userId.</p>							|
-| groupId			| 			|  <p>Group analyst's groupId.</p>							|
-| status			| 			|  <p>Group analyst's status.</p>							|
-
 # Group
 
 ## Create group
@@ -1852,7 +2187,26 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | groupName			| 			|  <p>Group's groupName.</p>							|
 | groupAdmin			| 			|  <p>Group's groupAdmin.</p>							|
-| batchId			| 			|  <p>Group's batchId.</p>							|
+| batchList			| 			|  <p>Group's batchList.</p>							|
+| assignedMembers			| 			|  <p>Group's assignedMembers.</p>							|
+
+## Create group from UI
+
+
+
+	POST /groups/create
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| groupId			| 			|  <p>Group's groupId.</p>							|
+| grpName			| 			|  <p>Group's grpName.</p>							|
+| grpAdmin			| 			|  <p>Group's grpAdmin.</p>							|
+| grpMembers			| 			|  <p>Group's grpMembers.</p>							|
+| assignedBatches			| 			|  <p>Group's assignedBatches.</p>							|
 
 ## Delete group
 
@@ -1867,7 +2221,7 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve group
+## Retrieve group by id
 
 
 
@@ -1912,16 +2266,15 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | groupName			| 			|  <p>Group's groupName.</p>							|
 | groupAdmin			| 			|  <p>Group's groupAdmin.</p>							|
-| batchId			| 			|  <p>Group's batchId.</p>							|
+| assignedMembers			| 			|  <p>Group's assignedMembers.</p>							|
+| batchList			| 			|  <p>Group's batchList.</p>							|
 | status			| 			|  <p>Group's status.</p>							|
 
-# GroupQa
-
-## Create group qa
+## Update group from UI
 
 
 
-	POST /groupQAS
+	PUT /groups/update/:id
 
 
 ### Parameters
@@ -1929,14 +2282,38 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
-| userId			| 			|  <p>Group qa's userId.</p>							|
-| groupId			| 			|  <p>Group qa's groupId.</p>							|
+| grpName			| 			|  <p>Group's grpName.</p>							|
+| grpAdmin			| 			|  <p>Group's grpAdmin.</p>							|
+| assignedBatches			| 			|  <p>Group's assignedBatches.</p>							|
+| grpMembers			| 			|  <p>Group's grpMembers.</p>							|
+| status			| 			|  <p>Group's status.</p>							|
 
-## Delete group qa
+# JsonFiles
+
+## Create json files
 
 
 
-	DELETE /groupQAS/:id
+	POST /json_files
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| companyId			| 			|  <p>Json files's companyId.</p>							|
+| year			| 			|  <p>Json files's year.</p>							|
+| type			| 			|  <p>Json files's type.</p>							|
+| fileName			| 			|  <p>Json files's fileName.</p>							|
+| url			| 			|  <p>Json files's url.</p>							|
+| status			| 			|  <p>Json files's status.</p>							|
+
+## Delete json files
+
+
+
+	DELETE /json_files/:id
 
 
 ### Parameters
@@ -1945,24 +2322,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve group qa
+## Retrieve json files
 
 
 
-	GET /groupQAS/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Retrieve group qas
-
-
-
-	GET /groupQAS
+	GET /json_files
 
 
 ### Parameters
@@ -1976,11 +2340,11 @@
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
-## Update group qa
+## Update json files
 
 
 
-	PUT /groupQAS/:id
+	PUT /json_files/:id
 
 
 ### Parameters
@@ -1988,9 +2352,12 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
-| userId			| 			|  <p>Group qa's userId.</p>							|
-| groupId			| 			|  <p>Group qa's groupId.</p>							|
-| status			| 			|  <p>Group qa's status.</p>							|
+| companyId			| 			|  <p>Json files's companyId.</p>							|
+| year			| 			|  <p>Json files's year.</p>							|
+| type			| 			|  <p>Json files's type.</p>							|
+| fileName			| 			|  <p>Json files's fileName.</p>							|
+| url			| 			|  <p>Json files's url.</p>							|
+| status			| 			|  <p>Json files's status.</p>							|
 
 # KeyIssues
 
@@ -2075,9 +2442,12 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | companyId			| 			|  <p>Kmp's companyId.</p>							|
-| kmpMemberName			| 			|  <p>Kmp's kmpMemberName.</p>							|
-| memberStatus			| 			|  <p>Kmp's memberStatus.</p>							|
-| year			| 			|  <p>Kmp's year.</p>							|
+| MASP003			| 			|  <p>Kmp's kmpMemberName.</p>							|
+| startDate			| 			|  <p>Kmp's startDate.</p>							|
+| endDate			| 			|  <p>Kmp's endDate.</p>							|
+| endDateTimeStamp			| 			|  <p>Kmp's endDateTimeStamp.</p>							|
+| dob			| 			|  <p>Kmp's dob.</p>							|
+| MASR008			| 			|  <p>Kmp's gender.</p>							|
 
 ## Delete kmp
 
@@ -2109,7 +2479,7 @@
 
 
 
-	GET /kmp
+	GET /kmp/activeKmpMembers/:companyId
 
 
 ### Parameters
@@ -2136,9 +2506,12 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | companyId			| 			|  <p>Kmp's companyId.</p>							|
-| kmpMemberName			| 			|  <p>Kmp's kmpMemberName.</p>							|
-| memberStatus			| 			|  <p>Kmp's memberStatus.</p>							|
-| year			| 			|  <p>Kmp's year.</p>							|
+| MASP003			| 			|  <p>Kmp's kmpMemberName.</p>							|
+| startDate			| 			|  <p>Kmp's startDate.</p>							|
+| endDate			| 			|  <p>Kmp's endDate.</p>							|
+| endDateTimeStamp			| 			|  <p>Kmp's endDateTimeStamp.</p>							|
+| dob			| 			|  <p>Kmp's dob.</p>							|
+| MASR008			| 			|  <p>Kmp's gender.</p>							|
 | status			| 			|  <p>Kmp's status.</p>							|
 
 # KmpMatrixDataPoints
@@ -2215,27 +2588,13 @@
 | memberStatus			| 			|  <p>Kmp matrix data points's memberStatus.</p>							|
 | status			| 			|  <p>Kmp matrix data points's status.</p>							|
 
-# MasterTaxonomy
+# Notifications
 
-## Create master taxonomy
-
-
-
-	POST /masterTaxonomies
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| fields			| 			|  <p>Master taxonomy's fields.</p>							|
-
-## Delete master taxonomy
+## Create notifications
 
 
 
-	DELETE /masterTaxonomies/:id
+	POST /notifications
 
 
 ### Parameters
@@ -2243,12 +2602,29 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| notifyToUser			| 			|  <p>Notifications's notifyToUser.</p>							|
+| notificationType			| 			|  <p>Notifications's notificationType.</p>							|
+| content			| 			|  <p>Notifications's content.</p>							|
+| notificationTitle			| 			|  <p>Notifications's notificationTitle.</p>							|
 
-## Retrieve master taxonomies
+## Delete notifications
 
 
 
-	GET /masterTaxonomies
+	DELETE /notifications/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve My notifications
+
+
+
+	GET /notifications/my-notifications/:notifyToUser
 
 
 ### Parameters
@@ -2262,24 +2638,11 @@
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
-## Retrieve master taxonomy
+## Retrieve notifications
 
 
 
-	GET /masterTaxonomies/:id
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-
-## Update master taxonomy
-
-
-
-	PUT /masterTaxonomies/:id
+	GET /notifications
 
 
 ### Parameters
@@ -2287,7 +2650,30 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
-| fields			| 			|  <p>Master taxonomy's fields.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update notifications
+
+
+
+	PUT /notifications/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| notifyToUser			| 			|  <p>Notifications's notifyToUser.</p>							|
+| notificationType			| 			|  <p>Notifications's notificationType.</p>							|
+| content			| 			|  <p>Notifications's content.</p>							|
+| notificationTitle			| 			|  <p>Notifications's notificationTitle.</p>							|
+| isRead			| 			|  <p>Notifications's isRead.</p>							|
+| status			| 			|  <p>Notifications's status.</p>							|
 
 # PasswordReset
 
@@ -2327,6 +2713,24 @@
 
 # PolarityRules
 
+## Add Extra Keys
+
+
+
+	GET /polarity_rules/addExtraKeys
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
 ## Create polarity rules
 
 
@@ -2341,7 +2745,8 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | polarityName			| 			|  <p>Polarity rules's polarityName.</p>							|
 | polarityValue			| 			|  <p>Polarity rules's polarityValue.</p>							|
-| condition			| 			|  <p>Polarity rules's condition.</p>							|
+| condition			| 			|  <p>Polarity rules's condition. *</p>							|
+| categoryId			| 			|  <p>Polarity rules's CategoryId.</p>							|
 | datapointId			| 			|  <p>Polarity rules's datapointId.</p>							|
 | status			| 			|  <p>Polarity rules's status.</p>							|
 
@@ -2357,6 +2762,24 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve mock percentile calculation
+
+
+
+	POST /mock_percentileCalculation
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| companyId			| 			|  <p>Polarity rules's companyId.</p>							|
+| standardDeviation			| 			|  <p>Polarity rules's standardDeviation.</p>							|
+| average			| 			|  <p>Polarity rules's average.</p>							|
+| datapointId			| 			|  <p>Polarity rules's datapointId.</p>							|
+| response			| 			|  <p>Polarity rules's response.</p>							|
 
 ## Retrieve percentile calculation
 
@@ -2407,36 +2830,13 @@
 | datapointId			| 			|  <p>Polarity rules's datapointId.</p>							|
 | status			| 			|  <p>Polarity rules's status.</p>							|
 
-# Reference
+# ProjectedValues
 
-## Create reference
-
-
-
-	POST /references
-
-
-### Parameters
-
-| Name    | Type      | Description                          |
-|---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>user access token.</p>							|
-| standaloneId			| 			|  <p>Reference's standaloneId.</p>							|
-| sourceName			| 			|  <p>Reference's sourceName.</p>							|
-| url			| 			|  <p>Reference's url.</p>							|
-| pageNumber			| 			|  <p>Reference's pageNumber.</p>							|
-| publicationDate			| 			|  <p>Reference's publicationDate.</p>							|
-| textSnippet			| 			|  <p>Reference's textSnippet.</p>							|
-| screenshotInPNG			| 			|  <p>Reference's screenshotInPNG.</p>							|
-| screenshotType			| 			|  <p>Reference's screenshotType.</p>							|
-| filePath			| 			|  <p>Reference's filePath.</p>							|
-| activeStatus			| 			|  <p>Reference's activeStatus.</p>							|
-
-## Delete reference
+## Create projected values
 
 
 
-	DELETE /references/:id
+	POST /projected_values
 
 
 ### Parameters
@@ -2444,12 +2844,22 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+| clientTaxonomyId			| 			|  <p>Projected values's clientTaxonomyId.</p>							|
+| nicCode			| 			|  <p>Projected values's nicCode.</p>							|
+| categoryId			| 			|  <p>Projected values's categoryId.</p>							|
+| year			| 			|  <p>Projected values's year.</p>							|
+| datapointId			| 			|  <p>Projected values's datapointId.</p>							|
+| projectedStdDeviation			| 			|  <p>Projected values's projectedStdDeviation.</p>							|
+| projectedAverage			| 			|  <p>Projected values's projectedAverage.</p>							|
+| actualStdDeviation			| 			|  <p>Projected values's actualStdDeviation.</p>							|
+| actualAverage			| 			|  <p>Projected values's actualAverage.</p>							|
+| status			| 			|  <p>Projected values's status.</p>							|
 
-## Retrieve reference
+## Delete projected values
 
 
 
-	GET /references/:id
+	DELETE /projected_values/:id
 
 
 ### Parameters
@@ -2458,11 +2868,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve references
+## Retrieve projected values
 
 
 
-	GET /references
+	GET /projected_values
 
 
 ### Parameters
@@ -2476,11 +2886,11 @@
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
-## Update reference
+## Update projected values
 
 
 
-	PUT /references/:id
+	PUT /projected_values/:id
 
 
 ### Parameters
@@ -2488,17 +2898,16 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
-| standaloneId			| 			|  <p>Reference's standaloneId.</p>							|
-| sourceName			| 			|  <p>Reference's sourceName.</p>							|
-| url			| 			|  <p>Reference's url.</p>							|
-| pageNumber			| 			|  <p>Reference's pageNumber.</p>							|
-| publicationDate			| 			|  <p>Reference's publicationDate.</p>							|
-| textSnippet			| 			|  <p>Reference's textSnippet.</p>							|
-| screenshotInPNG			| 			|  <p>Reference's screenshotInPNG.</p>							|
-| screenshotType			| 			|  <p>Reference's screenshotType.</p>							|
-| filePath			| 			|  <p>Reference's filePath.</p>							|
-| activeStatus			| 			|  <p>Reference's activeStatus.</p>							|
-| status			| 			|  <p>Reference's status.</p>							|
+| clientTaxonomyId			| 			|  <p>Projected values's clientTaxonomyId.</p>							|
+| nic			| 			|  <p>Projected values's nic.</p>							|
+| categoryId			| 			|  <p>Projected values's categoryId.</p>							|
+| year			| 			|  <p>Projected values's year.</p>							|
+| datapointId			| 			|  <p>Projected values's datapointId.</p>							|
+| projectedStdDeviation			| 			|  <p>Projected values's projectedStdDeviation.</p>							|
+| projectedAverage			| 			|  <p>Projected values's projectedAverage.</p>							|
+| actualStdDeviation			| 			|  <p>Projected values's actualStdDeviation.</p>							|
+| actualAverage			| 			|  <p>Projected values's actualAverage.</p>							|
+| status			| 			|  <p>Projected values's status.</p>							|
 
 # Role
 
@@ -2513,7 +2922,6 @@
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>master access token.</p>							|
 | roleName			| 			|  <p>Role's roleName.</p>							|
 | roleCode			| 			|  <p>Role's roleCode.</p>							|
 
@@ -2579,6 +2987,24 @@
 
 # Rules
 
+## Add extra-keys for rules
+
+
+
+	GET /rules/addParameterId
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
 ## Create rules
 
 
@@ -2595,7 +3021,9 @@
 | methodType			| 			|  <p>Rules's methodType.</p>							|
 | criteria			| 			|  <p>Rules's criteria.</p>							|
 | parameter			| 			|  <p>Rules's parameter.</p>							|
+| dpCode			| 			|  <p>Rules's dpCode.</p>							|
 | datapointId			| 			|  <p>Rules's datapointId.</p>							|
+| categoryId			| 			|  <p>Rules's categoryId.</p>							|
 | aidDPLogic			| 			|  <p>Rules's aidDPLogic.</p>							|
 
 ## Delete rules
@@ -2645,9 +3073,141 @@
 | methodType			| 			|  <p>Rules's methodType.</p>							|
 | criteria			| 			|  <p>Rules's criteria.</p>							|
 | parameter			| 			|  <p>Rules's parameter.</p>							|
+| dpCode			| 			|  <p>Rules's dpCode.</p>							|
 | datapointId			| 			|  <p>Rules's datapointId.</p>							|
+| categoryId			| 			|  <p>Rules's categoryId.</p>							|
 | aidDPLogic			| 			|  <p>Rules's aidDPLogic.</p>							|
 | status			| 			|  <p>Rules's status.</p>							|
+
+# SourceSubTypes
+
+## Create source sub types
+
+
+
+	POST /source_sub_types
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| subTypeName			| 			|  <p>Source sub types's subTypeName.</p>							|
+| description			| 			|  <p>Source sub types's description.</p>							|
+| status			| 			|  <p>Source sub types's status.</p>							|
+
+## Delete source sub types
+
+
+
+	DELETE /source_sub_types/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve source sub types
+
+
+
+	GET /source_sub_types
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update source sub types
+
+
+
+	PUT /source_sub_types/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| subTypeName			| 			|  <p>Source sub types's subTypeName.</p>							|
+| description			| 			|  <p>Source sub types's description.</p>							|
+| status			| 			|  <p>Source sub types's status.</p>							|
+
+# SourceTypes
+
+## Create source types
+
+
+
+	POST /sourceTypes
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| typeName			| 			|  <p>Source types's typeName.</p>							|
+| isMultiYear			| 			|  <p>Source types's isMultiYear.</p>							|
+| isMultiSource			| 			|  <p>Source types's isMultiSource.</p>							|
+
+## Delete source types
+
+
+
+	DELETE /sourceTypes/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve source types
+
+
+
+	GET /sourceTypes
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update source types
+
+
+
+	PUT /sourceTypes/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| typeName			| 			|  <p>Source types's typeName.</p>							|
+| isMultiYear			| 			|  <p>Source types's isMultiYear.</p>							|
+| isMultiSource			| 			|  <p>Source types's isMultiSource.</p>							|
 
 # StandaloneDatapoints
 
@@ -2767,11 +3327,9 @@
 | companyId			| 			|  <p>Task assignment's companyId.</p>							|
 | categoryId			| 			|  <p>Task assignment's categoryId.</p>							|
 | groupId			| 			|  <p>Task assignment's groupId.</p>							|
-| revisionCode			| 			|  <p>Task assignment's revisionCode.</p>							|
-| assignedTo			| 			|  <p>Task assignment's assignedTo.</p>							|
+| batchId			| 			|  <p>Task assignment's batchId.</p>							|
 | year			| 			|  <p>Task assignment's year.</p>							|
 | analystSLA			| 			|  <p>Task assignment's analystSLA.</p>							|
-| taskStatus			| 			|  <p>Task assignment's taskStatus.</p>							|
 | analystId			| 			|  <p>Task assignment's analystId.</p>							|
 | qaId			| 			|  <p>Task assignment's qaId.</p>							|
 
@@ -2801,11 +3359,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve task assignments
+## Retrieve my task assignments
 
 
 
-	GET /taskAssignments
+	GET /taskAssignments/task/reports
 
 
 ### Parameters
@@ -2823,7 +3381,7 @@
 
 
 
-	PUT /taskAssignments/:id
+	PUT /taskAssignments/updateCompanyStatus
 
 
 ### Parameters
@@ -2832,16 +3390,83 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | companyId			| 			|  <p>Task assignment's companyId.</p>							|
-| categoryId			| 			|  <p>Task assignment's categoryId.</p>							|
-| groupId			| 			|  <p>Task assignment's groupId.</p>							|
-| revisionCode			| 			|  <p>Task assignment's revisionCode.</p>							|
-| assignedTo			| 			|  <p>Task assignment's assignedTo.</p>							|
+| batchId			| 			|  <p>Task assignment's batchId.</p>							|
 | year			| 			|  <p>Task assignment's year.</p>							|
-| analystSLA			| 			|  <p>Task assignment's analystSLA.</p>							|
-| taskStatus			| 			|  <p>Task assignment's taskStatus.</p>							|
-| analystId			| 			|  <p>Task assignment's analystId.</p>							|
-| qaId			| 			|  <p>Task assignment's qaId.</p>							|
-| status			| 			|  <p>Task assignment's status.</p>							|
+
+# TaskHistories
+
+## Create task histories
+
+
+
+	POST /task_histories
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Task histories's taskId.</p>							|
+| companyId			| 			|  <p>Task histories's companyId.</p>							|
+| categoryId			| 			|  <p>Task histories's categoryId.</p>							|
+| submittedByName			| 			|  <p>Task histories's submittedByName.</p>							|
+| stage			| 			|  <p>Task histories's stage.</p>							|
+| comment			| 			|  <p>Task histories's comment.</p>							|
+| status			| 			|  <p>Task histories's status.</p>							|
+| createdBy			| 			|  <p>Task histories's createdBy.</p>							|
+
+## Delete task histories
+
+
+
+	DELETE /task_histories/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve task histories
+
+
+
+	GET /task_histories
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update task histories
+
+
+
+	PUT /task_histories/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Task histories's taskId.</p>							|
+| companyId			| 			|  <p>Task histories's companyId.</p>							|
+| categoryId			| 			|  <p>Task histories's categoryId.</p>							|
+| submittedByName			| 			|  <p>Task histories's submittedByName.</p>							|
+| stage			| 			|  <p>Task histories's stage.</p>							|
+| comment			| 			|  <p>Task histories's comment.</p>							|
+| status			| 			|  <p>Task histories's status.</p>							|
+| createdBy			| 			|  <p>Task histories's createdBy.</p>							|
 
 # TaskSlaLog
 
@@ -2858,10 +3483,9 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | taskId			| 			|  <p>Task sla log's taskId.</p>							|
-| currentDate			| 			|  <p>Task sla log's currentDate.</p>							|
-| preferedDate			| 			|  <p>Task sla log's preferedDate.</p>							|
-| loggedBy			| 			|  <p>Task sla log's loggedBy.</p>							|
-| taskStatus			| 			|  <p>Task sla log's taskStatus.</p>							|
+| days			| 			|  <p>Task sla log's days.</p>							|
+| requestedBy			| 			|  <p>Task sla log's requestedBy.</p>							|
+| isAccepted			| 			|  <p>Task sla log's isAccepted.</p>							|
 
 ## Delete task sla log
 
@@ -2875,6 +3499,23 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
+
+## Request for extension of task sla date
+
+
+
+	POST /taskSlaLogs/slaExtensionRequest
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| taskId			| 			|  <p>Task sla log's taskId.</p>							|
+| days			| 			|  <p>Task sla log's days.</p>							|
+| requestedBy			| 			|  <p>Task sla log's requestedBy.</p>							|
+| isAccepted			| 			|  <p>Task sla log's isAccepted.</p>							|
 
 ## Retrieve task sla log
 
@@ -2920,10 +3561,9 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | taskId			| 			|  <p>Task sla log's taskId.</p>							|
-| currentDate			| 			|  <p>Task sla log's currentDate.</p>							|
-| preferedDate			| 			|  <p>Task sla log's preferedDate.</p>							|
-| loggedBy			| 			|  <p>Task sla log's loggedBy.</p>							|
-| taskStatus			| 			|  <p>Task sla log's taskStatus.</p>							|
+| days			| 			|  <p>Task sla log's days.</p>							|
+| requestedBy			| 			|  <p>Task sla log's requestedBy.</p>							|
+| isAccepted			| 			|  <p>Task sla log's isAccepted.</p>							|
 | status			| 			|  <p>Task sla log's status.</p>							|
 
 # Taxonomies
@@ -2941,7 +3581,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | name			| 			|  <p>Taxonomies's name.</p>							|
-| description			| 			|  <p>Taxonomies's description.</p>							|
+| fieldName			| 			|  <p>Taxonomies's fieldName.</p>							|
+| applicableFor			| 			|  <p>Taxonomies's applicableFor.</p>							|
+| inputType			| 			|  <p>Taxonomies's inputType.</p>							|
+| inputValues			| 			|  <p>Taxonomies's inputValues.</p>							|
+| toDisplay			| 			|  <p>Taxonomies's toDisplay.</p>							|
 
 ## Delete taxonomies
 
@@ -2987,7 +3631,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | name			| 			|  <p>Taxonomies's name.</p>							|
-| description			| 			|  <p>Taxonomies's description.</p>							|
+| fieldName			| 			|  <p>Taxonomies's fieldName.</p>							|
+| applicableFor			| 			|  <p>Taxonomies's applicableFor.</p>							|
+| inputType			| 			|  <p>Taxonomies's inputType.</p>							|
+| inputValues			| 			|  <p>Taxonomies's inputValues.</p>							|
+| toDisplay			| 			|  <p>Taxonomies's toDisplay.</p>							|
 | status			| 			|  <p>Taxonomies's status.</p>							|
 
 # Themes
@@ -3071,13 +3719,10 @@
 
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
-| access_token			| String			|  <p>Master access_token.</p>							|
 | email			| String			|  <p>User's email.</p>							|
 | password			| String			|  <p>User's password.</p>							|
 | name			| String			| **optional** <p>User's name.</p>							|
-| picture			| String			| **optional** <p>User's picture.</p>							|
-| roleId			| String			| **optional** <p>User's roleId.</p>							|
-| role			| String			| **optional** <p>User's role.</p>							|
+| picture			| String			| **optional** <p>User Type.</p>							|
 
 ## Delete user
 
@@ -3091,6 +3736,19 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>User access_token.</p>							|
+
+## Upload EmailsFile
+
+
+
+	POST /user/uploadEmailsFile
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
 
 ## Onboard new user
 
@@ -3167,11 +3825,11 @@
 | sort			| String[]			| **optional** <p>Order of returned items.</p>							|
 | fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
 
-## Retrieve users by role
+## Retrieve User by roles
 
 
 
-	GET /users/:role
+	GET /users/getRoleUser
 
 
 ### Parameters
@@ -3179,11 +3837,19 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>User access_token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## send onboarding links
+
+
+
+	POST /users/new-onboard/send-mails
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| emailList			| Array			|  <p>User's emailList.</p>							|
 
 ## Update password
 
@@ -3219,6 +3885,21 @@
 | picture			| String			| **optional** <p>User's picture.</p>							|
 | roleId			| String			| **optional** <p>User's roleId.</p>							|
 
+## Update user roles
+
+
+
+	PUT /users/update/roles
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>User access_token.</p>							|
+| _id			| String			| **optional** <p>User's userId.</p>							|
+| roleDetails			| Boolean			|  <p>User's roleDetails.</p>							|
+
 ## Update user status
 
 
@@ -3234,6 +3915,117 @@
 | _id			| String			| **optional** <p>User's userId.</p>							|
 | isUserApproved			| Boolean			| **optional** <p>User's isUserApproved.</p>							|
 | comments			| String			| **optional** <p>User's comments.</p>							|
+
+## to get
+
+
+
+	GET /users/assign-role
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>User access_token.</p>							|
+| _id			| String			| **optional** <p>User's userId.</p>							|
+| isUserApproved			| Boolean			| **optional** <p>User's isUserApproved.</p>							|
+| comments			| String			| **optional** <p>User's comments.</p>							|
+
+## user filter
+
+
+
+	POST /users/filter-user
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| filters			| Array			|  <p>User's emailList.</p>							|
+
+# UserPillarAssignments
+
+## Create user pillar assignments
+
+
+
+	POST /user_pillar_assignments
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| primaryPillar			| 			|  <p>User pillar assignments's primaryPillar.</p>							|
+| secondaryPillar			| 			|  <p>User pillar assignments's secondaryPillar.</p>							|
+| userId			| 			|  <p>User pillar assignments's userId.</p>							|
+
+## Delete user pillar assignments
+
+
+
+	DELETE /user_pillar_assignments/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+
+## Retrieve user pillar assignments
+
+
+
+	GET /user_pillar_assignments
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| q			| String			| **optional** <p>Query to search.</p>							|
+| page			| Number			| **optional** <p>Page number.</p>							|
+| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
+| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
+| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Update user pillar assignments
+
+
+
+	PUT /user_pillar_assignments/:id
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| primaryPillar			| 			|  <p>User pillar assignments's primaryPillar.</p>							|
+| secondaryPillar			| 			|  <p>User pillar assignments's secondaryPillar.</p>							|
+| userId			| 			|  <p>User pillar assignments's userId.</p>							|
+| status			| 			|  <p>User pillar assignments's status.</p>							|
+
+## User pillar assignments from UI
+
+
+
+	POST /user_pillar_assignments/create
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| primaryPillar			| 			|  <p>User pillar assignments's primaryPillar.</p>							|
+| secondaryPillar			| 			|  <p>User pillar assignments's secondaryPillar.</p>							|
+| userId			| 			|  <p>User pillar assignments's userId.</p>							|
 
 # ValidationRules
 
@@ -3325,12 +4117,20 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 | datapointId			| 			|  <p>Validations's datapointId.</p>							|
+| dpCode			| 			|  <p>Validations's dpCode.</p>							|
+| clientTaxonomyId			| 			|  <p>Validations's clientTaxonomyId.</p>							|
 | validationRule			| 			|  <p>Validations's validationRule.</p>							|
-| rule			| 			|  <p>Validations's rule.</p>							|
-| dependantCode			| 			|  <p>Validations's dependantCode.</p>							|
-| condition			| 			|  <p>Validations's condition.</p>							|
+| dataType			| 			|  <p>Validations's dataType.</p>							|
+| hasDependentCode			| 			|  <p>Validations's hasDependentCode.</p>							|
+| dependentCodes			| 			|  <p>Validations's dependentCodes.</p>							|
+| validationType			| 			|  <p>Validations's validationType.</p>							|
+| percentileThreasholdValue			| 			|  <p>Validations's percentileThreasholdValue.</p>							|
+| parameters			| 			|  <p>Validations's parameters.</p>							|
+| methodName			| 			|  <p>Validations's methodName.</p>							|
+| checkCondition			| 			|  <p>Validations's checkCondition.</p>							|
 | criteria			| 			|  <p>Validations's criteria.</p>							|
-| validationAlert			| 			|  <p>Validations's validationAlert.</p>							|
+| checkResponse			| 			|  <p>Validations's checkResponse.</p>							|
+| errorMessage			| 			|  <p>Validations's errorMessage.</p>							|
 
 ## Delete validations
 
@@ -3345,11 +4145,11 @@
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
 
-## Retrieve validations
+## 
 
 
 
-	GET /validations
+	GET /validations/validateDpDetails/:taskId
 
 
 ### Parameters
@@ -3357,11 +4157,44 @@
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | access_token			| String			|  <p>user access token.</p>							|
-| q			| String			| **optional** <p>Query to search.</p>							|
-| page			| Number			| **optional** <p>Page number.</p>							|
-| limit			| Number			| **optional** <p>Amount of returned items.</p>							|
-| sort			| String[]			| **optional** <p>Order of returned items.</p>							|
-| fields			| String[]			| **optional** <p>Fields to be returned.</p>							|
+
+## Type3 Validations
+
+
+
+	POST /validations/type3
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| datapointId			| 			|  <p>Validations's datapointId.</p>							|
+| companyId			| 			|  <p>Validations's companyId.</p>							|
+| clientTaxonomyId			| 			|  <p>Validations's clientTaxonomyId.</p>							|
+| currentYear			| 			|  <p>Validations's currentYear.</p>							|
+| previousYear			| 			|  <p>Validations's previousYear.</p>							|
+| response			| 			|  <p>Validations's response.</p>							|
+
+## Type8 Validations
+
+
+
+	POST /validations/type8
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| access_token			| String			|  <p>user access token.</p>							|
+| datapointId			| 			|  <p>Validations's datapointId.</p>							|
+| companyId			| 			|  <p>Validations's companyId.</p>							|
+| clientTaxonomyId			| 			|  <p>Validations's clientTaxonomyId.</p>							|
+| currentYear			| 			|  <p>Validations's currentYear.</p>							|
+| previousYear			| 			|  <p>Validations's previousYear.</p>							|
+| response			| 			|  <p>Validations's response.</p>							|
 
 ## Update validations
 
@@ -3377,11 +4210,8 @@
 | access_token			| String			|  <p>user access token.</p>							|
 | datapointId			| 			|  <p>Validations's datapointId.</p>							|
 | validationRule			| 			|  <p>Validations's validationRule.</p>							|
-| rule			| 			|  <p>Validations's rule.</p>							|
-| dependantCode			| 			|  <p>Validations's dependantCode.</p>							|
-| condition			| 			|  <p>Validations's condition.</p>							|
+| dependentCodes			| 			|  <p>Validations's dependentCodes.</p>							|
 | criteria			| 			|  <p>Validations's criteria.</p>							|
-| validationAlert			| 			|  <p>Validations's validationAlert.</p>							|
 | status			| 			|  <p>Validations's status.</p>							|
 
 # Ztables

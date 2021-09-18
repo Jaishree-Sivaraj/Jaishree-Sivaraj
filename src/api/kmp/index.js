@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy,updateEndDate, activeMemberlist } from './controller'
+import { create, index, show, update, destroy,updateEndDate, activeMemberlist, boardMemberNamingCorrections, kmpMemberNamingCorrections } from './controller'
 import { schema } from './model'
 export Kmp, { schema } from './model'
 
@@ -71,6 +71,23 @@ updateEndDate)
  token({ required: true }),
  query(),
  activeMemberlist)
+
+/**
+* @api {get} /kmp/correct-naming Correct kmps namings
+* @apiName CorrectKmpsNamings
+* @apiGroup Kmp
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of kmps.
+* @apiSuccess {Object[]} rows List of kmps.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/correct-naming',
+token({ required: true }),
+query(),
+boardMemberNamingCorrections)
 
 /**
  * @api {get} /kmp Retrieve kmps

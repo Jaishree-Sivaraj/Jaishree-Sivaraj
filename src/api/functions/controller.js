@@ -59,13 +59,14 @@ export const destroy = ({ params }, res, next) =>
 
 export const updateSourceUrls = async ({ params }, res, next) => {
 
-  var standAlonepoints = await StandaloneDatapoints.find({ status: true }).limit(50);
+  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true }).limit(50);
   let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
   console.log('uniq urls length ==>', standAlonepointsList.length);
+  console.log('standAlonepointsList', standAlonepointsList);
   //launch
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  for (let index = 0; index < 5; index++) {
+  for (let index = 0; index < 10; index++) {
     let url = '';
     if (standAlonepointsList[index] && standAlonepointsList[index].url) {
       url = standAlonepointsList[index].url;
@@ -746,7 +747,7 @@ async function storeFileInS3(actualFile, fileName, contentType) {
   console.log('actualFile', actualFile, 'fileName', fileName, 'contentType', contentType);
   return new Promise(function (resolve, reject) {
     const params = {
-      Bucket: 'company-sources',
+      Bucket: 'esg-app-store-dev',
       Key: fileName,
       Body: actualFile,
       ContentType: contentType,
