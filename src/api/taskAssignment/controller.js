@@ -640,10 +640,12 @@ export const getMyTasks = async (
       .populate("companyId")
       .populate("analystId")
       .populate("createdBy")
-      .then((controversyTasks) => {
+      .then(async (controversyTasks) => {
         if (controversyTasks && controversyTasks.length > 0) {
           for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id}).limit(1).sort({updatedAt: -1});
             let object = {};
+            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.taskNumber = controversyTasks[cIndex].taskNumber;
             object.taskId = controversyTasks[cIndex].id;
             object.companyId = controversyTasks[cIndex].companyId

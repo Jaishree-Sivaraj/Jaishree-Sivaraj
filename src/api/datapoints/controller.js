@@ -1113,7 +1113,7 @@ export const datapointDetails = async (req, res, next) => {
       })      
     }
     if (req.body.memberType == 'Standalone') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId});
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
           taskId: req.body.taskId,
           companyId: taskDetails.companyId.id,
@@ -1499,6 +1499,7 @@ export const datapointDetails = async (req, res, next) => {
               status: 'Completed',
               dpCode: dpTypeValues.code,
               dpCodeId: dpTypeValues.id,
+              taskId: object.taskId,
               fiscalYear: object.year,
               description: dpTypeValues.description,
               dataType: dpTypeValues.dataType,
@@ -1566,7 +1567,7 @@ export const datapointDetails = async (req, res, next) => {
         dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId,memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId,memberName:req.body.memberName});
       let historyAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
@@ -1956,6 +1957,7 @@ export const datapointDetails = async (req, res, next) => {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
                 dpCodeId: dpTypeValues.id,
+                taskId: object.taskId,
                 fiscalYear: historyYear[hitoryYearIndex].year,
                 description: dpTypeValues.description,
                 dataType: dpTypeValues.dataType,
@@ -2022,7 +2024,7 @@ export const datapointDetails = async (req, res, next) => {
         dpCodeData: boardDatapointsObject
       });
     } else if (req.body.memberType == 'KMP Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId, memberName:req.body.memberName});
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
@@ -2414,6 +2416,7 @@ export const datapointDetails = async (req, res, next) => {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
                 dpCodeId: dpTypeValues.id,
+                taskId: object.taskId,
                 fiscalYear: historyYear[hitoryYearIndex].year,
                 description: dpTypeValues.description,
                 dataType: dpTypeValues.dataType,
@@ -2578,7 +2581,7 @@ export const repDatapointDetails = async (req, res, next) => {
       })      
     }
     if (req.body.memberType == 'Standalone') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id, datapointId: req.body.datapointId, raisedBy: 'Analyst'});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId, datapointId: req.body.datapointId});
       let currentAllStandaloneDetails = await StandaloneDatapoints.find({
           taskId: req.body.taskId,
           companyId: taskDetails.companyId.id,
@@ -2753,92 +2756,94 @@ export const repDatapointDetails = async (req, res, next) => {
                   })
                 }                
               } 
-            } else{
-              currentDatapointsObject = {
-                status: 'Completed',
-                dpCode: dpTypeValues.code,
-                dpCodeId: dpTypeValues.id,
-                fiscalYear: currentYear[currentYearIndex],
-                description: dpTypeValues.description,
-                dataType: dpTypeValues.dataType,
-                inputValues:inputValues,
-                textSnippet: object.textSnippet,
-                pageNo: object.pageNumber,
-                screenShot: object.screenShot,
-                response: object.response,
-                memberName: object.memberName,
-                sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
-                error: {
-                  hasError: object.hasError,
-                  refData: {                  
-                    description: dpTypeValues.description,
-                    dataType: dpTypeValues.dataType,
-                    textSnippet: '',
-                    pageNo: '',
-                    screenShot: null,
-                    response: '',
-                    source: null,
-                    additionalDetails:[]
-                  },
-                  comment: '',
-                  errorStatus: object.correctionStatus
-                },
-                comments: [],
-                additionalDetails:[]
-              }              
-              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
-                  let optionValues = [], optionVal = '', currentValue;
-                  if(displayFields[dIndex].inputType == 'Select'){
-                    let options = displayFields[dIndex].inputValues.split(',');
-                    if(options.length > 0){
-                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                        optionValues.push({
-                          value: options[optIndex],
-                          label: options[optIndex]
-                        });                        
-                      }
-                    } else {
-                      optionValues = [];
-                    }
-                  } else {
-                    optionVal = displayFields[dIndex].inputValues;
-                  }
-                  if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
-                  } else {
-                    let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
-                    if(displayFields[dIndex].inputType == 'Select'){
-                      currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                    } else {
-                      currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
-                    }
-                  }
-                  currentDatapointsObject.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })                
-                  currentDatapointsObject.error.refData.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
-                }                
-              } 
-            }         
+            }          
           datapointsObject.status = object.correctionStatus;
         });
+        if(Object.keys(currentDatapointsObject).length == 0){
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              inputValues:inputValues,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: object.screenShot,
+              response: object.response,
+              memberName: object.memberName,
+              sourceList: sourceTypeDetails,
+              source: {
+                url: object.url ? object.url : '',
+                sourceName: sourceName,
+                value: sourceId,
+                publicationDate: object.publicationDate ? object.publicationDate : ''
+              },
+              error: {
+                hasError: object.hasError,
+                refData: {                  
+                  description: dpTypeValues.description,
+                  dataType: dpTypeValues.dataType,
+                  textSnippet: '',
+                  pageNo: '',
+                  screenShot: null,
+                  response: '',
+                  source: null,
+                  additionalDetails:[]
+                },
+                comment: '',
+                errorStatus: object.correctionStatus
+              },
+              comments: [],
+              additionalDetails:[]
+            }              
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })                
+                currentDatapointsObject.error.refData.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }                
+            } 
+          
+        }
         datapointsObject.currentData.push(currentDatapointsObject);
       }
       let totalHistories = 0;
@@ -2925,7 +2930,7 @@ export const repDatapointDetails = async (req, res, next) => {
         dpCodeData: datapointsObject
       });
     } else if (req.body.memberType == 'Board Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName, raisedBy: 'Analyst'});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId, memberName:req.body.memberName});
       let historyAllBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
           datapointId: req.body.datapointId,
@@ -3270,7 +3275,7 @@ export const repDatapointDetails = async (req, res, next) => {
         dpCodeData: boardDatapointsObject
       });
     } else if (req.body.memberType == 'KMP Matrix') {
-      let commentsDetails = await ErrorDetails.distinct('comments',{companyId: taskDetails.companyId.id,datapointId: req.body.datapointId, memberName:req.body.memberName, raisedBy: 'Analyst'});
+      let commentsDetails = await ErrorDetails.distinct('comments',{taskId: req.body.taskId,datapointId: req.body.datapointId, memberName:req.body.memberName});
 
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
           companyId: taskDetails.companyId.id,
@@ -3629,6 +3634,7 @@ export const repDatapointDetails = async (req, res, next) => {
     });
   }
 }
+
 export const uploadTaxonomyDatapoints = async (req, res, next) => {
   if (req.body.clientTaxonomyId && req.file) {
     try {
@@ -3766,6 +3772,7 @@ export const uploadTaxonomyDatapoints = async (req, res, next) => {
     });
   }
 }
+
 async function storeDatapointsFile(onboardingBase64Image, folderName) {
   console.log('in function storeDatapointsFile')
   return new Promise(function (resolve, reject) {

@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, activeMemberlist, updateEndDate } from './controller'
+import { create, index, show, update, destroy, activeMemberlist, updateEndDate, getDistinctBoardMembersCompanywise, getDistinctKmpMembersCompanywise } from './controller'
 import { schema } from './model'
 export BoardMembers, { schema } from './model'
 
 const router = new Router()
 const { companyId, clientTaxonomyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus, status } = schema.tree
-let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[];
+let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[], isExecutiveType = '';
 /**
  * @api {post} /boardMembers Create board members
  * @apiName CreateBoardMembers
@@ -31,7 +31,7 @@ let memberName = "", nationality = "", gender = "", industrialExp = "", financia
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, memberName, startDate, endDate, endDateTimeStamp, dob, gender, nationality, financialExp, industrialExp, clientTaxonomyId }),
+  body({ companyId, memberName, startDate, endDate, endDateTimeStamp, dob, gender, nationality, financialExp, industrialExp, clientTaxonomyId , isExecutiveType}),
   create)
 
 /**
@@ -97,6 +97,36 @@ updateEndDate)
 router.get('/:id',
   token({ required: true }),
   show)
+
+/**
+ * @api {get} /boardMembers/all/board-members/allyears Retrieve All board members
+ * @apiName RetrieveAllBoardMembers
+ * @apiGroup BoardMembers
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} boardMembers Board members's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Board members not found.
+ * @apiError 401 user access only.
+ */
+  router.get('/all/board-members/allyears',
+  token({ required: true }),
+  getDistinctBoardMembersCompanywise)
+
+/**
+ * @api {get} /boardMembers/all/kmp-members/allyears Retrieve All kmp members
+ * @apiName RetrieveAllKmpMembers
+ * @apiGroup BoardMembers
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} boardMembers Board members's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Board members not found.
+ * @apiError 401 user access only.
+ */
+  router.get('/all/kmp-members/allyears',
+  token({ required: true }),
+  getDistinctKmpMembersCompanywise)
 
 /**
  * @api {put} /boardMembers/:id Update board members

@@ -1,61 +1,59 @@
+import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { BoardMembers } from '.'
-import _ from 'lodash'
+import { Kmp } from '../kmp'
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 
 export const create = async({ user, bodymen: { body } }, res, next) =>{
   // BoardMembers.create({ ...body, createdBy: user })
   //   .then((boardMembers) => boardMembers.view(true))
   //   .then(success(res, 201))
   //   .catch(next)
-  try {
-  
+  try {  
+    let yearTimeStamp = 0;
   console.log(body.companyId, body.memberName, body.startDate, body.endDate, body.dob, body.gender, body.nationality, body.financialExp, body.industrialExp)
   let checkBoardMember = await BoardMembers.find({companyId:body.companyId, BOSP004: body.memberName})
   if(checkBoardMember.length > 0){    
     return res.status(402).json({
       message: "BoardMember already exists",
-    });
-       
+    });       
   } else {
     if(body.endDate != ""){      
-      let yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);
-      await BoardMembers.create({
+      yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);    
+    }
+    if(body.isExecutiveType = true){
+      await Kmp.create({
         companyId: body.companyId,
-        BOSP004: body.memberName, 
+        MASP003: body.memberName, 
         startDate: body.startDate, 
         endDate:body.endDate, 
         endDateTimeStamp: yearTimeStamp, 
         dob: body.dob, 
-        BODR005:body.gender, 
-        BODP001: body.nationality, 
-        BOSP005: body.financialExp, 
-        BOSP006: body.industrialExp,
+        MASR008:body.gender, 
         clientTaxonomyId: body.clientTaxonomyId,
         createdBy:user
-      });      
-      return res.status(200).json({
-        message: "BoardMember saved successfully"
-      });
-
-    } else{
-      await BoardMembers.create({
-        companyId: body.companyId,
-        BOSP004: body.memberName, 
-        startDate: body.startDate, 
-        endDate:body.endDate, 
-        endDateTimeStamp: 0, 
-        dob: body.dob, 
-        BODR005:body.gender, 
-        BODP001: body.nationality, 
-        BOSP005: body.financialExp, 
-        BOSP006: body.industrialExp,
-        clientTaxonomyId: body.clientTaxonomyId,
-        createdBy:user
-      });      
-      return res.status(200).json({
-        message: "BoardMember saved successfully"
-      });
-    } 
+      }).catch(err =>{
+        return res.status(500).json({ message: err.messgae ? err.message : "Failed to created executive user" })
+      })
+    }
+    await BoardMembers.create({
+      companyId: body.companyId,
+      BOSP004: body.memberName, 
+      startDate: body.startDate, 
+      endDate:body.endDate, 
+      endDateTimeStamp: yearTimeStamp, 
+      dob: body.dob, 
+      BODR005:body.gender, 
+      BODP001: body.nationality, 
+      BOSP005: body.financialExp, 
+      BOSP006: body.industrialExp,
+      clientTaxonomyId: body.clientTaxonomyId,
+      createdBy:user
+    });      
+    return res.status(200).json({
+      message: "BoardMember saved successfully"
+    }); 
   }  
  } catch (error) {
   return res.status(500).json({
@@ -164,4 +162,76 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
   //     status: 500
   //   });    
   // }
+}
+
+export const getDistinctBoardMembersCompanywise = async({ user, params }, res, next) => {
+  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  if (distinctYears.length > 0) {
+    let distinctBoardMembers = [], distinctKmpMembers = [];
+    // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      let year = distinctYears[1];
+      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: year, status: true })
+      .populate('companyId');
+      console.log('allBoardMembersofYear.length', allBoardMembersofYear.length);
+      let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
+      console.log('uniqBoardMembers length', uniqBoardMembers.length);
+      for (let bmIndex = 0; bmIndex < uniqBoardMembers.length; bmIndex++) {
+        let memberDetail = uniqBoardMembers[bmIndex];
+        let memberObject = {
+          // boardMemberMatrixId: memberDetail.id,
+          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+          memberName: memberDetail.memberName,
+          expectedName: memberDetail.memberName,
+          year: year
+        };
+        console.log('memberObject', memberObject);
+        let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
+        if (foundBoardMemberIndex == -1) {
+          distinctBoardMembers.push(memberObject);
+        }
+      }
+      // if (distinctYears.length-1 == yearIndex) {
+      //   return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+      // }
+    // }
+    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+  }
+}
+
+
+export const getDistinctKmpMembersCompanywise = async({ user, params }, res, next) => {
+  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  if (distinctYears.length > 0) {
+    let distinctBoardMembers = [], distinctKmpMembers = [];
+    // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      let year = distinctYears[1];
+      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: year, status: true })
+      .populate('companyId');
+      console.log('allKmpMembersofYear.length', allKmpMembersofYear.length);
+      let uniqKmpMembers = _.uniqBy(allKmpMembersofYear, 'memberName');
+      console.log('uniqKmpMembers length', uniqKmpMembers.length);
+      for (let kmpmIndex = 0; kmpmIndex < uniqKmpMembers.length; kmpmIndex++) {
+        let memberDetail = uniqKmpMembers[kmpmIndex];
+        console.log('kmp member', kmpmIndex, memberDetail);
+        let memberObject = {
+          // kmpMemberMatrixId: memberDetail.id,
+          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+          memberName: memberDetail.memberName,
+          expectedName: memberDetail.memberName,
+          year: year
+        };
+        let foundKmpMemberIndex = distinctKmpMembers.indexOf(memberObject);
+        console.log('foundKmpMemberIndex', foundKmpMemberIndex);
+        if (foundKmpMemberIndex == -1) {
+          distinctKmpMembers.push(memberObject);
+        }
+      }
+    //   if (distinctYears.length-1 == yearIndex) {
+    //     return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+    //   }
+    // }
+    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
+  }
 }
