@@ -1444,74 +1444,27 @@ export const dataCollection = async ({
       let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];      
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
-      if (body.memberType == 'Standalone') {       
-        let currentYearData = dpCodesDetails.map(function(item){
-          let hasCorrectionValue = false;
-          if(item.isAccepted == true) {
-            hasCorrectionValue = true;
-          }
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            year: item['fiscalYear'],
-            taskId: body.taskId,
-            response: item['response'],
-            screenShot: item['screenShot'], //aws filename
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            status: true,
-            hasError: false,
-            hasCorrection: hasCorrectionValue,
-            correctionStatus: 'Completed',
-            additionalDetails: item['additionalDetails'],
-            createdBy: user,
-            updatedAt: Date.now()
-          }
-        });
-        let historyYearData = dpHistoricalDpDetails.map(function(item){
-          return {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: item['taskId'],
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            status: true,
-            createdBy: user,
-            updatedAt: Date.now()
-          }
-        });
-        let structuredStandaloneDetails = _.concat(currentYearData, historyYearData);
+      if (body.memberType == 'Standalone') {  
         await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
-        await StandaloneDatapoints.insertMany(structuredStandaloneDetails)
-        .then((result,err) => {
-          if (err) {
-            res.status('500').json({
-              message: err.message ? err.message : "Failed to save the data"
-            });
-          } else {
-            res.status('200').json({
-              message: "Data inserted Successfully"
-            });
-          }
-        });
-      } else if (body.memberType == 'Board Matrix') {     
-        let currentYearData = dpCodesDetails.map(function(item){
+          { $set: {status: false} });  
+        for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
+          const item = dpCodesDetails[dpDetailsIndex]
           let hasCorrectionValue = false;
           if(item.isAccepted == true) {
-            hasCorrectionValue = true;
+            hasCorrectionValue = true;            
+            await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+          } else{
+            let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
           }
-          return {
+          await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             year: item['fiscalYear'],
@@ -1529,12 +1482,16 @@ export const dataCollection = async ({
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             createdBy: user,
-            memberName: body.memberName,
             updatedAt: Date.now()
-          }
-        });
-        let historyYearData = dpHistoricalDpDetails.map(function(item){
-          return {
+          }).catch(err =>{
+            res.status('500').json({
+              message: err.message ? err.message : "Failed to save the data"
+            });
+          })          
+        }
+        for (let historyDetails = 0; historyDetails < dpHistoricalDpDetails.length; historyDetails++) {
+          const item = dpHistoricalDpDetails[historyDetails];
+          await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: item['taskId'],
@@ -1547,34 +1504,39 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
-            memberName: body.memberName,
             status: true,
             createdBy: user,
             updatedAt: Date.now()
-          }
+          }).catch(err =>{
+            res.status('500').json({
+              message: err.message ? err.message : "Failed to save the data"
+            });
+          });
+        }
+        res.status('200').json({
+          message: "Data inserted Successfully"
         });
-        let boardMemberDetails = _.concat(currentYearData, historyYearData);
+      } else if (body.memberType == 'Board Matrix') {   
         await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
-        await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails)
-        .then((result,err) => {
-          if (err) {
-            res.status('500').json({
-              message: err.message ? err.message : "Failed to save the data"
-            });
-          } else {
-            res.status('200').json({
-              message: "Data inserted Successfully"
-            });
-          }
-        });
-      } else if (body.memberType == 'KMP Matrix') {     
-        let currentYearData = dpCodesDetails.map(function(item){
+          { $set: {status: false} });    
+        for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
+          const item = dpCodesDetails[dpDetailsIndex];
           let hasCorrectionValue = false;
           if(item.isAccepted == true) {
             hasCorrectionValue = true;
+            await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+          } else{
+            let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
           }
-          return {
+          await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             year: item['fiscalYear'],
@@ -1594,10 +1556,15 @@ export const dataCollection = async ({
             createdBy: user,
             memberName: body.memberName,
             updatedAt: Date.now()
-          }
-        });
-        let historyYearData = dpHistoricalDpDetails.map(function(item){
-          return {
+          }).catch(err =>{
+            res.status('500').json({
+              message: err.message ? err.message : "Failed to save the data"
+            });
+          });        
+        } 
+        for (let historyIndex = 0; historyIndex < dpHistoricalDpDetails.length; historyIndex++) {
+          const item = dpHistoricalDpDetails[historyIndex];
+          await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: item['taskId'],
@@ -1614,23 +1581,83 @@ export const dataCollection = async ({
             status: true,
             createdBy: user,
             updatedAt: Date.now()
-          }
-        });
-        let kmpMemberDetails = _.concat(currentYearData, historyYearData);
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
-        await KmpMatrixDataPoints.insertMany(kmpMemberDetails)
-        .then((result,err) => {
-          if (err) {
+          }).catch(err =>{
             res.status('500').json({
               message: err.message ? err.message : "Failed to save the data"
             });
-          } else {
-            res.status('200').json({
-              message: "Data inserted Successfully"
-            });
+          });
+        }
+      } else if (body.memberType == 'KMP Matrix') {  
+        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
+          { $set: {status: false} });    
+        for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
+          const item = dpCodesDetails[dpDetailsIndex];
+          let hasCorrectionValue = false;
+          if(item.isAccepted == true) {
+            hasCorrectionValue = true;
+            await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+          } else{
+            let comments = {            
+            author: 'Analyst',
+            fiscalYear: item.fiscalYear,
+            dateTime: Date.now(),
+            content: item.rejectComment
+            }
+            await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
           }
-        });
+          await KmpMatrixDataPoints.create({
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            year: item['fiscalYear'],
+            taskId: body.taskId,
+            response: item['response'],
+            screenShot: item['screenShot'], //aws filename
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            status: true,
+            hasError: false,
+            hasCorrection: hasCorrectionValue,
+            correctionStatus: 'Completed',
+            additionalDetails: item['additionalDetails'],
+            createdBy: user,
+            memberName: body.memberName,
+            updatedAt: Date.now()
+          }).catch(err =>{
+            res.status('500').json({
+              message: err.message ? err.message : "Failed to save the data"
+            });
+          });        
+        } 
+        for (let historyIndex = 0; historyIndex < dpHistoricalDpDetails.length; historyIndex++) {
+          const item = dpHistoricalDpDetails[historyIndex];
+          await KmpMatrixDataPoints.create({
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: item['taskId'],
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: item['screenShot'],
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            additionalDetails: item['additionalDetails'],
+            memberName: body.memberName,
+            status: true,
+            createdBy: user,
+            updatedAt: Date.now()
+          }).catch(err =>{
+            res.status('500').json({
+              message: err.message ? err.message : "Failed to save the data"
+            });
+          });
+        } 
       }
     }
   } catch (error) {
