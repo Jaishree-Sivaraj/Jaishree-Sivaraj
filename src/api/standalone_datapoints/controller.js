@@ -1441,7 +1441,7 @@ export const dataCollection = async ({
     } else if (taskDetailsObject.taskStatus == 'Correction Pending') {
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
-      let acceptYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
+      let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];      
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
       if (body.memberType == 'Standalone') {       
