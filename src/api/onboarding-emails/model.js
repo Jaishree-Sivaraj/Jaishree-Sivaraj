@@ -1,18 +1,21 @@
 import mongoose, { Schema } from 'mongoose'
 
 const onboardingEmailsSchema = new Schema({
-  user: {
+  createdBy: {
     type: Schema.ObjectId,
     ref: 'User',
     required: false
   },
   emailId: {
-    type: String,
-    required: true
+    type: String
   },
   isOnboarded: {
     type: String,
     default: false
+  },
+  status: {
+    type: String,
+    default: true
   }
 }, {
   timestamps: true,
@@ -27,7 +30,7 @@ onboardingEmailsSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      user: this.user.view(full),
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       emailId: this.emailId,
       isOnboarded: this.isOnboarded,
       createdAt: this.createdAt,

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, emailValidation } from './controller'
 import { schema } from './model'
 export OnboardingEmails, { schema } from './model'
 
@@ -26,6 +26,24 @@ router.post('/',
   token({ required: true }),
   body({ emailId, isOnboarded }),
   create)
+
+/**
+ * @api {post} /onboarding-emails/validate-email Create onboarding emails
+ * @apiName CreateOnboardingEmails
+ * @apiGroup OnboardingEmails
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiParam emailId Onboarding emails's emailId.
+ * @apiParam isOnboarded Onboarding emails's isOnboarded.
+ * @apiSuccess {Object} onboardingEmails Onboarding emails's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Onboarding emails not found.
+ * @apiError 401 user access only.
+ */
+ router.post('/validate-email',
+ token({ required: true }),
+ body({ emailId }),
+ emailValidation)
 
 /**
  * @api {get} /onboarding-emails Retrieve onboarding emails
