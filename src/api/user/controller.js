@@ -13,6 +13,7 @@ import fileType from 'file-type'
 import * as fs from 'fs'
 import path from 'path'
 import { compareSync } from 'bcrypt'
+import { OnboardingEmails } from '../onboarding-emails'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
@@ -565,33 +566,88 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
       }
     }
   }
-  // let employeeCompleteDetails = await Employees.find({ status: true})
   var userDetailsInRoles = await User.find(filterQuery)
   .populate({ path: 'roleDetails.roles' })
   .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+  let employeeCompleteDetails = await Employees.find({ status: true})
   var resArray = userDetailsInRoles.map((rec) => {
-    return {
-      "userDetails": {
-        "value": rec._id,
-        "label": rec.name,
-      },
-      "roleDetails": {
-        "role": rec.roleDetails.roles.map((rec1) => {
-          return { value: rec1.id, label: rec1.roleName }
-        }),
-        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-      },
-      "role": rec.role,
-      "userType": rec.userType,
-      "email": rec.email,
-      "phoneNumber": rec.phoneNumber,
-      "isUserApproved": rec.isUserApproved,
-      "isRoleAssigned": rec.isRoleAssigned,
-      "isAssignedToGroup": rec.isAssignedToGroup,
-      "createdAt": rec.createdAt,
-      "status": rec.status,
-      "isUserRejected": rec.isUserRejected,
-      "isUserActive": rec.isUserActive
+    let userName; let employeeDetails = [];
+    employeeDetails = employeeCompleteDetails.find((obj) => obj.userId == rec.id );
+    if (rec && employeeDetails) {
+      if (rec.userType == 'Employee') {
+        userName = `${employeeDetails.firstName}${employeeDetails.middleName}${employeeDetails.lastName} - ${rec.email}`;
+        return {
+          "userDetails": {
+            "value": rec._id,
+            "label": userName,
+          },
+          "roleDetails": {
+            "role": rec.roleDetails.roles.map((rec1) => {
+              return { value: rec1.id, label: rec1.roleName }
+            }),
+            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+          },
+          "role": rec.role,
+          "userType": rec.userType,
+          "email": rec.email,
+          "phoneNumber": rec.phoneNumber,
+          "isUserApproved": rec.isUserApproved,
+          "isRoleAssigned": rec.isRoleAssigned,
+          "isAssignedToGroup": rec.isAssignedToGroup,
+          "createdAt": rec.createdAt,
+          "status": rec.status,
+          "isUserRejected": rec.isUserRejected,
+          "isUserActive": rec.isUserActive
+        }
+      }else {
+        return {
+          "userDetails": {
+            "value": rec._id,
+            "label": `${rec.name}-${rec.email}`,
+          },
+          "roleDetails": {
+            "role": rec.roleDetails.roles.map((rec1) => {
+              return { value: rec1.id, label: rec1.roleName }
+            }),
+            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+          },
+          "role": rec.role,
+          "userType": rec.userType,
+          "email": rec.email,
+          "phoneNumber": rec.phoneNumber,
+          "isUserApproved": rec.isUserApproved,
+          "isRoleAssigned": rec.isRoleAssigned,
+          "isAssignedToGroup": rec.isAssignedToGroup,
+          "createdAt": rec.createdAt,
+          "status": rec.status,
+          "isUserRejected": rec.isUserRejected,
+          "isUserActive": rec.isUserActive
+        }
+      }      
+    }else {
+      return {
+        "userDetails": {
+          "value": rec._id,
+          "label": `${rec.name}-${rec.email}`,
+        },
+        "roleDetails": {
+          "role": rec.roleDetails.roles.map((rec1) => {
+            return { value: rec1.id, label: rec1.roleName }
+          }),
+          "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+        },
+        "role": rec.role,
+        "userType": rec.userType,
+        "email": rec.email,
+        "phoneNumber": rec.phoneNumber,
+        "isUserApproved": rec.isUserApproved,
+        "isRoleAssigned": rec.isRoleAssigned,
+        "isAssignedToGroup": rec.isAssignedToGroup,
+        "createdAt": rec.createdAt,
+        "status": rec.status,
+        "isUserRejected": rec.isUserRejected,
+        "isUserActive": rec.isUserActive
+      }
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
@@ -677,6 +733,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
           html: content
         });
       })
+      // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
       return res.status(200).json({
         message: 'User details updated successfully',
       });
@@ -912,6 +969,8 @@ export const uploadEmailsFile = async (req, res, next) => {
                     subject: 'ESG - Onboarding',
                     html: content
                   });
+                    let email = `${rowObject['email']}`;
+                    await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
                 } else {
                   return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits`})
                 }
@@ -942,7 +1001,7 @@ export const uploadEmailsFile = async (req, res, next) => {
   }
 }
 
-export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, next) => {
+export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, res, next) => {
   const emailList = body.emailList;
   let existingUserEmailsList = await User.find({ "status": true });
   let rolesList = await Role.find({ "status": true });
@@ -992,11 +1051,14 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body } }, res, ne
           subject: 'ESG - Onboarding',
           html: content
         });
+          let email = `${rowObject['email']}`;
+          await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
       }
     }
     if (existingEmails.length > 0) {
       return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
     } else {
+
       return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
     }
   } else {
