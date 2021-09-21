@@ -117,5 +117,6 @@ router.use('/projected_values', projectedValues)
 router.use('/json_files', jsonFiles)
 router.use('/dashboards', dashboards)
 router.use('/onboarding-emails', onboardingEmails)
+router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router

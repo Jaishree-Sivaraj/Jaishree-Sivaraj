@@ -44,3 +44,4 @@ export const destroy = ({ user, params }, res, next) =>
     .then((onboardingEmails) => onboardingEmails ? onboardingEmails.remove() : null)
     .then(success(res, 204))
     .catch(next)
+

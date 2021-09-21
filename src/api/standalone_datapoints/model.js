@@ -120,16 +120,28 @@ const standaloneDatapointsSchema = new Schema({
   average: {
     type: String
   },
-  isActive: {
-    type: String,
-    default: true
-  },
   status: {
     type: Boolean,
     default: true
   },
   additionalDetails: {
     type: Object
+  },
+  isCounted: {
+    type: Boolean,
+    default: false
+  },
+  isDownloaded: {
+    type: Boolean,
+    default: false
+  },
+  sourceName1: {
+    type: String,
+    default: ''
+  },
+  url1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
@@ -160,7 +172,6 @@ standaloneDatapointsSchema.methods = {
       activeStatus: this.activeStatus,
       sourceName: this.sourceName,
       url: this.url,
-      isActive: this.isActive,
       pageNumber: this.pageNumber,
       correctionStatus: this.correctionStatus,
       publicationDate: this.publicationDate,
