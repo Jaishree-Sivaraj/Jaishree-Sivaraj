@@ -48,6 +48,9 @@ const standaloneDatapointsSchema = new Schema({
   screenShot: {
     type: String
   },
+  screenshot1: {
+    type: String
+  },
   sourceFileType: {
     type: String,
     default: "pdf"
@@ -65,9 +68,9 @@ const standaloneDatapointsSchema = new Schema({
     type: Array,
     default: []
   },
-  correctionStatus:{
-     type: String,
-     default:'Incomplete'
+  correctionStatus: {
+    type: String,
+    default: 'Incomplete'
   },
   collectionStatus: {
     type: Boolean,
@@ -110,15 +113,19 @@ const standaloneDatapointsSchema = new Schema({
   isSubmitted: {
     type: Boolean
   },
-  dpStatus:{
+  dpStatus: {
     type: String,
-    default:'Collection'
+    default: 'Collection'
   },
   standaradDeviation: {
     type: String
   },
   average: {
     type: String
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   status: {
     type: Boolean,
@@ -164,7 +171,7 @@ standaloneDatapointsSchema.methods = {
       sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
-      comments: this.comments,   
+      comments: this.comments,
       collectionStatus: this.collectionStatus,
       verificationStatus: this.verificationStatus,
       hasError: this.hasError,

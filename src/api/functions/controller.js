@@ -10,6 +10,9 @@ import { success, notFound } from '../../services/response/'
 import { Functions } from '.'
 import { StandaloneDatapoints } from "../standalone_datapoints"
 import { CompanySources } from "../companySources"
+import { Companies } from "../companies"
+import { Datapoints } from "../datapoints"
+import moment from 'moment';
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -731,6 +734,40 @@ export const updateSourceUrls = async ({ params }, res, next) => {
   }
   await browser.close();
   return res.status(200).json({ status: "200", message: "Completed successfully!" });
+}
+
+
+export const updateScreenshots = async ({ params }, res, next) => {
+  console.log('in screenshot update');
+  fs.readdir("./src/api/functions/Batch_7", async (err, files) => {
+    if (err) throw err;
+    var allCompanyDetails = await Companies.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
+    var alldpCodeDetails = await Datapoints.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
+    for (let index = 0; index < files.length; index++) {
+      console.log('count', index);
+      var fileArray = files[index].split('_');
+      var company = allCompanyDetails.find(function (rec) {
+        return rec.cmieProwessCode === fileArray[0]
+      });
+      // console.log('company', company);
+      if (company && Object.keys(company).length > 0) {
+        var currentYear = fileArray[1];
+        var lastYear = moment(currentYear).subtract(1, "year").format('YYYY');
+        var financialYear = lastYear + '-' + currentYear;
+        var dpcode = fileArray[2].split('.')[0];
+        var dpCodeDetails = alldpCodeDetails.find(function (rec1) {
+          return rec1.code === dpcode
+        });
+        // console.log('dpCodeDetails', dpCodeDetails);
+        if (dpCodeDetails && Object.keys(dpCodeDetails).length > 0) {
+          await StandaloneDatapoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenshot1": files[index] } });
+        }
+      }
+    }
+    res.send({
+      "message": "screenshots migrated"
+    })
+  });
 }
 
 async function validateURL(link) {
