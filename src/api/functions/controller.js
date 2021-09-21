@@ -62,14 +62,13 @@ export const destroy = ({ params }, res, next) =>
 
 export const updateSourceUrls = async ({ params }, res, next) => {
 
-  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true }).limit(50);
+  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true, url: { $nin: ["", " "]} }).limit(10000);
   let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
   console.log('uniq urls length ==>', standAlonepointsList.length);
-  console.log('standAlonepointsList', standAlonepointsList);
   //launch
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  for (let index = 0; index < 10; index++) {
+  for (let index = 0; index < standAlonepointsList.length; index++) {
     let url = '';
     if (standAlonepointsList[index] && standAlonepointsList[index].url) {
       url = standAlonepointsList[index].url;
@@ -102,11 +101,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
             } else {
               try {
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
                 if (matchingRecords.length > 0) {
-                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                   try {
                     publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                   } catch (error) {
@@ -120,34 +119,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
                 console.log('actualfile', actualFile);
                 let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                console.log('s3FileObject', s3FileObject);
-                await CompanySources.create({
-                  companyId: '',
-                  sourceTypeId: '',
-                  sourceSubTypeId: '',
-                  isMultiYear: false,
-                  isMultiSource: false,
-                  sourceUrl: link,
-                  sourceFile: fileName,
-                  publicationDate: publicationDate,
-                  fiscalYear: fiscalYear,
-                  name: 'cmp_source' + index + 1,
-                  newSourceTypeName: '',
-                  newSubSourceTypeName: '',
-                  status: true
-                });
+                console.log('s3FileObject1', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => { 
+                    console.log('1', error.message); 
+                  })
+                }
+                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                   let recordObject = matchingRecords[recordsIndex];
                   if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
-                        sourceName: 'cmp_source' + (recordsIndex + 1),
-                        url: fileName
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        url1: s3FileObject.Key
                       }
                     });
                   }
                 }
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               } catch (e) {
                 if (path.extname(link).includes('.pdf')) {
                   await axios({
@@ -155,11 +159,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     url: link,
                     responseType: "stream"
                   }).then(async function (resp) {
-                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
                     if (matchingRecords.length > 0) {
-                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                       try {
                         publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                       } catch (error) {
@@ -171,34 +175,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                     let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
                     let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                    console.log('s3FileObject', s3FileObject);
-                    await CompanySources.create({
-                      companyId: '',
-                      sourceTypeId: '',
-                      sourceSubTypeId: '',
-                      isMultiYear: false,
-                      isMultiSource: false,
-                      sourceUrl: link,
-                      sourceFile: fileName,
-                      publicationDate: publicationDate,
-                      fiscalYear: fiscalYear,
-                      name: 'cmp_source' + index + 1,
-                      newSourceTypeName: '',
-                      newSubSourceTypeName: '',
-                      status: true
-                    });
+                    console.log('s3FileObject2', s3FileObject);
+                    if (matchingRecords.length > 0) {
+                      await CompanySources.create({
+                        companyId: matchingRecords[0].companyId.id,
+                        sourceTypeId: null,
+                        sourceSubTypeId: null,
+                        isMultiYear: false,
+                        isMultiSource: false,
+                        sourceUrl: link,
+                        sourceFile: fileName,
+                        publicationDate: publicationDate,
+                        fiscalYear: fiscalYear,
+                        name: 'cmp_source' + index + 1,
+                        newSourceTypeName: '',
+                        newSubSourceTypeName: '',
+                        status: true
+                      })
+                      .catch((error) => { 
+                        console.log('2', error.message); 
+                      })
+                    }
+                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                     for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                       let recordObject = matchingRecords[recordsIndex];
                       if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                         await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                           $set: {
-                            sourceName: 'cmp_source' + (recordsIndex + 1),
-                            url: fileName
+                            sourceName1: 'cmp_source' + (recordsIndex + 1),
+                            url1: s3FileObject.Key
                           }
                         });
                       }
                     }
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   })
                     .catch(async (error) => {
                       await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
@@ -206,11 +215,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 } else {
                   try {
                     await page.goto(link);
-                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
                     if (matchingRecords.length > 0) {
-                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                       try {
                         publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                       } catch (error) {
@@ -222,34 +231,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                     let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
                     let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                    console.log('s3FileObject', s3FileObject);
-                    await CompanySources.create({
-                      companyId: '',
-                      sourceTypeId: '',
-                      sourceSubTypeId: '',
-                      isMultiYear: false,
-                      isMultiSource: false,
-                      sourceUrl: link,
-                      sourceFile: fileName,
-                      publicationDate: publicationDate,
-                      fiscalYear: fiscalYear,
-                      name: 'cmp_source' + index + 1,
-                      newSourceTypeName: '',
-                      newSubSourceTypeName: '',
-                      status: true
-                    });
+                    console.log('s3FileObject3', s3FileObject);
+                    if (matchingRecords.length > 0) {
+                      await CompanySources.create({
+                        companyId: matchingRecords[0].companyId.id,
+                        sourceTypeId: null,
+                        sourceSubTypeId: null,
+                        isMultiYear: false,
+                        isMultiSource: false,
+                        sourceUrl: link,
+                        sourceFile: fileName,
+                        publicationDate: publicationDate,
+                        fiscalYear: fiscalYear,
+                        name: 'cmp_source' + index + 1,
+                        newSourceTypeName: '',
+                        newSubSourceTypeName: '',
+                        status: true
+                      })
+                      .catch((error) => { 
+                        console.log('3', error.message); 
+                      })
+                    }
+                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                     for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                       let recordObject = matchingRecords[recordsIndex];
                       if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                         await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                           $set: {
-                            sourceName: 'cmp_source' + (recordsIndex + 1),
-                            url: fileName
+                            sourceName1: 'cmp_source' + (recordsIndex + 1),
+                            url1: s3FileObject.Key
                           }
                         });
                       }
                     }
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   } catch (err) {
                     await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
                   }
@@ -259,11 +273,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
           } else {
             try {
               await page.goto(link);
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
-                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                 try {
                   publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                 } catch (error) {
@@ -275,34 +289,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
               let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-              console.log('s3FileObject', s3FileObject);
-              await CompanySources.create({
-                companyId: '',
-                sourceTypeId: '',
-                sourceSubTypeId: '',
-                isMultiYear: false,
-                isMultiSource: false,
-                sourceUrl: link,
-                sourceFile: fileName,
-                publicationDate: publicationDate,
-                fiscalYear: fiscalYear,
-                name: 'cmp_source' + index + 1,
-                newSourceTypeName: '',
-                newSubSourceTypeName: '',
-                status: true
-              });
+              console.log('s3FileObject4', s3FileObject);
+              if (matchingRecords.length > 0) {
+                await CompanySources.create({
+                  companyId: matchingRecords[0].companyId.id,
+                  sourceTypeId: null,
+                  sourceSubTypeId: null,
+                  isMultiYear: false,
+                  isMultiSource: false,
+                  sourceUrl: link,
+                  sourceFile: fileName,
+                  publicationDate: publicationDate,
+                  fiscalYear: fiscalYear,
+                  name: 'cmp_source' + index + 1,
+                  newSourceTypeName: '',
+                  newSubSourceTypeName: '',
+                  status: true
+                })
+                .catch((error) => { 
+                  console.log('4', error.message); 
+                })
+              }
+              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
-                      sourceName: 'cmp_source' + (recordsIndex + 1),
-                      url: fileName
+                      sourceName1: 'cmp_source' + (recordsIndex + 1),
+                      url1: s3FileObject.Key
                     }
                   });
                 }
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
             } catch (e) {
               if (path.extname(link).includes('.pdf')) {
                 await axios({
@@ -311,11 +330,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   responseType: "stream"
                 }).then(async function (resp) {
 
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
-                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                     try {
                       publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                     } catch (error) {
@@ -327,34 +346,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   }
                   let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
                   let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                  console.log('s3FileObject', s3FileObject);
-                  await CompanySources.create({
-                    companyId: '',
-                    sourceTypeId: '',
-                    sourceSubTypeId: '',
-                    isMultiYear: false,
-                    isMultiSource: false,
-                    sourceUrl: link,
-                    sourceFile: fileName,
-                    publicationDate: publicationDate,
-                    fiscalYear: fiscalYear,
-                    name: 'cmp_source' + index + 1,
-                    newSourceTypeName: '',
-                    newSubSourceTypeName: '',
-                    status: true
-                  });
+                  console.log('s3FileObject5', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                    .catch((error) => { 
+                      console.log('5', error.message); 
+                    })
+                  }
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                       await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                         $set: {
-                          sourceName: 'cmp_source' + (recordsIndex + 1),
-                          url: fileName
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          url1: s3FileObject.Key
                         }
                       });
                     }
                   }
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 })
                   .catch(async (error) => {
                     await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
@@ -362,11 +386,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               } else {
                 try {
                   await page.goto(link);
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
-                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                     try {
                       publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                     } catch (error) {
@@ -378,34 +402,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   }
                   let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
                   let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                  console.log('s3FileObject', s3FileObject);
-                  await CompanySources.create({
-                    companyId: '',
-                    sourceTypeId: '',
-                    sourceSubTypeId: '',
-                    isMultiYear: false,
-                    isMultiSource: false,
-                    sourceUrl: link,
-                    sourceFile: fileName,
-                    publicationDate: publicationDate,
-                    fiscalYear: fiscalYear,
-                    name: 'cmp_source' + index + 1,
-                    newSourceTypeName: '',
-                    newSubSourceTypeName: '',
-                    status: true
-                  });
+                  console.log('s3FileObject6', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                    .catch((error) => { 
+                      console.log('6', error.message); 
+                    })
+                  }
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                       await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                         $set: {
-                          sourceName: 'cmp_source' + (recordsIndex + 1),
-                          url: fileName
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          url1: s3FileObject.Key
                         }
                       });
                     }
                   }
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 } catch (err) {
                   await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
                 }
@@ -415,11 +444,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
         } else {
           try {
             await page.goto(link);
-            let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+            let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
             console.log('matchingRecords length', matchingRecords.length);
             let fileName = '', publicationDate = '', fiscalYear = '';
             if (matchingRecords.length > 0) {
-              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
               try {
                 publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
               } catch (error) {
@@ -431,34 +460,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
             }
             let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
             let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-            console.log('s3FileObject', s3FileObject);
-            await CompanySources.create({
-              companyId: '',
-              sourceTypeId: '',
-              sourceSubTypeId: '',
-              isMultiYear: false,
-              isMultiSource: false,
-              sourceUrl: link,
-              sourceFile: fileName,
-              publicationDate: publicationDate,
-              fiscalYear: fiscalYear,
-              name: 'cmp_source' + index + 1,
-              newSourceTypeName: '',
-              newSubSourceTypeName: '',
-              status: true
-            });
+            console.log('s3FileObject7', s3FileObject);
+            if (matchingRecords.length > 0) {
+              await CompanySources.create({
+                companyId: matchingRecords[0].companyId.id,
+                sourceTypeId: null,
+                sourceSubTypeId: null,
+                isMultiYear: false,
+                isMultiSource: false,
+                sourceUrl: link,
+                sourceFile: fileName,
+                publicationDate: publicationDate,
+                fiscalYear: fiscalYear,
+                name: 'cmp_source' + index + 1,
+                newSourceTypeName: '',
+                newSubSourceTypeName: '',
+                status: true
+              })
+              .catch((error) => { 
+                console.log('7', error.message); 
+              })
+            }
+            await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
             for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
               let recordObject = matchingRecords[recordsIndex];
               if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                 await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                   $set: {
-                    sourceName: 'cmp_source' + (recordsIndex + 1),
-                    url: fileName
+                    sourceName1: 'cmp_source' + (recordsIndex + 1),
+                    url1: s3FileObject.Key
                   }
                 });
               }
             }
-            await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
           } catch (e) {
             if (path.extname(link).includes('.pdf')) {
               await axios({
@@ -467,11 +501,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 responseType: "stream"
               }).then(async function (resp) {
 
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
                 if (matchingRecords.length > 0) {
-                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                   try {
                     publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                   } catch (error) {
@@ -486,34 +520,42 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 let actualFile = resp.data;
                 console.log('actualFile', actualFile);
                 let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                console.log('s3FileObject', s3FileObject);
-                await CompanySources.create({
-                  companyId: '',
-                  sourceTypeId: '',
-                  sourceSubTypeId: '',
-                  isMultiYear: false,
-                  isMultiSource: false,
-                  sourceUrl: link,
-                  sourceFile: s3FileObject.Location,
-                  publicationDate: publicationDate,
-                  fiscalYear: fiscalYear,
-                  name: 'cmp_source' + index + 1,
-                  newSourceTypeName: '',
-                  newSubSourceTypeName: '',
-                  status: true
-                });
+                console.log('s3FileObject8', s3FileObject);
+                console.log('matchingRecords.length', matchingRecords.length);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: s3FileObject.Key,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => { 
+                    console.log('8', error.message); 
+                  });
+                }
+                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  console.log('inside for loop8');
                   let recordObject = matchingRecords[recordsIndex];
                   if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    console.log('inside if block8');
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
-                        sourceName: 'cmp_source' + (recordsIndex + 1),
-                        url: fileName
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        url1: s3FileObject.Key
                       }
                     });
                   }
                 }
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               })
                 .catch(async (error) => {
                   await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
@@ -521,11 +563,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
             } else {
               try {
                 await page.goto(link);
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
                 if (matchingRecords.length > 0) {
-                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                   try {
                     publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                   } catch (error) {
@@ -537,34 +579,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 }
                 let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
                 let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                console.log('s3FileObject', s3FileObject);
-                await CompanySources.create({
-                  companyId: '',
-                  sourceTypeId: '',
-                  sourceSubTypeId: '',
-                  isMultiYear: false,
-                  isMultiSource: false,
-                  sourceUrl: link,
-                  sourceFile: fileName,
-                  publicationDate: publicationDate,
-                  fiscalYear: fiscalYear,
-                  name: 'cmp_source' + index + 1,
-                  newSourceTypeName: '',
-                  newSubSourceTypeName: '',
-                  status: true
-                });
+                console.log('s3FileObject9', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => { 
+                    console.log('9', error.message); 
+                  });
+                }
+                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                   let recordObject = matchingRecords[recordsIndex];
                   if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
-                        sourceName: 'cmp_source' + (recordsIndex + 1),
-                        url: fileName
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        url1: s3FileObject.Key
                       }
                     });
                   }
                 }
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               } catch (err) {
                 await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
               }
@@ -574,11 +621,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
       } else {
         try {
           await page.goto(link);
-          let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+          let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
           console.log('matchingRecords length', matchingRecords.length);
           let fileName = '', publicationDate = '', fiscalYear = '';
           if (matchingRecords.length > 0) {
-            fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+            fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
             try {
               publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
             } catch (error) {
@@ -590,34 +637,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
           }
           let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
           let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-          console.log('s3FileObject', s3FileObject);
-          await CompanySources.create({
-            companyId: '',
-            sourceTypeId: '',
-            sourceSubTypeId: '',
-            isMultiYear: false,
-            isMultiSource: false,
-            sourceUrl: link,
-            sourceFile: fileName,
-            publicationDate: publicationDate,
-            fiscalYear: fiscalYear,
-            name: 'cmp_source' + index + 1,
-            newSourceTypeName: '',
-            newSubSourceTypeName: '',
-            status: true
-          });
+          console.log('s3FileObject10', s3FileObject);
+          if (matchingRecords.length > 0) {
+            await CompanySources.create({
+              companyId: matchingRecords[0].companyId.id,
+              sourceTypeId: null,
+              sourceSubTypeId: null,
+              isMultiYear: false,
+              isMultiSource: false,
+              sourceUrl: link,
+              sourceFile: fileName,
+              publicationDate: publicationDate,
+              fiscalYear: fiscalYear,
+              name: 'cmp_source' + index + 1,
+              newSourceTypeName: '',
+              newSubSourceTypeName: '',
+              status: true
+            })
+            .catch((error) => { 
+              console.log('10', error.message); 
+            });            
+          }
+          await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
           for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
             let recordObject = matchingRecords[recordsIndex];
             if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
               await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                 $set: {
-                  sourceName: 'cmp_source' + (recordsIndex + 1),
-                  url: fileName
+                  sourceName1: 'cmp_source' + (recordsIndex + 1),
+                  url1: s3FileObject.Key
                 }
               });
             }
           }
-          await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
         } catch (e) {
           if (path.extname(link).includes('.pdf')) {
             await axios({
@@ -626,11 +678,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               responseType: "stream"
             }).then(async function (resp) {
 
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
-                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                 try {
                   publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                 } catch (error) {
@@ -642,34 +694,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
               let actualFile = resp.data;
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-              console.log('s3FileObject', s3FileObject);
-              await CompanySources.create({
-                companyId: '',
-                sourceTypeId: '',
-                sourceSubTypeId: '',
-                isMultiYear: false,
-                isMultiSource: false,
-                sourceUrl: link,
-                sourceFile: fileName,
-                publicationDate: publicationDate,
-                fiscalYear: fiscalYear,
-                name: 'cmp_source' + index + 1,
-                newSourceTypeName: '',
-                newSubSourceTypeName: '',
-                status: true
-              });
+              console.log('s3FileObject11', s3FileObject);
+              if (matchingRecords.length > 0) {
+                await CompanySources.create({
+                  companyId: matchingRecords[0].companyId.id,
+                  sourceTypeId: null,
+                  sourceSubTypeId: null,
+                  isMultiYear: false,
+                  isMultiSource: false,
+                  sourceUrl: link,
+                  sourceFile: fileName,
+                  publicationDate: publicationDate,
+                  fiscalYear: fiscalYear,
+                  name: 'cmp_source' + index + 1,
+                  newSourceTypeName: '',
+                  newSubSourceTypeName: '',
+                  status: true
+                })
+                .catch((error) => {
+                  console.log('11', error.message);
+                })
+              }
+              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
-                      sourceName: 'cmp_source' + (recordsIndex + 1),
-                      url: fileName
+                      sourceName1: 'cmp_source' + (recordsIndex + 1),
+                      url1: s3FileObject.Key
                     }
                   });
                 }
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
             })
               .catch(async (error) => {
                 await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
@@ -678,11 +735,11 @@ export const updateSourceUrls = async ({ params }, res, next) => {
             try {
               await page.goto(link);
 
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId');
+              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
-                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + 'cmp_source_' + (index + 1);
+                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
                 try {
                   publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
                 } catch (error) {
@@ -694,34 +751,39 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
               let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-              console.log('s3FileObject', s3FileObject);
-              await CompanySources.create({
-                companyId: '',
-                sourceTypeId: '',
-                sourceSubTypeId: '',
-                isMultiYear: false,
-                isMultiSource: false,
-                sourceUrl: link,
-                sourceFile: fileName,
-                publicationDate: publicationDate,
-                fiscalYear: fiscalYear,
-                name: 'cmp_source' + index + 1,
-                newSourceTypeName: '',
-                newSubSourceTypeName: '',
-                status: true
-              });
+              console.log('s3FileObject12', s3FileObject);
+              if (matchingRecords.length > 0) {
+                await CompanySources.create({
+                  companyId: matchingRecords[0].companyId.id,
+                  sourceTypeId: null,
+                  sourceSubTypeId: null,
+                  isMultiYear: false,
+                  isMultiSource: false,
+                  sourceUrl: link,
+                  sourceFile: fileName,
+                  publicationDate: publicationDate,
+                  fiscalYear: fiscalYear,
+                  name: 'cmp_source' + index + 1,
+                  newSourceTypeName: '',
+                  newSubSourceTypeName: '',
+                  status: true
+                })
+                .catch((error) => {
+                  console.log('12', error.message);
+                })
+              }
+              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
-                      sourceName: 'cmp_source' + (recordsIndex + 1),
-                      url: fileName
+                      sourceName1: 'cmp_source' + (recordsIndex + 1),
+                      url1: s3FileObject.Key
                     }
                   });
                 }
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
             } catch (err) {
               await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
             }
@@ -787,10 +849,9 @@ async function storeFileInS3(actualFile, fileName, contentType) {
       Bucket: 'esg-app-store-dev',
       Key: fileName,
       Body: actualFile,
-      ContentType: contentType,
-      ACL: 'public-read'
+      ContentType: contentType
     };
-    console.log('params', params);
+    console.log('params', params.Key);
     s3.upload(params, function (s3Err, data) {
       if (s3Err) {
         reject(s3Err)

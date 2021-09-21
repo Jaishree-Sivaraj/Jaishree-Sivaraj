@@ -44,6 +44,7 @@ import sourceSubTypes from './source_sub_types'
 import projectedValues from './projected_values'
 import jsonFiles from './json_files'
 import dashboards from './dashboards'
+import onboardingEmails from './onboarding-emails'
 
 const router = new Router()
 
@@ -115,5 +116,7 @@ router.use('/source_sub_types', sourceSubTypes)
 router.use('/projected_values', projectedValues)
 router.use('/json_files', jsonFiles)
 router.use('/dashboards', dashboards)
+router.use('/onboarding-emails', onboardingEmails)
+router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router
