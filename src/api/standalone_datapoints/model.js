@@ -120,6 +120,10 @@ const standaloneDatapointsSchema = new Schema({
   average: {
     type: String
   },
+  isActive: {
+    type: String,
+    default: true
+  },
   status: {
     type: Boolean,
     default: true
@@ -156,6 +160,7 @@ standaloneDatapointsSchema.methods = {
       activeStatus: this.activeStatus,
       sourceName: this.sourceName,
       url: this.url,
+      isActive: this.isActive,
       pageNumber: this.pageNumber,
       correctionStatus: this.correctionStatus,
       publicationDate: this.publicationDate,
