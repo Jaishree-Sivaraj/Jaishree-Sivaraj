@@ -69,7 +69,7 @@ const errorDetailsSchema = new Schema({
   },
   rejectComment: {
     type: Object,
-    default:{}
+    default: {}
   },
   status: {
     type: Boolean,
