@@ -135,6 +135,10 @@ const standaloneDatapointsSchema = new Schema({
     type: Boolean,
     default: false
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   sourceName1: {
     type: String,
     default: ''
@@ -172,6 +176,7 @@ standaloneDatapointsSchema.methods = {
       activeStatus: this.activeStatus,
       sourceName: this.sourceName,
       url: this.url,
+      isActive: this.isActive,
       pageNumber: this.pageNumber,
       correctionStatus: this.correctionStatus,
       publicationDate: this.publicationDate,

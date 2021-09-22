@@ -67,6 +67,12 @@ router.post('/upload',
  * @apiParam screenShot Controversy's screenShot.
  * @apiParam pageNo Controversy's pageNo.
  * @apiParam comments Controversy's comments.
+ * @apiParam reviewDate Controversy's reviewDate.
+ * @apiParam commiteeReview Controversy's commiteeReview.
+ * @apiParam assessmentDate Controversy's assessmentDate.
+ * @apiParam reassessmentDate Controversy's reassessmentDate.
+ * @apiParam controversyFiscalYear Controversy's controversyFiscalYear.
+ * @apiParam controversyFiscalYearEnd Controversy's controversyFiscalYearEnd.
  * @apiParam additionalDetails Controversy's additionalDetails.
  * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -76,7 +82,7 @@ router.post('/upload',
  */
 router.post('/add/new-controversy',
   token({ required: true }),
-  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, commiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
   addNewControversy)
 
 /**

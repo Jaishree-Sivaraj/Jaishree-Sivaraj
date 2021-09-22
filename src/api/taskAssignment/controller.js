@@ -643,7 +643,7 @@ export const getMyTasks = async (
       .then(async (controversyTasks) => {
         if (controversyTasks && controversyTasks.length > 0) {
           for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id}).limit(1).sort({updatedAt: -1});
+            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
             let object = {};
             object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.taskNumber = controversyTasks[cIndex].taskNumber;
@@ -1541,7 +1541,7 @@ export const controversyReports = async ({ user, params }, res, next) => {
 
 export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
-  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, status: true }).
+  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, isActive: true, status: true }).
     populate('companyId').populate({
       path: "taskId",
       populate: {

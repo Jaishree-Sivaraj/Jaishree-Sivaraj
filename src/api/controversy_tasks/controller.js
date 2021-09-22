@@ -277,7 +277,7 @@ export const allocateTasksFromJson = async ({ user, params }, res, next) => {
             stage: 'Assigned',
             createdBy: user.id,
           }
-          await Controversy.updateMany({ companyId: controversyTaskDtl.companyId, status: true}, { $set: { taskId: controversyTaskDtl._id } })
+          await Controversy.updateMany({ companyId: controversyTaskDtl.companyId,isActive: true, status: true}, { $set: { taskId: controversyTaskDtl._id } })
           await ControversyTaskHistories.create(taskHistoriesObject)
         });
       }
