@@ -43,7 +43,7 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEnd,
-        reviewedByCommittee: body.commiteeReview,
+        reviewedByCommittee: body.isApplicableForCommiteeReview.value,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,
@@ -98,7 +98,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEnd,
-        reviewedByCommittee: body.commiteeReview,
+        reviewedByCommittee: body.isApplicableForCommiteeReview.value,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,
@@ -550,6 +550,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
                 controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.additionalDetails = [];                
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
@@ -685,6 +686,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
                 controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
                 

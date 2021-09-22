@@ -8,9 +8,9 @@ export Controversy, { schema } from './model'
 
 const router = new Router()
 
-const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails, status, nextReviewDate } = schema.tree
+const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails, status, nextReviewDate,assessmentDate,reassessmentDate,reviewDate,fiscalYearEndDate, reviewedByCommittee} = schema.tree
 const dpCodeId = '', source = {}, pageNo = '';
-const reviewDate  = "", commiteeReview  = "",assessmentDate  = "",reassessmentDate  = "",controversyFiscalYear  = "",controversyFiscalYearEnd = ""
+const isApplicableForCommiteeReview  = "",controversyFiscalYear  = "",controversyFiscalYearEnd = ""
 
 /**
  * @api {post} /controversies Create controversy
@@ -83,7 +83,7 @@ router.post('/upload',
  */
 router.post('/add/new-controversy',
   token({ required: true }),
-  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, commiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
   addNewControversy)
 
 /**
