@@ -162,11 +162,17 @@ export const show = async ({ params }, res, next) => {
             .then((datapoints) => {
               if (datapoints.length > 0) {
                 for (let index = 0; index < datapoints.length; index++) {
+                  let reassessmentDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reassessmentDate:{$gt : new Date()}, status:true, isActive: true}).limit(1).sort({reassessmentDate: 1});
+                  let nextReviewDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, nextReviewDate:{$gt : new Date()}, status:true, isActive: true}).limit(1).sort({nextReviewDate: 1});
+                  let fiscalYearEndDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id , status:true, isActive: true}).limit(1).sort({fiscalYearEndDate: 1});
                   let objectToPush = {
                     dpCode: datapoints[index].code,
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
-                    keyIssueId: datapoints[index].keyIssueId.id
+                    keyIssueId: datapoints[index].keyIssueId.id,
+                    reassessmentDate: reassessmentDate,
+                    nextReviewDate: nextReviewDate,
+                    controversyFiscalYearEndDate: fiscalYearEndDate
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
