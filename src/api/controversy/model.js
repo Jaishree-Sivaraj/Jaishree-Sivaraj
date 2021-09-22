@@ -1,3 +1,4 @@
+import { toString } from 'lodash'
 import mongoose, { Schema } from 'mongoose'
 
 const controversySchema = new Schema({
@@ -66,8 +67,7 @@ const controversySchema = new Schema({
     type: String
   },
   comments: {
-    type: Object,
-    default: []
+    type: String
   },
   response: {
     type: String
@@ -129,7 +129,7 @@ controversySchema.methods = {
       screenShot: this.screenShot ? this.screenShot : '',
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
-      comments: this.comments ? this.comments : [],
+      comments: this.comments,
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       reviewDate: this.reviewDate,
