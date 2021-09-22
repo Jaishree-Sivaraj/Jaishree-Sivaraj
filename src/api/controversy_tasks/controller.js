@@ -159,7 +159,7 @@ export const show = async ({ params }, res, next) => {
             status: true
           })
             .populate('keyIssueId')
-            .then((datapoints) => {
+            .then(async (datapoints) => {
               if (datapoints.length > 0) {
                 for (let index = 0; index < datapoints.length; index++) {
                   let reassessmentDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reassessmentDate:{$gt : new Date()}, status:true, isActive: true}).limit(1).sort({reassessmentDate: 1});
