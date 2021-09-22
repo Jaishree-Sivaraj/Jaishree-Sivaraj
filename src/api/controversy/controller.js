@@ -84,6 +84,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
   try {
     if (body) {
       let controversyObject = {
+        controversyNumber:body.controversyNumber,
         datapointId: body.dpCodeId,
         companyId: body.companyId,
         taskId: body.taskId,
