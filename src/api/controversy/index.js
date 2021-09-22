@@ -195,7 +195,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
   updateControversy)
 
 /**
