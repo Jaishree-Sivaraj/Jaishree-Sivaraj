@@ -170,9 +170,9 @@ export const show = async ({ params }, res, next) => {
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
                     keyIssueId: datapoints[index].keyIssueId.id,
-                    reassessmentDate: reassessmentDate,
-                    nextReviewDate: nextReviewDate,
-                    controversyFiscalYearEndDate: fiscalYearEndDate
+                    reassessmentDate: reassessmentDate.reassessmentDate,
+                    nextReviewDate: nextReviewDate.nextReviewDate,
+                    controversyFiscalYearEndDate: fiscalYearEndDate.fiscalYearEndDate
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
