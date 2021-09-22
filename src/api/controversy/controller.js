@@ -43,7 +43,7 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEnd,
-        reviewedByCommittee: body.isApplicableForCommiteeReview.value,
+        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,
@@ -62,11 +62,13 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         textSnippet: body.textSnippet,
         pageNumber: body.pageNo,
         screenShot: body.screenShot,
-        comments: body.comments,
+        comments: body.comments
 
       };
       controversyObject.controversyDetails.push(controversyDetailsObject);
-      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      }
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
@@ -99,7 +101,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEnd,
-        reviewedByCommittee: body.isApplicableForCommiteeReview.value,
+        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,
@@ -122,7 +124,9 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         comments: body.comments,
       };
       controversyObject.controversyDetails.push(controversyDetailsObject)
-      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      }
       await Controversy.updateOne({ _id: params.id }, { $set: {isActive : false} });
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
@@ -552,6 +556,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
                 controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                controversyObject.updatedAt = controversyList[cIndex].updatedAt ? controversyList[cIndex].updatedAt : '';
                 controversyObject.additionalDetails = [];                
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
