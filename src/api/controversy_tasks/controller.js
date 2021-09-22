@@ -170,9 +170,9 @@ export const show = async ({ params }, res, next) => {
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
                     keyIssueId: datapoints[index].keyIssueId.id,
-                    reassessmentDate: reassessmentDate.reassessmentDate,
-                    nextReviewDate: nextReviewDate.nextReviewDate,
-                    controversyFiscalYearEndDate: fiscalYearEndDate.fiscalYearEndDate
+                    reassessmentDate: reassessmentDate[0] ? reassessmentDate[0].reassessmentDate : '',
+                    nextReviewDate: nextReviewDate[0] ? nextReviewDate[0].nextReviewDate : '',
+                    controversyFiscalYearEndDate: fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : ""
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
