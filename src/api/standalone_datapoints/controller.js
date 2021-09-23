@@ -44,6 +44,7 @@ import {
   TaskAssignment
 } from '../taskAssignment'
 import { CompaniesTasks } from '../companies_tasks'
+import { CompanySources } from '../companySources'
 
 var utils = require('../../services/utils/aws-s3')
 
@@ -1126,18 +1127,25 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 status: true
               }).populate('companyId');
               for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
-                let previousYearData = companySourceDetails[prvRespIndex];
-                structuredStandaloneDetails.map(stdDetail => {
-                  if(stdDetail.companyId == previousYearData.companyId.id && stdDetail.year == previousYearData.fiscalYear && stdDetail.url == previousYearData.sourceUrl) {
-                    stdDetail.url = previousYearData.sourceUrl;
-                    stdDetail.sourceName = stdDetail.sourceName ? stdDetail.sourceName : previousYearData.sourceName1;
-                    stdDetail.isCounted = true;
-                    stdDetail.isDownloaded = true;
+                for (let stdListIndex = 0; stdListIndex < structuredStandaloneDetails.length; stdListIndex++) {
+                  let stdDetail = structuredStandaloneDetails[stdListIndex];
+                  let isDataExist = companySourceDetails.findIndex((ele) => ele.sourceUrl == stdDetail.url && stdDetail.companyId == ele.companyId.id && stdDetail.year == ele.fiscalYear);
+                  if (isDataExist != -1) {
+                    let previousYearData = companySourceDetails[isDataExist];
+                    structuredStandaloneDetails[stdListIndex].url = previousYearData.sourceUrl;
+                    structuredStandaloneDetails[stdListIndex].sourceName = stdDetail.sourceName ? stdDetail.sourceName : previousYearData.sourceName1;
+                    structuredStandaloneDetails[stdListIndex].isCounted = true;
+                    structuredStandaloneDetails[stdListIndex].isDownloaded = true;
                   } else {
-                    stdDetail.isCounted = false;
-                    stdDetail.isDownloaded = false;
+                    if (stdDetail.url == '' || stdDetail.url == ' ' || stdDetail.url == null) {
+                      structuredStandaloneDetails[stdListIndex].isCounted = true;
+                      structuredStandaloneDetails[stdListIndex].isDownloaded = true;
+                    } else {
+                      structuredStandaloneDetails[stdListIndex].isCounted = false;
+                      structuredStandaloneDetails[stdListIndex].isDownloaded = false;
+                    }
                   }
-                });
+                }
               }
               await StandaloneDatapoints.updateMany({
                 "companyId": {
@@ -1160,18 +1168,25 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   }
                 });
               for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
-                let previousYearData = companySourceDetails[prvRespIndex];
-                boardMembersList.map(boardDetail => {
-                  if(boardDetail.companyId == previousYearData.companyId.id && boardDetail.year == previousYearData.fiscalYear && boardDetail.url == previousYearData.sourceUrl) {
-                    boardDetail.url = previousYearData.sourceUrl;
-                    boardDetail.sourceName = boardDetail.sourceName ? boardDetail.sourceName : previousYearData.sourceName1;
-                    boardDetail.isCounted = true;
-                    boardDetail.isDownloaded = true;
+                for (let boardMemListIndex = 0; boardMemListIndex < boardMembersList.length; boardMemListIndex++) {
+                  let boardDetail = boardMembersList[boardMemListIndex];
+                  let isDataExist = companySourceDetails.findIndex((ele) => ele.sourceUrl == boardDetail.url && boardDetail.companyId == ele.companyId.id && boardDetail.year == ele.fiscalYear);
+                  if (isDataExist != -1) {
+                    let previousYearData = companySourceDetails[isDataExist];
+                    boardMembersList[boardMemListIndex].url = previousYearData.sourceUrl;
+                    boardMembersList[boardMemListIndex].sourceName = boardDetail.sourceName ? boardDetail.sourceName : previousYearData.sourceName1;
+                    boardMembersList[boardMemListIndex].isCounted = true;
+                    boardMembersList[boardMemListIndex].isDownloaded = true;
                   } else {
-                    boardDetail.isCounted = false;
-                    boardDetail.isDownloaded = false;
+                    if (boardDetail.url == '' || boardDetail.url == ' ' || boardDetail.url == null) {
+                      boardMembersList[boardMemListIndex].isCounted = true;
+                      boardMembersList[boardMemListIndex].isDownloaded = true;
+                    } else {
+                      boardMembersList[boardMemListIndex].isCounted = false;
+                      boardMembersList[boardMemListIndex].isDownloaded = false;
+                    }
                   }
-                });
+                }
               }
               //Marking existing Data as False in BoardMemberMatrixDP 
               await BoardMembersMatrixDataPoints.updateMany({
@@ -1195,18 +1210,25 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   }
                 });
               for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
-                let previousYearData = companySourceDetails[prvRespIndex];
-                kmpMembersList.map(kmpDetail => {
-                  if(kmpDetail.companyId == previousYearData.companyId.id && kmpDetail.year == previousYearData.fiscalYear && kmpDetail.url == previousYearData.sourceUrl) {
-                    kmpDetail.url = previousYearData.sourceUrl;
-                    kmpDetail.sourceName = kmpDetail.sourceName ? kmpDetail.sourceName : previousYearData.sourceName1;
-                    kmpDetail.isCounted = true;
-                    kmpDetail.isDownloaded = true;
+                for (let kmpListIndex = 0; kmpListIndex < kmpMembersList.length; kmpListIndex++) {
+                  let kmpDetail = kmpMembersList[kmpListIndex];
+                  let isDataExist = companySourceDetails.findIndex((ele) => ele.sourceUrl == kmpDetail.url && kmpDetail.companyId == ele.companyId.id && kmpDetail.year == ele.fiscalYear);
+                  if (isDataExist != -1) {
+                    let previousYearData = companySourceDetails[isDataExist];
+                    kmpMembersList[kmpListIndex].url = previousYearData.sourceUrl;
+                    kmpMembersList[kmpListIndex].sourceName = kmpDetail.sourceName ? kmpDetail.sourceName : previousYearData.sourceName1;
+                    kmpMembersList[kmpListIndex].isCounted = true;
+                    kmpMembersList[kmpListIndex].isDownloaded = true;
                   } else {
-                    kmpDetail.isCounted = false;
-                    kmpDetail.isDownloaded = false;
+                    if (kmpDetail.url == '' || kmpDetail.url == ' ' || kmpDetail.url == null) {
+                      kmpMembersList[kmpListIndex].isCounted = true;
+                      kmpMembersList[kmpListIndex].isDownloaded = true;
+                    } else {
+                      kmpMembersList[kmpListIndex].isCounted = false;
+                      kmpMembersList[kmpListIndex].isDownloaded = false;
+                    }
                   }
-                });
+                }
               }
               await KmpMatrixDataPoints.updateMany({
                 "companyId": {
