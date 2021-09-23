@@ -69,7 +69,7 @@ async function generateJson(body) {
                     ]
                 ]
             }
-            await StandaloneDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, status: true, companyId: companyID }).populate('datapointId').then((result) => {
+            await StandaloneDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, isActive: true, status: true, companyId: companyID }).populate('datapointId').then((result) => {
                 if (result.length > 0) {
                     for (let index = 0; index < result.length; index++) {
                         const element = result[index];

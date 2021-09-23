@@ -10,6 +10,9 @@ import { success, notFound } from '../../services/response/'
 import { Functions } from '.'
 import { StandaloneDatapoints } from "../standalone_datapoints"
 import { CompanySources } from "../companySources"
+import { Companies } from "../companies"
+import { Datapoints } from "../datapoints"
+import moment from 'moment';
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -59,7 +62,7 @@ export const destroy = ({ params }, res, next) =>
 
 export const updateSourceUrls = async ({ params }, res, next) => {
 
-  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true, url: { $nin: ["", " "]} }).limit(10000);
+  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, isActive : true,status: true, url: { $nin: ["", " "]} }).limit(10000);
   let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
   console.log('uniq urls length ==>', standAlonepointsList.length);
   //launch
@@ -95,10 +98,10 @@ export const updateSourceUrls = async ({ params }, res, next) => {
             link = "https://" + link;
             let httpsValidationResult = await validUrl.isUri(link);
             if (!httpsValidationResult) {
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+              await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
             } else {
               try {
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
                 if (matchingRecords.length > 0) {
@@ -137,7 +140,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     console.log('1', error.message); 
                   })
                 }
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                   let recordObject = matchingRecords[recordsIndex];
                   if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -156,7 +159,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     url: link,
                     responseType: "stream"
                   }).then(async function (resp) {
-                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                    let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
                     if (matchingRecords.length > 0) {
@@ -193,7 +196,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         console.log('2', error.message); 
                       })
                     }
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
                     for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                       let recordObject = matchingRecords[recordsIndex];
                       if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -207,12 +210,12 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                   })
                     .catch(async (error) => {
-                      await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                      await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
                     });
                 } else {
                   try {
                     await page.goto(link);
-                    let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                    let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
                     if (matchingRecords.length > 0) {
@@ -249,7 +252,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         console.log('3', error.message); 
                       })
                     }
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
                     for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                       let recordObject = matchingRecords[recordsIndex];
                       if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -262,7 +265,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       }
                     }
                   } catch (err) {
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
                   }
                 }
               }
@@ -270,7 +273,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
           } else {
             try {
               await page.goto(link);
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+              let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
@@ -307,7 +310,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   console.log('4', error.message); 
                 })
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -327,7 +330,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   responseType: "stream"
                 }).then(async function (resp) {
 
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
@@ -364,7 +367,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       console.log('5', error.message); 
                     })
                   }
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url,isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -378,12 +381,12 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   }
                 })
                   .catch(async (error) => {
-                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
                   });
               } else {
                 try {
                   await page.goto(link);
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
@@ -420,7 +423,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       console.log('6', error.message); 
                     })
                   }
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -433,7 +436,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                   }
                 } catch (err) {
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
                 }
               }
             }
@@ -441,7 +444,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
         } else {
           try {
             await page.goto(link);
-            let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+            let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
             console.log('matchingRecords length', matchingRecords.length);
             let fileName = '', publicationDate = '', fiscalYear = '';
             if (matchingRecords.length > 0) {
@@ -793,6 +796,40 @@ export const updateSourceUrls = async ({ params }, res, next) => {
   }
   await browser.close();
   return res.status(200).json({ status: "200", message: "Completed successfully!" });
+}
+
+
+export const updateScreenshots = async ({ params }, res, next) => {
+  console.log('in screenshot update');
+  fs.readdir("./src/api/functions/Batch_7", async (err, files) => {
+    if (err) throw err;
+    var allCompanyDetails = await Companies.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
+    var alldpCodeDetails = await Datapoints.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
+    for (let index = 0; index < files.length; index++) {
+      console.log('count', index);
+      var fileArray = files[index].split('_');
+      var company = allCompanyDetails.find(function (rec) {
+        return rec.cmieProwessCode === fileArray[0]
+      });
+      // console.log('company', company);
+      if (company && Object.keys(company).length > 0) {
+        var currentYear = fileArray[1];
+        var lastYear = moment(currentYear).subtract(1, "year").format('YYYY');
+        var financialYear = lastYear + '-' + currentYear;
+        var dpcode = fileArray[2].split('.')[0];
+        var dpCodeDetails = alldpCodeDetails.find(function (rec1) {
+          return rec1.code === dpcode
+        });
+        // console.log('dpCodeDetails', dpCodeDetails);
+        if (dpCodeDetails && Object.keys(dpCodeDetails).length > 0) {
+          await StandaloneDatapoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenshot1": files[index] } });
+        }
+      }
+    }
+    res.send({
+      "message": "screenshots migrated"
+    })
+  });
 }
 
 async function validateURL(link) {

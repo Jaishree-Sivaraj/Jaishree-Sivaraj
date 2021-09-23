@@ -133,7 +133,7 @@ export const extraAddKeys = async({params}, res, next)=>{
 export const type8Validation = async ({ user, body }, res, next) => {
   console.log(body.datapointId, body.companyId, body.clientTaxonomyId, body.currentYear, params.previousYear, body.response);
   let derivedDatapoints = await DerivedDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
-  let standalone_datapoints = await StandaloneDatapoints.find({ companyId: body.companyId, status: true }).populate('datapointId');
+  let standalone_datapoints = await StandaloneDatapoints.find({ companyId: body.companyId, isActive: true, status: true }).populate('datapointId');
   let mergedDetails = _.concat(derivedDatapoints, standalone_datapoints);
   let datapointDetails = await Datapoints.findOne({ _id: body.datapointId, clientTaxonomyId: body.clientTaxonomyId });
   if (datapointDetails.methodName.trim() == 'OR') {
@@ -344,8 +344,8 @@ export const getAllValidation =async ({ user, params }, res, next) => {
       }});
       let derivedDatapoints = await DerivedDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
       let kmpDatapoints = await KmpMatrixDataPoints.find({companyId: taskDetailsObject.companyId.id, status: true}).populate('datapointId').populate('companyId');
-      let boardMembersMatrixDataPoints = await BoardMembersMatrixDataPoints.find({companyId: taskDetailsObject.companyId.id, status: true}).populate('datapointId').populate('companyId');
-      let standalone_datapoints = await StandaloneDatapoints.find({ companyId: taskDetailsObject.companyId.id, status: true }).populate('datapointId').populate('companyId');
+      let boardMembersMatrixDataPoints = await BoardMembersMatrixDataPoints.find({companyId: taskDetailsObject.companyId.id,isActive: true, status: true}).populate('datapointId').populate('companyId');
+      let standalone_datapoints = await StandaloneDatapoints.find({ companyId: taskDetailsObject.companyId.id,  isActive: true,status: true }).populate('datapointId').populate('companyId');
       //let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}}).populate('datapointId');
       let mergedDetails = _.concat(boardMembersMatrixDataPoints,kmpDatapoints,derivedDatapoints, standalone_datapoints);
       if(dpTypeValues.length > 1){

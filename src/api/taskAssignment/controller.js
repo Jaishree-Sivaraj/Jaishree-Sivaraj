@@ -643,7 +643,7 @@ export const getMyTasks = async (
       .then(async (controversyTasks) => {
         if (controversyTasks && controversyTasks.length > 0) {
           for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id}).limit(1).sort({updatedAt: -1});
+            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
             let object = {};
             object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.taskNumber = controversyTasks[cIndex].taskNumber;
@@ -1259,6 +1259,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
     year: {
       "$in": distinctYears
     },
+    isActive: true,
     status: true
   })
   .populate('createdBy')
@@ -1271,6 +1272,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
     year: {
       "$in": distinctYears
     },
+    isActive: true,
     status: true
   });
   let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
@@ -1279,6 +1281,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
     year:  {
       "$in": distinctYears
     },
+    isActive: true,
     status: true
   });
   for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
@@ -1286,6 +1289,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
         taskId: body.taskId,
         companyId: taskDetails.companyId.id,
         year: distinctYears[yearIndex],
+        isActive: true,
         status: true
       });
     datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length;    
@@ -1293,6 +1297,7 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
         taskId: body.taskId,
         companyId: taskDetails.companyId.id,
         year:  distinctYears[yearIndex],
+        isActive: true,
         status: true
       });
     datapointsCount = datapointsCount + allKmpMatrixDetails.length;
@@ -1307,49 +1312,49 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
     if(datapointsCount == multipliedValue && hasError){
       if(body.role == 'QA'){
         taskStatusValue = "Correction Pending";
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
         
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       } else{
         taskStatusValue = "Reassignment Pending"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
         
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
     } else if(datapointsCount == multipliedValue && hasCorrection){      
       taskStatusValue = "Correction Completed"; 
-      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-      await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+      await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
       await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
     } else if(datapointsCount == multipliedValue && hasError == undefined && hasCorrection == undefined){      
       if(body.role == 'QA'){
         taskStatusValue = "Verification Completed";
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       } else if(body.role == 'Analyst'){
         taskStatusValue = "Collection Completed"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       } else{
         taskStatusValue = "Completed"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
+        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
+        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
         await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
       }
     } else{      
@@ -1541,7 +1546,7 @@ export const controversyReports = async ({ user, params }, res, next) => {
 
 export const getTaskListForControversy = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
-  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, status: true }).
+  var controversyTask = await Controversy.find({ taskId: { $in: body.controversyTaskReports }, isActive: true, status: true }).
     populate('companyId').populate({
       path: "taskId",
       populate: {

@@ -97,6 +97,10 @@ const kmpMatrixDataPointsSchema = new Schema({
     required: false,
     default: null
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   status: {
     type: Boolean,
     default: true
@@ -125,6 +129,7 @@ kmpMatrixDataPointsSchema.methods = {
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
       taskId: this.taskId ? this.taskId.view(full) : null,
       response: this.response,
+      isActive: this.isActive,
       year: this.year,
       fiscalYearEndDate: this.fiscalYearEndDate,
       memberStatus: this.memberStatus,

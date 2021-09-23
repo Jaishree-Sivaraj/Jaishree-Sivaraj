@@ -81,6 +81,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   mergedDetails = await StandaloneDatapoints.find({ 
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
+  isActive: true,
   year: body.year,
   status: true
   })
@@ -90,6 +91,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
   year: body.year,
+  isActive: true,
   status: true
   })
   .populate('companyId')

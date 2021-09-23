@@ -1268,7 +1268,9 @@ export const dataCollection = async ({
       let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
-      if (body.memberType == 'Standalone') {        
+      if (body.memberType == 'Standalone') {  
+        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
+          { $set: {isActive: false} });        
         let currentYearData = dpCodesDetails.map(function(item){
           return {
             datapointId: body.dpCodeId,
@@ -1282,6 +1284,7 @@ export const dataCollection = async ({
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            isActive: true,
             status: true,
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
@@ -1303,14 +1306,13 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
+            isActive: true,
             status: true,
             createdBy: user,
             updatedAt: Date.now()
           }
         });
-        let structuredStandaloneDetails = _.concat(currentYearData, historyYearData);
-        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
+        let structuredStandaloneDetails = _.concat(currentYearData, historyYearData);        
         await StandaloneDatapoints.insertMany(structuredStandaloneDetails)
         .then((result,err) => {
           if (err) {
@@ -1323,7 +1325,9 @@ export const dataCollection = async ({
             });
           }
         });     
-      } else if (body.memberType == 'Board Matrix') {      
+      } else if (body.memberType == 'Board Matrix') {    
+        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
+          { $set: {isActive: false} });         
         let currentYearData = dpCodesDetails.map(function(item){
           return {
             datapointId: body.dpCodeId,
@@ -1337,6 +1341,7 @@ export const dataCollection = async ({
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            isActive: true,
             status: true,
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
@@ -1360,14 +1365,13 @@ export const dataCollection = async ({
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
+            isActive: true,
             status: true,
             createdBy: user,
             updatedAt: Date.now()
           }
         });
-        let boardMemberDetails = _.concat(currentYearData, historyYearData);
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
+        let boardMemberDetails = _.concat(currentYearData, historyYearData);   
         await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails)
         .then((result,err) => {
           if (err) {
@@ -1380,7 +1384,9 @@ export const dataCollection = async ({
             });
           }
         });
-      } else if (body.memberType == 'KMP Matrix') {      
+      } else if (body.memberType == 'KMP Matrix') {     
+        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true,status: true },
+          { $set: {isActive: false} });   
         let currentYearData = dpCodesDetails.map(function(item){
           return {
             datapointId: body.dpCodeId,
@@ -1394,6 +1400,7 @@ export const dataCollection = async ({
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            isActive: true,
             status: true,
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
@@ -1417,14 +1424,13 @@ export const dataCollection = async ({
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
+            isActive: true,
             status: true,
             createdBy: user,
             updatedAt: Date.now()
           }
         });
-        let kmpMemberDetails = _.concat(currentYearData, historyYearData);
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });          
+        let kmpMemberDetails = _.concat(currentYearData, historyYearData);        
         await KmpMatrixDataPoints.insertMany(kmpMemberDetails)
         .then((result,err) => {
           if (err) {
@@ -1445,8 +1451,8 @@ export const dataCollection = async ({
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];      
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
       if (body.memberType == 'Standalone') {  
-        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });  
+        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
+          { $set: {isActive: false} });  
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           const item = dpCodesDetails[dpDetailsIndex]
           let hasCorrectionValue = false;
@@ -1476,6 +1482,7 @@ export const dataCollection = async ({
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            isActive: true,
             status: true,
             hasError: false,
             hasCorrection: hasCorrectionValue,
@@ -1504,6 +1511,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
+            isActive: true,
             status: true,
             createdBy: user,
             updatedAt: Date.now()
@@ -1517,7 +1525,7 @@ export const dataCollection = async ({
           message: "Data inserted Successfully"
         });
       } else if (body.memberType == 'Board Matrix') {   
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
+        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
           { $set: {status: false} });    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           const item = dpCodesDetails[dpDetailsIndex];
@@ -1549,6 +1557,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            isActive: true,
             hasError: false,
             hasCorrection: hasCorrectionValue,
             correctionStatus: 'Completed',
@@ -1579,6 +1588,7 @@ export const dataCollection = async ({
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
             status: true,
+            isActive: true,
             createdBy: user,
             updatedAt: Date.now()
           }).catch(err =>{

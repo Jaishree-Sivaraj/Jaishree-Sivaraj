@@ -9,6 +9,7 @@ import { ControversyTasks } from '.'
 import { Role } from "../role"
 import { Controversy } from '../controversy'
 import { ControversyTaskHistories } from '../controversy_task_histories'
+import moment from 'moment'
    
 export const create = ({ user, bodymen: { body } }, res, next) =>
   ControversyTasks.create({ ...body, createdBy: user })
@@ -159,14 +160,22 @@ export const show = async ({ params }, res, next) => {
             status: true
           })
             .populate('keyIssueId')
-            .then((datapoints) => {
+            .then(async (datapoints) => {
               if (datapoints.length > 0) {
                 for (let index = 0; index < datapoints.length; index++) {
+                  let yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  let reassessmentDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reassessmentDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reassessmentDate: 1});
+                  let reviewDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
+                  let fiscalYearEndDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id , status:true, isActive: true}).limit(1).sort({fiscalYearEndDate: -1});
                   let objectToPush = {
                     dpCode: datapoints[index].code,
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
-                    keyIssueId: datapoints[index].keyIssueId.id
+                    keyIssueId: datapoints[index].keyIssueId.id,
+                    reassessmentDate: reassessmentDate[0] ? reassessmentDate[0].reassessmentDate : '',
+                    reviewDate: reviewDate[0] ? reviewDate[0].reviewDate : '',
+                    controversyFiscalYearEndDate: fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : ""
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
@@ -277,7 +286,7 @@ export const allocateTasksFromJson = async ({ user, params }, res, next) => {
             stage: 'Assigned',
             createdBy: user.id,
           }
-          await Controversy.updateMany({ companyId: controversyTaskDtl.companyId, status: true}, { $set: { taskId: controversyTaskDtl._id } })
+          await Controversy.updateMany({ companyId: controversyTaskDtl.companyId,isActive: true, status: true}, { $set: { taskId: controversyTaskDtl._id } })
           await ControversyTaskHistories.create(taskHistoriesObject)
         });
       }
