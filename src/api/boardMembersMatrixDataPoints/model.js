@@ -98,7 +98,7 @@ const boardMembersMatrixDataPointsSchema = new Schema({
     default: null
   },
   isActive: {
-    type: String,
+    type: Boolean,
     default: true
   },
   status: {
