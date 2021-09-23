@@ -123,11 +123,11 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         screenShot: body.screenShot,
         comments: body.comments,
       };
-      controversyObject.controversyDetails.push(controversyDetailsObject)
+      controversyObject.controversyDetails.push(controversyDetailsObject)      
+      await Controversy.updateOne({ _id: params.id }, { $set: {isActive : false} });
       if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
         await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
       }
-      await Controversy.updateOne({ _id: params.id }, { $set: {isActive : false} });
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
@@ -544,7 +544,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.indicator = datapointDetail.indicator;
                 controversyObject.description = datapointDetail.description;
                 controversyObject.dataType = datapointDetail.dataType;
-                controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';
+                controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : ''; 
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
                 controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
