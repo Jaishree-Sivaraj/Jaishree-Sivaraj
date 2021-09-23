@@ -169,6 +169,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         year: {
           $in: currentYear
         },
+        isActive: true,
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -180,8 +181,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       year: {
           "$in": currentYear
         },
-        
-        status: true
+      isActive: true,
+      status: true
       }).populate('createdBy')
       .populate('datapointId')
       .populate('companyId')
@@ -192,7 +193,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       year: {
           "$in": currentYear
         },
-        
+        isActive: true,
         status: true
       }).populate('createdBy')
       .populate('datapointId')
@@ -502,6 +503,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
+              isActive: true,
               dpStatus: 'Error',             
               status: true
             }).populate([{
@@ -576,6 +578,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
+              isActive: true,
               dpStatus: 'Error',
               status: true
             }).populate([{
@@ -649,6 +652,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               taskId: req.params.taskId,
               companyId:taskDetails.companyId.id,
               dpStatus: 'Error',
+              isActive: true,              
               status: true
             }).populate([{
               path: 'datapointId',
@@ -700,6 +704,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             taskId: req.params.taskId,
             companyId: taskDetails.companyId.id,
             dpStatus : "Error",
+            isActive: true,
             status: true
           }).populate({
             path: 'datapointId',
@@ -787,6 +792,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
+              isActive: true,
               dpStatus: 'Correction',              
               status: true
             }).populate([{
@@ -856,12 +862,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
               }
             }
-            let errorkmpDatapoints = await BoardMembersMatrixDataPoints.find({
+            let errorkmpDatapoints = await KmpMatrixDataPoints.find({
               taskId: req.params.taskId,
               companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
               },
+              isActive: true,
               dpStatus: 'Correction',
               status: true
             }).populate([{
@@ -910,6 +917,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               year:{
                 $in:currentYear
               },
+              isActive: true,
               dpStatus: 'Correction',
               status: true
             }).populate([{
@@ -964,6 +972,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             year:{
               $in:currentYear
             },
+            isActive: true,
             dpStatus: 'Correction',
             status: true
           }).populate([{
@@ -1117,6 +1126,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             $in: currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1129,6 +1139,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             $nin: currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1576,7 +1587,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -1588,7 +1599,7 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
-          
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2036,6 +2047,7 @@ export const datapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2048,6 +2060,7 @@ export const datapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
           memberName: req.body.memberName,
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2598,6 +2611,7 @@ export const repDatapointDetails = async (req, res, next) => {
           year: {
             $in: currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2610,6 +2624,7 @@ export const repDatapointDetails = async (req, res, next) => {
           year: {
             $nin: currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2976,7 +2991,7 @@ export const repDatapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
-          
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -2988,7 +3003,7 @@ export const repDatapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId: req.body.datapointId,
           memberName:req.body.memberName,
-          
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3351,6 +3366,7 @@ export const repDatapointDetails = async (req, res, next) => {
           year: {
             "$nin": currentYear
           },
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')
@@ -3363,6 +3379,7 @@ export const repDatapointDetails = async (req, res, next) => {
           taskId: req.body.taskId,
           datapointId:req.body.datapointId,
           memberName: req.body.memberName,
+          isActive: true,
           status: true
         }).populate('createdBy')
         .populate('datapointId')

@@ -1525,7 +1525,7 @@ export const dataCollection = async ({
           message: "Data inserted Successfully"
         });
       } else if (body.memberType == 'Board Matrix') {   
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
+        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
           { $set: {status: false} });    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           const item = dpCodesDetails[dpDetailsIndex];
@@ -1557,6 +1557,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            isActive: true,
             hasError: false,
             hasCorrection: hasCorrectionValue,
             correctionStatus: 'Completed',
@@ -1587,6 +1588,7 @@ export const dataCollection = async ({
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
             status: true,
+            isActive: true,
             createdBy: user,
             updatedAt: Date.now()
           }).catch(err =>{

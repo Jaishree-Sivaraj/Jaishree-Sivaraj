@@ -165,12 +165,12 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
 }
 
 export const getDistinctBoardMembersCompanywise = async({ user, params }, res, next) => {
-  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true, status: true}).distinct('year');
   if (distinctYears.length > 0) {
     let distinctBoardMembers = [], distinctKmpMembers = [];
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       let year = distinctYears[1];
-      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: year, status: true })
+      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: year, isActive: true, status: true })
       .populate('companyId');
       console.log('allBoardMembersofYear.length', allBoardMembersofYear.length);
       let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
@@ -201,12 +201,12 @@ export const getDistinctBoardMembersCompanywise = async({ user, params }, res, n
 
 
 export const getDistinctKmpMembersCompanywise = async({ user, params }, res, next) => {
-  let distinctYears = await BoardMembersMatrixDataPoints.find({status: true}).distinct('year');
+  let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true,status: true}).distinct('year');
   if (distinctYears.length > 0) {
     let distinctBoardMembers = [], distinctKmpMembers = [];
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       let year = distinctYears[1];
-      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: year, status: true })
+      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: year, isActive: true, status: true })
       .populate('companyId');
       console.log('allKmpMembersofYear.length', allKmpMembersofYear.length);
       let uniqKmpMembers = _.uniqBy(allKmpMembersofYear, 'memberName');

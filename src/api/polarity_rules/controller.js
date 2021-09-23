@@ -63,7 +63,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
     nicCompaniesIds.push(nicCompaniesList[companyIndex].id);
   }
   console.log(nicCompaniesIds);
-  let distinctYears = await StandaloneDatapoints.distinct('year', { companyId: { $in: nicCompaniesIds }, status: true });
+  let distinctYears = await StandaloneDatapoints.distinct('year', { companyId: { $in: nicCompaniesIds },isActive: true, status: true });
   if (distinctYears.length > 0) {
     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       const year = distinctYears[yearIndex];
@@ -74,7 +74,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
         for (let pdpIndex = 0; pdpIndex < percentileDatapointsList.length; pdpIndex++) {
           if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
             //Find the datapoint response value in StandaloneDatapoints collection
-            let dpResponseOfNicCompanies = await StandaloneDatapoints.find({ companyId: { $in: nicCompaniesIds }, datapointId: percentileDatapointsList[pdpIndex].id, year: year, status: true }, { response: 1, _id: 0 });
+            let dpResponseOfNicCompanies = await StandaloneDatapoints.find({ companyId: { $in: nicCompaniesIds }, datapointId: percentileDatapointsList[pdpIndex].id, year: year, isActive: true,status: true }, { response: 1, _id: 0 });
             console.log('dpResponseOfNicCompanies', dpResponseOfNicCompanies);
             let filteredDpResponses = [];
             _.filter(dpResponseOfNicCompanies, (currentObject, index) => {
@@ -100,7 +100,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
             console.log('stdDeviation', stdDeviation);
             for (let cmpIndex = 0; cmpIndex < nicCompaniesList.length; cmpIndex++) {
               const element = nicCompaniesList[cmpIndex];
-              let foundResponse = await StandaloneDatapoints.findOne({ companyId: nicCompaniesList[cmpIndex].id, datapointId: percentileDatapointsList[pdpIndex].id, year: year, status: true });
+              let foundResponse = await StandaloneDatapoints.findOne({ companyId: nicCompaniesList[cmpIndex].id, datapointId: percentileDatapointsList[pdpIndex].id, year: year, isActive: true,status: true });
               if (foundResponse) {
                 if (foundResponse.response == '' || foundResponse.response == ' ' || foundResponse.response.toLowerCase() == 'na') {
                   await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { response: 'NA', performanceResult: 'NA' } });

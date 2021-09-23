@@ -214,16 +214,19 @@ export const destroy = ({ user, params }, res, next) =>
                   await StandaloneDatapoints.updateMany({
                     companyId: companyTaskDtl.companyId, 
                     year: companyTaskDtl.year, 
+                    isActive: true,
                     status: true}, 
                     { $set: { taskId: companyTaskDtl.taskId } });
                   await BoardMembersMatrixDataPoints.updateMany({
                     companyId: companyTaskDtl.companyId, 
                     year: companyTaskDtl.year, 
+                    isActive: true,
                     status: true}, 
                     { $set: { taskId: companyTaskDtl.taskId } });
                   await KmpMatrixDataPoints.updateMany({
                     companyId: companyTaskDtl.companyId, 
                     year: companyTaskDtl.year, 
+                    isActive: true,
                     status: true}, 
                     { $set: {
                         taskId: companyTaskDtl.taskId
