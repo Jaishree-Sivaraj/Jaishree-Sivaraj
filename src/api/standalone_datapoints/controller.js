@@ -1116,6 +1116,29 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
             missingDPList = _.concat(missingDPList, missingDatapointsDetails)
             if (missingDPList.length == 0) {
+              let companySourceDetails = await CompanySources.find({
+                "companyId": {
+                  $in: insertedCompanyIds
+                },
+                "fiscalYear": {
+                  $in: distinctYears
+                },
+                status: true
+              }).populate('companyId');
+              for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
+                let previousYearData = companySourceDetails[prvRespIndex];
+                structuredStandaloneDetails.map(stdDetail => {
+                  if(stdDetail.companyId == previousYearData.companyId.id && stdDetail.year == previousYearData.fiscalYear && stdDetail.url == previousYearData.sourceUrl) {
+                    stdDetail.url = previousYearData.sourceUrl;
+                    stdDetail.sourceName = stdDetail.sourceName ? stdDetail.sourceName : previousYearData.sourceName1;
+                    stdDetail.isCounted = true;
+                    stdDetail.isDownloaded = true;
+                  } else {
+                    stdDetail.isCounted = false;
+                    stdDetail.isDownloaded = false;
+                  }
+                });
+              }
               await StandaloneDatapoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds
@@ -1136,6 +1159,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     //  console.log('result', result);
                   }
                 });
+              for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
+                let previousYearData = companySourceDetails[prvRespIndex];
+                boardMembersList.map(boardDetail => {
+                  if(boardDetail.companyId == previousYearData.companyId.id && boardDetail.year == previousYearData.fiscalYear && boardDetail.url == previousYearData.sourceUrl) {
+                    boardDetail.url = previousYearData.sourceUrl;
+                    boardDetail.sourceName = boardDetail.sourceName ? boardDetail.sourceName : previousYearData.sourceName1;
+                    boardDetail.isCounted = true;
+                    boardDetail.isDownloaded = true;
+                  } else {
+                    boardDetail.isCounted = false;
+                    boardDetail.isDownloaded = false;
+                  }
+                });
+              }
               //Marking existing Data as False in BoardMemberMatrixDP 
               await BoardMembersMatrixDataPoints.updateMany({
                 "companyId": {
@@ -1157,6 +1194,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                     // console.log('result', result);
                   }
                 });
+              for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
+                let previousYearData = companySourceDetails[prvRespIndex];
+                kmpMembersList.map(kmpDetail => {
+                  if(kmpDetail.companyId == previousYearData.companyId.id && kmpDetail.year == previousYearData.fiscalYear && kmpDetail.url == previousYearData.sourceUrl) {
+                    kmpDetail.url = previousYearData.sourceUrl;
+                    kmpDetail.sourceName = kmpDetail.sourceName ? kmpDetail.sourceName : previousYearData.sourceName1;
+                    kmpDetail.isCounted = true;
+                    kmpDetail.isDownloaded = true;
+                  } else {
+                    kmpDetail.isCounted = false;
+                    kmpDetail.isDownloaded = false;
+                  }
+                });
+              }
               await KmpMatrixDataPoints.updateMany({
                 "companyId": {
                   $in: insertedCompanyIds
