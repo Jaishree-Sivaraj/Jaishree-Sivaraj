@@ -34,7 +34,7 @@ const controversySchema = new Schema({
     default: ''
   },
   isActive: {
-    type: String,
+    type: Boolean,
     default: true
   },
   reviewedByCommittee:{
