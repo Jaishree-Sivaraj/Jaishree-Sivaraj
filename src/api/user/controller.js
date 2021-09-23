@@ -141,127 +141,41 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   if (onBoardingDetails.email) {
     await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
       if (userFound) {
-        if (userFound.isUserRejected && !userFound.isUserApproved) {
-          if (onBoardingDetails.roleName == "Employee") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-            userObject = {
-              name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true,
-              isUserRejected: false
-            };
-            await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async () => {
-              await Employees.updateOne({ userId: userFound.id }, {
-                $set: {
-                  userId: userFound.id,
-                  firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                  middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                  lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                  panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                  aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                  bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                  bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                  accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: onBoardingDetails.pancardUrl,
-                  aadhaarUrl: onBoardingDetails.aadhaarUrl,
-                  cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
-                  status: true
-                }
-              }).then(async () => {
-                var userDetails = await Employees.findOne({ userId: userFound.id }).populate('userId');
-                return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
-              });
-            }).catch((err) => {
-              if (err.name === 'MongoError' && err.code === 11000) {
-                if(err.keyPattern.phoneNumber){
-                  res.status(409).json({
-                    valid: false,
-                    param: 'phoneNumber',
-                    message: 'phoneNumber already registered'
-                  })
-                } else{
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                }
-              } else {
-                next(err)
-              }
-            })
-          } else if (onBoardingDetails.roleName == "Client Representative") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
-            userObject = {
-              name: onBoardingDetails.name ? onBoardingDetails.name : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true,
-              isUserRejected: false
-            }
-            await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async (response) => {
-              await ClientRepresentatives.updateOne({ userId: userFound.id }, {
-                $set: {
-                  userId: userFound.id,
-                  CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                  authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
-                  companyIdForClient: onBoardingDetails.companyIdForClient,
-                  status: true
-                }
-              }).then(async () => {
-                var userDetails = await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId');
-                return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
-              })
-            }).catch((err) => {
-              /* istanbul ignore else */
-              if (err.name === 'MongoError' && err.code === 11000) {
-                if(err.keyPattern.phoneNumber){
-                  res.status(409).json({
-                    valid: false,
-                    param: 'phoneNumber',
-                    message: 'phoneNumber already registered'
-                  })
-                } else{
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                }
-              } else {
-                next(err)
-              }
-            })
-          } else if (onBoardingDetails.roleName == "Company Representative") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
-            userObject = {
-              name: onBoardingDetails.name ? onBoardingDetails.name : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true,
-              isUserRejected: false
-            }
-            var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-            await User.updateOne({ _id: userFound.id }, { $set: userObject })
-              .then(async () => {
-                await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
+        let oboardingEmailDetails = await OnboardingEmails.find({email: onBoardingDetails.email})
+        if (oboardingEmailDetails.length > 0) {
+          if (userFound.isUserRejected && !userFound.isUserApproved) {
+            if (onBoardingDetails.roleName == "Employee") {
+              var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
+              userObject = {
+                name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+                isUserApproved: false,
+                status: true,
+                isUserRejected: false
+              };
+              await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async () => {
+                await Employees.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
-                    companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
-                    companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                    firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+                    middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
+                    lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
+                    panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
+                    aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
+                    bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
+                    bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
+                    accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
+                    pancardUrl: onBoardingDetails.pancardUrl,
+                    aadhaarUrl: onBoardingDetails.aadhaarUrl,
+                    cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
                     status: true
                   }
                 }).then(async () => {
-                  var userDetails = await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
+                  var userDetails = await Employees.findOne({ userId: userFound.id }).populate('userId');
                   return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
-                })
-              })
-              .catch((err) => {
+                });
+              }).catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
                   if(err.keyPattern.phoneNumber){
                     res.status(409).json({
@@ -280,22 +194,115 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   next(err)
                 }
               })
-
-          } else if (onBoardingDetails.roleName == "Analyst") {
-            //TODO
-          } else if (onBoardingDetails.roleName == "QA") {
-            //TODO
+            } else if (onBoardingDetails.roleName == "Client Representative") {
+              var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
+              userObject = {
+                name: onBoardingDetails.name ? onBoardingDetails.name : '',
+                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+                isUserApproved: false,
+                status: true,
+                isUserRejected: false
+              }
+              await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async (response) => {
+                await ClientRepresentatives.updateOne({ userId: userFound.id }, {
+                  $set: {
+                    userId: userFound.id,
+                    CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+                    authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+                    companyIdForClient: onBoardingDetails.companyIdForClient,
+                    status: true
+                  }
+                }).then(async () => {
+                  var userDetails = await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId');
+                  return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
+                })
+              }).catch((err) => {
+                /* istanbul ignore else */
+                if (err.name === 'MongoError' && err.code === 11000) {
+                  if(err.keyPattern.phoneNumber){
+                    res.status(409).json({
+                      valid: false,
+                      param: 'phoneNumber',
+                      message: 'phoneNumber already registered'
+                    })
+                  } else{
+                    res.status(409).json({
+                      valid: false,
+                      param: 'email',
+                      message: 'email already registered'
+                    })
+                  }
+                } else {
+                  next(err)
+                }
+              })
+            } else if (onBoardingDetails.roleName == "Company Representative") {
+              var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
+              userObject = {
+                name: onBoardingDetails.name ? onBoardingDetails.name : '',
+                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+                isUserApproved: false,
+                status: true,
+                isUserRejected: false
+              }
+              var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
+              await User.updateOne({ _id: userFound.id }, { $set: userObject })
+                .then(async () => {
+                  await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
+                    $set: {
+                      userId: userFound.id,
+                      companiesList: companiesList ? companiesList : "",
+                      authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+                      companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                      status: true
+                    }
+                  }).then(async () => {
+                    var userDetails = await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
+                    return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
+                  })
+                })
+                .catch((err) => {
+                  if (err.name === 'MongoError' && err.code === 11000) {
+                    if(err.keyPattern.phoneNumber){
+                      res.status(409).json({
+                        valid: false,
+                        param: 'phoneNumber',
+                        message: 'phoneNumber already registered'
+                      })
+                    } else{
+                      res.status(409).json({
+                        valid: false,
+                        param: 'email',
+                        message: 'email already registered'
+                      })
+                    }
+                  } else {
+                    next(err)
+                  }
+                })
+  
+            } else if (onBoardingDetails.roleName == "Analyst") {
+              //TODO
+            } else if (onBoardingDetails.roleName == "QA") {
+              //TODO
+            } else {
+              return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
+            }
           } else {
-            return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
+            res.status(409).json({
+              valid: false,
+              param: 'email',
+              message: 'email already registered'
+            })
           }
+          
         } else {
-          res.status(409).json({
-            valid: false,
-            param: 'email',
-            message: 'email already registered'
-          })
+          return res.status(400).json({ status: "400", message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!` })
         }
       } else {
+        let emailDetails = await OnboardingEmails.find({ emailId: parse.email })
         if (onBoardingDetails.roleName == "Employee") {
           var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
           userObject = {
@@ -713,12 +720,14 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
         userDetails = userDetails.toObject();
         const content = `
-                  Hai,<br/><br/>
-                  Please use the below link to submit your onboarding details::<br/><br/>
-                  URL: ${link}<br/><br/>
-                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-                  Thanks<br/>
-                  ESG Team`;
+          Hi,<br/><br/>
+          Sorry, we could not process your onboarding request.<br/>
+          Please find comment from the system administrator – ${body.comments}.<br/><br/>
+          Click below to resubmit your details.<br/><br/>
+          <a href="${process.env.FRONTEND_URL}${link}">click here</a><br><br>       
+          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+          Thanks<br/>
+          ESGDS Team `;
         var transporter = nodemailer.createTransport({
           service: 'Gmail',
           auth: {
