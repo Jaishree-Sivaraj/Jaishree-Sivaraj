@@ -801,7 +801,7 @@ export const destroy = ({ params }, res, next) =>
     .catch(next)
 
 
-export const onBoardingEmpolyee = ({ bodymen: { body }, params, user }, res, next) => {
+export const onBoardingEmpolyee = async ({ bodymen: { body }, params, user }, res, next) => {
 
 
   var details = Buffer.from(body.onboardingdetails, 'base64');
@@ -810,98 +810,110 @@ export const onBoardingEmpolyee = ({ bodymen: { body }, params, user }, res, nex
 
   let parse = JSON.parse(onboardDetails);
 
-  User.findOne({ email: parse.email, password: parse.password }).then(data => {
-    if (!data) {
-      new User({
-        firstName: parse.firstName,
-        middleName: parse.middleName,
-        lastName: parse.lastName,
-        email: parse.email,
-        phoneNumber: parse.phoneNumber,
-        PANCard: parse.PANCard,
-        adharCard: parse.adharCard,
-        bankAccountNumber: parse.bankAccountNumber,
-        bankIFSCCode: parse.bankIFSCCode,
-        nameOfTheAccountHolder: parse.nameOfTheAccountHolder,
-        password: parse.password,
-        pancardUpload: body.pancard,
-        aadharUpload: body.aadhar,
-        cancelledchequeUpload: body.cancelledcheque,
-        roleId: '60a2440d356d366605b04524'
-      }).save()
-    } else { res.json({ status: 200, message: 'Employee Already Exist' }) }
-  }).then(res.json({
-    status: 200,
-    message: "employee Added Successfully"
-  })).catch(next)
-
+  let emailDetails = await OnboardingEmails.find({ emailId: parse.email })
+  if (emailDetails && emailDetails.length > 0) {
+    User.findOne({ email: parse.email, password: parse.password }).then(data => {
+      if (!data) {
+        new User({
+          firstName: parse.firstName,
+          middleName: parse.middleName,
+          lastName: parse.lastName,
+          email: parse.email,
+          phoneNumber: parse.phoneNumber,
+          PANCard: parse.PANCard,
+          adharCard: parse.adharCard,
+          bankAccountNumber: parse.bankAccountNumber,
+          bankIFSCCode: parse.bankIFSCCode,
+          nameOfTheAccountHolder: parse.nameOfTheAccountHolder,
+          password: parse.password,
+          pancardUpload: body.pancard,
+          aadharUpload: body.aadhar,
+          cancelledchequeUpload: body.cancelledcheque,
+          roleId: '60a2440d356d366605b04524'
+        }).save()
+      } else { res.json({ status: 200, message: 'Employee Already Exist' }) }
+    }).then(res.json({
+      status: 200,
+      message: "employee Added Successfully"
+    })).catch(next) 
+  }else {
+    return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
+  }
 }
 
-export const onBoardingClientRep = ({ bodymen: { body }, params, user }, res, next) => {
+export const onBoardingClientRep = async ({ bodymen: { body }, params, user }, res, next) => {
   var details = Buffer.from(body.onboardingdetails, 'base64');
 
   let onboardDetails = details.toString('ascii');
 
   let parse = JSON.parse(onboardDetails);
 
-  User.findOne({ email: parse.email, password: parse.password }).then(data => {
-    if (!data) {
-      new User({
-        name: parse.name,
-        email: parse.email,
-        phoneNumber: parse.phoneNumber,
-        companyName: parse.companyName,
-        password: parse.password,
-        roleId: '60a243f0356d366605b04522',
-        authendicationLetter: parse.authenticationletterforclient,
-        companyIdCard: parse.companyidforclient,
-      }).save()
+  let emailDetails = await OnboardingEmails.find({ emailId: parse.email })
+  if (emailDetails && emailDetails.length > 0) {
+    User.findOne({ email: parse.email, password: parse.password }).then(data => {
+      if (!data) {
+        new User({
+          name: parse.name,
+          email: parse.email,
+          phoneNumber: parse.phoneNumber,
+          companyName: parse.companyName,
+          password: parse.password,
+          roleId: '60a243f0356d366605b04522',
+          authendicationLetter: parse.authenticationletterforclient,
+          companyIdCard: parse.companyidforclient,
+        }).save()
 
-    } else {
-      res.json({
-        status: 200,
-        message: "Client Rep Already Exist"
-      })
-    }
-  }).then(res.json({
-    status: 200,
-    message: "Client Rep Added Successfully"
-  })).catch(next)
-
+      } else {
+        res.json({
+          status: 200,
+          message: "Client Rep Already Exist"
+        })
+      }
+    }).then(res.json({
+      status: 200,
+      message: "Client Rep Added Successfully"
+    })).catch(next)
+  }else {
+    return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
+  }
 }
 
 
-export const onBoardingCompanyRep = ({ bodymen: { body }, params, user }, res, next) => {
+export const onBoardingCompanyRep = async ({ bodymen: { body }, params, user }, res, next) => {
   var details = Buffer.from(body.onboardingdetails, 'base64');
 
   let onboardDetails = details.toString('ascii');
 
   let parse = JSON.parse(onboardDetails);
 
-  User.findOne({ email: parse.email, password: parse.password }).then(data => {
-    if (!data) {
-      new User({
-        name: parse.name,
-        email: parse.email,
-        phoneNumber: parse.phoneNumber,
-        companyName: parse.companyName,
-        password: parse.password,
-        roleId: '60a243e1356d366605b04521',
-        authendicationLetter: body.authenticationletterforcompany,
-        companyIdCard: body.companyidforcompany
-      }).save()
+  let emailDetails = await OnboardingEmails.find({ emailId: parse.email })
+  if (emailDetails && emailDetails.length > 0) {
+    User.findOne({ email: parse.email, password: parse.password }).then(data => {
+      if (!data) {
+        new User({
+          name: parse.name,
+          email: parse.email,
+          phoneNumber: parse.phoneNumber,
+          companyName: parse.companyName,
+          password: parse.password,
+          roleId: '60a243e1356d366605b04521',
+          authendicationLetter: body.authenticationletterforcompany,
+          companyIdCard: body.companyidforcompany
+        }).save()
 
-    } else {
-      res.json({
-        status: 200,
-        message: 'Company Rep Already Exist'
-      })
-    }
-  }).then(res.json({
-    status: 200,
-    message: "Company Rep Added Successfully"
-  })).catch(next)
-
+      } else {
+        res.json({
+          status: 200,
+          message: 'Company Rep Already Exist'
+        })
+      }
+    }).then(res.json({
+      status: 200,
+      message: "Company Rep Added Successfully"
+    })).catch(next)
+  }else {
+    return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
+  }
 }
 
 export const uploadEmailsFile = async (req, res, next) => {

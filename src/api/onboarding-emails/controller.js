@@ -45,15 +45,3 @@ export const destroy = ({ user, params }, res, next) =>
     .then(success(res, 204))
     .catch(next)
 
-export const emailValidation = async ({ body }, res, next) => {
-  console.log("body details", body.emailId);
-  try {
-    let emailDetails = await OnboardingEmails.find({ emailId: body.emailId })
-    if (emailDetails && emailDetails.length > 0) {
-      return res.status(200).json({ status: "200", message: `Valid email for onboarding, emailId: ${body.emailId} ` })
-    }
-    return res.status(200).json({ status: "400", message: `Invalid email for the onboarding, emailId: ${body.emailId} ` })
-  } catch (error) {
-    return res.status(200).json({ status: "400", message: `Invalid email for the onboarding, emailId: ${body.emailId} ` })
-  }
-}

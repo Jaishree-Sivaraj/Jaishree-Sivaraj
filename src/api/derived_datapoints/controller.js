@@ -121,6 +121,7 @@ export const calculateForACompany = async ({
             year: {
               "$in": distinctYears
             },
+            isActive: true,
             status: true
           })
           .populate('createdBy')
@@ -134,6 +135,7 @@ export const calculateForACompany = async ({
               "$in": distinctYears
             },
             memberStatus: true,
+            isActive: true,
             status: true
           })
           .populate('createdBy')
@@ -146,6 +148,7 @@ export const calculateForACompany = async ({
               "$in": distinctYears
             },
             memberStatus: true,
+            isActive: true,
             status: true
           })
           .populate('createdBy')
@@ -325,6 +328,7 @@ export const calculateForACompany = async ({
             year: {
               "$in": distinctYears
             },
+            isActive: true,
             status: true
           })
           .populate('createdBy')
@@ -691,6 +695,7 @@ export const jsonGeneration = async ({ user, params }, res, next) => {
   });
   let distinctYears = await StandaloneDatapoints.find({
     companyId: companyID,
+    isActive: true,
     status: true
   }).distinct('year');
   let jsonResponseObject = {
@@ -710,6 +715,7 @@ export const jsonGeneration = async ({ user, params }, res, next) => {
         "$in": requiredDataPoints
       },
       year: distinctYears[yearIndex],
+      isActive: true,
       status: true,
       companyId: companyID
     })
@@ -963,18 +969,21 @@ async function addCalculation(companyId, mergedDetails, distinctYears, allDatapo
         companyId: companyId,
         datapointId: numeratorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let denominatorValue = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: denominatorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let ruleResponseObject = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       if (ruleResponseObject) {
@@ -1028,6 +1037,7 @@ async function asCalculation(companyId, mergedDetails, distinctYears, allDatapoi
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       if (ruleResponseObject) {
@@ -1037,6 +1047,7 @@ async function asCalculation(companyId, mergedDetails, distinctYears, allDatapoi
             companyId: companyId,
             datapointId: numeratorDpId,
             year: year,
+            isActive: true,
             status: true
           });
           await StandaloneDatapoints.updateOne({
@@ -1092,12 +1103,14 @@ async function asPercentageCalculation(companyId, mergedDetails, distinctYears, 
         companyId: companyId,
         datapointId: numeratorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let denominatorValue = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: denominatorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let ruleResponseObject = await StandaloneDatapoints.findOne({
@@ -1163,6 +1176,7 @@ async function asRatioCalculation(companyId, mergedDetails, distinctYears, allDa
         companyId: companyId,
         datapointId: numeratorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let denominatorValue = await StandaloneDatapoints.findOne({
@@ -1227,6 +1241,7 @@ async function conditionCalculation(companyId, mergedDetails, distinctYears, all
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       if (ruleResponseObject) {
@@ -1236,6 +1251,7 @@ async function conditionCalculation(companyId, mergedDetails, distinctYears, all
             companyId: companyId,
             datapointId: parameterDpId,
             year: year,
+            isActive: true,
             status: true
           });
 
@@ -1378,6 +1394,7 @@ async function multiplyCalculation(companyId, mergedDetails, distinctYears, allD
       let ruleResponseObject = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: ruleDatapointId,
+        isActive: true,
         year: year,
         status: true
       });
@@ -1401,12 +1418,14 @@ async function multiplyCalculation(companyId, mergedDetails, distinctYears, allD
             companyId: companyId,
             datapointId: firstParameterDpId,
             year: year,
+            isActive: true,
             status: true
           });
           let secondParameterValue = await StandaloneDatapoints.findOne({
             companyId: companyId,
             datapointId: secondParameterDpId,
             year: year,
+            isActive: true,
             status: true
           });
           let multipliedResponse;
@@ -1435,6 +1454,7 @@ async function multiplyCalculation(companyId, mergedDetails, distinctYears, allD
                 companyId: companyId,
                 datapointId: thirdParameterDpId,
                 year: year,
+                isActive: true,
                 status: true
               });
               await StandaloneDatapoints.updateOne({
@@ -1572,11 +1592,13 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
           datapointId: numeratorDpId,
           year: year,
           companyId: companyId,
+          isActive: true,
           status: true
         })
         let checkDenominatorId = await StandaloneDatapoints.findOne({
           datapointId: denominatorDpId,
           year: year,
+          isActive: true,
           companyId: companyId,
           status: true
         })
@@ -1669,18 +1691,21 @@ async function ratioAddCalculation(companyId, mergedDetails, distinctYears, allD
         companyId: companyId,
         datapointId: numeratorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let denominatorValue = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: denominatorDpId,
         year: year,
+        isActive: true,
         status: true
       });
       let ruleResponseObject = await StandaloneDatapoints.findOne({
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       let addResponse, percentResponse;
@@ -1757,6 +1782,7 @@ async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapo
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       let activeMembers = []
@@ -1829,6 +1855,7 @@ async function yesNoCalculation(companyId, mergedDetails, distinctYears, allData
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
 
@@ -1842,6 +1869,7 @@ async function yesNoCalculation(companyId, mergedDetails, distinctYears, allData
           companyId: companyId,
           datapointId: parameterDpId,
           year: year,
+          isActive: true,
           status: true
         });
         if (dpResponse.response) {
@@ -1918,6 +1946,7 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
         companyId: companyId,
         datapointId: ruleDatapointId,
         year: year,
+        isActive: true,
         status: true
       });
       if (countOfRules[i].methodType == 'composite') {
@@ -1982,6 +2011,7 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
             await StandaloneDatapoints.findOne({
                 companyId: companyId,
                 year: year,
+                isActive: true,
                 datapointId: parameterDatapointObject.id,
                 status: true
               }).populate('updatedBy').populate('keyIssueId').populate('functionId')
@@ -2127,12 +2157,14 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
           companyId: companyId,
           datapointId: numeratorDpId,
           year: year,
+          isActive: true,
           status: true
         });
         let denominatorResponse = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: denominatorDpId,
           year: year,
+          isActive: true,
           status: true
         });
         let derivedResponse;
@@ -2353,18 +2385,21 @@ export const updateForAudr002 = async ({
                 companyId: nicCompanyObject.id,
                 datapointId: "609d2c11be8b9d1b577cec91",
                 year: year,
+                isActive: true,
                 status: true
               }); //AUDP001
               let denominatorList = await BoardMembersMatrixDataPoints.find({
                 companyId: nicCompanyObject.id,
                 datapointId: "609d2c22be8b9d1b577cecba",
                 year: year,
+                isActive: true,
                 status: true
               }); //BOIP004     
               //find sum of BOIR021 in Boardmembermatrices
               let valuesToSum = await BoardMembersMatrixDataPoints.find({
                 companyId: nicCompanyObject.id,
                 datapointId: "609d2c2cbe8b9d1b577cecd3",
+                isActive: true,
                 year: year,
                 status: true
               }); //AUDP001
@@ -2372,6 +2407,7 @@ export const updateForAudr002 = async ({
                 companyId: nicCompanyObject.id,
                 datapointId: "609d2c2cbe8b9d1b577cecd4",
                 year: year,
+                isActive: true,
                 status: true
               }); //BOIR022
               let sumValue = 0;
@@ -2505,6 +2541,7 @@ export const derivedCalculation = async ({
       year: {
         "$in": year
       },
+      isActive: true,
       status: true
     })
     .populate('createdBy')
@@ -2517,6 +2554,7 @@ export const derivedCalculation = async ({
         "$in": year
       },
       memberStatus: true,
+      isActive: true,
       status: true
     })
     .populate('createdBy')
@@ -2529,6 +2567,7 @@ export const derivedCalculation = async ({
         "$in": year
       },
       memberStatus: true,
+      isActive: true,
       status: true
     })
     .populate('createdBy')
@@ -2671,6 +2710,7 @@ export const derivedCalculation = async ({
   let percentileDataPointsList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, percentile: "Yes", status: true });
   let allStandaloneDatapoints = await StandaloneDatapoints.find({
     "companyId": taskDetailsObject.companyId.id,
+    isActive: true,
     "year": {
       $in: year
     },status: true}).populate('datapointId').populate('companyId');

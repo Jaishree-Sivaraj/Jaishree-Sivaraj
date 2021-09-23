@@ -1,3 +1,4 @@
+import { toString } from 'lodash'
 import mongoose, { Schema } from 'mongoose'
 
 const controversySchema = new Schema({
@@ -28,6 +29,18 @@ const controversySchema = new Schema({
     type: String,
     default: ''
   },
+  fiscalYearEndDate: {
+    type: String,
+    default: ''
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  reviewedByCommittee:{
+    type: Boolean,
+    default: false
+  },
   controversyDetails: {
     type: Object,
     default: []
@@ -54,8 +67,7 @@ const controversySchema = new Schema({
     type: String
   },
   comments: {
-    type: Object,
-    default: []
+    type: String
   },
   response: {
     type: String
@@ -70,6 +82,16 @@ const controversySchema = new Schema({
   nextReviewDate: {
     type: Date,
     required: false
+  },
+  reviewDate: {
+    type: Date,
+    required: false
+  },
+  assessmentDate: {
+    type: Date
+  },
+  reassessmentDate: {
+    type: Date
   },
   status: {
     type: Boolean,
@@ -93,7 +115,12 @@ controversySchema.methods = {
       datapointId: this.datapointId ? this.datapointId.view(full) : null,
       companyId: this.companyId ? this.companyId.view(full) : null,
       year: this.year,
+      fiscalYearEndDate: this.fiscalYearEndDate,
+      isActive: this.isActive,
+      reviewedByCommittee: this.reviewedByCommittee,
       response: this.response,
+      assessmentDate: this.assessmentDate,
+      reassessmentDate: this. reassessmentDate,
       controversyDetails: this.controversyDetails ? this.controversyDetails : [],
       pageNumber: this.pageNumber ? this.pageNumber : '',
       sourceName: this.sourceName ? this.sourceName : '',
@@ -102,9 +129,10 @@ controversySchema.methods = {
       screenShot: this.screenShot ? this.screenShot : '',
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
-      comments: this.comments ? this.comments : [],
+      comments: this.comments,
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
+      reviewDate: this.reviewDate,
       submittedDate: this.submittedDate ? this.submittedDate : null,
       nextReviewDate: this.nextReviewDate ? this.nextReviewDate : null,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,

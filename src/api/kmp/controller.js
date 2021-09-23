@@ -190,6 +190,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
       let memberFound = await BoardMembersMatrixDataPoints.findOne({ 
         memberName: memberDetail.expectedName,
         companyId: memberDetail.companyId,
+        isActive: true,
         status: true
       });
       console.log('memberFound', memberFound);
@@ -197,6 +198,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberGenderDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c1fbe8b9d1b577cecb3",//BODR005-board member gender id
           status: true 
         });
@@ -204,6 +206,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberNationalityDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c1dbe8b9d1b577cecae",//BODR005-board member nationality id
           status: true 
         });
@@ -211,6 +214,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberIndustryExpDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c32be8b9d1b577cece1",//BODR005-board member industry experience id
           status: true 
         });
@@ -218,6 +222,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberFinancialExpDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c32be8b9d1b577cece2",//BODR005-board member financial experience id
           status: true 
         });
@@ -225,6 +230,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberAppointmentDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c2abe8b9d1b577ceccf",//BODR005-board member appointment date id
           status: true 
         });
@@ -232,6 +238,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberExecutiveDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c23be8b9d1b577cecbd",//BODR005-board member Is Executive?
           status: true 
         });
@@ -244,6 +251,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         let memberCessationDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c2bbe8b9d1b577cecd0",//BODR005-board member cessation date id
           status: true 
         });
@@ -345,6 +353,7 @@ export const kmpMemberNamingCorrections = async({ user, params }, res, next) => 
         let memberGenderDetail = await KmpMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
+          isActive: true,
           datapointId: "609d2c65be8b9d1b577ced55",//MASR008-kmp member gender id
           status: true 
         });

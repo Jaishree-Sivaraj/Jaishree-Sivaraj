@@ -19,7 +19,7 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 export const addNewControversy = async ({ user, bodymen: { body } }, res, next) => {
   try {
     if (body) {
-      let lastControversy = await Controversy.findOne({ status: true }).sort({ createdAt: -1 }).limit(1);
+      let lastControversy = await Controversy.findOne({ isActive: true, status: true }).sort({ createdAt: -1 }).limit(1);
       let newTaskNumber = '';
       if (lastControversy && Object.keys(lastControversy).length > 0) {
         let lastTaskNumber = lastControversy.controversyNumber ? lastControversy.controversyNumber.split('CON')[1] : '1';
@@ -41,6 +41,12 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         pageNumber: body.pageNo,
         screenShot: body.screenShot,
         comments: body.comments,
+        year: body.controversyFiscalYear,
+        fiscalYearEndDate: body.controversyFiscalYearEnd,
+        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
+        assessmentDate: body.assessmentDate,
+        reassessmentDate: body.reassessmentDate,
+        reviewDate: body.reviewDate,
         controversyDetails: [],
         submittedDate: Date.now(),
         additionalDetails: body.additionalDetails,
@@ -56,10 +62,13 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         textSnippet: body.textSnippet,
         pageNumber: body.pageNo,
         screenShot: body.screenShot,
-        comments: body.comments,
+        comments: body.comments
+
       };
       controversyObject.controversyDetails.push(controversyDetailsObject);
-      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      }
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
@@ -77,6 +86,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
   try {
     if (body) {
       let controversyObject = {
+        controversyNumber:body.controversyNumber,
         datapointId: body.dpCodeId,
         companyId: body.companyId,
         taskId: body.taskId,
@@ -89,10 +99,17 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         pageNumber: body.pageNo,
         screenShot: body.screenShot,
         comments: body.comments,
+        year: body.controversyFiscalYear,
+        fiscalYearEndDate: body.controversyFiscalYearEnd,
+        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
+        assessmentDate: body.assessmentDate,
+        reassessmentDate: body.reassessmentDate,
+        reviewDate: body.reviewDate,
         controversyDetails: [],
         submittedDate: Date.now(),
         additionalDetails: body.additionalDetails,
         nextReviewDate: body.nextReviewDate,
+        isActive: true,
         status: true,
         createdBy: user
       };
@@ -106,9 +123,11 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         screenShot: body.screenShot,
         comments: body.comments,
       };
-      controversyObject.controversyDetails.push(controversyDetailsObject)
-      await ControversyTasks.updateOne({_id: body.taskId}, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
-      await Controversy.updateOne({ _id: params.id }, { $set: {status: false} });
+      controversyObject.controversyDetails.push(controversyDetailsObject)      
+      await Controversy.updateOne({ _id: params.id }, { $set: {isActive : false} });
+      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      }
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
@@ -404,7 +423,7 @@ export const uploadControversies = async (req, res, next) => {
 export const generateJson = async ({ params, user }, res, next) => {
   let companyDetails = await Companies.findOne({ _id: params.companyId, status: true });
   if (companyDetails) {
-    let companyControversyYears = await Controversy.find({ companyId: params.companyId, status: true }).distinct('year');
+    let companyControversyYears = await Controversy.find({ companyId: params.companyId, isActive: true, status: true }).distinct('year');
     let responseObject = {
       companyName: companyDetails.companyName,
       CIN: companyDetails.cin,
@@ -419,7 +438,7 @@ export const generateJson = async ({ params, user }, res, next) => {
           companyName: companyDetails.companyName,
           Data: []
         };
-        let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, status: true })
+        let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, isActive:true, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId');
@@ -451,6 +470,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
       .populate('keyIssueId')
       .populate('functionId')
       .then(async (datapointDetail) => {
+        let historicalData = [];
         let responseObject = {
           dpCode: datapointDetail.code,
           dpCodeId: datapointDetail.id,
@@ -463,7 +483,144 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           controversyList: [],
           additionalDetails: []
         };
-        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, status: true })
+
+        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: false, status: true })
+          .populate('createdBy')
+          .populate('companyId')
+          .populate('datapointId')
+          .then(async(controversyList) => {
+            let clientTaxonomyId = '';
+            if (controversyList.length > 0) {
+              clientTaxonomyId = controversyList[0].datapointId.clientTaxonomyId;
+            } else {
+              clientTaxonomyId = null;
+            }
+            let clienttaxonomyFields = await ClientTaxonomy.find({ _id: clientTaxonomyId }).distinct('fields');
+            let displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Collection');
+            let requiredFields = [
+              "categoryCode",
+              "categoryName",
+              "code",
+              "comments",
+              "dataCollection",
+              "dataCollectionGuide",
+              "description",
+              "dpType",
+              "errorType",
+              "finalUnit",
+              "functionType",
+              "hasError",
+              "industryRelevant",
+              "isPriority",
+              "keyIssueCode",
+              "keyIssueName",
+              "name",
+              "normalizedBy",
+              "pageNumber",
+              "percentile",
+              "polarity",
+              "publicationDate",
+              "reference",
+              "response",
+              "screenShot",
+              "signal",
+              "sourceName",
+              "standaloneOrMatrix",
+              "textSnippet",
+              "themeCode",
+              "themeName",
+              "unit",
+              "url",
+              "weighted",
+              "year"
+            ];
+            if (controversyList && controversyList.length > 0) {
+              for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
+                let controversyObject = {};
+                controversyObject.id = controversyList[cIndex].id;
+                controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
+                controversyObject.dpCode = datapointDetail.code;
+                controversyObject.dpCodeId = datapointDetail.id;
+                controversyObject.indicator = datapointDetail.indicator;
+                controversyObject.description = datapointDetail.description;
+                controversyObject.dataType = datapointDetail.dataType;
+                controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : ''; 
+                controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
+                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
+                controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
+                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
+                controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
+                controversyObject.reviewDate = controversyList[cIndex].reviewDate ? controversyList[cIndex].reviewDate : '';
+                controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
+                controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
+                controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
+                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                controversyObject.updatedAt = controversyList[cIndex].updatedAt ? controversyList[cIndex].updatedAt : '';
+                controversyObject.additionalDetails = [];                
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                    let optionValues = [], optionVal = '', currentValue;
+                    if(displayFields[dIndex].inputType == 'Select'){
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if(options.length > 0){
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });                        
+                        }
+                      } else {
+                        optionValues = [];
+                      }
+                    } else {
+                      optionVal = displayFields[dIndex].inputValues;
+                    }
+                    let controversyDtl = controversyList[cIndex];
+                    if(displayFields[dIndex].inputType == 'Static'){
+                      currentValue = controversyDtl[displayFields[dIndex].fieldName];
+                    } else {
+                      if(displayFields[dIndex].inputType == 'Select'){
+                        currentValue = { value: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '', label: controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = controversyDtl.additionalDetails ? controversyDtl.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
+                    }
+                    controversyObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue: '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
+                    let foundObject = responseObject.additionalDetails.find((obj) => obj.fieldName == displayFields[dIndex].fieldName)
+                    if (!foundObject) {
+                      responseObject.additionalDetails.push({
+                        fieldName: displayFields[dIndex].fieldName,
+                        name: displayFields[dIndex].name,
+                        value: '',
+                        inputType: displayFields[dIndex].inputType,
+                        inputValues: optionValues.length > 0 ? optionValues : optionVal
+                      })                      
+                    }
+                  }                
+                }
+                controversyObject.source = {
+                  sourceName: controversyList[cIndex].sourceName ? controversyList[cIndex].sourceName : '',
+                  url: controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
+                  publicationDate: controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
+                }
+                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : [];
+                historicalData.push(controversyObject);
+              }
+            } else {
+              historicalData = [];
+            }
+          })
+          .catch((error) => {
+            return res.status(500).json({ status: "500", message: "Controversy history not found for the company and dpcode!" })
+          })
+        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: true,status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId')
@@ -530,6 +687,13 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
                 // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
+                controversyObject.reviewDate = controversyList[cIndex].reviewDate ? controversyList[cIndex].reviewDate : '';
+                controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
+                controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
+                controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
+                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
                 
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {

@@ -97,6 +97,10 @@ const boardMembersMatrixDataPointsSchema = new Schema({
     required: false,
     default: null
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   status: {
     type: Boolean,
     default: true
@@ -124,6 +128,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       companyId: this.companyId.view(full) ? this.companyId.view(full) : null,
       taskId: this.taskId ? this.taskId.view(full) : null,
       memberName: this.memberName,
+      isActive: this.isActive,
       year: this.year,
       response: this.response,
       fiscalYearEndDate: this.fiscalYearEndDate,

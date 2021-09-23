@@ -28,24 +28,6 @@ router.post('/',
   create)
 
 /**
- * @api {post} /onboarding-emails/validate-email Create onboarding emails
- * @apiName CreateOnboardingEmails
- * @apiGroup OnboardingEmails
- * @apiPermission user
- * @apiParam {String} access_token user access token.
- * @apiParam emailId Onboarding emails's emailId.
- * @apiParam isOnboarded Onboarding emails's isOnboarded.
- * @apiSuccess {Object} onboardingEmails Onboarding emails's data.
- * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 404 Onboarding emails not found.
- * @apiError 401 user access only.
- */
- router.post('/validate-email',
- token({ required: true }),
- body({ emailId }),
- emailValidation)
-
-/**
  * @api {get} /onboarding-emails Retrieve onboarding emails
  * @apiName RetrieveOnboardingEmails
  * @apiGroup OnboardingEmails

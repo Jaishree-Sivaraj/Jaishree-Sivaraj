@@ -23,6 +23,7 @@ export const multiplyCalculation = async function (taskId, companyId, distinctYe
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -46,12 +47,14 @@ export const multiplyCalculation = async function (taskId, companyId, distinctYe
               companyId: companyId,
               datapointId: firstParameterDpId,
               year: year,
+              isActive: true,
               status: true
             });
             let secondParameterValue = await StandaloneDatapoints.findOne({
               companyId: companyId,
               datapointId: secondParameterDpId,
               year: year,
+              isActive: true,
               status: true
             });
             let multipliedResponse;
@@ -80,6 +83,7 @@ export const multiplyCalculation = async function (taskId, companyId, distinctYe
                   companyId: companyId,
                   datapointId: thirdParameterDpId,
                   year: year,
+                  isActive: true,
                   status: true
                 });
                 await StandaloneDatapoints.updateOne({
@@ -340,18 +344,21 @@ export const asRatioCalculation = async function (taskId, companyId, distinctYea
         let numeratorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: numeratorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let denominatorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: denominatorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -410,18 +417,21 @@ export const asPercentageCalculation = async function (taskId, companyId, distin
         let numeratorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: numeratorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let denominatorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: denominatorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -480,6 +490,7 @@ export const addCalculation = async function (taskId, companyId, distinctYears, 
         let numeratorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: numeratorDpId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -492,6 +503,7 @@ export const addCalculation = async function (taskId, companyId, distinctYears, 
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -541,6 +553,7 @@ export const yesNoCalculation = async function (taskId, companyId, distinctYears
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -626,12 +639,14 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
         let numeratorResponse = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: numeratorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let denominatorResponse = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: denominatorDpId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -860,6 +875,7 @@ export const sumCalculation = async function (taskId, companyId, mergedDetails, 
         let ruleResponseObject = await StandaloneDatapoints.find({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -942,6 +958,7 @@ export const countOfCalculation = async function (taskId, companyId, mergedDetai
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -1217,12 +1234,14 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
           let checkNumeratorId = await StandaloneDatapoints.findOne({
             datapointId: numeratorDpId,
             year: year,
+            isActive: true,
             companyId: companyId,
             status: true
           })
           let checkDenominatorId = await StandaloneDatapoints.findOne({
             datapointId: denominatorDpId,
             year: year,
+            isActive: true,
             companyId: companyId,
             status: true
           })
@@ -1312,18 +1331,21 @@ export const ratioAddCalculation = async function (taskId, companyId, distinctYe
         let numeratorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: numeratorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let denominatorValue = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: denominatorDpId,
+          isActive: true,
           year: year,
           status: true
         });
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -1388,6 +1410,7 @@ export const asCalculation = async function (taskId,companyId, distinctYears, al
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -1397,6 +1420,7 @@ export const asCalculation = async function (taskId,companyId, distinctYears, al
             let numeratorValue = await StandaloneDatapoints.findOne({
               companyId: companyId,
               datapointId: numeratorDpId,
+              isActive: true,
               year: year,
               status: true
             });
@@ -1441,6 +1465,7 @@ export const conditionCalculation = async function (taskId,companyId, distinctYe
         let ruleResponseObject = await StandaloneDatapoints.findOne({
           companyId: companyId,
           datapointId: ruleDatapointId,
+          isActive: true,
           year: year,
           status: true
         });
@@ -1450,6 +1475,7 @@ export const conditionCalculation = async function (taskId,companyId, distinctYe
             let numeratorValue = await StandaloneDatapoints.findOne({
               companyId: companyId,
               datapointId: parameterDpId,
+              isActive: true,
               year: year,
               status: true
             });
