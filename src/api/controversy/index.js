@@ -10,7 +10,7 @@ const router = new Router()
 
 const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, screenShot, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails, status, nextReviewDate,assessmentDate,reassessmentDate,reviewDate,fiscalYearEndDate, reviewedByCommittee} = schema.tree
 const dpCodeId = '', source = {}, pageNo = '';
-const isApplicableForCommiteeReview  = "",controversyFiscalYear  = "",controversyFiscalYearEnd = ""
+const isApplicableForCommiteeReview  = {} ,controversyFiscalYear  = "",controversyFiscalYearEnd = ""
 
 /**
  * @api {post} /controversies Create controversy
