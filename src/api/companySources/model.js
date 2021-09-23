@@ -42,7 +42,7 @@ const companySourcesSchema = new Schema({
     type: String
   },
   status: {
-    type: String,
+    type: Boolean,
     default: true
   }
 }, {
@@ -69,6 +69,7 @@ companySourcesSchema.methods = {
       name: this.name,
       newSourceTypeName: this.newSourceTypeName,
       newSubSourceTypeName: this.newSubSourceTypeName,
+      status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
