@@ -1,5 +1,6 @@
 import validUrl from 'valid-url'
 import _ from 'lodash';
+import moment from 'moment'
 import puppeteer from "puppeteer";
 import axios from 'axios';
 import fs from "fs"
@@ -10,6 +11,7 @@ import { success, notFound } from '../../services/response/'
 import { Functions } from '.'
 import { StandaloneDatapoints } from "../standalone_datapoints"
 import { CompanySources } from "../companySources"
+import { Controversy } from "../controversy"
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -59,7 +61,7 @@ export const destroy = ({ params }, res, next) =>
 
 export const updateSourceUrls = async ({ params }, res, next) => {
 
-  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true, url: { $nin: ["", " "]} }).limit(10000);
+  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, status: true, url: { $nin: ["", " "]} }).limit(2000);
   let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
   console.log('uniq urls length ==>', standAlonepointsList.length);
   //launch
@@ -789,6 +791,85 @@ export const updateSourceUrls = async ({ params }, res, next) => {
       }
     } else {
       await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+    }
+  }
+  await browser.close();
+  return res.status(200).json({ status: "200", message: "Completed successfully!" });
+}
+
+export const updateControversySourceUrls = async ({ params }, res, next) => {
+
+  var controversies = await Controversy.find({ status: true, "controversyDetails.0" : {  "$exists": true } });
+  // let controversyResponsesList = _.uniqBy(controversies, 'controversyDetails.sourceURL');
+  let controversyResponsesList = _.uniqBy(
+    _.flatMap(controversies, 'controversyDetails'),
+    'sourceURL'
+  );
+  console.log('uniq urls length ==>', controversyResponsesList.length);
+  //launch
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  for (let index = 0; index < controversyResponsesList.length; index++) {
+    let url = '';
+    if (controversyResponsesList[index] && controversyResponsesList[index]['sourceURL']) {
+        url = controversyResponsesList[index]['sourceURL'];
+    }
+    if (controversyResponsesList[index]) {
+      let link = controversyResponsesList[index]['sourceURL'] ? controversyResponsesList[index]['sourceURL'].trim() : '';
+      console.log('link===>', link);
+      try {
+        await page.goto(link);
+        let matchingRecords = await Controversy.find({ "controversyDetails.sourceURL": url, status: true }).populate('companyId').populate('datapointId');
+        console.log('matchingRecords length', matchingRecords.length);
+        let fileName = '', fiscalYear = '', controObject = {};
+        let publicationDate, finalPublicationDate;
+        if (matchingRecords.length > 0) {
+          fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'controversy_cmp_source_' + (index + 1);
+          controObject = matchingRecords[0].controversyDetails.find((obj) => obj.sourceURL == url);
+          publicationDate = controObject ? new Date(controObject.sourcePublicationDate) : null;
+          console.log('before publicationDate', publicationDate);
+          let publicationDatePlus5hours = moment(publicationDate).add(5, 'hours');
+          console.log('publicationDatePlus5hours', publicationDatePlus5hours);
+          let publicationDatePlus30Minutes = moment(publicationDatePlus5hours).add(30, 'minutes');
+          console.log('publicationDatePlus30Minutes', publicationDatePlus30Minutes);
+          finalPublicationDate = publicationDatePlus30Minutes;
+          console.log('finalPublicationDate', finalPublicationDate);
+          console.log('publicationDate ISO format', publicationDate.toDateString());
+          fiscalYear = matchingRecords[0].year;
+        } else {
+          fileName = 'cmp_controversy_source_' + index + 1;
+        }
+        let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+        let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+        console.log('s3FileObject3', s3FileObject);
+        if (matchingRecords.length > 0) {
+          await CompanySources.create({
+              companyId: matchingRecords[0].companyId.id,
+              sourceTypeId: null,
+              sourceSubTypeId: null,
+              isMultiYear: false,
+              isMultiSource: false,
+              sourceUrl: link,
+              sourceFile: fileName,
+              publicationDate: finalPublicationDate,
+              fiscalYear: fiscalYear,
+              name: 'cmp_controversy_source' + (index + 1),
+              newSourceTypeName: '',
+              newSubSourceTypeName: '',
+              status: true
+          })
+          .catch((error) => { 
+              console.log('3', error.message); 
+          })
+        }
+        await Controversy.updateMany({ "controversyDetails.sourceURL": url }, { 
+            $set: { 
+                "controversyDetails.$.sourceURL" : s3FileObject.Key
+            } 
+        });
+      } catch (err) {
+          console.log('err', err.message);
+      }
     }
   }
   await browser.close();
