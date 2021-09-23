@@ -63,7 +63,6 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         pageNumber: body.pageNo,
         screenShot: body.screenShot,
         comments: body.comments
-
       };
       controversyObject.controversyDetails.push(controversyDetailsObject);
       if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
@@ -378,6 +377,26 @@ export const uploadControversies = async (req, res, next) => {
       let insertedCompanyIds = await Companies.find({ cin: { $in: uniqueInsertedCinList } }).distinct('_id');
       let allDatapointsList = await Datapoints.find({ status: true });
       let allTaskDetails = await ControversyTasks.find({ status: true });
+      // let migratedCompanySources = await CompanySources.find({
+      //   "companyId": { $in: insertedCompanyIds },
+      //   status: true
+      // }).populate('companyId');
+      // for (let prvRespIndex = 0; prvRespIndex < migratedCompanySources.length; prvRespIndex++) {
+      //   let previousYearData = migratedCompanySources[prvRespIndex];
+      //   for (let controIndex = 0; controIndex < controversyDetails.length; controIndex++) {
+      //     let controObj = controversyDetails[controIndex];
+      //     if(controObj.companyId == previousYearData.companyId.id && controObj.year == previousYearData.fiscalYear && controObj.controversyDetails.length > 0) {
+      //       for (let controItemIndex = 0; controItemIndex < controObj.controversyDetails.length; controItemIndex++) {
+      //         let controItem = controObj.controversyDetails[controItemIndex];
+      //         if (controItem.sourceURL == previousYearData.sourceUrl) {
+      //           controItem['isCounted'] = true;
+      //         } else {
+      //           controItem['isCounted'] = false;
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
       await Controversy.updateMany({
         "companyId": { $in: insertedCompanyIds }
       }, { $set: { status: false } }, {});
@@ -438,7 +457,7 @@ export const generateJson = async ({ params, user }, res, next) => {
           companyName: companyDetails.companyName,
           Data: []
         };
-        let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, isActive:true, status: true })
+        let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, isActive: true, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId');
@@ -620,7 +639,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           .catch((error) => {
             return res.status(500).json({ status: "500", message: "Controversy history not found for the company and dpcode!" })
           })
-        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: true,status: true })
+        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: true, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId')
