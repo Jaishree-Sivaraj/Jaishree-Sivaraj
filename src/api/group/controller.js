@@ -268,7 +268,7 @@ export const show = async({ params }, res, next) => {
             if (pillarDetail) {
               pillarMember = {
                 value: obj.id,
-                label: obj.name,
+                label: obj.name + " - " + obj.email,
                 isPillarAssigned: true,
                 primaryPillar: pillarDetail.primaryPillar,
                 secondaryPillar: pillarDetail.secondaryPillar
@@ -276,7 +276,7 @@ export const show = async({ params }, res, next) => {
             } else {
               pillarMember = {
                 value: obj.id,
-                label: obj.name,
+                label: obj.name + " - " + obj.email,
                 isPillarAssigned: false,
                 primaryPillar: {},
                 secondaryPillar: []
@@ -307,7 +307,7 @@ export const show = async({ params }, res, next) => {
               member = {
                 userDetails: {
                   value: obj.id,
-                  label: obj.name,
+                  label: obj.name + " - " + obj.email,
                 },
                 roleDetails: {
                   role: obj.roleDetails.roles.map((rec) => {

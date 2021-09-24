@@ -147,7 +147,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
               userObject = {
-                name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+                name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -580,85 +580,29 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
   var userDetailsInRoles = await User.find(filterQuery)
   .populate({ path: 'roleDetails.roles' })
   .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
-  let employeeCompleteDetails = await Employees.find({ status: true})
   var resArray = userDetailsInRoles.map((rec) => {
-    let userName; let employeeDetails = [];
-    employeeDetails = employeeCompleteDetails.find((obj) => obj.userId == rec.id );
-    if (rec && employeeDetails) {
-      if (rec.userType == 'Employee') {
-        userName = `${employeeDetails.firstName}${employeeDetails.middleName}${employeeDetails.lastName} - ${rec.email}`;
-        return {
-          "userDetails": {
-            "value": rec._id,
-            "label": userName,
-          },
-          "roleDetails": {
-            "role": rec.roleDetails.roles.map((rec1) => {
-              return { value: rec1.id, label: rec1.roleName }
-            }),
-            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-          },
-          "role": rec.role,
-          "userType": rec.userType,
-          "email": rec.email,
-          "phoneNumber": rec.phoneNumber,
-          "isUserApproved": rec.isUserApproved,
-          "isRoleAssigned": rec.isRoleAssigned,
-          "isAssignedToGroup": rec.isAssignedToGroup,
-          "createdAt": rec.createdAt,
-          "status": rec.status,
-          "isUserRejected": rec.isUserRejected,
-          "isUserActive": rec.isUserActive
-        }
-      }else {
-        return {
-          "userDetails": {
-            "value": rec._id,
-            "label": `${rec.name}-${rec.email}`,
-          },
-          "roleDetails": {
-            "role": rec.roleDetails.roles.map((rec1) => {
-              return { value: rec1.id, label: rec1.roleName }
-            }),
-            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-          },
-          "role": rec.role,
-          "userType": rec.userType,
-          "email": rec.email,
-          "phoneNumber": rec.phoneNumber,
-          "isUserApproved": rec.isUserApproved,
-          "isRoleAssigned": rec.isRoleAssigned,
-          "isAssignedToGroup": rec.isAssignedToGroup,
-          "createdAt": rec.createdAt,
-          "status": rec.status,
-          "isUserRejected": rec.isUserRejected,
-          "isUserActive": rec.isUserActive
-        }
-      }      
-    }else {
-      return {
-        "userDetails": {
-          "value": rec._id,
-          "label": `${rec.name}-${rec.email}`,
-        },
-        "roleDetails": {
-          "role": rec.roleDetails.roles.map((rec1) => {
-            return { value: rec1.id, label: rec1.roleName }
-          }),
-          "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-        },
-        "role": rec.role,
-        "userType": rec.userType,
-        "email": rec.email,
-        "phoneNumber": rec.phoneNumber,
-        "isUserApproved": rec.isUserApproved,
-        "isRoleAssigned": rec.isRoleAssigned,
-        "isAssignedToGroup": rec.isAssignedToGroup,
-        "createdAt": rec.createdAt,
-        "status": rec.status,
-        "isUserRejected": rec.isUserRejected,
-        "isUserActive": rec.isUserActive
-      }
+    return {
+      "userDetails": {
+        "value": rec._id,
+        "label": `${rec.name}`,
+      },
+      "roleDetails": {
+        "role": rec.roleDetails.roles.map((rec1) => {
+          return { value: rec1.id, label: rec1.roleName }
+        }),
+        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+      },
+      "role": rec.role,
+      "userType": rec.userType,
+      "email": rec.email,
+      "phoneNumber": rec.phoneNumber,
+      "isUserApproved": rec.isUserApproved,
+      "isRoleAssigned": rec.isRoleAssigned,
+      "isAssignedToGroup": rec.isAssignedToGroup,
+      "createdAt": rec.createdAt,
+      "status": rec.status,
+      "isUserRejected": rec.isUserRejected,
+      "isUserActive": rec.isUserActive
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
@@ -1103,3 +1047,14 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
 //   return res.json({ status: 200, message: "User Details retrieved successfully ", UserDetails: userDetails });
 
 // }
+
+export const updateUserName = async (req, res, next) => {
+  let allEmployees = await Employees.find({ status: true });
+  for (let eIndex = 0; eIndex < allEmployees.length; eIndex++) {
+    await User.updateOne({ _id: allEmployees[eIndex].userId }, {
+      $set: {
+        name: allEmployees[eIndex].firstName + " " + allEmployees[eIndex].middleName + " " + allEmployees[eIndex].lastName
+      }
+    })    
+  }
+}
