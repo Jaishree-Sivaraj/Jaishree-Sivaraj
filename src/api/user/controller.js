@@ -672,7 +672,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
           Sorry, we could not process your onboarding request.<br/>
           Please find comment from the system administrator – ${body.comments}.<br/><br/>
           Click below to resubmit your details.<br/><br/>
-          <a href="${process.env.FRONTEND_URL}${link}">click here</a><br><br>       
+          <a href="${link}">click here</a><br><br>       
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
           Thanks<br/>
           ESGDS Team `;
