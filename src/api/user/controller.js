@@ -141,7 +141,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   if (onBoardingDetails.email) {
     await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
       if (userFound) {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({email: onBoardingDetails.email})
+        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
         if (oboardingEmailDetails) {
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
@@ -302,7 +302,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           return res.status(400).json({ status: "400", message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!` })
         }
       } else {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({email: onBoardingDetails.email})
+        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
         if (oboardingEmailDetails) {
           if (onBoardingDetails.roleName == "Employee") {
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')

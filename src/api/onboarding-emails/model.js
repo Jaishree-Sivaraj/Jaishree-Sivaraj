@@ -10,11 +10,11 @@ const onboardingEmailsSchema = new Schema({
     type: String
   },
   isOnboarded: {
-    type: String,
+    type: Boolean,
     default: false
   },
   status: {
-    type: String,
+    type: Boolean,
     default: true
   }
 }, {
