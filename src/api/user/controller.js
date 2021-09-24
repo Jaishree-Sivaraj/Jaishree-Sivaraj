@@ -580,7 +580,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     return {
       "userDetails": {
         "value": rec._id,
-        "label": `${rec.name}-${rec.email}`,
+        "label": `${rec.name}`,
       },
       "roleDetails": {
         "role": rec.roleDetails.roles.map((rec1) => {
