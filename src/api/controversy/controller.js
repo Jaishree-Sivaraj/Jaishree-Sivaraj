@@ -484,6 +484,7 @@ export const generateJson = async ({ params, user }, res, next) => {
 
 export const fetchDatapointControversy = async ({ params, user }, res, next) => {
   if (params.companyId && params.datapointId) {
+    let companyDetails = await Companies.findOne({_id: params.companyId});
     await Datapoints.findById(params.datapointId)
       .populate('categoryId')
       .populate('keyIssueId')
@@ -710,7 +711,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
                 controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
-                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : companyDetails.fiscalYearEndDate+"-"+companyDetails.fiscalYearEndMonth;
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];

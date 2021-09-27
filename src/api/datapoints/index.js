@@ -9,7 +9,7 @@ export Datapoints, { schema } from './model'
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status } = schema.tree
-const taskId = '',year = '', datapointId = '', memberType = '', memberName = '';
+const taskId = '',year = '', datapointId = '', memberType = '', memberName = '', role = '';
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -211,7 +211,7 @@ router.get('/list/:taskId',
   */
   router.post('/repDpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName}),
+  body({ taskId, datapointId, memberType, memberName, role}),
   repDatapointDetails)
 
 /**
