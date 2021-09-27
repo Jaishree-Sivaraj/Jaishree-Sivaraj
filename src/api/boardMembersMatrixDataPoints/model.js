@@ -107,6 +107,26 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   },
   additionalDetails: {
     type: Object
+  },
+  sourceName1: {
+    type: String,
+    default: ''
+  },
+  url1: {
+    type: String,
+    default: ''
+  },
+  isCounted: {
+    type: Boolean,
+    default: false
+  },
+  isDownloaded: {
+    type: Boolean,
+    default: false
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,

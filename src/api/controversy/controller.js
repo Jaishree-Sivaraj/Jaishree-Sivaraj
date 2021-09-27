@@ -234,13 +234,15 @@ export const uploadControversies = async (req, res, next) => {
           }
         })
       }
-      let companyDetails = [], controversyDetails = [];
+      let lastControversyNumber = await Controversy.find({ status: true, isActive: true }).sort({createdAt: 1});
+      let companyDetails = [], controversyDetails = [], controversyCurrentNumber = 0;
+      if(lastControversyNumber.length > 0){
+        controversyCurrentNumber = Number(lastControversyNumber[lastControversyNumber.length-1].controversyNumber.split('CON')[1]);
+      }
       if (allFilesObject.length > 0) {
         let currentCompanyName;
         let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
         for (let index = 0; index < allFilesObject.length; index++) {
-          console.log(allFilesObject[index].length);
-          console.log(allFilesObject[index]);
           if (allFilesObject[index].length == 1) {
             let companyObject = {
               companyName: allFilesObject[index][0]['Company Name'],
@@ -283,12 +285,6 @@ export const uploadControversies = async (req, res, next) => {
                       return res.status(500).json({ message: `Found invalid date format in ${currentCompanyName}, please correct and try again!` })
                     }
                   }
-                  controversyList.push({
-                    sourceName: allFilesObject[index][rowIndex]['Source name'] ? allFilesObject[index][rowIndex]['Source name'] : '',
-                    sourceURL: allFilesObject[index][rowIndex]['URL'] ? allFilesObject[index][rowIndex]['URL'] : '',
-                    Textsnippet: allFilesObject[index][rowIndex]['Text snippet'] ? allFilesObject[index][rowIndex]['Text snippet'] : '',
-                    sourcePublicationDate: sourcePublicationDate ? sourcePublicationDate : ''
-                  })
                   if (allFilesObject[index][rowIndex]['Response'] == "Low") {
                     responseValue = 1;
                   } else if (allFilesObject[index][rowIndex]['Response'] == "Medium") {
@@ -301,62 +297,84 @@ export const uploadControversies = async (req, res, next) => {
                     responseValue = 0;
                   }
                   controversyObject = {
+                    controversyNumber: "CON" + (controversyCurrentNumber+1),
                     companyId: currentCompanyName,
                     datapointId: allFilesObject[index][rowIndex]['DP Code'] ? allFilesObject[index][rowIndex]['DP Code'] : '',
                     year: allFilesObject[index][rowIndex]['Fiscal Year'] ? allFilesObject[index][rowIndex]['Fiscal Year'] : '',
                     response: allFilesObject[index][rowIndex]['Response'] ? allFilesObject[index][rowIndex]['Response'].toString() : '',
                     responseValue: responseValue,
                     controversyDetails: controversyList,
-                    comments: [],
+                    sourceName: allFilesObject[index][rowIndex]['Source name'] ? allFilesObject[index][rowIndex]['Source name'] : '',
+                    sourceURL: allFilesObject[index][rowIndex]['URL'] ? allFilesObject[index][rowIndex]['URL'] : '',
+                    textSnippet: allFilesObject[index][rowIndex]['Text snippet'] ? allFilesObject[index][rowIndex]['Text snippet'] : '',
+                    sourcePublicationDate: sourcePublicationDate ? sourcePublicationDate : '',
+                    sourceFile: "",
+                    sourceName1: "",
+                    url1: "",
+                    isCounted: false,
+                    isDownloded: false,
+                    isActive: true,
+                    comments: "",
                     submittedDate: new Date(),
                     status: true,
-                    createdBy: userDetail
+                    createdBy: userDetail,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                   }
+                  controversyCurrentNumber = controversyCurrentNumber + 1;
                 } else {
                   controversyObject = {
+                    controversyNumber: "CON" + (controversyCurrentNumber+1),
                     companyId: currentCompanyName,
                     datapointId: allFilesObject[index][rowIndex]['DP Code'] ? allFilesObject[index][rowIndex]['DP Code'] : '',
                     year: allFilesObject[index][rowIndex]['Fiscal Year'] ? allFilesObject[index][rowIndex]['Fiscal Year'] : '',
                     response: allFilesObject[index][rowIndex]['Response'] ? allFilesObject[index][rowIndex]['Response'].toString() : '',
                     responseValue: responseValue,
+                    comments: "",
+                    sourceName: "",
+                    sourceURL: "",
+                    textSnippet: "",
+                    sourcePublicationDate: '',
+                    sourceFile: "",
+                    sourceName1: "",
+                    url1: "",
+                    isCounted: false,
+                    isDownloded: false,
+                    isActive: true,
                     submittedDate: new Date(),
                     status: true,
-                    createdBy: userDetail
+                    createdBy: userDetail,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                   }
+                  controversyCurrentNumber = controversyCurrentNumber + 1;
                 }
-                let isDpValueExist = controversyDetails.findIndex(obj => obj.companyId == currentCompanyName && obj.datapointId == controversyObject.datapointId && obj.year == controversyObject.year)
-                if (isDpValueExist > -1) {
-                  if (!controversyDetails[isDpValueExist].controversyDetails && controversyList[0]) {
-                    controversyDetails[isDpValueExist].controversyDetails = [controversyList[0]];
-                  } else {
-                    if (controversyDetails[isDpValueExist].controversyDetails && controversyList[0]) {
-                      controversyDetails[isDpValueExist].controversyDetails.push(controversyList[0]);
-                    }
-                  }
-                  if (controversyDetails[isDpValueExist].response) {
-                    const previousResponseValue = controversyDetails[isDpValueExist].responseValue;
-                    const currentResponseValue = controversyObject.responseValue;
-                    if (currentResponseValue > previousResponseValue) {
-                      controversyDetails[isDpValueExist].responseValue = currentResponseValue;
-                      controversyDetails[isDpValueExist].response = allFilesObject[index][rowIndex]['Response'].toString();
-                    }
-                  } else {
-                    controversyDetails[isDpValueExist].response = controversyObject.response;
-                  }
-                } else {
-                  controversyDetails.push(controversyObject);
-                }
+                controversyDetails.push(controversyObject);
               } else {
                 let controversyObject = {
+                  controversyNumber: "CON" + (controversyCurrentNumber+1),
                   companyId: currentCompanyName,
                   datapointId: allFilesObject[index][rowIndex]['DP Code'] ? allFilesObject[index][rowIndex]['DP Code'] : '',
                   year: allFilesObject[index][rowIndex]['Fiscal Year'] ? allFilesObject[index][rowIndex]['Fiscal Year'] : '',
                   response: allFilesObject[index][rowIndex]['Response'] ? allFilesObject[index][rowIndex]['Response'].toString() : '',
                   responseValue: responseValue,
+                  sourceName: "",
+                  sourceURL: "",
+                  textSnippet: "",
+                  sourcePublicationDate: '',
+                  sourceFile: "",
+                  sourceName1: "",
+                  url1: "",
+                  isCounted: false,
+                  isDownloded: false,
+                  isActive: true,
                   submittedDate: new Date(),
                   status: true,
-                  createdBy: userDetail
+                  createdBy: userDetail,
+                  createdAt: new Date(),
+                  updatedAt: new Date()
                 }
+                controversyCurrentNumber = controversyCurrentNumber + 1;
                 controversyDetails.push(controversyObject);
               }
             }
@@ -364,7 +382,6 @@ export const uploadControversies = async (req, res, next) => {
         }
       }
       let uniqueCompanies = _.uniq(companyDetails, 'cin');
-      console.log(companyDetails);
       //find if found update else insert in companies collection
       let uniqueInsertedCinList = [];
       if (uniqueCompanies.length > 0) {
@@ -425,7 +442,6 @@ export const uploadControversies = async (req, res, next) => {
         });
       for (let compIndex = 0; compIndex < insertedCompanies.length; compIndex++) {
         let completeTaskDetails = allTaskDetails.filter(obj => obj.companyId == insertedCompanies[compIndex].id);
-        console.log("completeTaskDetails",completeTaskDetails);
         await Controversy.updateMany({ companyId: completeTaskDetails[0].companyId, status: true }, { $set: { taskId: completeTaskDetails[0].id } })
       }
 
@@ -462,13 +478,64 @@ export const generateJson = async ({ params, user }, res, next) => {
           .populate('companyId')
           .populate('datapointId');
         if (companyControversiesYearwise.length > 0) {
-          for (let index = 0; index < companyControversiesYearwise.length; index++) {
-            const element = companyControversiesYearwise[index];
+          let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
+          for (let index = 0; index < uniqDatapoints.length; index++) {
+            let element = uniqDatapoints[index];
+            let singleControversyDetail = companyControversiesYearwise.find((obj) => obj.datapointId.id == element.datapointId.id)
+            let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
             let dataObject = {
-              Dpcode: element.datapointId.code,
-              Year: element.year,
-              ResponseUnit: element.response,
-              controversy: element.controversyDetails
+              Dpcode: singleControversyDetail.datapointId.code,
+              Year: singleControversyDetail.year,
+              ResponseUnit: singleControversyDetail.response,
+              controversy: []
+            }
+            let currentResponseValue;
+            if (singleControversyDetail.response == 'Very High') {
+              currentResponseValue = 4;
+            } else if (singleControversyDetail.response == 'High') {
+              currentResponseValue = 3;
+            } else if (singleControversyDetail.response == 'Medium') {
+              currentResponseValue = 2;
+            } else if (singleControversyDetail.response == 'Low') {
+              currentResponseValue = 1;
+            } else {
+              currentResponseValue = 0;
+            }
+            if (datapointControversies.length > 0) {
+              for (let dpControIndex = 0; dpControIndex < datapointControversies.length; dpControIndex++) {
+                if (singleControversyDetail.response != '' && singleControversyDetail.response != ' ') {
+                  let dpObj = datapointControversies[dpControIndex];
+                  let responseValue;
+                  dataObject.controversy.push({
+                    sourceName: dpObj.sourceName,
+                    sourceURL: dpObj.sourceURL,
+                    Textsnippet: dpObj.textSnippet,
+                    sourcePublicationDate: dpObj.sourcePublicationDate
+                  })  
+                  if (dpObj.response == 'Very High') {
+                    responseValue = 4;
+                  } else if (dpObj.response == 'High') {
+                    responseValue = 3;
+                  } else if (dpObj.response == 'Medium') {
+                    responseValue = 2;
+                  } else if (dpObj.response == 'Low') {
+                    responseValue = 1;
+                  } else {
+                    responseValue = 0;
+                  }   
+                  if( responseValue > currentResponseValue ) {
+                    if (responseValue == 4) {
+                      dataObject.ResponseUnit =  'Very High';
+                    } else if (responseValue == 3) {
+                      dataObject.ResponseUnit = 'High';
+                    } else if (responseValue == 2) {
+                      dataObject.ResponseUnit = 'Medium';
+                    } else if (responseValue == 1) {
+                      dataObject.ResponseUnit = 'Low';
+                    }
+                  }             
+                }
+              }
             }
             yearwiseData.Data.push(dataObject);
           }
@@ -630,7 +697,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                   url: controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
                   publicationDate: controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
                 }
-                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : [];
+                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : "";
                 historicalData.push(controversyObject);
               }
             } else {
@@ -781,7 +848,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                   url: controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
                   publicationDate: controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
                 }
-                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : [];
+                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : "";
                 responseObject.controversyList.push(controversyObject);
               }
               let greatestResponseValue = responseList.sort((a, b) => a - b)[responseList.length - 1];

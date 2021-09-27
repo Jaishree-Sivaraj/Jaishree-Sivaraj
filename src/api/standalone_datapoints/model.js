@@ -134,14 +134,6 @@ const standaloneDatapointsSchema = new Schema({
   additionalDetails: {
     type: Object
   },
-  isCounted: {
-    type: Boolean,
-    default: false
-  },
-  isDownloaded: {
-    type: Boolean,
-    default: false
-  },
   isActive: {
     type: Boolean,
     default: true
@@ -151,6 +143,18 @@ const standaloneDatapointsSchema = new Schema({
     default: ''
   },
   url1: {
+    type: String,
+    default: ''
+  },
+  isCounted: {
+    type: Boolean,
+    default: false
+  },
+  isDownloaded: {
+    type: Boolean,
+    default: false
+  },
+  screenShot1: {
     type: String,
     default: ''
   }

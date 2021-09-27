@@ -93,9 +93,33 @@ const controversySchema = new Schema({
   reassessmentDate: {
     type: Date
   },
+  sourceFile: {
+    type: String,
+    default: ''
+  },
+  sourceName1: {
+    type: String,
+    default: ''
+  },
+  url1: {
+    type: String,
+    default: ''
+  },
+  isCounted: {
+    type: Boolean,
+    default: false
+  },
+  isDownloaded: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: Boolean,
     default: true
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,

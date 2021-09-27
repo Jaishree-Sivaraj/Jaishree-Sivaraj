@@ -141,13 +141,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   if (onBoardingDetails.email) {
     await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
       if (userFound) {
-        let oboardingEmailDetails = await OnboardingEmails.find({email: onBoardingDetails.email})
-        if (oboardingEmailDetails.length > 0) {
+        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
+        if (oboardingEmailDetails) {
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
+              let fullName = onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName ;
               userObject = {
-                name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+                name: fullName ? fullName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -302,177 +303,181 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           return res.status(400).json({ status: "400", message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!` })
         }
       } else {
-        let emailDetails = await OnboardingEmails.find({ emailId: parse.email })
-        if (onBoardingDetails.roleName == "Employee") {
-          var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-          userObject = {
-            email: onBoardingDetails.email ? onBoardingDetails.email : '',
-            name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-            userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-            password: onBoardingDetails.password ? onBoardingDetails.password : '',
-            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-            isUserApproved: false,
-            status: true
-          }
-          User.create(userObject)
-            .then(async (response) => {
-              if (response) {
-                let userId = response.id;
-                Employees.create({
-                  userId: userId,
-                  firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                  middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                  lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                  panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                  aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                  bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                  bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                  accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                  pancardUrl: onBoardingDetails.pancardUrl,
-                  aadhaarUrl: onBoardingDetails.aadhaarUrl,
-                  cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
-                  status: true
-                }).then((resp) => {
-                  if (resp) {
-                    return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-                  } else {
-                    return res.status(500).json({ message: "Failed to onboard employee" });
+        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
+        if (oboardingEmailDetails) {
+          if (onBoardingDetails.roleName == "Employee") {
+            var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
+            userObject = {
+              email: onBoardingDetails.email ? onBoardingDetails.email : '',
+              name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+              password: onBoardingDetails.password ? onBoardingDetails.password : '',
+              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+              isUserApproved: false,
+              status: true
+            }
+            User.create(userObject)
+              .then(async (response) => {
+                if (response) {
+                  let userId = response.id;
+                  Employees.create({
+                    userId: userId,
+                    firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+                    middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
+                    lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
+                    panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
+                    aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
+                    bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
+                    bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
+                    accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
+                    pancardUrl: onBoardingDetails.pancardUrl,
+                    aadhaarUrl: onBoardingDetails.aadhaarUrl,
+                    cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
+                    status: true
+                  }).then((resp) => {
+                    if (resp) {
+                      return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                    } else {
+                      return res.status(500).json({ message: "Failed to onboard employee" });
+                    }
+                  });
+                } else {
+                  return res.status(500).json({ message: "Failed to onboard employee" });
+                }
+              })
+              .catch((err) => {
+                if (err.name === 'MongoError' && err.code === 11000) {
+                  if(err.keyPattern.phoneNumber){
+                    res.status(409).json({
+                      valid: false,
+                      param: 'phoneNumber',
+                      message: 'phoneNumber already registered'
+                    })
+                  } else{
+                    res.status(409).json({
+                      valid: false,
+                      param: 'email',
+                      message: 'email already registered'
+                    })
                   }
-                });
-              } else {
-                return res.status(500).json({ message: "Failed to onboard employee" });
-              }
-            })
-            .catch((err) => {
-              if (err.name === 'MongoError' && err.code === 11000) {
-                if(err.keyPattern.phoneNumber){
-                  res.status(409).json({
-                    valid: false,
-                    param: 'phoneNumber',
-                    message: 'phoneNumber already registered'
-                  })
-                } else{
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
+                } else {
+                  next(err)
                 }
-              } else {
-                next(err)
-              }
-            })
-        } else if (onBoardingDetails.roleName == "Client Representative") {
-          var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
-          userObject = {
-            email: onBoardingDetails.email ? onBoardingDetails.email : '',
-            name: onBoardingDetails.name ? onBoardingDetails.name : '',
-            userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-            roleDetails: { primaryRole: roleObject.id, roles: [] },
-            password: onBoardingDetails.password ? onBoardingDetails.password : '',
-            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-            isUserApproved: false,
-            status: true
+              })
+          } else if (onBoardingDetails.roleName == "Client Representative") {
+            var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
+            userObject = {
+              email: onBoardingDetails.email ? onBoardingDetails.email : '',
+              name: onBoardingDetails.name ? onBoardingDetails.name : '',
+              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+              roleDetails: { primaryRole: roleObject.id, roles: [] },
+              password: onBoardingDetails.password ? onBoardingDetails.password : '',
+              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+              isUserApproved: false,
+              status: true
+            }
+            User.create(userObject)
+              .then(async (response) => {
+                if (response) {
+                  let userId = response.id;
+                  ClientRepresentatives.create({
+                    userId: userId,
+                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
+                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
+                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
+                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+                    CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+                    authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+                    companyIdForClient: onBoardingDetails.companyIdForClient,
+                    status: true
+                  });
+                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                } else {
+                  return res.status(500).json({ message: "Failed to onboard client representative" });
+                }
+              })
+              .catch((err) => {
+                /* istanbul ignore else */
+                if (err.name === 'MongoError' && err.code === 11000) {
+                  if(err.keyPattern.phoneNumber){
+                    res.status(409).json({
+                      valid: false,
+                      param: 'phoneNumber',
+                      message: 'phoneNumber already registered'
+                    })
+                  } else{
+                    res.status(409).json({
+                      valid: false,
+                      param: 'email',
+                      message: 'email already registered'
+                    })
+                  }
+                } else {
+                  next(err)
+                }
+              })
+          } else if (onBoardingDetails.roleName == "Company Representative") {
+            var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
+            userObject = {
+              email: onBoardingDetails.email ? onBoardingDetails.email : '',
+              name: onBoardingDetails.name ? onBoardingDetails.name : '',
+              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+              roleDetails: { primaryRole: roleObject.id, roles: [] },
+              password: onBoardingDetails.password ? onBoardingDetails.password : '',
+              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+              isUserApproved: false,
+              status: true
+            }
+            var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
+            User.create(userObject)
+              .then(async (response) => {
+                if (response) {
+                  let userId = response.id;
+                  CompanyRepresentatives.create({
+                    userId: userId,
+                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
+                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
+                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
+                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+                    companiesList: companiesList ? companiesList : "",
+                    authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+                    companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                    status: true
+                  });
+                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                } else {
+                  return res.status(500).json({ message: "Failed to onboard company representative" });
+                }
+              })
+              .catch((err) => {
+                if (err.name === 'MongoError' && err.code === 11000) {
+                  if(err.keyPattern.phoneNumber){
+                    res.status(409).json({
+                      valid: false,
+                      param: 'phoneNumber',
+                      message: 'phoneNumber already registered'
+                    })
+                  } else{
+                    res.status(409).json({
+                      valid: false,
+                      param: 'email',
+                      message: 'email already registered'
+                    })
+                  }
+                } else {
+                  next(err)
+                }
+              })
+  
+          } else if (onBoardingDetails.roleName == "Analyst") {
+            //TODO
+          } else if (onBoardingDetails.roleName == "QA") {
+            //TODO
+          } else {
+            return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
           }
-          User.create(userObject)
-            .then(async (response) => {
-              if (response) {
-                let userId = response.id;
-                ClientRepresentatives.create({
-                  userId: userId,
-                  name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                  email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                  password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                  phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                  CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                  authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
-                  companyIdForClient: onBoardingDetails.companyIdForClient,
-                  status: true
-                });
-                return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-              } else {
-                return res.status(500).json({ message: "Failed to onboard client representative" });
-              }
-            })
-            .catch((err) => {
-              /* istanbul ignore else */
-              if (err.name === 'MongoError' && err.code === 11000) {
-                if(err.keyPattern.phoneNumber){
-                  res.status(409).json({
-                    valid: false,
-                    param: 'phoneNumber',
-                    message: 'phoneNumber already registered'
-                  })
-                } else{
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                }
-              } else {
-                next(err)
-              }
-            })
-        } else if (onBoardingDetails.roleName == "Company Representative") {
-          var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
-          userObject = {
-            email: onBoardingDetails.email ? onBoardingDetails.email : '',
-            name: onBoardingDetails.name ? onBoardingDetails.name : '',
-            userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-            roleDetails: { primaryRole: roleObject.id, roles: [] },
-            password: onBoardingDetails.password ? onBoardingDetails.password : '',
-            phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-            isUserApproved: false,
-            status: true
-          }
-          var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-          User.create(userObject)
-            .then(async (response) => {
-              if (response) {
-                let userId = response.id;
-                CompanyRepresentatives.create({
-                  userId: userId,
-                  name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                  email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                  password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                  phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                  companiesList: companiesList ? companiesList : "",
-                  authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
-                  companyIdForCompany: onBoardingDetails.companyIdForCompany,
-                  status: true
-                });
-                return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
-              } else {
-                return res.status(500).json({ message: "Failed to onboard company representative" });
-              }
-            })
-            .catch((err) => {
-              if (err.name === 'MongoError' && err.code === 11000) {
-                if(err.keyPattern.phoneNumber){
-                  res.status(409).json({
-                    valid: false,
-                    param: 'phoneNumber',
-                    message: 'phoneNumber already registered'
-                  })
-                } else{
-                  res.status(409).json({
-                    valid: false,
-                    param: 'email',
-                    message: 'email already registered'
-                  })
-                }
-              } else {
-                next(err)
-              }
-            })
-
-        } else if (onBoardingDetails.roleName == "Analyst") {
-          //TODO
-        } else if (onBoardingDetails.roleName == "QA") {
-          //TODO
         } else {
-          return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
+          return res.status(500).json({ message: "Unauthorized email id for onboarding!" });
         }
       }
     })
@@ -576,85 +581,29 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
   var userDetailsInRoles = await User.find(filterQuery)
   .populate({ path: 'roleDetails.roles' })
   .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
-  let employeeCompleteDetails = await Employees.find({ status: true})
   var resArray = userDetailsInRoles.map((rec) => {
-    let userName; let employeeDetails = [];
-    employeeDetails = employeeCompleteDetails.find((obj) => obj.userId == rec.id );
-    if (rec && employeeDetails) {
-      if (rec.userType == 'Employee') {
-        userName = `${employeeDetails.firstName}${employeeDetails.middleName}${employeeDetails.lastName} - ${rec.email}`;
-        return {
-          "userDetails": {
-            "value": rec._id,
-            "label": userName,
-          },
-          "roleDetails": {
-            "role": rec.roleDetails.roles.map((rec1) => {
-              return { value: rec1.id, label: rec1.roleName }
-            }),
-            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-          },
-          "role": rec.role,
-          "userType": rec.userType,
-          "email": rec.email,
-          "phoneNumber": rec.phoneNumber,
-          "isUserApproved": rec.isUserApproved,
-          "isRoleAssigned": rec.isRoleAssigned,
-          "isAssignedToGroup": rec.isAssignedToGroup,
-          "createdAt": rec.createdAt,
-          "status": rec.status,
-          "isUserRejected": rec.isUserRejected,
-          "isUserActive": rec.isUserActive
-        }
-      }else {
-        return {
-          "userDetails": {
-            "value": rec._id,
-            "label": `${rec.name}-${rec.email}`,
-          },
-          "roleDetails": {
-            "role": rec.roleDetails.roles.map((rec1) => {
-              return { value: rec1.id, label: rec1.roleName }
-            }),
-            "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-          },
-          "role": rec.role,
-          "userType": rec.userType,
-          "email": rec.email,
-          "phoneNumber": rec.phoneNumber,
-          "isUserApproved": rec.isUserApproved,
-          "isRoleAssigned": rec.isRoleAssigned,
-          "isAssignedToGroup": rec.isAssignedToGroup,
-          "createdAt": rec.createdAt,
-          "status": rec.status,
-          "isUserRejected": rec.isUserRejected,
-          "isUserActive": rec.isUserActive
-        }
-      }      
-    }else {
-      return {
-        "userDetails": {
-          "value": rec._id,
-          "label": `${rec.name}-${rec.email}`,
-        },
-        "roleDetails": {
-          "role": rec.roleDetails.roles.map((rec1) => {
-            return { value: rec1.id, label: rec1.roleName }
-          }),
-          "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
-        },
-        "role": rec.role,
-        "userType": rec.userType,
-        "email": rec.email,
-        "phoneNumber": rec.phoneNumber,
-        "isUserApproved": rec.isUserApproved,
-        "isRoleAssigned": rec.isRoleAssigned,
-        "isAssignedToGroup": rec.isAssignedToGroup,
-        "createdAt": rec.createdAt,
-        "status": rec.status,
-        "isUserRejected": rec.isUserRejected,
-        "isUserActive": rec.isUserActive
-      }
+    return {
+      "userDetails": {
+        "value": rec._id,
+        "label": `${rec.name}`,
+      },
+      "roleDetails": {
+        "role": rec.roleDetails.roles.map((rec1) => {
+          return { value: rec1.id, label: rec1.roleName }
+        }),
+        "primaryRole": { value: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.id : null, label: rec.roleDetails.primaryRole ? rec.roleDetails.primaryRole.roleName : null }
+      },
+      "role": rec.role,
+      "userType": rec.userType,
+      "email": rec.email,
+      "phoneNumber": rec.phoneNumber,
+      "isUserApproved": rec.isUserApproved,
+      "isRoleAssigned": rec.isRoleAssigned,
+      "isAssignedToGroup": rec.isAssignedToGroup,
+      "createdAt": rec.createdAt,
+      "status": rec.status,
+      "isUserRejected": rec.isUserRejected,
+      "isUserActive": rec.isUserActive
     }
   })
   return res.status(200).json({ status: '200', count: resArray.length, message: 'Users Fetched Successfully', data: resArray });
@@ -722,9 +671,9 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         const content = `
           Hi,<br/><br/>
           Sorry, we could not process your onboarding request.<br/>
-          Please find comment from the system administrator – ${body.comments}.<br/><br/>
+          Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>
           Click below to resubmit your details.<br/><br/>
-          <a href="${process.env.FRONTEND_URL}${link}">click here</a><br><br>       
+          <a href="${link}">click here</a><br><br>       
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
           Thanks<br/>
           ESGDS Team `;
@@ -1099,3 +1048,14 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
 //   return res.json({ status: 200, message: "User Details retrieved successfully ", UserDetails: userDetails });
 
 // }
+
+export const updateUserName = async (req, res, next) => {
+  let allEmployees = await Employees.find({ status: true });
+  for (let eIndex = 0; eIndex < allEmployees.length; eIndex++) {
+    await User.updateOne({ _id: allEmployees[eIndex].userId }, {
+      $set: {
+        name: allEmployees[eIndex].firstName + " " + allEmployees[eIndex].middleName + " " + allEmployees[eIndex].lastName
+      }
+    })    
+  }
+}
