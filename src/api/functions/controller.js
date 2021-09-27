@@ -1541,7 +1541,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
 
 export const updateScreenshots = async ({ params }, res, next) => {
   console.log('in screenshot update');
-  fs.readdir("./src/api/functions/Batch_7", async (err, files) => {
+  fs.readdir("./src/api/functions/Batch_1", async (err, files) => {
     if (err) throw err;
     var allCompanyDetails = await Companies.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
     var alldpCodeDetails = await Datapoints.find({ clientTaxonomyId: "60c76f299def09f5ef0dca5c", status: true });
@@ -1558,13 +1558,13 @@ export const updateScreenshots = async ({ params }, res, next) => {
         var financialYear = lastYear + '-' + currentYear;
         var dpcode = fileArray[2].split('.')[0];
         var dpCodeDetails = alldpCodeDetails.find(function (rec1) {
-        return rec1.code === dpcode
+          return rec1.code === dpcode
         });
-        // console.log('dpCodeDetails', dpCodeDetails);
         if (dpCodeDetails && Object.keys(dpCodeDetails).length > 0) {
-          await StandaloneDatapoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenshot1": files[index] } });
-          await BoardMembersMatrixDataPoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenshot1": files[index] } });
-          await KmpMatrixDataPoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenshot1": files[index] } });
+          await StandaloneDatapoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenShot1": files[index] } });
+          await BoardMembersMatrixDataPoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenShot1": files[index] } });
+          await KmpMatrixDataPoints.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenShot1": files[index] } });
+          await Controversy.updateMany({ companyId: company.id, year: financialYear, datapointId: dpCodeDetails.id, status: true, isActive: true }, { $set: { "screenShot1": files[index] } });
         }
       }
     }
