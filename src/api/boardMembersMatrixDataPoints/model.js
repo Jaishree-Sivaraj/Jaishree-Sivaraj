@@ -123,6 +123,10 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   isDownloaded: {
     type: Boolean,
     default: false
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,

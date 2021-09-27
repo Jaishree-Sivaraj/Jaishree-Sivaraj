@@ -96,6 +96,10 @@ const controversySchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
