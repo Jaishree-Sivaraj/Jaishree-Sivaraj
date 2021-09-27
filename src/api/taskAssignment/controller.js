@@ -1087,21 +1087,36 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
             for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
+
               let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy );
-              var assignedBatches = group[index].batchList.map((rec) => {
-                return {
-                  batchName: rec.batchName,
-                  batchID: rec._id,
-                  pillars: foundCategories.map((rec) => {
-                    return {
-                      value: rec.id,
-                      label: rec.categoryName
-                    };
-                  }),
-                  batchYear: rec.years
-                };
-              });
-              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
+              var batchDetailsObject = group[index].batchList[index1];
+              var batchDetails = {                
+                batchName: batchDetailsObject.batchName,
+                batchID: batchDetailsObject._id,
+                pillars: foundCategories.map((rec) => {
+                  return {
+                    value: rec.id,
+                    label: rec.categoryName
+                  };
+                }),
+                batchYear: batchDetailsObject.years
+               }
+              // console.log( bactch)
+              // arrayYe.push(bactch)
+              // var assignedBatches = group[index].batchList.map((rec) => {
+              //   return {
+              //     batchName: rec.batchName,
+              //     batchID: rec._id,
+              //     pillars: foundCategories.map((rec) => {
+              //       return {
+              //         value: rec.id,
+              //         label: rec.categoryName
+              //       };
+              //     }),
+              //     batchYear: rec.years
+              //   };
+              // });
+              resObject.assignedBatches.push(batchDetails);
             }
             if (userRoles[roleIndex] == "GroupAdmin") {
               finalResponseObject.groupAdminList.push(resObject);

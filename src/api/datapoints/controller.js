@@ -2667,12 +2667,12 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceId = sourceValues[1] ? sourceValues[1] : '';
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId);
-              if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+              if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 datapointsObject.comments.push(comments);
                 datapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+              }else if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 datapointsObject.comments.push(comments);
@@ -2796,14 +2796,14 @@ export const repDatapointDetails = async (req, res, next) => {
         });
         if(Object.keys(currentDatapointsObject).length == 0){
           _.filter(currentAllStandaloneDetails, function (object) { 
-            if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
+          if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId);
-            if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+            if(errorDetailsObject[0].raisedBy == req.body.role){
               let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
               let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
               datapointsObject.comments.push(comments);
               datapointsObject.comments.push(rejectComment);
-            }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+            }else if(errorDetailsObject[0].raisedBy == req.body.role){
               let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
               let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
               datapointsObject.comments.push(comments);
@@ -2851,52 +2851,52 @@ export const repDatapointDetails = async (req, res, next) => {
               additionalDetails:[]
             }
           }
-            datapointsObject.status = object.correctionStatus;    
-          });          
-            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {              
-              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
-                let optionValues = [], optionVal = '', currentValue;
+          for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {              
+            if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+              let optionValues = [], optionVal = '', currentValue;
+              if(displayFields[dIndex].inputType == 'Select'){
+                let options = displayFields[dIndex].inputValues.split(',');
+                if(options.length > 0){
+                  for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                    optionValues.push({
+                      value: options[optIndex],
+                      label: options[optIndex]
+                    });                        
+                  }
+                } else {
+                  optionValues = [];
+                }
+              } else {
+                optionVal = displayFields[dIndex].inputValues;
+              }
+              if(displayFields[dIndex].inputType == 'Static'){
+                currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+              } else {
+                let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
                 if(displayFields[dIndex].inputType == 'Select'){
-                  let options = displayFields[dIndex].inputValues.split(',');
-                  if(options.length > 0){
-                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                      optionValues.push({
-                        value: options[optIndex],
-                        label: options[optIndex]
-                      });                        
-                    }
-                  } else {
-                    optionValues = [];
-                  }
+                  currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
                 } else {
-                  optionVal = displayFields[dIndex].inputValues;
+                  currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
                 }
-                if(displayFields[dIndex].inputType == 'Static'){
-                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
-                } else {
-                  let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
-                  if(displayFields[dIndex].inputType == 'Select'){
-                    currentValue = { value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '', label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                  } else {
-                    currentValue = standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[displayFields[dIndex].fieldName] : '';
-                  }
-                }
-                currentDatapointsObject.additionalDetails.push({
-                  fieldName: displayFields[dIndex].fieldName,
-                  name: displayFields[dIndex].name,
-                  value: currentValue ? currentValue: '',
-                  inputType: displayFields[dIndex].inputType,
-                  inputValues: optionValues.length > 0 ? optionValues : optionVal
-                })                
-                currentDatapointsObject.error.refData.additionalDetails.push({
-                  fieldName: displayFields[dIndex].fieldName,
-                  name: displayFields[dIndex].name,
-                  value: currentValue ? currentValue: '',
-                  inputType: displayFields[dIndex].inputType,
-                  inputValues: optionValues.length > 0 ? optionValues : optionVal
-                })
-              }                
-            }           
+              }
+              currentDatapointsObject.additionalDetails.push({
+                fieldName: displayFields[dIndex].fieldName,
+                name: displayFields[dIndex].name,
+                value: currentValue ? currentValue: '',
+                inputType: displayFields[dIndex].inputType,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+              })                
+              currentDatapointsObject.error.refData.additionalDetails.push({
+                fieldName: displayFields[dIndex].fieldName,
+                name: displayFields[dIndex].name,
+                value: currentValue ? currentValue: '',
+                inputType: displayFields[dIndex].inputType,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+              })
+            }                
+          } 
+            datapointsObject.status = object.correctionStatus;    
+          });                    
         }
         datapointsObject.currentData.push(currentDatapointsObject);
       }
@@ -3050,12 +3050,12 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
-              if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+              if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 boardDatapointsObject.comments.push(comments);
                 boardDatapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+              }else if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 boardDatapointsObject.comments.push(comments);
@@ -3184,12 +3184,12 @@ export const repDatapointDetails = async (req, res, next) => {
               let sourceId = sourceValues[1] ? sourceValues[1] : ''
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
-                if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+                if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   boardDatapointsObject.comments.push(comments);
                   boardDatapointsObject.comments.push(rejectComment);
-                }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+                }else if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   boardDatapointsObject.comments.push(comments);
@@ -3425,12 +3425,12 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
-              if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+              if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 kmpDatapointsObject.comments.push(comments);
                 kmpDatapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+              }else if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 kmpDatapointsObject.comments.push(comments);
@@ -3559,12 +3559,12 @@ export const repDatapointDetails = async (req, res, next) => {
               let sourceId = sourceValues[1] ? sourceValues[1] : ''
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
-                if(errorDetailsObject[0].raisedBy == 'Company Representative'){
+                if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   kmpDatapointsObject.comments.push(comments);
                   kmpDatapointsObject.comments.push(rejectComment);
-                }else if(errorDetailsObject[0].raisedBy == 'Client Representative'){
+                }else if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   kmpDatapointsObject.comments.push(comments);
