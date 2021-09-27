@@ -146,8 +146,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
+              let fullName = onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName ;
               userObject = {
-                name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
+                name: fullName ? fullName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -670,7 +671,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         const content = `
           Hi,<br/><br/>
           Sorry, we could not process your onboarding request.<br/>
-          Please find comment from the system administrator – ${body.comments}.<br/><br/>
+          Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>
           Click below to resubmit your details.<br/><br/>
           <a href="${link}">click here</a><br><br>       
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
