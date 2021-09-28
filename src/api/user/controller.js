@@ -146,9 +146,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-              let fullName = onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName ;
               userObject = {
-                name: fullName ? fullName : '',
+                name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -309,7 +308,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
             userObject = {
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+              name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
