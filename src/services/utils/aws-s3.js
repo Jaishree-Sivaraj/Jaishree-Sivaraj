@@ -11,7 +11,7 @@ async function storeFileInS3(data, companyId, dataPointId, year, bucketName) {
         var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
         console.log('filName', fileName);
         const params = {
-            Bucket: process.env.BUCKET_NAME, // pass your bucket name
+            Bucket: process.env.BUCKET_NAME, // pass your bucket name 
             Key: type + '/' + fileName, // file will be saved in <folderName> folder
             Body: Buffer.from(JSON.stringify(actualJson))
         };
