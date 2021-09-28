@@ -50,7 +50,16 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
             }
             res.status(200).json({ status: "200", message: "Group Created Successfully" });
           })
-          .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) });
+          .catch((error) => {  
+            if (error.name === 'MongoError' && error.code === 11000) {
+              res.status(409).json({
+                valid: false,
+                param: 'groupName',
+                message: 'groupName already registered'
+              })
+          }else { 
+            return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) }
+        });
       } else {
         //before updating the group details marked all group member's and batch's isAssignedToGroup as false bcz some group members might be removed
         await Group.findById(body.groupId).then(async(groupDetail) => {
