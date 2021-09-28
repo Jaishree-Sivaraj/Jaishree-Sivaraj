@@ -1645,6 +1645,47 @@ export const updateSourceZipFiles = async ({ params }, res, next) => {
   });
 }
 
+export const correctCompanySourceNames = async ({ params }, res, next) => {
+  let allCompanySourceList = await CompanySources.find({status: true});
+  if (allCompanySourceList.length > 0) {
+    for (let cmpSrcIndex = 0; cmpSrcIndex < allCompanySourceList.length; cmpSrcIndex++) {
+      let obj = allCompanySourceList[cmpSrcIndex];
+      let standaloneDetail = await StandaloneDatapoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      if (standaloneDetail) {
+        await CompanySources.updateOne({ _id: obj.id }, { 
+          $set: { 
+            name: standaloneDetail.sourceName ? standaloneDetail.sourceName : obj.name 
+          } 
+        });
+      }
+      let boardMemberDetail = await BoardMembersMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      if (!standaloneDetail && boardMemberDetail) {
+        await CompanySources.updateOne({ _id: obj.id }, { 
+          $set: { 
+            name: boardMemberDetail.sourceName ? boardMemberDetail.sourceName : obj.name 
+          } 
+        });
+      }
+      let kmpMemberDetail = await KmpMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      if (!standaloneDetail && !boardMemberDetail && kmpMemberDetail) {
+        await CompanySources.updateOne({ _id: obj.id }, { 
+          $set: { 
+            name: kmpMemberDetail.sourceName ? kmpMemberDetail.sourceName : obj.name 
+          } 
+        });
+      }
+      let controversyDetail = await Controversy.findOne({ sourceURL: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      if (!standaloneDetail && !boardMemberDetail && !kmpMemberDetail && controversyDetail) {
+        await CompanySources.updateOne({ _id: obj.id }, { 
+          $set: { 
+            name: controversyDetail.sourceName ? controversyDetail.sourceName : obj.name 
+          } 
+        });
+      }
+    }
+  }
+}
+
 async function validateURL(link) {
   if (link.indexOf("http://") == 0 || link.indexOf("https://") == 0) {
     console.log("The link has http or https.");
