@@ -335,7 +335,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     status: true
                   }).then((resp) => {
                     if (resp) {
-                      return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                      return res.status(200).json({ message: "Your details have been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
                     } else {
                       return res.status(500).json({ message: "Failed to onboard employee" });
                     }
@@ -390,7 +390,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
                   });
-                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                  return res.status(200).json({ message: "Your details have been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard client representative" });
                 }
@@ -443,7 +443,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     companyIdForCompany: onBoardingDetails.companyIdForCompany,
                     status: true
                   });
-                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                  return res.status(200).json({ message: "Your details have been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard company representative" });
                 }
