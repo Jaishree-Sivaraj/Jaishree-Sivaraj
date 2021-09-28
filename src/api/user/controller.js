@@ -146,9 +146,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-              let fullName = onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName ;
               userObject = {
-                name: fullName ? fullName : '',
+                name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -309,7 +308,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
             userObject = {
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+              name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
@@ -336,7 +335,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     status: true
                   }).then((resp) => {
                     if (resp) {
-                      return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
                     } else {
                       return res.status(500).json({ message: "Failed to onboard employee" });
                     }
@@ -391,7 +390,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
                   });
-                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                  return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard client representative" });
                 }
@@ -444,7 +443,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     companyIdForCompany: onBoardingDetails.companyIdForCompany,
                     status: true
                   });
-                  return res.status(200).json({ message: "Your details has been saved successfully. will get back to you shortly through mail", _id: response.id, name: response.name, email: response.email });
+                  return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard company representative" });
                 }
