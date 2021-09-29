@@ -78,7 +78,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
         await TaskSlaLog.create(taskObject)
         .then(async(response) => {
           let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
-          let allAdminUserIds = await User.find({ _id: { $in: adminRoleIds }, status: true });
+          let allAdminUserIds = await User.find({ _id: { $in: adminRoleIds }, status: true }).distinct('_id');
           if (allAdminUserIds.length > 0) {
             for (let admUserIndex = 0; admUserIndex < allAdminUserIds.length; admUserIndex++) {
               let admUserId = allAdminUserIds[admUserIndex];
