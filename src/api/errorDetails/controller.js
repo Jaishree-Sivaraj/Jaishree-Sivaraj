@@ -188,31 +188,12 @@ export const saveErrorDetails = async({
             },
             status: true,
             createdBy: user
-          }           
-          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },{$set: {status:false}});
-          await StandaloneDatapoints.create({
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: item['screenShot'],
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            status: true,
-            hasError: true,
-            hasCorrection: false,
-            correctionStatus: 'Completed',
-            createdBy: user
-          });
+          }
+          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed'}});
           await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
           { $set: standaloneDatapoints }, { upsert: true });
         } else {         
-          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },{$set: {status:false}});
+          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -226,6 +207,7 @@ export const saveErrorDetails = async({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
+            isActive: true,
             status: true,
             hasError: false,
             hasCorrection: false,
@@ -236,7 +218,9 @@ export const saveErrorDetails = async({
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
-      let obj = {
+      await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+      { $set:{isActive: false}});
+      await StandaloneDatapoints.create({
         datapointId: body.dpCodeId,
         companyId: body.companyId,
         taskId: item.taskId,
@@ -249,11 +233,11 @@ export const saveErrorDetails = async({
         url: item.source['url'],
         sourceName: item.source['sourceName'] + ";" + item.source['value'],
         additionalDetails: item['additionalDetails'],
+        correctionStatus: 'Completed',
+        isActive: true,
         status: true,
         createdBy: user
-      }
-      await StandaloneDatapoints.updateOne({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-      { $set: obj }, { upsert: true });
+      })
     }
     res.status('200').json({
       message: "Data inserted Successfully"
@@ -285,33 +269,7 @@ export const saveErrorDetails = async({
           createdBy: user
         }
         await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-        { $set: {isActive: false}});
-        await BoardMembersMatrixDataPoints.create({
-          datapointId: body.dpCodeId,
-          companyId: body.companyId,
-          taskId: body.taskId,
-          year: item['fiscalYear'],
-          response: item['response'],
-          screenShot: item['screenShot'],
-          textSnippet: item['textSnippet'],
-          pageNumber: item['pageNo'],
-          publicationDate: item.source['publicationDate'],
-          url: item.source['url'],
-          sourceName: item.source['sourceName'] + ";" + item.source['value'],
-          additionalDetails: item['additionalDetails'],
-          memberName: body.memberName,
-          memberStatus: true,
-          isActive: true,
-          status: true,
-          hasCorrection: false,
-          hasError: true,
-          correctionStatus: 'Completed',
-          createdBy: user
-        }).catch(error =>{
-          res.status('500').json({
-            message: error.message
-          });
-        })
+        { $set: {hasError: true ,hasCorrection: false,correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
       } else{
@@ -347,7 +305,9 @@ export const saveErrorDetails = async({
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
-      let obj = {
+      await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
+        { $set: {isActive: false} });
+      await BoardMembersMatrixDataPoints.create({
         datapointId: body.dpCodeId,
         companyId: body.companyId,
         taskId: body.taskId,
@@ -361,14 +321,12 @@ export const saveErrorDetails = async({
         sourceName: item.source['sourceName'] + ";" + item.source['value'],
         additionalDetails: item['additionalDetails'],
         memberName: body.memberName,
+        correctionStatus: 'Completed',
         memberStatus: true,
+        isActive: true,
         status: true,
         createdBy: user
-      }
-     // for (let index1 = 0; 1 < historicalDataYear.length; index1++) {
-        await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
-          { $set: obj }, { upsert: true });
-      //}
+      })      
     }
     res.status('200').json({
       message: "Data inserted Successfully"
@@ -400,34 +358,7 @@ export const saveErrorDetails = async({
           createdBy: user
         }
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
-        { $set: {isActive: false}});
-        
-        await KmpMatrixDataPoints.create({
-          datapointId: body.dpCodeId,
-          companyId: body.companyId,
-          taskId: body.taskId,
-          year: item['fiscalYear'],
-          response: item['response'],
-          screenShot: item['screenShot'],
-          textSnippet: item['textSnippet'],
-          pageNumber: item['pageNo'],
-          publicationDate: item.source['publicationDate'],
-          url: item.source['url'],
-          sourceName: item.source['sourceName'] + ";" + item.source['value'],
-          additionalDetails: item['additionalDetails'],
-          memberName: body.memberName,
-          memberStatus: true,
-          hasCorrection: false, 
-          hasError: true , 
-          correctionStatus: 'Completed',
-          isActive:true,
-          status: true,
-          createdBy: user
-        }).catch(error =>{
-          res.status('500').json({
-            message: error.message
-          });
-        })
+        { $set: {hasError: true ,hasCorrection: false, correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
       } else{
@@ -463,26 +394,28 @@ export const saveErrorDetails = async({
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
-      let obj = {
-        datapointId: body.dpCodeId,
-        companyId: body.companyId,
-        taskId: body.taskId,
-        year: item['fiscalYear'],
-        response: item['response'],
-        screenShot: item['screenShot'],
-        textSnippet: item['textSnippet'],
-        pageNumber: item['pageNo'],
-        publicationDate: item.source['publicationDate'],
-        url: item.source['url'],
-        sourceName: item.source['sourceName'] + ";" + item.source['value'],
-        additionalDetails: item['additionalDetails'],
-        memberName: body.memberName,
-        memberStatus: true,
-        status: true,
-        createdBy: user
-      }
       await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-        { $set: obj }, { upsert: true });
+        { $set: {isActive: false}});
+        await KmpMatrixDataPoints.create({
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: item['screenShot'],
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          correctionStatus: 'Completed',
+          isActive: true,
+          memberStatus: true,
+          status: true,
+          createdBy: user
+        })
     }
     res.status('200').json({
       message: "Data inserted Successfully"
