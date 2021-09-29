@@ -375,6 +375,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               isUserApproved: false,
               status: true
             }
+            var companiesList = onBoardingDetails.companyName.map((rec) => { return rec.value });
             User.create(userObject)
               .then(async (response) => {
                 if (response) {
@@ -385,7 +386,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     email: onBoardingDetails.email ? onBoardingDetails.email : '',
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+                    companiesList: companiesList ? companiesList : "",
                     authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
@@ -584,7 +585,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     return {
       "userDetails": {
         "value": rec._id,
-        "label": `${rec.name}`,
+        "label": `${rec.name}-${rec.email}`,
       },
       "roleDetails": {
         "role": rec.roleDetails.roles.map((rec1) => {
