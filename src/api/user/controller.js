@@ -97,19 +97,21 @@ export const show = ({ params }, res, next) => {
           companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
-        userDetails.companyName = client.companiesList.length > 0 ? { label: client.companiesList[0].companyName, value: 'companyName' } : null;
+        if(client.companiesList){
+          userDetails.companyName = client.companiesList.length > 0 ? { label: client.companiesList[0].companyName, value: 'companyName' } : null;
+        }
         // userDetails.companies = client.companiesList.map((rec) => {
         //   return { label: rec.companyName, value: rec.id }
         // });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        return res.status(500).json({ message: "Failed to get user" })
+        return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
       })
     } else {
       return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
     }
   }).catch(err => {
-    return res.status(500).json({ message: "Failed to get user" })
+    return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
   })
 }
 
