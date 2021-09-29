@@ -7,7 +7,7 @@ const taskSlaLogSchema = new Schema({
   },
   taskId: {
    type: Schema.ObjectId,
-   ref: 'TaskAssigment',
+   ref: 'TaskAssignment',
    required: true
   },
   days: {
