@@ -84,20 +84,23 @@ export const show = ({ params }, res, next) => {
         }
         userDetails.documents = companyDocuments;
         userDetails.companies = company.companiesList.map((rec) => {
-          return { label: rec.companyName, value: 'companyName' }
+          return { label: rec.companyName, value: rec.id }
         });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
-      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('CompanyName').then(function (client) {
+      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (client) {
         var clientDocuments = {
           authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
           companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
-        userDetails.companyName = client.CompanyName ? { label: client.CompanyName.companyName, value: 'companyName' } : null;
+        // userDetails.companyName = client.CompanyName ? { label: client.CompanyName.companyName, value: 'companyName' } : null;
+        userDetails.companies = client.companiesList.map((rec) => {
+          return { label: rec.companyName, value: rec.id }
+        });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         return res.status(500).json({ message: "Failed to get user" })
