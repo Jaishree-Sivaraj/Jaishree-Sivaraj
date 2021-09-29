@@ -189,11 +189,11 @@ export const show = async({ params }, res, next) => {
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
-                await Categories.find({ clientTaxonomyId: batchDetail.clientTaxonomy.id, status: true })
+                await Categories.find({ clientTaxonomyId: batchDetail.clientTaxonomy.id, status: true }).populate('clientTaxonomyId')
                 .then((categories) => {
                   if (categories && categories.length > 0) {
                     for (let cIndex = 0; cIndex < categories.length; cIndex++) {
-                      pillarList.push({ value: categories[cIndex].id, label: categories[cIndex].categoryName });
+                      pillarList.push({ value: categories[cIndex].id, label: categories[cIndex].categoryName + ' - ' + categories[cIndex].clientTaxonomyId.taxonomyName });
                     }
                   }
                 });
@@ -277,7 +277,7 @@ export const show = async({ params }, res, next) => {
             if (pillarDetail) {
               pillarMember = {
                 value: obj.id,
-                label: obj.name + " - " + obj.email,
+                label: obj.name,
                 isPillarAssigned: true,
                 primaryPillar: pillarDetail.primaryPillar,
                 secondaryPillar: pillarDetail.secondaryPillar
@@ -285,7 +285,7 @@ export const show = async({ params }, res, next) => {
             } else {
               pillarMember = {
                 value: obj.id,
-                label: obj.name + " - " + obj.email,
+                label: obj.name,
                 isPillarAssigned: false,
                 primaryPillar: {},
                 secondaryPillar: []
@@ -316,7 +316,7 @@ export const show = async({ params }, res, next) => {
               member = {
                 userDetails: {
                   value: obj.id,
-                  label: obj.name + " - " + obj.email,
+                  label: obj.name,
                 },
                 roleDetails: {
                   role: obj.roleDetails.roles.map((rec) => {
