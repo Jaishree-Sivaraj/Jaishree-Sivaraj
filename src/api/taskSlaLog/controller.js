@@ -68,7 +68,6 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
           status: true,
           createdBy: user
         }
-        console.log(taskDetail.analystId.email == user.email);
         if (taskDetail.analystId.email == user.email) {
           taskObject.requestedBy = "Analyst";
         } else if (taskDetail.qaId.email == user.email) {
@@ -78,7 +77,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
         await TaskSlaLog.create(taskObject)
         .then(async(response) => {
           let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
-          let allAdminUserIds = await User.find({ _id: { $in: adminRoleIds }, status: true }).distinct('_id');
+          let allAdminUserIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('_id');
           if (allAdminUserIds.length > 0) {
             for (let admUserIndex = 0; admUserIndex < allAdminUserIds.length; admUserIndex++) {
               let admUserId = allAdminUserIds[admUserIndex];
