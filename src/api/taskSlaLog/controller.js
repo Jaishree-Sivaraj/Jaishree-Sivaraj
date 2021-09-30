@@ -145,8 +145,8 @@ export const rejectRequest = async ({user, params, bodymen: { body } }, res, nex
     let taskDetail = await TaskSlaLog.findById(params.id).populate('taskId');
     await Notifications.create({
       notifyToUser: taskDetail.createdBy ? taskDetail.createdBy : null,
-      notificationType: '/tasklist',
-      content: `Your SLA extension request for TaskID - ${taskDetail.taskId.taskNumber ? taskDetail.taskId.taskNumber : ''}`,
+      notificationType: '/pendingtasks',
+      content: `Your SLA extension request has been rejected for TaskID - ${taskDetail.taskId.taskNumber ? taskDetail.taskId.taskNumber : ''}`,
       notificationTitle: 'SLA request rejected',
       isRead: false,
       status: true
