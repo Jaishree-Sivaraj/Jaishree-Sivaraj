@@ -1458,7 +1458,7 @@ export const reports = async ({ user, params }, res, next) => {
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
+      obj.allocatedDate = companyTask ? companyTask.createdAt : null;
     }
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)
