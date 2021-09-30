@@ -441,7 +441,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
                 keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                 pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,                                 
+                isDpcodeValidForCollection: isDpcodeValidForCollection,
+                message: message,
                 fiscalYear: taskDetails.year,
                 status: 'Yet to Start'
               }
