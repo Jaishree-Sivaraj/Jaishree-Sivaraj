@@ -235,7 +235,7 @@ export const show = async({ params }, res, next) => {
           admin = {
             userDetails: {
               value: group.groupAdmin.id,
-              label: adminDetail.name,
+              label: adminDetail.name + "-" + admin.email,
             },
             roleDetails: {
               role: adminDetail.roleDetails.roles.map((rec) => {
@@ -256,7 +256,7 @@ export const show = async({ params }, res, next) => {
             member = {
               userDetails: {
                 value: obj.id,
-                label: memberDetail.name,
+                label: memberDetail.name + "-" + memberDetail.email,
               },
               roleDetails: {
                 role: memberDetail.roleDetails.roles.map((rec) => {
@@ -277,7 +277,7 @@ export const show = async({ params }, res, next) => {
             if (pillarDetail) {
               pillarMember = {
                 value: obj.id,
-                label: obj.name,
+                label: obj.name + "-" + obj.email,
                 isPillarAssigned: true,
                 primaryPillar: pillarDetail.primaryPillar,
                 secondaryPillar: pillarDetail.secondaryPillar
@@ -285,7 +285,7 @@ export const show = async({ params }, res, next) => {
             } else {
               pillarMember = {
                 value: obj.id,
-                label: obj.name,
+                label: obj.name + "-" + obj.email,
                 isPillarAssigned: false,
                 primaryPillar: {},
                 secondaryPillar: []
@@ -316,7 +316,7 @@ export const show = async({ params }, res, next) => {
               member = {
                 userDetails: {
                   value: obj.id,
-                  label: obj.name,
+                  label: obj.name + "-" + obj.email,
                 },
                 roleDetails: {
                   role: obj.roleDetails.roles.map((rec) => {

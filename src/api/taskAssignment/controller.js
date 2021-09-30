@@ -1217,7 +1217,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             taskStatus: { $ne: "Verification Completed" },
           });
           qaObject.id = group.assignedMembers[index].id;
-          qaObject.name = group.assignedMembers[index].name;
+          qaObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email ;
           qaObject.primaryRole = false;
           qaObject.activeTaskCount = activeTaskCount.length;
           console.log('qa object', qaObject);
@@ -1233,7 +1233,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             },
           });
           analystObject.id = group.assignedMembers[index].id;
-          analystObject.name = group.assignedMembers[index].name;
+          analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
           console.log('analystObject object', analystObject);
@@ -1248,7 +1248,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             },
           });
           analystObject.id = group.assignedMembers[index].id;
-          analystObject.name = group.assignedMembers[index].name;
+          analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = false;
           analystObject.activeTaskCount = activeTaskCount.length;
           console.log('analystObject object', analystObject);
@@ -1458,7 +1458,7 @@ export const reports = async ({ user, params }, res, next) => {
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
+      obj.allocatedDate = companyTask ? companyTask.createdAt : null;
     }
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)

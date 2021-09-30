@@ -2,6 +2,7 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { TaskSlaLog } from '.'
 import { TaskAssignment } from '../taskAssignment'
 import { User } from '../user'
+import { Role } from '../role'
 import { Notifications } from '../notifications'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -67,7 +68,6 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
           status: true,
           createdBy: user
         }
-        console.log(taskDetail.analystId.email == user.email);
         if (taskDetail.analystId.email == user.email) {
           taskObject.requestedBy = "Analyst";
         } else if (taskDetail.qaId.email == user.email) {
@@ -76,6 +76,24 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
         await TaskSlaLog.updateMany({ taskId: body.taskId, createdBy: user.id, status: true}, { $set: { status: false } });
         await TaskSlaLog.create(taskObject)
         .then(async(response) => {
+          let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
+          let allAdminUserIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('_id');
+          if (allAdminUserIds.length > 0) {
+            for (let admUserIndex = 0; admUserIndex < allAdminUserIds.length; admUserIndex++) {
+              let admUserId = allAdminUserIds[admUserIndex];
+              await Notifications.create({
+                notifyToUser: admUserId ? admUserId : null,
+                notificationType: '/tasklist',
+                content: `${user.name ? user.name : 'Employee'} has raised SLA extension request for ${body.days ? body.days : ''} of TaskID - ${taskDetail.taskNumber ? taskDetail.taskNumber : ''}`,
+                notificationTitle: `SLA extension requested`,
+                isRead: false,
+                status: true
+              })
+              .catch((error) => {
+                return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to send notification!" });
+              })
+            }
+          }
           await Notifications.create({
             notifyToUser: taskDetail.groupId ? taskDetail.groupId.groupAdmin : null,
             notificationType: '/tasklist',
@@ -126,8 +144,8 @@ export const rejectRequest = async ({user, params, bodymen: { body } }, res, nex
     let taskDetail = await TaskSlaLog.findById(params.id).populate('taskId');
     await Notifications.create({
       notifyToUser: taskDetail.createdBy ? taskDetail.createdBy : null,
-      notificationType: '/tasklist',
-      content: `Your SLA extension request for TaskID - ${taskDetail.taskId.taskNumber ? taskDetail.taskId.taskNumber : ''}`,
+      notificationType: '/pendingtasks',
+      content: `Your SLA extension request has been rejected for TaskID - ${taskDetail.taskId.taskNumber ? taskDetail.taskId.taskNumber : ''}`,
       notificationTitle: 'SLA request rejected',
       isRead: false,
       status: true

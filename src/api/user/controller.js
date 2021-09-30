@@ -84,29 +84,34 @@ export const show = ({ params }, res, next) => {
         }
         userDetails.documents = companyDocuments;
         userDetails.companies = company.companiesList.map((rec) => {
-          return { label: rec.companyName, value: 'companyName' }
+          return { label: rec.companyName, value: rec.id }
         });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
-      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('CompanyName').then(function (client) {
+      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (client) {
         var clientDocuments = {
           authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
           companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
-        userDetails.companyName = client.CompanyName ? { label: client.CompanyName.companyName, value: 'companyName' } : null;
+        // if(client.companiesList){
+        //   userDetails.companyName = client.companiesList.length > 0 ? { label: client.companiesList[0].companyName, value: 'companyName' } : null;
+        // }
+        userDetails.companies = client.companiesList.map((rec) => {
+          return { label: rec.companyName, value: rec.id }
+        });
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
       }).catch(err => {
-        return res.status(500).json({ message: "Failed to get user" })
+        return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
       })
     } else {
       return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
     }
   }).catch(err => {
-    return res.status(500).json({ message: "Failed to get user" })
+    return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
   })
 }
 
@@ -375,6 +380,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               isUserApproved: false,
               status: true
             }
+            var companiesList = onBoardingDetails.companyName.map((rec) => { return rec.value });
             User.create(userObject)
               .then(async (response) => {
                 if (response) {
@@ -385,7 +391,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     email: onBoardingDetails.email ? onBoardingDetails.email : '',
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
+                    companiesList: companiesList ? companiesList : "",
                     authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
@@ -584,7 +590,7 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     return {
       "userDetails": {
         "value": rec._id,
-        "label": `${rec.name}`,
+        "label": `${rec.name}-${rec.email}`,
       },
       "roleDetails": {
         "role": rec.roleDetails.roles.map((rec1) => {
@@ -917,29 +923,63 @@ export const uploadEmailsFile = async (req, res, next) => {
                 }
                 //nodemail code will come here to send OTP  
                 if (!isEmailExisting) {
-                  const content = `
-                  Hi,<br/><br/>
-                  Please click below to submit your onboarding details:<br/><br/>
-                  <a href="${process.env.FRONTEND_URL}${link}">click here</a><br><br>       
-                  Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-                  Thanks<br/>
-                  ESGDS Team `;
-                  var transporter = nodemailer.createTransport({
-                    service: 'Gmail',
-                    auth: {
-                      user: 'testmailer09876@gmail.com',
-                      pass: 'ijsfupqcuttlpcez'
+                  if (rolesDetails && rolesDetails.roleName == "Employee") {
+                    let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
+                    //nodemail code will come here to send OTP
+                    const content = `
+                      Hi,<br/><br/>
+                      Please click below to submit your onboarding details:<br/><br/>
+                      <a href="${url}">click here</a><br><br>
+                      Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
+                      Thanks<br/>
+                      ESGDS Team `;
+                    var transporter = nodemailer.createTransport({
+                      service: 'Gmail',
+                      auth: {
+                        user: 'testmailer09876@gmail.com',
+                        pass: 'ijsfupqcuttlpcez'
+                      }
+                    });
+            
+                    transporter.sendMail({
+                      from: 'testmailer09876@gmail.com',
+                      to: rowObject['email'],
+                      subject: 'ESG - Onboarding',
+                      html: content
+                    });
+                      let email = `${rowObject['email']}`;
+                      await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
+                    
+                  } else if(rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
+                    let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
+                    let allAdminUserEmailIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('email');
+                    console.log("allAdminUserEmailIds",allAdminUserEmailIds);
+                    for (let index = 0; index < allAdminUserEmailIds.length; index++) {
+                      console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
+                      let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
+                      console.log("");
+                      //nodemail code will come here to send OTP
+                      const content = `
+                        Email: ${rowObject['email']}<br/><br/>
+                        Link: ${url}<br/><br/>`;
+                      var transporter = nodemailer.createTransport({
+                        service: 'Gmail',
+                        auth: {
+                          user: 'testmailer09876@gmail.com',
+                          pass: 'ijsfupqcuttlpcez'
+                        }
+                      });
+              
+                      transporter.sendMail({
+                        from: 'testmailer09876@gmail.com',
+                        to: allAdminUserEmailIds[index],
+                        subject: 'ESG - Onboarding',
+                        html: content
+                      });
+                        let email = `${rowObject['email']}`;
+                        await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )            
                     }
-                  });
-
-                  transporter.sendMail({
-                    from: 'testmailer09876@gmail.com',
-                    to: rowObject['email'],
-                    subject: 'ESG - Onboarding',
-                    html: content
-                  });
-                    let email = `${rowObject['email']}`;
-                    await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
+                  }
                 } else {
                   return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits`})
                 }
@@ -997,31 +1037,63 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         link = `/onboard/new-user?role=ClientRepresentative`
       }
       if (!isEmailExisting) {
-        let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
-        //nodemail code will come here to send OTP
-        const content = `
-          Hi,<br/><br/>
-          Please click below to submit your onboarding details:<br/><br/>
-          <a href="${url}">click here</a><br><br>
-          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
-          Thanks<br/>
-          ESGDS Team `;
-        var transporter = nodemailer.createTransport({
-          service: 'Gmail',
-          auth: {
-            user: 'testmailer09876@gmail.com',
-            pass: 'ijsfupqcuttlpcez'
+        if (rolesDetails && rolesDetails.roleName == "Employee") {
+          let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
+          //nodemail code will come here to send OTP
+          const content = `
+            Hi,<br/><br/>
+            Please click below to submit your onboarding details:<br/><br/>
+            <a href="${url}">click here</a><br><br>
+            Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
+            Thanks<br/>
+            ESGDS Team `;
+          var transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+              user: 'testmailer09876@gmail.com',
+              pass: 'ijsfupqcuttlpcez'
+            }
+          });
+  
+          transporter.sendMail({
+            from: 'testmailer09876@gmail.com',
+            to: rowObject['email'],
+            subject: 'ESG - Onboarding',
+            html: content
+          });
+            let email = `${rowObject['email']}`;
+            await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
+          
+        } else if(rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
+          let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
+          let allAdminUserEmailIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('email');
+          console.log("allAdminUserEmailIds",allAdminUserEmailIds);
+          for (let index = 0; index < allAdminUserEmailIds.length; index++) {
+            console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
+            let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
+            console.log("");
+            //nodemail code will come here to send OTP
+            const content = `
+              Email: ${rowObject['email']}<br/><br/>
+              Link: ${url}<br/><br/>`;
+            var transporter = nodemailer.createTransport({
+              service: 'Gmail',
+              auth: {
+                user: 'testmailer09876@gmail.com',
+                pass: 'ijsfupqcuttlpcez'
+              }
+            });
+    
+            transporter.sendMail({
+              from: 'testmailer09876@gmail.com',
+              to: allAdminUserEmailIds[index],
+              subject: 'ESG - Onboarding',
+              html: content
+            });
+              let email = `${rowObject['email']}`;
+              await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )            
           }
-        });
-
-        transporter.sendMail({
-          from: 'testmailer09876@gmail.com',
-          to: rowObject['email'],
-          subject: 'ESG - Onboarding',
-          html: content
-        });
-          let email = `${rowObject['email']}`;
-          await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
+        }
       }
     }
     if (existingEmails.length > 0) {
