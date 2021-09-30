@@ -374,6 +374,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
             } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
               for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+                if(dpTypeDatapoints[datapointsIndex].isPriority == true){
+                  isDpcodeValidForCollection = true,
+                  message = ""
+                }
                   let datapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
@@ -386,7 +390,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: taskDetails.year,                    
                     priority: {                               
                       isDpcodeValidForCollection: isDpcodeValidForCollection,
-                      message: message},
+                      message: message },
                     status: 'Yet to Start'
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -436,6 +440,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               keyIssuesList.push(keyIssues);
             }
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+              if(dpTypeDatapoints[datapointsIndex].isPriority == true){
+                isDpcodeValidForCollection = true,
+                message = ""
+              }
               let datapointsObject = {
                 dpCode: dpTypeDatapoints[datapointsIndex].code,
                 dpCodeId: dpTypeDatapoints[datapointsIndex].id,
