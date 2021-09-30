@@ -121,7 +121,7 @@ const datapointsSchema = new Schema({
     type: Number
   },
   isPriority: {
-    type: String
+    type: Boolean
   },
   additionalDetails: {
     type: Object
