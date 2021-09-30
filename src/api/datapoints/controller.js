@@ -375,9 +375,30 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
               for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
                 if(dpTypeDatapoints[datapointsIndex].isPriority == true){
-                  isDpcodeValidForCollection = true,
-                  message = ""
-                }
+                  let datapointsObject = {
+                    dpCode: dpTypeDatapoints[datapointsIndex].code,
+                    dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                    companyId: taskDetails.companyId.id,
+                    companyName: taskDetails.companyId.companyName,
+                    keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                    keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                    pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                    pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                    fiscalYear: taskDetails.year,                    
+                    priority: {                               
+                      isDpcodeValidForCollection: true,
+                      message: "" },
+                    status: 'Yet to Start'
+                  }
+                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                    _.filter(currentAllStandaloneDetails,(object)=>{
+                      if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
+                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                      }
+                    })
+                  }
+                  dpCodesData.push(datapointsObject);
+                } else{
                   let datapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
@@ -401,8 +422,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     })
                   }
                   dpCodesData.push(datapointsObject);
-
-                //}
+                }
               }
             }
           }
@@ -440,10 +460,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               keyIssuesList.push(keyIssues);
             }
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-              if(dpTypeDatapoints[datapointsIndex].isPriority == true){
-                isDpcodeValidForCollection = true,
-                message = ""
-              }
+              if(dpTypeDatapoints[datapointsIndex].isPriority == true){                
               let datapointsObject = {
                 dpCode: dpTypeDatapoints[datapointsIndex].code,
                 dpCodeId: dpTypeDatapoints[datapointsIndex].id,
@@ -454,8 +471,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 priority: {                               
-                  isDpcodeValidForCollection: isDpcodeValidForCollection,
-                  message: message},
+                  isDpcodeValidForCollection: true,
+                  message: "" },
                 fiscalYear: taskDetails.year,
                 status: 'Yet to Start'
               }
@@ -467,6 +484,31 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 })
               }
               dpCodesData.push(datapointsObject);
+              } else {
+                let datapointsObject = {
+                  dpCode: dpTypeDatapoints[datapointsIndex].code,
+                  dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                  companyId: taskDetails.companyId.id,
+                  companyName: taskDetails.companyId.companyName,
+                  keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                  keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                  pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                  pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                  priority: {                               
+                    isDpcodeValidForCollection: isDpcodeValidForCollection,
+                    message: message},
+                  fiscalYear: taskDetails.year,
+                  status: 'Yet to Start'
+                }
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  _.filter(currentAllStandaloneDetails,(object)=>{
+                    if(object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]){
+                      datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                    }
+                  })
+                }
+                dpCodesData.push(datapointsObject);
+              }
             }
           }
           return res.status(200).send({
