@@ -297,8 +297,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: boardDpCodesData.boardMemberList[boarMemberListIndex].year ,
                     memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
                     memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
-                    isDpcodeValidForCollection: isDpcodeValidForCollection,
-                    message: message,
+                    priority: {                               
+                      isDpcodeValidForCollection: isDpcodeValidForCollection,
+                      message: message },
                     status: "Yet to Start"
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -355,8 +356,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     fiscalYear: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].year,
                     memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
                     memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
-                    isDpcodeValidForCollection: isDpcodeValidForCollection,
-                    message: message,
+                    priority: {                               
+                      isDpcodeValidForCollection: isDpcodeValidForCollection,
+                      message: message },
                     status: 'Yet to Start'
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -382,8 +384,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
                     pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                     fiscalYear: taskDetails.year,                    
-                    isDpcodeValidForCollection: isDpcodeValidForCollection,
-                    message: message,
+                    priority: {                               
+                      isDpcodeValidForCollection: isDpcodeValidForCollection,
+                      message: message},
                     status: 'Yet to Start'
                   }
                   for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -441,9 +444,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
                 keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
                 pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,                                 
-                isDpcodeValidForCollection: isDpcodeValidForCollection,
-                message: message,
+                pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                priority: {                               
+                  isDpcodeValidForCollection: isDpcodeValidForCollection,
+                  message: message},
                 fiscalYear: taskDetails.year,
                 status: 'Yet to Start'
               }
