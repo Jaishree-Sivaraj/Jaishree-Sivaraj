@@ -2699,14 +2699,9 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : '';
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId);
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role);
               if(errorDetailsObject[0]){
               if(errorDetailsObject[0].raisedBy == req.body.role){
-                let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                datapointsObject.comments.push(comments);
-                datapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 datapointsObject.comments.push(comments);
@@ -2832,14 +2827,9 @@ export const repDatapointDetails = async (req, res, next) => {
         if(Object.keys(currentDatapointsObject).length == 0){
           _.filter(currentAllStandaloneDetails, function (object) { 
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
-            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId);
+            let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role);
           if(errorDetailsObject[0]){
             if(errorDetailsObject[0].raisedBy == req.body.role){
-              let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-              let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-              datapointsObject.comments.push(comments);
-              datapointsObject.comments.push(rejectComment);
-            }else if(errorDetailsObject[0].raisedBy == req.body.role){
               let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
               let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
               datapointsObject.comments.push(comments);
@@ -3086,19 +3076,14 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
               if(errorDetailsObject[0]){
               if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 boardDatapointsObject.comments.push(comments);
                 boardDatapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == req.body.role){
-                let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                boardDatapointsObject.comments.push(comments);
-                boardDatapointsObject.comments.push(rejectComment);
-              }  
+              } 
             }
               currentDatapointsObject = {
                 status: 'Completed',
@@ -3222,19 +3207,14 @@ export const repDatapointDetails = async (req, res, next) => {
               let sourceName = sourceValues[0];
               let sourceId = sourceValues[1] ? sourceValues[1] : ''
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
                 if(errorDetailsObject[0]){
                 if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   boardDatapointsObject.comments.push(comments);
                   boardDatapointsObject.comments.push(rejectComment);
-                }else if(errorDetailsObject[0].raisedBy == req.body.role){
-                  let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                  let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                  boardDatapointsObject.comments.push(comments);
-                  boardDatapointsObject.comments.push(rejectComment);
-                } 
+                }
                }
                 currentDatapointsObject = {
                   status: 'Completed',
@@ -3465,19 +3445,14 @@ export const repDatapointDetails = async (req, res, next) => {
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
-              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
               if(errorDetailsObject[0]){
               if(errorDetailsObject[0].raisedBy == req.body.role){
                 let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                 let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                 kmpDatapointsObject.comments.push(comments);
                 kmpDatapointsObject.comments.push(rejectComment);
-              }else if(errorDetailsObject[0].raisedBy == req.body.role){
-                let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                kmpDatapointsObject.comments.push(comments);
-                kmpDatapointsObject.comments.push(rejectComment);
-              }  
+              }
               }
               currentDatapointsObject = {
                 status: 'Completed',
@@ -3601,14 +3576,9 @@ export const repDatapointDetails = async (req, res, next) => {
               let sourceName = sourceValues[0];
               let sourceId = sourceValues[1] ? sourceValues[1] : ''
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
                 if(errorDetailsObject[0]){
                 if(errorDetailsObject[0].raisedBy == req.body.role){
-                  let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                  let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                  kmpDatapointsObject.comments.push(comments);
-                  kmpDatapointsObject.comments.push(rejectComment);
-                }else if(errorDetailsObject[0].raisedBy == req.body.role){
                   let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                   let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
                   kmpDatapointsObject.comments.push(comments);
