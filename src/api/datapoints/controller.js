@@ -369,7 +369,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     })
                   }
                   kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-
                 }
               }
             } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {

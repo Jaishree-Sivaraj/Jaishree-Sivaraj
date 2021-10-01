@@ -678,13 +678,13 @@ export const getMyTasks = async (
   if (userRoles.includes("Client Representative")) {
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (clientRepDetail && clientRepDetail.CompanyName) {
       await TaskAssignment.find({
         companyId: clientRepDetail.CompanyName,
         taskStatus: "Verification Completed",
-        status: true,
+        status: true
       })
         .sort({
           createdAt: -1,
@@ -739,7 +739,7 @@ export const getMyTasks = async (
   if (userRoles.includes("Company Representative")) {
     let companyRepDetail = await CompanyRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
       await TaskAssignment.find({
