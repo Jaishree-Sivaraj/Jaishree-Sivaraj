@@ -1522,15 +1522,33 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       if (companyTask && !companyTask.overAllCompanyTaskStatus) {
         obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
       }
-      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Breached";
-      } else {
-        if (companyTask && companyTask.overAllCompanyTaskStatus) {
-          obj.status = 'Completed';
-        } else {
-          obj.status = 'OnTrack'
+      let currentDate = new Date();
+      let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
+      console.log();
+      if (qaSLADate && (currentDate < qaSLADate)) {
+        obj.status = "OnTrack";
+        console.log("OnTrack");
+      } else if(qaSLADate && (qaSLADate < currentDate)){
+        obj.status = "NotMet";
+        console.log("NotMet");
+      } else if(allTasks[i].taskStatus == 'Completed'){
+        let completedDate = allTasks[i].updatedAt;
+        if (completedDate > currentDate) {
+          obj.status = "Met";
+          console.log("Met");
         }
+      } else {
+        obj.status = "NA";
       }
+      // if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+      //   obj.status = "Breached";
+      // } else {
+      //   if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      //     obj.status = 'Completed';
+      //   } else {
+      //     obj.status = 'OnTrack'
+      //   }
+      // }
       result.push(obj);
     }
   }
