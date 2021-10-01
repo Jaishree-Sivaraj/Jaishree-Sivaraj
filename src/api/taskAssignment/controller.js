@@ -1524,19 +1524,15 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       }
       let currentDate = new Date();
       let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
-      console.log();
-      if (qaSLADate && (currentDate < qaSLADate)) {
-        obj.status = "OnTrack";
-        console.log("OnTrack");
-      } else if(qaSLADate && (qaSLADate < currentDate)){
-        obj.status = "NotMet";
-        console.log("NotMet");
-      } else if(allTasks[i].taskStatus == 'Completed'){
+      if(allTasks[i].taskStatus == 'Completed'){
         let completedDate = allTasks[i].updatedAt;
         if (completedDate > currentDate) {
           obj.status = "Met";
-          console.log("Met");
         }
+      } else if (qaSLADate && (currentDate < qaSLADate)) {
+        obj.status = "OnTrack";
+      } else if(qaSLADate && (qaSLADate < currentDate)){
+        obj.status = "NotMet";
       } else {
         obj.status = "NA";
       }
