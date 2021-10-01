@@ -43,7 +43,7 @@ const taskAssignmentSchema = new Schema({
   },
   taskStatus: {
     type: String,
-    default: "Yet to work"
+    default: "Pending"
   },
   analystId: {
     type: Schema.ObjectId,

@@ -556,7 +556,7 @@ export const getMyTasks = async (
       analystId: completeUserDetail.id,
       $or: [
         {
-          taskStatus: "Yet to work",
+          taskStatus: "Pending",
         },
         {
           taskStatus: "In Progress",
