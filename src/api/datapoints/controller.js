@@ -900,7 +900,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               companyId: taskDetails.companyId.id,
               year:{
                 $in:currentYear
-              },
+              }, 
               isActive: true,
               dpStatus: 'Correction',
               status: true
