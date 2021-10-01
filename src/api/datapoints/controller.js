@@ -1217,7 +1217,7 @@ export const datapointDetails = async (req, res, next) => {
         })
         _.filter(currentAllStandaloneDetails, function (object) {
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex])
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
           if(errorDetailsObject.length > 0){
             if(errorDetailsObject[0].raisedBy == 'QA'){
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
@@ -2925,6 +2925,7 @@ export const repDatapointDetails = async (req, res, next) => {
             datapointsObject.status = object.correctionStatus;    
           });                    
         }
+        datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
         datapointsObject.currentData.push(currentDatapointsObject);
       }
       let totalHistories = 0;
@@ -3301,7 +3302,9 @@ export const repDatapointDetails = async (req, res, next) => {
               }                   
                boardDatapointsObject.status = object.correctionStatus;
             });
-          }            
+          }        
+          boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
+    
           boardDatapointsObject.currentData.push(currentDatapointsObject);  
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
@@ -3671,6 +3674,7 @@ export const repDatapointDetails = async (req, res, next) => {
             });            
             kmpDatapointsObject.status = object.correctionStatus;   
           }
+          kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
           kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {

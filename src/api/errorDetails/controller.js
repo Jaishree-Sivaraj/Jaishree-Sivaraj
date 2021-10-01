@@ -14,6 +14,7 @@ import {
 } from '../kmpMatrixDataPoints'
 import { Errors } from '../error'
 import _ from 'lodash'
+import { TaskAssignment } from '../taskAssignment'
 import { StandaloneDatapoints } from '../standalone_datapoints'
 
 export const create = ({
@@ -161,7 +162,14 @@ export const saveErrorDetails = async({
     status: true
   });
   let errorCaughtByRep = {}, dpCodeDetails = [];
-  
+  let dpStatus = "";
+  let taskDetails = await TaskAssignment.findOne({_id: body.taskId});
+  if(taskDetails.taskStatus == 'Collection Completed')
+  {
+    dpStatus = "Collection";
+  } else{
+    dpStatus = "Correction";
+  }
   if(body.memberType == 'Standalone'){
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
@@ -208,6 +216,7 @@ export const saveErrorDetails = async({
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             additionalDetails: item['additionalDetails'],
             isActive: true,
+            dpStatus: dpStatus,
             status: true,
             hasError: false,
             hasCorrection: false,
@@ -291,7 +300,8 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           memberStatus: true,
           isActive: true,
-          status: true,
+          status: true,          
+          dpStatus: dpStatus,
           hasCorrection: false,
           hasError: false,
           correctionStatus: 'Completed',
@@ -380,6 +390,7 @@ export const saveErrorDetails = async({
           memberName: body.memberName,
           memberStatus: true,
           hasCorrection: false, 
+          dpStatus: dpStatus,
           hasError: false , 
           correctionStatus: 'Completed',
           status: true,
