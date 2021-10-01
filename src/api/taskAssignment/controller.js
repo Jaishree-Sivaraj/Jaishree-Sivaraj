@@ -1533,7 +1533,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         }
       } else if (qaSLADate && (currentDate < qaSLADate)) {
         obj.status = "OnTrack";
-      } else if(qaSLADate && (qaSLADate > currentDate)){
+      } else if(qaSLADate && (qaSLADate < currentDate)){
         obj.status = "NotMet";
       } else {
         obj.status = "NA";
