@@ -556,7 +556,7 @@ export const getMyTasks = async (
       analystId: completeUserDetail.id,
       $or: [
         {
-          taskStatus: "Yet to work",
+          taskStatus: "Pending",
         },
         {
           taskStatus: "In Progress",
@@ -1522,15 +1522,31 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       if (companyTask && !companyTask.overAllCompanyTaskStatus) {
         obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
       }
-      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Breached";
-      } else {
-        if (companyTask && companyTask.overAllCompanyTaskStatus) {
-          obj.status = 'Completed';
+      let currentDate = new Date();
+      let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
+      if(allTasks[i].taskStatus == 'Completed'){
+        let completedDate = allTasks[i].updatedAt;
+        if (completedDate > qaSLADate) {
+          obj.status = "Met";
         } else {
-          obj.status = 'OnTrack'
+          obj.status = "NotMet";
         }
+      } else if (qaSLADate && (currentDate < qaSLADate)) {
+        obj.status = "OnTrack";
+      } else if(qaSLADate && (qaSLADate < currentDate)){
+        obj.status = "NotMet";
+      } else {
+        obj.status = "NA";
       }
+      // if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+      //   obj.status = "Breached";
+      // } else {
+      //   if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      //     obj.status = 'Completed';
+      //   } else {
+      //     obj.status = 'OnTrack'
+      //   }
+      // }
       result.push(obj);
     }
   }

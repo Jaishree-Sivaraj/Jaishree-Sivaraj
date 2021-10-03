@@ -198,7 +198,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('datapointId')
       .populate('companyId')
       .populate('taskId');
-    if (taskDetails.taskStatus == 'Yet to work' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed') {
+    if (taskDetails.taskStatus == 'Pending' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed') {
       if (dpTypeValues.length > 0) {
         let datapointsCount = await Datapoints.distinct('_id',{ dataCollection: 'Yes',
         functionId: {
@@ -1526,6 +1526,7 @@ export const datapointDetails = async (req, res, next) => {
           }
           datapointsObject.status = 'Yet to Start';
         }
+        datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
         datapointsObject.currentData.push(currentDatapointsObject);
       }
       let totalHistories = 0;
@@ -1993,6 +1994,7 @@ export const datapointDetails = async (req, res, next) => {
             }
             boardDatapointsObject.status = "Yet to Start"
           }
+          boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
           boardDatapointsObject.currentData.push(currentDatapointsObject);
         
       }
@@ -2389,8 +2391,7 @@ export const datapointDetails = async (req, res, next) => {
               }
 
             } 
-          });
-          
+          });          
           if (Object.keys(currentDatapointsObject).length == 0) {
             currentDatapointsObject = {
               status: 'Yet to Start',
@@ -2455,6 +2456,7 @@ export const datapointDetails = async (req, res, next) => {
             }
             kmpDatapointsObject.status = 'Yet to Start';
           }
+          kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
           kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
@@ -3304,7 +3306,6 @@ export const repDatapointDetails = async (req, res, next) => {
             });
           }        
           boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
-    
           boardDatapointsObject.currentData.push(currentDatapointsObject);  
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
