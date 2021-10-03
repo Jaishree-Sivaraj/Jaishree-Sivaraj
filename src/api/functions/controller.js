@@ -150,7 +150,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
                         sourceName1: 'cmp_source' + (recordsIndex + 1),
-                        url1: s3FileObject.Key
+                        sourceFile: s3FileObject.Key
                       }
                     });
                   }
@@ -206,7 +206,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                           $set: {
                             sourceName1: 'cmp_source' + (recordsIndex + 1),
-                            url1: s3FileObject.Key
+                            sourceFile: s3FileObject.Key
                           }
                         });
                       }
@@ -262,7 +262,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                           $set: {
                             sourceName1: 'cmp_source' + (recordsIndex + 1),
-                            url1: s3FileObject.Key
+                            sourceFile: s3FileObject.Key
                           }
                         });
                       }
@@ -320,7 +320,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
                       sourceName1: 'cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                     }
                   });
                 }
@@ -377,7 +377,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                         $set: {
                           sourceName1: 'cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                         }
                       });
                     }
@@ -433,7 +433,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                         $set: {
                           sourceName1: 'cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                         }
                       });
                     }
@@ -491,7 +491,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                   $set: {
                     sourceName1: 'cmp_source' + (recordsIndex + 1),
-                    url1: s3FileObject.Key
+                    sourceFile: s3FileObject.Key
                   }
                 });
               }
@@ -554,7 +554,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
                         sourceName1: 'cmp_source' + (recordsIndex + 1),
-                        url1: s3FileObject.Key
+                        sourceFile: s3FileObject.Key
                       }
                     });
                   }
@@ -610,7 +610,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                       $set: {
                         sourceName1: 'cmp_source' + (recordsIndex + 1),
-                        url1: s3FileObject.Key
+                        sourceFile: s3FileObject.Key
                       }
                     });
                   }
@@ -668,7 +668,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                 $set: {
                   sourceName1: 'cmp_source' + (recordsIndex + 1),
-                  url1: s3FileObject.Key
+                  sourceFile: s3FileObject.Key
                 }
               });
             }
@@ -725,7 +725,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
                       sourceName1: 'cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                     }
                   });
                 }
@@ -782,7 +782,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                     $set: {
                       sourceName1: 'cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                     }
                   });
                 }
@@ -888,7 +888,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                       await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                           sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                       }
                       });
                   }
@@ -944,7 +944,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                           await Controversy.updateOne({ _id: recordObject.id }, {
                           $set: {
                               sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                              url1: s3FileObject.Key
+                              sourceFile: s3FileObject.Key
                           }
                           });
                       }
@@ -1000,7 +1000,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                           await Controversy.updateOne({ _id: recordObject.id }, {
                           $set: {
                               sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                              url1: s3FileObject.Key
+                              sourceFile: s3FileObject.Key
                           }
                           });
                       }
@@ -1058,7 +1058,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                   await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                       sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                       }
                   });
                   }
@@ -1115,7 +1115,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                       await Controversy.updateOne({ _id: recordObject.id }, {
                           $set: {
                           sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                           }
                       });
                       }
@@ -1171,7 +1171,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                       await Controversy.updateOne({ _id: recordObject.id }, {
                           $set: {
                           sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                           }
                       });
                       }
@@ -1229,7 +1229,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                   await Controversy.updateOne({ _id: recordObject.id }, {
                   $set: {
                       sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                   }
                   });
               }
@@ -1292,7 +1292,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                       await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                           sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                       }
                       });
                   }
@@ -1348,7 +1348,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                       await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                           sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                          url1: s3FileObject.Key
+                          sourceFile: s3FileObject.Key
                       }
                       });
                   }
@@ -1406,7 +1406,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
               await Controversy.updateOne({ _id: recordObject.id }, {
                   $set: {
                   sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                  url1: s3FileObject.Key
+                  sourceFile: s3FileObject.Key
                   }
               });
               }
@@ -1463,7 +1463,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                   await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                       sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                       }
                   });
                   }
@@ -1520,7 +1520,7 @@ export const updateControversySourceUrls = async ({ params }, res, next) => {
                   await Controversy.updateOne({ _id: recordObject.id }, {
                       $set: {
                       sourceName1: 'controversy_cmp_source' + (recordsIndex + 1),
-                      url1: s3FileObject.Key
+                      sourceFile: s3FileObject.Key
                       }
                   });
                   }
@@ -1577,7 +1577,7 @@ export const updateScreenshots = async ({ params }, res, next) => {
 export const crossCheckCompanySources = async ({ params }, res, next) => {
   let allCompanySourceURLs = await CompanySources.find({ status: true, fiscalYear: "2019-2020" }).distinct("sourceUrl");
   console.log('allCompanySourceURLs.length', allCompanySourceURLs.length);
-  let notRecordedSourceURLs = await BoardMembersMatrixDataPoints.find({ url: { $in: allCompanySourceURLs }, url1: { $exists: true }, isCounted: true, isDownloaded: true, status: true });
+  let notRecordedSourceURLs = await BoardMembersMatrixDataPoints.find({ url: { $in: allCompanySourceURLs }, sourceFile: { $exists: true }, isCounted: true, isDownloaded: true, status: true });
   console.log('notRecordedSourceURLs.length', notRecordedSourceURLs.length);
   for (let crossCheckIndex = 0; crossCheckIndex < notRecordedSourceURLs.length; crossCheckIndex++) {
     let object = notRecordedSourceURLs[crossCheckIndex];
@@ -1595,7 +1595,7 @@ export const crossCheckCompanySources = async ({ params }, res, next) => {
       isMultiYear: false,
       isMultiSource: false,
       sourceUrl: object.url,
-      sourceFile: object.url1,
+      sourceFile: object.sourceFile,
       publicationDate: publicationDate,
       fiscalYear: object.year,
       name: object.sourceName ? object.sourceName : object.sourceName1,
@@ -1606,7 +1606,7 @@ export const crossCheckCompanySources = async ({ params }, res, next) => {
       updatedAt: new Date()
     }
     console.log('companySourceObject', companySourceObject);
-    await CompanySources.updateOne({ companyId: object.companyId, sourceFile: object.url1, sourceUrl: object.url, fiscalYear: object.year, status: true }, { 
+    await CompanySources.updateOne({ companyId: object.companyId, sourceFile: object.sourceFile, sourceUrl: object.url, fiscalYear: object.year, status: true }, { 
       $set: companySourceObject 
     }, { upsert: true });
   }
@@ -1633,11 +1633,11 @@ export const updateSourceZipFiles = async ({ params }, res, next) => {
       console.log('urlToUpdate.sourceName1', urlToUpdate.sourceName1);
       console.log('fileName', fileName);
       await StandaloneDatapoints.updateMany({ url: urlToUpdate.url, status: true }, { 
-          $set: { "url1": fileName, "sourceName1": urlToUpdate.sourceName1, isCounted: true, isDownloaded: true } });
+          $set: { "sourceFile": fileName, "sourceName1": urlToUpdate.sourceName1, isCounted: true, isDownloaded: true } });
       await BoardMembersMatrixDataPoints.updateMany({ url: urlToUpdate.url, status: true }, { 
-          $set: { "url1": fileName, "sourceName1": urlToUpdate.sourceName1 } });
+          $set: { "sourceFile": fileName, "sourceName1": urlToUpdate.sourceName1 } });
       await KmpMatrixDataPoints.updateMany({ url: urlToUpdate.url, status: true }, { 
-          $set: { "url1": fileName, "sourceName1": urlToUpdate.sourceName1 } });
+          $set: { "sourceFile": fileName, "sourceName1": urlToUpdate.sourceName1 } });
       }
       res.send({
       "message": "zip files migrated"
@@ -1650,7 +1650,7 @@ export const correctCompanySourceNames = async ({ params }, res, next) => {
   if (allCompanySourceList.length > 0) {
     for (let cmpSrcIndex = 0; cmpSrcIndex < allCompanySourceList.length; cmpSrcIndex++) {
       let obj = allCompanySourceList[cmpSrcIndex];
-      let standaloneDetail = await StandaloneDatapoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      let standaloneDetail = await StandaloneDatapoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, sourceFile: obj.sourceFile, status: true, isActive: true });
       if (standaloneDetail) {
         await CompanySources.updateOne({ _id: obj.id }, { 
           $set: { 
@@ -1658,7 +1658,7 @@ export const correctCompanySourceNames = async ({ params }, res, next) => {
           } 
         });
       }
-      let boardMemberDetail = await BoardMembersMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      let boardMemberDetail = await BoardMembersMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, sourceFile: obj.sourceFile, status: true, isActive: true });
       if (!standaloneDetail && boardMemberDetail) {
         await CompanySources.updateOne({ _id: obj.id }, { 
           $set: { 
@@ -1666,7 +1666,7 @@ export const correctCompanySourceNames = async ({ params }, res, next) => {
           } 
         });
       }
-      let kmpMemberDetail = await KmpMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      let kmpMemberDetail = await KmpMatrixDataPoints.findOne({ url: obj.sourceUrl, sourceName1: obj.name, sourceFile: obj.sourceFile, status: true, isActive: true });
       if (!standaloneDetail && !boardMemberDetail && kmpMemberDetail) {
         await CompanySources.updateOne({ _id: obj.id }, { 
           $set: { 
@@ -1674,7 +1674,7 @@ export const correctCompanySourceNames = async ({ params }, res, next) => {
           } 
         });
       }
-      let controversyDetail = await Controversy.findOne({ sourceURL: obj.sourceUrl, sourceName1: obj.name, url1: obj.sourceFile, status: true, isActive: true });
+      let controversyDetail = await Controversy.findOne({ sourceURL: obj.sourceUrl, sourceName1: obj.name, sourceFile: obj.sourceFile, status: true, isActive: true });
       if (!standaloneDetail && !boardMemberDetail && !kmpMemberDetail && controversyDetail) {
         await CompanySources.updateOne({ _id: obj.id }, { 
           $set: { 
