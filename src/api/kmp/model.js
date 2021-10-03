@@ -59,6 +59,7 @@ kmpSchema.methods = {
       id: this.id,
       createdBy: this.createdBy ? this.createdBy.view(full) : null ,
       companyId: this.companyId ? this.companyId.view(full) :null ,
+      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) :null ,
       MASP003: this.MASP003,
       MASR008: this.MASR008,
       memberStatus: this.memberStatus,
