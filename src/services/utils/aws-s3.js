@@ -6,24 +6,57 @@ const s3 = new AWS.S3({
     region: 'ap-south-1'
 });
 
-async function storeFileInS3(data, companyId, dataPointId, year, bucketName) {
+async function storeFileInS3(bucketName, fileName, fileDataBase64) {
+    const bufferData = new Buffer.from(fileDataBase64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+    const fileType = base64Data.split(';')[0].split('/')[1];
     return new Promise(function (resolve, reject) {
-        var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
+        fileName = fileName + '.' + fileType;
         console.log('filName', fileName);
         const params = {
-            Bucket: process.env.BUCKET_NAME, // pass your bucket name 
-            Key: type + '/' + fileName, // file will be saved in <folderName> folder
-            Body: Buffer.from(JSON.stringify(actualJson))
+            Bucket: bucketName, // pass your bucket name 
+            Key: fileName, // file will be saved in <folderName> folder
+            Body: bufferData
         };
         s3.upload(params, function (s3Err, data) {
             if (s3Err) {
-                console.log('s3', s3Err);
                 reject(s3Err)
             } else {
-                resolve({ data, fileName: type + '/' + fileName });
+                resolve({ data, fileName });
             }
         });
     })
 }
 
-module.exports = { storeFileInS3 }
+async function fetchFileFromS3(bucketName, keyName) {
+    return new Promise(async function (resolve, reject) {
+        try {
+            const myBucket = bucketName
+            const myKey = keyName;
+            const signedUrlExpireSeconds = 60 * 10 // your expiry time in seconds.
+            console.log(myBucket, myKey)
+            const headCode = await s3.headObject({ Bucket: myBucket, Key: myKey }).promise();
+            const url = s3.getSignedUrl('getObject', {
+                Bucket: myBucket,
+                Key: myKey,
+                Expires: signedUrlExpireSeconds
+            })
+            resolve(url);
+        } catch (headErr) {
+            console.log('headErr', headErr)
+            const signedUrlExpireSeconds = 60 * 10;
+            if (headErr.code === 'NotFound') {
+                const noImageurl = s3.getSignedUrl('getObject', {
+                    Bucket: bucketName,
+                    Key: "no-image.jpg",
+                    Expires: signedUrlExpireSeconds
+                })
+                resolve(noImageurl);
+            } else {
+                console.log('in else catch')
+                reject("error")
+            }
+        }
+    })
+}
+
+module.exports = { storeFileInS3, fetchFileFromS3 }

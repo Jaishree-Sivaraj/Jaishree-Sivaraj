@@ -1,10 +1,11 @@
 import { success, notFound } from '../../services/response/'
 import { CompanySources } from '.'
 import { result } from 'lodash'
-var fs=require("fs")
-var path=require("path")
-import { SourceSubTypes} from '../source_sub_types'
-import { SourceTypes} from '../sourceTypes'
+var fs = require("fs")
+var path = require("path")
+import { SourceSubTypes } from '../source_sub_types'
+import { SourceTypes } from '../sourceTypes'
+import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   CompanySources.create({ ...body, createdBy: user })
@@ -31,14 +32,14 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 //     .then((companySources) => companySources ? companySources.view() : null)
 //     console.log();
 
-export const show = async ({params}, res,next) =>{
+export const show = async ({ params }, res, next) => {
   let sourceDetails, companySourceDetails = [];
-  sourceDetails = await CompanySources.find({"status": true});
+  sourceDetails = await CompanySources.find({ "status": true });
   companySourceDetails = await sourceDetails.find((object) => params.id == object.companyId);
   if (companySourceDetails) {
-    res.status(200).json({status: ("200"), message: "data retrieved Sucessfully", data: companySourceDetails});
-  }else{
-    res.status(400).json({status: ("400"), message: "no data present for the companyId..!"});
+    res.status(200).json({ status: ("200"), message: "data retrieved Sucessfully", data: companySourceDetails });
+  } else {
+    res.status(400).json({ status: ("400"), message: "no data present for the companyId..!" });
   }
 }
 
@@ -58,30 +59,40 @@ export const destroy = ({ params }, res, next) =>
     .then(success(res, 204))
     .catch(next)
 
-export const getDocumentsByCompanyId = ({ params }, res, next) =>
-  CompanySources.find({ companyId: params.companyId }).then((result) => {
+export const getDocumentsByCompanyId = async ({ params }, res, next) =>
+  await CompanySources.find({ companyId: params.companyId }).then(async (result) => {
+    for (let index = 0; index < result.length; index++) {
+      var s3Data = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, result[index].sourceFile).catch((e) => {
+        result[index].sourceFile = "No image";
+      }) //bucket name and file name 
+      console.log('s3', s3Data);
+      result[index].sourceFile = s3Data;
+    }
     res.send(result, 200);
   }).catch(next)
 
 export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
-  const convertedPdf = Buffer.from(body.sourcePDF.split('data:application/pdf;base64,')[1], 'base64');
-  let fileName = "file" + Date.now() + ".pdf";
-  let fileUrl = path.join(__dirname, "uploads", fileName)
-  await fs.writeFile(fileUrl, convertedPdf, error => {
-    if (error) {
-      //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
-    } else {
-      console.log("File Stored Sucessfully");
-    }
-  });
+  // const convertedPdf = Buffer.from(body.sourcePDF.split('data:application/pdf;base64,')[1], 'base64');
+  // let fileName = "file" + Date.now() + ".pdf";
+  // let fileUrl = path.join(__dirname, "uploads", fileName)
+  // await fs.writeFile(fileUrl, convertedPdf, error => {
+  //   if (error) {
+  //     //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
+  //   } else {
+  //     console.log("File Stored Sucessfully");
+  //   }
+  // });
+  var fileUrl = body.companyId + '_' + Date.now();
+  var s3Insert = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileName, body.sourcePDF);
+  console.log('s3insert', s3Insert);
   let sourceDetails = {
     newSourceTypeName: body.newSourceTypeName,
     newSubSourceTypeName: body.newSubSourceTypeName
   }
-  console.log("newSourceTypeName",body.newSourceTypeName );
+  console.log("newSourceTypeName", body.newSourceTypeName);
   console.log("newSubSourceTypeName", body.newSubSourceTypeName);
   let newSubSourceTypeId, newSourceTypeId;
-  if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "" ) {
+  if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
     let subTypeName = body.newSubSourceTypeName;
     await SourceSubTypes.create({ subTypeName: subTypeName })
       .then(async (response) => {
@@ -92,19 +103,18 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
   }
 
-  if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "")  {
+  if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
     let sourceObject = {
       typeName: body.newSourceTypeName,
       subSourceTypeId: newSubSourceTypeId,
       isMultiYear: body.isMultiYear,
       isMultiSource: body.isMultiSource
     }
-    await SourceTypes.create(sourceObject)
-      .then(async (sourceResponse) => {
-        if (sourceResponse) {
-          newSourceTypeId = sourceResponse.id;
-        }
-      })
+    await SourceTypes.create(sourceObject).then(async (sourceResponse) => {
+      if (sourceResponse) {
+        newSourceTypeId = sourceResponse.id;
+      }
+    })
   }
   if (body.sourceSubTypeId) {
     newSubSourceTypeId = body.sourceSubTypeId;
@@ -122,8 +132,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     fiscalYear: body.fiscalYear,
     name: body.name
   }
-  await CompanySources.create(companySourceDetails)
-    .then((detail) => {
-      res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
-    });
+  console.log('companySourceDetails', companySourceDetails);
+  // await CompanySources.create(companySourceDetails).then((detail) => {
+  //   res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
+  // });
 }
