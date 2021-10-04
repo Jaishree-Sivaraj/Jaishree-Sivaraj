@@ -7,7 +7,7 @@ import { schema } from './model'
 export Employees, { schema } from './model'
 
 const router = new Router()
-const { userId, firstName, middleName, lastName, panNumber, aadhaarNumber, bankAccountNumber, bankIFSCCode, accountHolderName, pancardUrl, aadhaarUrl, cancelledChequeUrl, status } = schema.tree
+const { userId, firstName, middleName, lastName, panNumber, aadhaarNumber, bankAccountNumber, bankIFSCCode, accountHolderName, pancardUrl, aadhaarUrl, cancelledChequeUrl, status, employeeCode } = schema.tree
 
 /**
  * @api {post} /employees Create employees
@@ -35,7 +35,7 @@ const { userId, firstName, middleName, lastName, panNumber, aadhaarNumber, bankA
  */
 router.post('/',
   token({ required: true }),
-  body({ userId, firstName, middleName, lastName, panNumber, aadhaarNumber, bankAccountNumber, bankIFSCCode, accountHolderName, pancardUrl, aadhaarUrl, cancelledChequeUrl, status }),
+  body({ userId, firstName, middleName, lastName, panNumber, aadhaarNumber, bankAccountNumber, bankIFSCCode, accountHolderName, pancardUrl, aadhaarUrl, cancelledChequeUrl, status, employeeCode }),
   create)
 
 /**
