@@ -556,7 +556,7 @@ export const getMyTasks = async (
       analystId: completeUserDetail.id,
       $or: [
         {
-          taskStatus: "Yet to work",
+          taskStatus: "Pending",
         },
         {
           taskStatus: "In Progress",
@@ -678,13 +678,13 @@ export const getMyTasks = async (
   if (userRoles.includes("Client Representative")) {
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (clientRepDetail && clientRepDetail.CompanyName) {
       await TaskAssignment.find({
         companyId: clientRepDetail.CompanyName,
         taskStatus: "Verification Completed",
-        status: true,
+        status: true
       })
         .sort({
           createdAt: -1,
@@ -739,7 +739,7 @@ export const getMyTasks = async (
   if (userRoles.includes("Company Representative")) {
     let companyRepDetail = await CompanyRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
       await TaskAssignment.find({
@@ -1458,7 +1458,7 @@ export const reports = async ({ user, params }, res, next) => {
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
+      obj.allocatedDate = companyTask ? companyTask.createdAt : null;
     }
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)
@@ -1522,15 +1522,31 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       if (companyTask && !companyTask.overAllCompanyTaskStatus) {
         obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
       }
-      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Breached";
-      } else {
-        if (companyTask && companyTask.overAllCompanyTaskStatus) {
-          obj.status = 'Completed';
+      let currentDate = new Date();
+      let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
+      if(allTasks[i].taskStatus == 'Completed'){
+        let completedDate = allTasks[i].updatedAt;
+        if (completedDate == qaSLADate) {
+          obj.status = "OnTrack";
         } else {
-          obj.status = 'OnTrack'
+          obj.status = "Met";
         }
+      } else if (qaSLADate && (currentDate < qaSLADate)) {
+        obj.status = "OnTrack";
+      } else if(qaSLADate && (currentDate > qaSLADate)){
+        obj.status = "Not Met";
+      } else {
+        obj.status = "NA";
       }
+      // if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+      //   obj.status = "Breached";
+      // } else {
+      //   if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      //     obj.status = 'Completed';
+      //   } else {
+      //     obj.status = 'OnTrack'
+      //   }
+      // }
       result.push(obj);
     }
   }

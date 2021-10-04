@@ -241,7 +241,7 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
           taskNumber: taskNumber,
           companyId: body.company[index].id ? body.company[index].id : null,
           analystId: body.analyst.value ? body.analyst.value : null,
-          taskStatus: 'Yet to Work',
+          taskStatus: 'Pending',
           status: true,
           canGenerateJson: true, 
           isJsonGenerated: false,

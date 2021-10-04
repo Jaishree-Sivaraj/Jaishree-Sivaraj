@@ -1335,7 +1335,7 @@ export const dataCollection = async ({
 }, res, next) => {
   try {
     let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('companyId').populate('categoryId');
-    if (taskDetailsObject.taskStatus == 'Yet to work' || taskDetailsObject.taskStatus == 'Pending') {
+    if (taskDetailsObject.taskStatus == 'Pending' || taskDetailsObject.taskStatus == 'Pending') {
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
       let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
@@ -1558,6 +1558,7 @@ export const dataCollection = async ({
             isActive: true,
             status: true,
             hasError: false,
+            dpStatus: "Error",
             hasCorrection: hasCorrectionValue,
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
@@ -1605,6 +1606,7 @@ export const dataCollection = async ({
           let hasCorrectionValue = false;
           if(item.isAccepted == true) {
             hasCorrectionValue = true;
+
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
             { $set: { isErrorAccepted: true, isErrorRejected: false} });
           } else{
@@ -1635,7 +1637,8 @@ export const dataCollection = async ({
             hasCorrection: hasCorrectionValue,
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
-            createdBy: user,
+            createdBy: user,            
+            dpStatus: "Error",
             memberName: body.memberName,
             updatedAt: Date.now()
           }).catch(err =>{
@@ -1708,6 +1711,7 @@ export const dataCollection = async ({
             correctionStatus: 'Completed',
             additionalDetails: item['additionalDetails'],
             createdBy: user,
+            dpStatus: "Error",
             memberName: body.memberName,
             updatedAt: Date.now()
           }).catch(err =>{

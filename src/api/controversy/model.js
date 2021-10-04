@@ -101,10 +101,6 @@ const controversySchema = new Schema({
     type: String,
     default: ''
   },
-  url1: {
-    type: String,
-    default: ''
-  },
   isCounted: {
     type: Boolean,
     default: false
@@ -149,6 +145,7 @@ controversySchema.methods = {
       pageNumber: this.pageNumber ? this.pageNumber : '',
       sourceName: this.sourceName ? this.sourceName : '',
       sourceURL: this.sourceURL ? this.sourceURL : '',
+      sourceFile: this.sourceFile ? this.sourceFile : '',
       textSnippet: this.textSnippet ? this.textSnippet : '',
       screenShot: this.screenShot ? this.screenShot : '',
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
