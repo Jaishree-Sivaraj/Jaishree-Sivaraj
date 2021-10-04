@@ -1,5 +1,6 @@
 import XLSX from 'xlsx'
 import _ from 'lodash'
+import moment from 'moment'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Companies } from '.'
 
@@ -161,11 +162,11 @@ export const uploadCompaniesFile = async (req, res, next) => {
             rowObject['NIC Code'] = String(rowObject['NIC Code']);
             let companyObject = {
               companyName: rowObject['Company Name'],
-              cin: rowObject['CIN'].replace(/[\\n\\r]/g, ''),
-              nicCode: rowObject['NIC Code'].replace(/[\\r\\n]/g,''),
+              cin: rowObject['CIN'],
+              nicCode: rowObject['NIC Code'],
               nic: rowObject['NIC Code'].toString().substring(0, 2),
-              nicIndustry: rowObject['NIC industry'].replace(/[\\r\\n]/g,''),
-              isinCode: rowObject['ISIN Code'].replace(/[\\r\\n]/g,''),
+              nicIndustry: rowObject['NIC industry'],
+              isinCode: rowObject['ISIN Code'],
               cmieProwessCode: rowObject['CMIE/Prowess Code'],
               clientTaxonomyId: req.body.clientTaxonomyId,
               fiscalYearEndDate: rowObject['Fiscal Year End Date'] ? rowObject['Fiscal Year End Date'] : '',
@@ -175,16 +176,45 @@ export const uploadCompaniesFile = async (req, res, next) => {
               createdBy: userDetail
             }
             companyInfo.push(companyObject);
-            if (companyInfo.length > 0) {
-              for (let index = 0; index < companyInfo.length; index++) {
-                await Companies.updateOne({ cin: companyInfo[index].cin }, { $set: companyInfo[index] }, { upsert: true })
-                  .catch((error) => {
-                    return res.status(400).json({
-                      status: "400",
-                      message: error.message ? error.message : "Failed to update company of CIN-" + companyInfo[index].cin + " for company-" + companyInfo[index].companyName
-                    })
-                  });
+          }
+          if (companyInfo.length > 0) {
+            let companyHeaders = [ "Company Name", "CIN", "NIC Code", "NIC industry", "ISIN Code", "CMIE/Prowess Code", "Fiscal Year End Date", "Fiscal Year End Month" ]
+            if (companyHeaders && companyHeaders.length > 0 && Object.keys(companyInfo[0]).length > 0) {
+              let inputFileHeaders = Object.keys(sheetAsJson[0]);
+              let missingHeaders = _.difference(companyHeaders, inputFileHeaders);
+              if (missingHeaders.length > 0) {
+                return res.status(400).json({ status: "400", message: missingHeaders.join() + " fields are required but missing in the uploaded file!" });
+              } else {
+                for (let cmpIndex = 0; cmpIndex < companyInfo.length; cmpIndex++) {
+                  let endDate = companyInfo[cmpIndex].fiscalYearEndDate;
+                  let endMonth = companyInfo[cmpIndex].fiscalYearEndMonth;
+                  let currentYear = new Date().getFullYear();
+                  let parsedDate = Date.parse(`${currentYear}-${endMonth}-${endDate}`);
+                  if (parsedDate && parsedDate != "NaN") {
+                    let isValidDate = moment(`${endMonth}/${endDate}/${currentYear}`, 'MM/DD/YY').isValid();
+                    let keyNames = Object.keys(sheetAsJson[cmpIndex]);
+                    for (let hIndex = 0; hIndex < keyNames.length; hIndex++) {
+                      if (!sheetAsJson[cmpIndex][keyNames[hIndex]] || sheetAsJson[cmpIndex][keyNames[hIndex]] == '' || sheetAsJson[cmpIndex][keyNames[hIndex]] == ' ' || sheetAsJson[cmpIndex][keyNames[hIndex]] == null) {
+                        return res.status(400).json({ status: "400", message: "Found empty value for " + keyNames[hIndex]});
+                      }
+                    }
+                    if (!isValidDate) {
+                      return res.status(400).json({ status: "400", message: "Invalid date value for Fiscal Year End Date " + companyInfo[cmpIndex].fiscalYearEndDate + " and Fiscal Year End Month " + companyInfo[cmpIndex].fiscalYearEndMonth });
+                    }                      
+                  } else {
+                    return res.status(400).json({ status: "400", message: "Invalid date value for Fiscal Year End Date " + companyInfo[cmpIndex].fiscalYearEndDate + " and Fiscal Year End Month " + companyInfo[cmpIndex].fiscalYearEndMonth });
+                  }
+                }
               }
+            }
+            for (let index = 0; index < companyInfo.length; index++) {
+              await Companies.updateOne({ cin: companyInfo[index].cin }, { $set: companyInfo[index] }, { upsert: true })
+                .catch((error) => {
+                  return res.status(400).json({
+                    status: "400",
+                    message: error.message ? error.message : "Failed to update company of CIN-" + companyInfo[index].cin + " for company-" + companyInfo[index].companyName
+                  })
+                });
             }
           }
           return res.status(200).json({ status: "200", message: "File Upload Successful", data: companyInfo });

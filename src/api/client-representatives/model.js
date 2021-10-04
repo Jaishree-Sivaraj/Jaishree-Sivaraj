@@ -14,10 +14,10 @@ const clientRepresentativesSchema = new Schema({
   name: {
     type: String
   },
-  CompanyName: {
+  companiesList: [{
     type: Schema.ObjectId,
     ref: 'Companies'
-  },
+  }],
   authenticationLetterForClientUrl: {
     type: String
   },
