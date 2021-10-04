@@ -47,10 +47,6 @@ const employeesSchema = new Schema({
   status: {
     type: Boolean,
     default: true
-  },
-  employeeCode: {
-    type: String,
-    unique: true
   }
 }, {
   timestamps: true,
@@ -79,7 +75,6 @@ employeesSchema.methods = {
       aadhaarUrl: this.aadhaarUrl,
       cancelledChequeUrl: this.cancelledChequeUrl,
       status: this.status,
-      employeeCode: this.employeeCode,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
