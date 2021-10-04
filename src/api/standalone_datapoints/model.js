@@ -142,7 +142,7 @@ const standaloneDatapointsSchema = new Schema({
     type: String,
     default: ''
   },
-  url1: {
+  sourceFile: {
     type: String,
     default: ''
   },
@@ -153,6 +153,10 @@ const standaloneDatapointsSchema = new Schema({
   isDownloaded: {
     type: Boolean,
     default: false
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
@@ -183,6 +187,7 @@ standaloneDatapointsSchema.methods = {
       activeStatus: this.activeStatus,
       sourceName: this.sourceName,
       url: this.url,
+      sourceFile: this.sourceFile ? this.sourceFile : '',
       isActive: this.isActive,
       pageNumber: this.pageNumber,
       correctionStatus: this.correctionStatus,

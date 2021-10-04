@@ -50,7 +50,16 @@ export const createGroup = async ({ user, bodymen: { body } }, res, next) => {
             }
             res.status(200).json({ status: "200", message: "Group Created Successfully" });
           })
-          .catch((error) => { return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) });
+          .catch((error) => {  
+            if (error.name === 'MongoError' && error.code === 11000) {
+              res.status(409).json({
+                valid: false,
+                param: 'groupName',
+                message: 'groupName already registered'
+              })
+          }else { 
+            return res.status(500).json({status: "500", message: error.message ? error.message : 'Failed to create group!'}) }
+        });
       } else {
         //before updating the group details marked all group member's and batch's isAssignedToGroup as false bcz some group members might be removed
         await Group.findById(body.groupId).then(async(groupDetail) => {
@@ -180,11 +189,11 @@ export const show = async({ params }, res, next) => {
               let foundObject = groupTaxonomies.find((item)=>item.value == batchDetail.clientTaxonomy.id);
               if(!foundObject){
                 groupTaxonomies.push({ value: batchDetail.clientTaxonomy.id, label: batchDetail.clientTaxonomy.taxonomyName });
-                await Categories.find({ clientTaxonomyId: batchDetail.clientTaxonomy.id, status: true })
+                await Categories.find({ clientTaxonomyId: batchDetail.clientTaxonomy.id, status: true }).populate('clientTaxonomyId')
                 .then((categories) => {
                   if (categories && categories.length > 0) {
                     for (let cIndex = 0; cIndex < categories.length; cIndex++) {
-                      pillarList.push({ value: categories[cIndex].id, label: categories[cIndex].categoryName });
+                      pillarList.push({ value: categories[cIndex].id, label: categories[cIndex].categoryName + ' - ' + categories[cIndex].clientTaxonomyId.taxonomyName });
                     }
                   }
                 });
@@ -226,7 +235,7 @@ export const show = async({ params }, res, next) => {
           admin = {
             userDetails: {
               value: group.groupAdmin.id,
-              label: adminDetail.name,
+              label: adminDetail.name + "-" + admin.email,
             },
             roleDetails: {
               role: adminDetail.roleDetails.roles.map((rec) => {
@@ -247,7 +256,7 @@ export const show = async({ params }, res, next) => {
             member = {
               userDetails: {
                 value: obj.id,
-                label: memberDetail.name,
+                label: memberDetail.name + "-" + memberDetail.email,
               },
               roleDetails: {
                 role: memberDetail.roleDetails.roles.map((rec) => {
@@ -268,7 +277,7 @@ export const show = async({ params }, res, next) => {
             if (pillarDetail) {
               pillarMember = {
                 value: obj.id,
-                label: obj.name + " - " + obj.email,
+                label: obj.name + "-" + obj.email,
                 isPillarAssigned: true,
                 primaryPillar: pillarDetail.primaryPillar,
                 secondaryPillar: pillarDetail.secondaryPillar
@@ -276,7 +285,7 @@ export const show = async({ params }, res, next) => {
             } else {
               pillarMember = {
                 value: obj.id,
-                label: obj.name + " - " + obj.email,
+                label: obj.name + "-" + obj.email,
                 isPillarAssigned: false,
                 primaryPillar: {},
                 secondaryPillar: []
@@ -307,7 +316,7 @@ export const show = async({ params }, res, next) => {
               member = {
                 userDetails: {
                   value: obj.id,
-                  label: obj.name + " - " + obj.email,
+                  label: obj.name + "-" + obj.email,
                 },
                 roleDetails: {
                   role: obj.roleDetails.roles.map((rec) => {

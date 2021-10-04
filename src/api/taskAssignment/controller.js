@@ -556,7 +556,7 @@ export const getMyTasks = async (
       analystId: completeUserDetail.id,
       $or: [
         {
-          taskStatus: "Yet to work",
+          taskStatus: "Pending",
         },
         {
           taskStatus: "In Progress",
@@ -678,13 +678,13 @@ export const getMyTasks = async (
   if (userRoles.includes("Client Representative")) {
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (clientRepDetail && clientRepDetail.CompanyName) {
       await TaskAssignment.find({
         companyId: clientRepDetail.CompanyName,
         taskStatus: "Verification Completed",
-        status: true,
+        status: true
       })
         .sort({
           createdAt: -1,
@@ -739,7 +739,7 @@ export const getMyTasks = async (
   if (userRoles.includes("Company Representative")) {
     let companyRepDetail = await CompanyRepresentatives.findOne({
       userId: completeUserDetail.id,
-      status: true,
+      status: true
     });
     if (companyRepDetail && companyRepDetail.companiesList.length > 0) {
       await TaskAssignment.find({
@@ -1087,21 +1087,36 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
             resObject.groupID = group[index].id;
             resObject.assignedBatches = [];
             for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
+
               let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy );
-              var assignedBatches = group[index].batchList.map((rec) => {
-                return {
-                  batchName: rec.batchName,
-                  batchID: rec._id,
-                  pillars: foundCategories.map((rec) => {
-                    return {
-                      value: rec.id,
-                      label: rec.categoryName
-                    };
-                  }),
-                  batchYear: rec.years
-                };
-              });
-              resObject.assignedBatches = assignedBatches ? assignedBatches : [];
+              var batchDetailsObject = group[index].batchList[index1];
+              var batchDetails = {                
+                batchName: batchDetailsObject.batchName,
+                batchID: batchDetailsObject._id,
+                pillars: foundCategories.map((rec) => {
+                  return {
+                    value: rec.id,
+                    label: rec.categoryName
+                  };
+                }),
+                batchYear: batchDetailsObject.years
+               }
+              // console.log( bactch)
+              // arrayYe.push(bactch)
+              // var assignedBatches = group[index].batchList.map((rec) => {
+              //   return {
+              //     batchName: rec.batchName,
+              //     batchID: rec._id,
+              //     pillars: foundCategories.map((rec) => {
+              //       return {
+              //         value: rec.id,
+              //         label: rec.categoryName
+              //       };
+              //     }),
+              //     batchYear: rec.years
+              //   };
+              // });
+              resObject.assignedBatches.push(batchDetails);
             }
             if (userRoles[roleIndex] == "GroupAdmin") {
               finalResponseObject.groupAdminList.push(resObject);
@@ -1202,7 +1217,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             taskStatus: { $ne: "Verification Completed" },
           });
           qaObject.id = group.assignedMembers[index].id;
-          qaObject.name = group.assignedMembers[index].name;
+          qaObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email ;
           qaObject.primaryRole = false;
           qaObject.activeTaskCount = activeTaskCount.length;
           console.log('qa object', qaObject);
@@ -1218,7 +1233,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             },
           });
           analystObject.id = group.assignedMembers[index].id;
-          analystObject.name = group.assignedMembers[index].name;
+          analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
           console.log('analystObject object', analystObject);
@@ -1233,7 +1248,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             },
           });
           analystObject.id = group.assignedMembers[index].id;
-          analystObject.name = group.assignedMembers[index].name;
+          analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = false;
           analystObject.activeTaskCount = activeTaskCount.length;
           console.log('analystObject object', analystObject);
@@ -1443,7 +1458,7 @@ export const reports = async ({ user, params }, res, next) => {
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       obj.completedDate = companyTask ? companyTask.completedDate : null;
     } else {
-      obj.allocatedDate = companyTask ? companyTask.completedDate : null;
+      obj.allocatedDate = companyTask ? companyTask.createdAt : null;
     }
     if (companyTask && companyTask.overAllCompanyTaskStatus) {
       completedTask.push(obj)
@@ -1507,15 +1522,31 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       if (companyTask && !companyTask.overAllCompanyTaskStatus) {
         obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
       }
-      if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
-        obj.status = "Breached";
-      } else {
-        if (companyTask && companyTask.overAllCompanyTaskStatus) {
-          obj.status = 'Completed';
+      let currentDate = new Date();
+      let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
+      if(allTasks[i].taskStatus == 'Completed'){
+        let completedDate = allTasks[i].updatedAt;
+        if (completedDate == qaSLADate) {
+          obj.status = "OnTrack";
         } else {
-          obj.status = 'OnTrack'
+          obj.status = "Met";
         }
+      } else if (qaSLADate && (currentDate < qaSLADate)) {
+        obj.status = "OnTrack";
+      } else if(qaSLADate && (currentDate > qaSLADate)){
+        obj.status = "Not Met";
+      } else {
+        obj.status = "NA";
       }
+      // if (obj.analystStatus === 'Breached' || obj.qaStatus === 'Breached') {
+      //   obj.status = "Breached";
+      // } else {
+      //   if (companyTask && companyTask.overAllCompanyTaskStatus) {
+      //     obj.status = 'Completed';
+      //   } else {
+      //     obj.status = 'OnTrack'
+      //   }
+      // }
       result.push(obj);
     }
   }

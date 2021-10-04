@@ -93,9 +93,29 @@ const controversySchema = new Schema({
   reassessmentDate: {
     type: Date
   },
+  sourceFile: {
+    type: String,
+    default: ''
+  },
+  sourceName1: {
+    type: String,
+    default: ''
+  },
+  isCounted: {
+    type: Boolean,
+    default: false
+  },
+  isDownloaded: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: Boolean,
     default: true
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
@@ -125,6 +145,7 @@ controversySchema.methods = {
       pageNumber: this.pageNumber ? this.pageNumber : '',
       sourceName: this.sourceName ? this.sourceName : '',
       sourceURL: this.sourceURL ? this.sourceURL : '',
+      sourceFile: this.sourceFile ? this.sourceFile : '',
       textSnippet: this.textSnippet ? this.textSnippet : '',
       screenShot: this.screenShot ? this.screenShot : '',
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',

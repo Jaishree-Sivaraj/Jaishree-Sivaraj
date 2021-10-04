@@ -16,7 +16,7 @@ const controversyTasksSchema = new Schema({
   },
   taskStatus: {
     type: String,
-    default: "Yet to work"
+    default: "Pending"
   },
   completedDate: {
     type: Date,

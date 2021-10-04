@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, updateSourceUrls, updateControversySourceUrls, updateScreenshots } from './controller'
+import { create, index, show, update, destroy, updateSourceUrls, updateControversySourceUrls, updateScreenshots, crossCheckCompanySources } from './controller'
 import { schema } from './model'
 export Functions, { schema } from './model'
 
@@ -76,7 +76,7 @@ router.get('/test-controversy',
   updateControversySourceUrls)
 
 /**
-  * @api {get} /functions/test Retrieve functions
+  * @api {get} /functions/testForScreenshots Retrieve functions
   * @apiName RetrieveFunctions
   * @apiGroup Functions
   * @apiPermission user

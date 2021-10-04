@@ -112,7 +112,7 @@ const kmpMatrixDataPointsSchema = new Schema({
     type: String,
     default: ''
   },
-  url1: {
+  sourceFile: {
     type: String,
     default: ''
   },
@@ -123,6 +123,10 @@ const kmpMatrixDataPointsSchema = new Schema({
   isDownloaded: {
     type: Boolean,
     default: false
+  },
+  screenShot1: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
@@ -151,6 +155,7 @@ kmpMatrixDataPointsSchema.methods = {
       memberStatus: this.memberStatus,
       sourceName: this.sourceName,
       url: this.url,
+      sourceFile: this.sourceFile ? this.sourceFile : '',
       pageNumber: this.pageNumber,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
