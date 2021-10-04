@@ -72,16 +72,19 @@ export const getDocumentsByCompanyId = async ({ params }, res, next) =>
   }).catch(next)
 
 export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
-  const convertedPdf = Buffer.from(body.sourcePDF.split('data:application/pdf;base64,')[1], 'base64');
-  let fileName = "file" + Date.now() + ".pdf";
-  let fileUrl = path.join(__dirname, "uploads", fileName)
-  await fs.writeFile(fileUrl, convertedPdf, error => {
-    if (error) {
-      //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
-    } else {
-      console.log("File Stored Sucessfully");
-    }
-  });
+  // const convertedPdf = Buffer.from(body.sourcePDF.split('data:application/pdf;base64,')[1], 'base64');
+  // let fileName = "file" + Date.now() + ".pdf";
+  // let fileUrl = path.join(__dirname, "uploads", fileName)
+  // await fs.writeFile(fileUrl, convertedPdf, error => {
+  //   if (error) {
+  //     //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
+  //   } else {
+  //     console.log("File Stored Sucessfully");
+  //   }
+  // });
+  var fileUrl = body.companyId + '_' + Date.now();
+  var s3Insert = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileName, body.sourcePDF);
+  console.log('s3insert', s3Insert);
   let sourceDetails = {
     newSourceTypeName: body.newSourceTypeName,
     newSubSourceTypeName: body.newSubSourceTypeName
@@ -107,12 +110,11 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       isMultiYear: body.isMultiYear,
       isMultiSource: body.isMultiSource
     }
-    await SourceTypes.create(sourceObject)
-      .then(async (sourceResponse) => {
-        if (sourceResponse) {
-          newSourceTypeId = sourceResponse.id;
-        }
-      })
+    await SourceTypes.create(sourceObject).then(async (sourceResponse) => {
+      if (sourceResponse) {
+        newSourceTypeId = sourceResponse.id;
+      }
+    })
   }
   if (body.sourceSubTypeId) {
     newSubSourceTypeId = body.sourceSubTypeId;
@@ -130,8 +132,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     fiscalYear: body.fiscalYear,
     name: body.name
   }
-  await CompanySources.create(companySourceDetails)
-    .then((detail) => {
-      res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
-    });
+  console.log('companySourceDetails', companySourceDetails);
+  // await CompanySources.create(companySourceDetails).then((detail) => {
+  //   res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
+  // });
 }
