@@ -14,6 +14,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints  } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { DerivedDatapoints } from '../derived_datapoints'
+import { Datapoints } from '../datapoints'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   CompaniesTasks.create({ ...body, createdBy: user })
@@ -249,3 +250,79 @@ export const destroy = ({ user, params }, res, next) =>
         return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to allocate task!" })
       }
     }
+
+
+export const taskIdMappingCorrection = async({ user, params }, res, next) => {
+  let categoriesList = await Categories.find({ status: true }).distinct('_id');
+  console.log('categoriesList', categoriesList);
+  console.log('total categoriesList', categoriesList.length);
+  for (let categoryIndex = 0; categoryIndex < categoriesList.length; categoryIndex++) {
+    console.log('categoryId=', categoriesList[categoryIndex]);
+    let pillarCollectionDatapointIds = await Datapoints.find({ 
+      categoryId: categoriesList[categoryIndex], 
+      dataCollection: "Yes", 
+      functionId: { $ne: "609bcceb1d64cd01eeda092c" }, 
+      status: true }).distinct('_id');
+    console.log('total pillarCollectionDatapointIds', pillarCollectionDatapointIds.length);
+    let pillarDerivedDatapointIds = await Datapoints.find({ 
+      categoryId: categoriesList[categoryIndex], 
+      dataCollection: "No", 
+      functionId: { $ne: "609bcceb1d64cd01eeda092c" }, 
+      status: true }).distinct('_id');
+    console.log('total pillarDerivedDatapointIds', pillarDerivedDatapointIds.length);
+    let taskYears = [ "2018-2019,2019-2020", "2020-2021" ];
+    console.log('taskYears', taskYears.length);
+    for (let taskYearIndex = 0; taskYearIndex < taskYears.length; taskYearIndex++) {
+      let pillarYearTaskList = await TaskAssignment.find({ categoryId: categoriesList[categoryIndex], year: taskYears[taskYearIndex] }).populate('companyId').populate('categoryId');
+      console.log('total task for '+ categoriesList[categoryIndex] + ' and year ' + taskYears[taskYearIndex] + ' is '+ pillarYearTaskList.length);
+      for (let pytIndex = 0; pytIndex < pillarYearTaskList.length; pytIndex++) {
+        let dataYears = [];
+        if (taskYears[taskYearIndex] == "2018-2019,2019-2020") {
+          dataYears = ["2018-2019", "2019-2020"];
+        } else {
+          dataYears = ["2020-2021"];
+        }
+        console.log('total dataYears', dataYears.length);
+        for (let dyIndex = 0; dyIndex < dataYears.length; dyIndex++) {
+          let stdCount = await StandaloneDatapoints.updateMany({ 
+            companyId: pillarYearTaskList[pytIndex].companyId.id,
+            datapointId: { $in: pillarCollectionDatapointIds },
+            year: dataYears[dyIndex],
+            isActive: true,
+            status: true
+          }, {
+            $set: { taskId: pillarYearTaskList.id }
+          })
+          let bmCount = await BoardMembersMatrixDataPoints.updateMany({ 
+            companyId: pillarYearTaskList[pytIndex].companyId.id,
+            datapointId: { $in: pillarCollectionDatapointIds },
+            year: dataYears[dyIndex],
+            isActive: true,
+            status: true
+          }, {
+            $set: { taskId: pillarYearTaskList.id }
+          })
+          let kmpCount = await KmpMatrixDataPoints.updateMany({ 
+            companyId: pillarYearTaskList[pytIndex].companyId.id,
+            datapointId: { $in: pillarCollectionDatapointIds },
+            year: dataYears[dyIndex],
+            isActive: true,
+            status: true
+          }, {
+            $set: { taskId: pillarYearTaskList.id }
+          })
+          let derivedCount = await DerivedDatapoints.updateMany({ 
+            companyId: pillarYearTaskList[pytIndex].companyId.id,
+            datapointId: { $in: pillarDerivedDatapointIds },
+            year: dataYears[dyIndex],
+            status: true
+          }, {
+            $set: { taskId: pillarYearTaskList.id }
+          })
+          console.log('stdCount=', stdCount, 'bmCount=', bmCount, 'kmpCount=', kmpCount, 'derivedCount=', derivedCount);
+        }
+      }
+    }
+  }
+  return res.status(200).json({ status: "200", message: "Mapping correction done!" });
+}
