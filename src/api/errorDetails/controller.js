@@ -208,7 +208,7 @@ export const saveErrorDetails = async({
             taskId: body.taskId,
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -290,7 +290,7 @@ export const saveErrorDetails = async({
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'],
+          screenShot: item['screenShot'], //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
@@ -323,7 +323,7 @@ export const saveErrorDetails = async({
         taskId: body.taskId,
         year: item['fiscalYear'],
         response: item['response'],
-        screenShot: item['screenShot'],
+        screenShot: item['screenShot'], //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
         publicationDate: item.source['publicationDate'],
@@ -380,7 +380,7 @@ export const saveErrorDetails = async({
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'],
+          screenShot: item['screenShot'], //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
@@ -413,7 +413,7 @@ export const saveErrorDetails = async({
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'],
+          screenShot: item['screenShot'], //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
