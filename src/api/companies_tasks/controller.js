@@ -291,7 +291,7 @@ export const taskIdMappingCorrection = async({ user, params }, res, next) => {
             isActive: true,
             status: true
           }, {
-            $set: { taskId: pillarYearTaskList.id }
+            $set: { taskId: pillarYearTaskList[pytIndex].id }
           })
           let bmCount = await BoardMembersMatrixDataPoints.updateMany({ 
             companyId: pillarYearTaskList[pytIndex].companyId.id,
@@ -300,7 +300,7 @@ export const taskIdMappingCorrection = async({ user, params }, res, next) => {
             isActive: true,
             status: true
           }, {
-            $set: { taskId: pillarYearTaskList.id }
+            $set: { taskId: pillarYearTaskList[pytIndex].id }
           })
           let kmpCount = await KmpMatrixDataPoints.updateMany({ 
             companyId: pillarYearTaskList[pytIndex].companyId.id,
@@ -309,7 +309,7 @@ export const taskIdMappingCorrection = async({ user, params }, res, next) => {
             isActive: true,
             status: true
           }, {
-            $set: { taskId: pillarYearTaskList.id }
+            $set: { taskId: pillarYearTaskList[pytIndex].id }
           })
           let derivedCount = await DerivedDatapoints.updateMany({ 
             companyId: pillarYearTaskList[pytIndex].companyId.id,
@@ -317,7 +317,7 @@ export const taskIdMappingCorrection = async({ user, params }, res, next) => {
             year: dataYears[dyIndex],
             status: true
           }, {
-            $set: { taskId: pillarYearTaskList.id }
+            $set: { taskId: pillarYearTaskList[pytIndex].id }
           })
           console.log('stdCount=', stdCount, 'bmCount=', bmCount, 'kmpCount=', kmpCount, 'derivedCount=', derivedCount);
         }
