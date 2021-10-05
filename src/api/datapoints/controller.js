@@ -17,6 +17,7 @@ import { ErrorDetails } from '../errorDetails'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp'
 import { CompanySources } from '../companySources'
+import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Datapoints.create({ ...body, updatedBy: user })
@@ -1209,23 +1210,47 @@ export const datapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
+        var sourceDetails = {
+          url: '',
+          sourceName: "",
+          value: "",
+          publicationDate: ''};        
         _.filter(errorDataDetails, function (object){
           if(object.year == currentYear[currentYearIndex]){
             datapointsObject.comments.push(object.comments);
             datapointsObject.comments.push(object.rejectComment)
           }
         })
-        _.filter(currentAllStandaloneDetails, function (object) {
+        for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
+          let object = currentAllStandaloneDetails[currentIndex]
           let errorTypeId = '';
           let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
           if(errorDetailsObject.length > 0){
             if(errorDetailsObject[0].raisedBy == 'QA'){
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
             }
-          }          
-          let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-          let sourceName = sourceValues[0];
-          let sourceId = sourceValues[1] ? sourceValues[1] : ''
+          } 
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((error) => {
+              s3DataScreenshot = "No screenshot";
+            });    
+            if(s3DataScreenshot == undefined){
+              s3DataScreenshot = "";
+            }
+          }           
+          console.log(object)
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
+          console.log(object)
+
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
             currentDatapointsObject = {
               status: 'Completed',
@@ -1237,16 +1262,11 @@ export const datapointDetails = async (req, res, next) => {
               inputValues:inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1315,16 +1335,11 @@ export const datapointDetails = async (req, res, next) => {
               inputValues:inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1393,16 +1408,11 @@ export const datapointDetails = async (req, res, next) => {
               inputValues:inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {
                 hasError: object.hasError,
                 isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1462,7 +1472,7 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           datapointsObject.status = 'Completed';
-        });
+        };
         if (Object.keys(currentDatapointsObject).length == 0) {
           currentDatapointsObject = {
             status: 'Yet to Start',
@@ -1537,11 +1547,31 @@ export const datapointDetails = async (req, res, next) => {
       }
       for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
         let historicalDatapointsObject = {};
-        _.filter(historyAllStandaloneDetails, function (object) {
+        var sourceDetails = {
+          url: '',
+          sourceName: "",
+          value: "",
+          publicationDate: ''};  
+        _.filter(historyAllStandaloneDetails, async function (object) {        
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });      
+            if(s3DataScreenshot == undefined){
+              s3DataScreenshot = "";
+            } 
+          }  
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
           if (object.year == historyYear[historicalYearIndex].year) {
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
             historicalDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,
@@ -1552,17 +1582,12 @@ export const datapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               standaradDeviation: object.standaradDeviation,
               average: object.average,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {},
               comments: [],
               additionalDetails: []
@@ -1680,17 +1705,33 @@ export const datapointDetails = async (req, res, next) => {
               datapointsObject.comments.push(object.rejectComment)
             }
           });
-          _.filter(currentAllBoardMemberMatrixDetails, function (object) {
+         for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
+           const object = currentAllBoardMemberMatrixDetails[currentIndex];
             let errorTypeId = '';
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName);
             if(errorDetailsObject.length > 0){
               if(errorDetailsObject[0].raisedBy == 'QA'){
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
             }
-            }            
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
+            } 
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });       
+              if(s3DataScreenshot == undefined){
+                s3DataScreenshot = "";
+              }
+            }              
+            if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }         
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
                 currentDatapointsObject = {
                   status: 'Completed',
@@ -1699,19 +1740,14 @@ export const datapointDetails = async (req, res, next) => {
                   fiscalYear: currentYear[currentYearIndex],
                   description: dpTypeValues.description,
                   dataType: dpTypeValues.dataType,
-                  inputValues:inputValues,
+                  inputValues: inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
-                  screenShot: object.screenShot,
+                  screenShot: s3DataScreenshot,
                   response: object.response,
                   memberName: object.memberName,
                   sourceList: sourceTypeDetails,
-                  source: {
-                    url: object.url ? object.url : '',
-                    sourceName: sourceName,
-                    value: sourceId,
-                    publicationDate: object.publicationDate ? object.publicationDate : ''
-                  },
+                  source: sourceDetails,
                   error: {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1780,16 +1816,11 @@ export const datapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1858,16 +1889,11 @@ export const datapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -1928,7 +1954,7 @@ export const datapointDetails = async (req, res, next) => {
 
             }          
              boardDatapointsObject.status = 'Completed';
-          });
+          };
           if (Object.keys(currentDatapointsObject).length == 0) {
             currentDatapointsObject = {
               status: 'Yet to Start',
@@ -2000,11 +2026,26 @@ export const datapointDetails = async (req, res, next) => {
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
           let historicalDatapointsObject = {};
-          _.filter(historyAllBoardMemberMatrixDetails, function (object) {
+          _.filter(historyAllBoardMemberMatrixDetails, async function (object) {       
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });       
+            if(s3DataScreenshot == undefined){
+              s3DataScreenshot = "";
+            }
+          }  
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+             if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
             if (object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
-              let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-              let sourceName = sourceValues[0];
-              let sourceId = sourceValues[1] ? sourceValues[1] : ''
               historicalDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -2015,16 +2056,11 @@ export const datapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {},
                 comments: [],
                 additionalDetails: []
@@ -2143,7 +2179,8 @@ export const datapointDetails = async (req, res, next) => {
               datapointsObject.comments.push(object.rejectComment)
             }
           });
-          _.filter(currentAllKmpMatrixDetails, function (object) {
+          for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
+            const object = currentAllKmpMatrixDetails[currentIndex];
             let errorTypeId = '';
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName);
             if(errorDetailsObject.length > 0){ 
@@ -2151,9 +2188,24 @@ export const datapointDetails = async (req, res, next) => {
                 errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
               }
             } 
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });      
+              if(s3DataScreenshot == undefined){
+                s3DataScreenshot = "";
+              } 
+            }  
+            if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+              if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
                 currentDatapointsObject = {
                   status: 'Completed',
@@ -2165,16 +2217,11 @@ export const datapointDetails = async (req, res, next) => {
                   inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
-                  screenShot: object.screenShot,
+                  screenShot: s3DataScreenshot,
                   response: object.response,
                   memberName: object.memberName,
                   sourceList: sourceTypeDetails,
-                  source: {
-                    url: object.url ? object.url : '',
-                    sourceName: sourceName,
-                    value: sourceId,
-                    publicationDate: object.publicationDate ? object.publicationDate : ''
-                  },
+                  source: sourceDetails,
                   error: {
                     hasError: object.hasError,
                     isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -2243,16 +2290,11 @@ export const datapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -2322,16 +2364,11 @@ export const datapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   isAccepted: errorDetailsObject[0] ? errorDetailsObject[0].isErrorAccepted : '',
@@ -2391,7 +2428,7 @@ export const datapointDetails = async (req, res, next) => {
               }
 
             } 
-          });          
+          }          
           if (Object.keys(currentDatapointsObject).length == 0) {
             currentDatapointsObject = {
               status: 'Yet to Start',
@@ -2465,11 +2502,26 @@ export const datapointDetails = async (req, res, next) => {
         for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
 
           let historicalDatapointsObject = {};
-          _.filter(historyAllKmpMatrixDetails, function (object) {
+          _.filter(historyAllKmpMatrixDetails, async function (object) {        
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });       
+            if(s3DataScreenshot == undefined){
+              s3DataScreenshot = "";
+            }
+          }  
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
             if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
-              let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-              let sourceName = sourceValues[0];
-              let sourceId = sourceValues[1] ? sourceValues[1] : ''
               historicalDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -2480,16 +2532,11 @@ export const datapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {},
                 comments: [],
                 additionalDetails: []
@@ -2613,7 +2660,7 @@ export const repDatapointDetails = async (req, res, next) => {
       functionId: {
         "$ne": functionId.id
       },
-     // clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+      //clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
       _id: req.body.datapointId,
       status: true
@@ -2695,11 +2742,29 @@ export const repDatapointDetails = async (req, res, next) => {
        }
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-        let currentDatapointsObject = {};
-        _.filter(currentAllStandaloneDetails, function (object) {
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : '';
+        let currentDatapointsObject = {};        
+        var sourceDetails = {
+          url: '',
+          sourceName: "",
+          value: "",
+          publicationDate: ''}; 
+        for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
+          var object = currentAllStandaloneDetails[currentIndex];         
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });    
+          }  
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role);
               if(errorDetailsObject[0]){
@@ -2720,16 +2785,11 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues:inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {
                 hasError: object.hasError,
                 refData: {
@@ -2822,12 +2882,28 @@ export const repDatapointDetails = async (req, res, next) => {
                     inputValues: optionValues.length > 0 ? optionValues : optionVal
                   })
                 }                
-              } 
+              }               
+              datapointsObject.status = object.correctionStatus;          
+              datapointsObject.currentData.push(currentDatapointsObject);
             }          
-          datapointsObject.status = object.correctionStatus;
-        });
+        }
         if(Object.keys(currentDatapointsObject).length == 0){
-          _.filter(currentAllStandaloneDetails, function (object) { 
+          for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
+          const object = currentAllStandaloneDetails[currentIndex];
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });    
+          }  if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
             let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role);
           if(errorDetailsObject[0]){
@@ -2838,9 +2914,6 @@ export const repDatapointDetails = async (req, res, next) => {
               datapointsObject.comments.push(rejectComment);
             }   
           }      
-          let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-          let sourceName = sourceValues[0];
-          let sourceId = sourceValues[1] ? sourceValues[1] : '';
           currentDatapointsObject = {
             status: 'Completed',
             dpCode: dpTypeValues.code,
@@ -2851,16 +2924,11 @@ export const repDatapointDetails = async (req, res, next) => {
             inputValues:inputValues,
             textSnippet: object.textSnippet,
             pageNo: object.pageNumber,
-            screenShot: object.screenShot,
+            screenShot: s3DataScreenshot,
             response: object.response,
             memberName: object.memberName,
             sourceList: sourceTypeDetails,
-            source: {
-              url: object.url ? object.url : '',
-              sourceName: sourceName,
-              value: sourceId,
-              publicationDate: object.publicationDate ? object.publicationDate : ''
-            },
+            source: sourceDetails,
             error: {
               hasError: object.hasError,
               refData: {                  
@@ -2922,10 +2990,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
               })
             }                
-          } 
-          }
-            datapointsObject.status = object.correctionStatus;    
-          });                    
+          }  
+          datapointsObject.status = object.correctionStatus;         
+          datapointsObject.currentData.push(currentDatapointsObject);   
+          }   
+          };                            
         }
         datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
         datapointsObject.currentData.push(currentDatapointsObject);
@@ -2938,11 +3007,28 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
         let historicalDatapointsObject = {};
-        _.filter(historyAllStandaloneDetails, function (object) {
+        var sourceDetails = {
+          url: '',
+          sourceName: "",
+          value: "",
+          publicationDate: ''}; 
+        _.filter(historyAllStandaloneDetails, async function (object) {
+          var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });    
+          }  
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
           if (object.year == historyYear[historicalYearIndex].year) {
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
             historicalDatapointsObject = {
               status: 'Completed',
               dpCode: dpTypeValues.code,
@@ -2952,17 +3038,12 @@ export const repDatapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
-              screenShot: object.screenShot,
+              screenShot: s3DataScreenshot,
               response: object.response,
               standaradDeviation: object.standaradDeviation,
               average: object.average,
               sourceList: sourceTypeDetails,
-              source: {
-                url: object.url ? object.url : '',
-                sourceName: sourceName,
-                value: sourceId,
-                publicationDate: object.publicationDate ? object.publicationDate : ''
-              },
+              source: sourceDetails,
               error: {},
               comments: [],
               additionalDetails: []
@@ -3004,10 +3085,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 })
               }                
             }
+            datapointsObject.historicalData.push(historicalDatapointsObject);
           }
         });
-        datapointsObject.historicalData.push(historicalDatapointsObject);
       }
+      console.log(datapointsObject);
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
@@ -3074,10 +3156,28 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
-          _.filter(currentAllBoardMemberMatrixDetails, function (object) {
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''}; 
+          for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
+            const object = currentAllBoardMemberMatrixDetails[currentIndex];
+            var s3DataScreenshot = ""; 
+          if(object.screenShot !== "" || object.screenShot !== " "){            
+            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+              s3DataScreenshot = "No screenshot";
+            });    
+          } 
+          if(object.sourceFile !== "" || object.sourceFile !== " "){
+            let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+            if(sourceValues != null){
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
+          }
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
               if(errorDetailsObject[0]){
@@ -3098,16 +3198,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   refData: {
@@ -3201,14 +3296,27 @@ export const repDatapointDetails = async (req, res, next) => {
                 })
               }                
             }
-            }                  
-             boardDatapointsObject.status = object.correctionStatus;
-          });    
+            boardDatapointsObject.status = object.correctionStatus;             
+            boardDatapointsObject.currentData.push(currentDatapointsObject); 
+            }                   
+          };    
           if(Object.keys(currentDatapointsObject).length == 0){
-            _.filter(currentAllBoardMemberMatrixDetails, function (object) {
-              let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-              let sourceName = sourceValues[0];
-              let sourceId = sourceValues[1] ? sourceValues[1] : ''
+            for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
+              const object = currentAllBoardMemberMatrixDetails[currentIndex];
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });    
+            }  if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+              if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
                 if(errorDetailsObject[0]){
@@ -3229,16 +3337,11 @@ export const repDatapointDetails = async (req, res, next) => {
                   inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
-                  screenShot: object.screenShot,
+                  screenShot: s3DataScreenshot,
                   response: object.response,
                   memberName: object.memberName,
                   sourceList: sourceTypeDetails,
-                  source: {
-                    url: object.url ? object.url : '',
-                    sourceName: sourceName,
-                    value: sourceId,
-                    publicationDate: object.publicationDate ? object.publicationDate : ''
-                  },
+                  source: sourceDetails,
                   error: {
                     hasError: object.hasError,
                     refData: {                  
@@ -3303,14 +3406,34 @@ export const repDatapointDetails = async (req, res, next) => {
               }
               }                   
                boardDatapointsObject.status = object.correctionStatus;
-            });
+            };
           }        
           boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
           boardDatapointsObject.currentData.push(currentDatapointsObject);  
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
           let historicalDatapointsObject = {};
-          _.filter(historyAllBoardMemberMatrixDetails, function (object) {
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''}; 
+          _.filter(historyAllBoardMemberMatrixDetails,async function (object) {
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });    
+            }  
+            if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+              if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }
             if (object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
               let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
               let sourceName = sourceValues[0];
@@ -3324,16 +3447,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {},
                 comments: [],
                 additionalDetails: []
@@ -3444,7 +3562,28 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
-          _.filter(currentAllKmpMatrixDetails, function (object) {
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''}; 
+          for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
+            const object = currentAllKmpMatrixDetails[currentIndex];
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });    
+            } 
+            if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+              if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }
             let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
             let sourceName = sourceValues[0];
             let sourceId = sourceValues[1] ? sourceValues[1] : ''
@@ -3468,16 +3607,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues:inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {
                   hasError: object.hasError,
                   refData: {
@@ -3571,14 +3705,28 @@ export const repDatapointDetails = async (req, res, next) => {
                   })
                 }                
               }
-            }   
-            kmpDatapointsObject.status = object.correctionStatus;        
-          });
+              kmpDatapointsObject.status = object.correctionStatus;               
+              kmpDatapointsObject.currentData.push(currentDatapointsObject);
+            }          
+          };
           if(Object.keys(currentDatapointsObject).length == 0){
-            _.filter(currentAllKmpMatrixDetails, function (object) {
-              let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-              let sourceName = sourceValues[0];
-              let sourceId = sourceValues[1] ? sourceValues[1] : ''
+            for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
+              const object = currentAllKmpMatrixDetails[currentIndex];
+              var s3DataScreenshot = ""; 
+              if(object.screenShot !== "" || object.screenShot !== " "){            
+                s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                  s3DataScreenshot = "No screenshot";
+                });    
+              } 
+              if(object.sourceFile !== "" || object.sourceFile !== " "){
+                let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+                if(sourceValues != null){
+                  sourceDetails.url = sourceValues.sourceUrl;
+                  sourceDetails.publicationDate = sourceValues.publicationDate;
+                  sourceDetails.sourceName = sourceValues.name;
+                  sourceDetails.value = sourceValues._id;
+                }
+              }
               if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
                 if(errorDetailsObject[0]){
@@ -3599,16 +3747,11 @@ export const repDatapointDetails = async (req, res, next) => {
                   inputValues:inputValues,
                   textSnippet: object.textSnippet,
                   pageNo: object.pageNumber,
-                  screenShot: object.screenShot,
+                  screenShot: s3DataScreenshot,
                   response: object.response,
                   memberName: object.memberName,
                   sourceList: sourceTypeDetails,
-                  source: {
-                    url: object.url ? object.url : '',
-                    sourceName: sourceName,
-                    value: sourceId,
-                    publicationDate: object.publicationDate ? object.publicationDate : ''
-                  },
+                  source: sourceDetails,
                   error: {
                     hasError: object.hasError,
                     refData: {                  
@@ -3671,9 +3814,10 @@ export const repDatapointDetails = async (req, res, next) => {
                   });
                 }
               } 
+              kmpDatapointsObject.status = object.correctionStatus;               
+              kmpDatapointsObject.currentData.push(currentDatapointsObject);
               }            
-            });            
-            kmpDatapointsObject.status = object.correctionStatus;   
+            };              
           }
           kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
           kmpDatapointsObject.currentData.push(currentDatapointsObject);
@@ -3681,14 +3825,32 @@ export const repDatapointDetails = async (req, res, next) => {
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
         let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
         let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+        var sourceDetails = {
+          url: '',
+          sourceName: "",
+          value: "",
+          publicationDate: ''}; 
         for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
 
           let historicalDatapointsObject = {};
-          _.filter(historyAllKmpMatrixDetails, function (object) {
+          _.filter(historyAllKmpMatrixDetails, async function (object) {
+            var s3DataScreenshot = ""; 
+            if(object.screenShot !== "" || object.screenShot !== " "){            
+              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
+                s3DataScreenshot = "No screenshot";
+              });    
+            } 
+            if(object.sourceFile !== "" || object.sourceFile !== " "){
+              let sourceValues = await CompanySources.findOne({companyId: taskDetails.companyId.id,sourceFile: object.sourceFile, status: true});
+              if(sourceValues != null){
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }
             if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
-              let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-              let sourceName = sourceValues[0];
-              let sourceId = sourceValues[1] ? sourceValues[1] : ''
+              
               historicalDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -3698,16 +3860,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
-                screenShot: object.screenShot,
+                screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
                 sourceList: sourceTypeDetails,
-                source: {
-                  url: object.url ? object.url : '',
-                  sourceName: sourceName,
-                  value: sourceId,
-                  publicationDate: object.publicationDate ? object.publicationDate : ''
-                },
+                source: sourceDetails,
                 error: {},
                 comments: [],
                 additionalDetails: []
@@ -3748,10 +3905,10 @@ export const repDatapointDetails = async (req, res, next) => {
                     inputValues: optionValues.length > 0 ? optionValues : optionVal
                   })
                 }
-              }
+              }              
+              kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
             }
           });
-          kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
           //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
         }
 
