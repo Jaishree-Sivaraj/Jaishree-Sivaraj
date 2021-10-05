@@ -61,10 +61,19 @@ export const show = ({ params }, res, next) => {
     }
     if (userType === 'Employee') {
       Employees.findOne({ userId: userDetails._id }).then(function (employee) {
+        var pancardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.pancardUrl).catch((e) => {
+          pancardS3Url = "No image";
+        })
+        var aadharcardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.aadhaarUrl).catch((e) => {
+          aadharcardS3Url = "No image";
+        })
+        var cancelledChequeUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.cancelledChequeUrl).catch((e) => {
+          cancelledChequeUrl = "No image";
+        })
         var employeeDocuments = {
-          pancardUrl: employee && employee.pancardUrl ? employee.pancardUrl : '',
-          aadhaarUrl: employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
-          cancelledChequeUrl: employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
+          pancardUrl: pancardS3Url, //employee && employee.pancardUrl ? employee.pancardUrl : '',
+          aadhaarUrl: aadharcardS3Url, //employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
+          cancelledChequeUrl: cancelledChequeUrl // employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
         }
         userDetails.documents = employeeDocuments;
         userDetails.firstName = employee.firstName;
@@ -80,9 +89,15 @@ export const show = ({ params }, res, next) => {
       })
     } else if (userType === 'Company Representative') {
       CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (company) {
+        var authenticationLetterForCompanyUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.authenticationLetterForCompanyUrl).catch((e) => {
+          authenticationLetterForCompanyUrl = "No image";
+        })
+        var companyIdForCompany = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.companyIdForCompany).catch((e) => {
+          companyIdForCompany = "No image";
+        })
         var companyDocuments = {
-          authenticationLetterForCompanyUrl: company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
-          companyIdForCompany: company && company.companyIdForCompany ? company.companyIdForCompany : ''
+          authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl, //company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
+          companyIdForCompany: companyIdForCompany //company && company.companyIdForCompany ? company.companyIdForCompany : ''
         }
         userDetails.documents = companyDocuments;
         userDetails.companies = company.companiesList.map((rec) => {
@@ -94,9 +109,15 @@ export const show = ({ params }, res, next) => {
       })
     } else if (userType === 'Client Representative') {
       ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (client) {
+        var authenticationLetterForClientUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.authenticationLetterForClientUrl).catch((e) => {
+          authenticationLetterForClientUrl = "No image";
+        })
+        var companyIdForClient = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.companyIdForClient).catch((e) => {
+          companyIdForClient = "No image";
+        })
         var clientDocuments = {
-          authenticationLetterForClientUrl: client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
-          companyIdForClient: client && client.companyIdForClient ? client.companyIdForClient : '',
+          authenticationLetterForClientUrl: authenticationLetterForClientUrl,//client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
+          companyIdForClient: companyIdForClient //client && client.companyIdForClient ? client.companyIdForClient : '',
         }
         userDetails.documents = clientDocuments;
         // if(client.companiesList){
@@ -225,12 +246,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
                 var authenticationLetterForClientUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
                 var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
+                const companyIdForClientFileType = onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1];
+                var companyIdForClient = userId + '_' + Date.now() + '.' + companyIdForClientFileType;
+                var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForClient, onBoardingDetails.companyIdForClient);
                 await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
                     CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
                     authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                    companyIdForClient: onBoardingDetails.companyIdForClient,
+                    companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
                     status: true
                   }
                 }).then(async () => {
@@ -273,12 +297,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
                   var authenticationLetterForCompanyUrlUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
                   var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
+                  const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
+                  var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
+                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
                   await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
                       userId: userFound.id,
                       companiesList: companiesList ? companiesList : "",
                       authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
-                      companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                      companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
                       status: true
                     }
                   }).then(async () => {
@@ -418,6 +445,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
                   var authenticationLetterForClientUrl = userId + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
                   var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
+                  const companyIdForClientFileType = onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1];
+                  var companyIdForClient = userId + '_' + Date.now() + '.' + companyIdForClientFileType;
+                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForClient, onBoardingDetails.companyIdForClient);
                   ClientRepresentatives.create({
                     userId: userId,
                     name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -426,7 +456,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
                     authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                    companyIdForClient: onBoardingDetails.companyIdForClient,
+                    companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
                     status: true
                   });
                   return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
@@ -474,6 +504,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
                   var authenticationLetterForCompanyUrlUrl = userId + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
                   var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
+                  const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
+                  var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
+                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
                   CompanyRepresentatives.create({
                     userId: userId,
                     name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -482,7 +515,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
                     authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
-                    companyIdForCompany: onBoardingDetails.companyIdForCompany,
+                    companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
                     status: true
                   });
                   return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
