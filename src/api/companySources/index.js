@@ -44,13 +44,13 @@ router.post('/',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Company sources not found.
  */
- router.post('/uploadCompanySource',
- body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name }),
- uploadCompanySource)
+router.post('/uploadCompanySource',
+  body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name }),
+  uploadCompanySource)
 
 
 /**
- * @api {get} /companySources/:id Retrieve company sources
+ * @api {get} /companySources/companyDocuments/:companyId Retrieve company sources
  * @apiName RetrieveCompanySources
  * @apiGroup CompanySources
  * @apiSuccess {Object} companySources Company sources's data.
