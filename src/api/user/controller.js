@@ -14,6 +14,8 @@ import * as fs from 'fs'
 import path from 'path'
 import { compareSync } from 'bcrypt'
 import { OnboardingEmails } from '../onboarding-emails'
+import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
+
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.count(query)
@@ -146,13 +148,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   if (onBoardingDetails.email) {
     await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
       if (userFound) {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
+        let oboardingEmailDetails = await OnboardingEmails.findOne({ emailId: onBoardingDetails.email })
         if (oboardingEmailDetails) {
           if (userFound.isUserRejected && !userFound.isUserApproved) {
             if (onBoardingDetails.roleName == "Employee") {
               var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
               userObject = {
-                name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
+                name: onBoardingDetails.firstName ? onBoardingDetails.firstName + ' ' + onBoardingDetails.middleName + ' ' + onBoardingDetails.lastName : '',
                 userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
                 phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
                 isUserApproved: false,
@@ -160,6 +162,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 isUserRejected: false
               };
               await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async () => {
+                const pancardUrlFileType = onBoardingDetails.pancardUrl.split(';')[0].split('/')[1];
+                var pancardUrl = userFound.id + '_' + Date.now() + '.' + pancardUrlFileType;
+                var pancards3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, pancardUrl, onBoardingDetails.pancardUrl);
+                const aadhaarUrlFileType = onBoardingDetails.aadhaarUrl.split(';')[0].split('/')[1];
+                var aadhaarUrl = userFound.id + '_' + Date.now() + '.' + aadhaarUrlFileType;
+                var aadhars3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, aadhaarUrl, onBoardingDetails.aadhaarUrl);
+                const cancelledChequeUrllFileType = onBoardingDetails.cancelledChequeUrl.split(';')[0].split('/')[1];
+                var cancelledChequeUrl = userFound.id + '_' + Date.now() + '.' + cancelledChequeUrllFileType;
+                var cancelledChequeUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, cancelledChequeUrl, onBoardingDetails.cancelledChequeUrl);
                 await Employees.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
@@ -171,9 +182,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
                     bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
                     accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                    pancardUrl: onBoardingDetails.pancardUrl,
-                    aadhaarUrl: onBoardingDetails.aadhaarUrl,
-                    cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
+                    pancardUrl: pancardUrl, //onBoardingDetails.pancardUrl, //pancards3Insert
+                    aadhaarUrl: aadhaarUrl, //onBoardingDetails.aadhaarUrl,//aadhars3Insert
+                    cancelledChequeUrl: cancelledChequeUrl, //onBoardingDetails.cancelledChequeUrl,//cancelledChequeUrls3Insert
                     status: true
                   }
                 }).then(async () => {
@@ -182,13 +193,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
               }).catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  if(err.keyPattern.phoneNumber){
+                  if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
                       valid: false,
                       param: 'phoneNumber',
                       message: 'phoneNumber already registered'
                     })
-                  } else{
+                  } else {
                     res.status(409).json({
                       valid: false,
                       param: 'email',
@@ -210,11 +221,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 isUserRejected: false
               }
               await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async (response) => {
+
+                const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
+                var authenticationLetterForClientUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
+                var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
                 await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
                     CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
-                    authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+                    authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
                   }
@@ -225,13 +240,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               }).catch((err) => {
                 /* istanbul ignore else */
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  if(err.keyPattern.phoneNumber){
+                  if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
                       valid: false,
                       param: 'phoneNumber',
                       message: 'phoneNumber already registered'
                     })
-                  } else{
+                  } else {
                     res.status(409).json({
                       valid: false,
                       param: 'email',
@@ -255,11 +270,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
               await User.updateOne({ _id: userFound.id }, { $set: userObject })
                 .then(async () => {
+                  const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
+                  var authenticationLetterForCompanyUrlUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
+                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
                   await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
                       userId: userFound.id,
                       companiesList: companiesList ? companiesList : "",
-                      authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+                      authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
                       companyIdForCompany: onBoardingDetails.companyIdForCompany,
                       status: true
                     }
@@ -270,13 +288,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 })
                 .catch((err) => {
                   if (err.name === 'MongoError' && err.code === 11000) {
-                    if(err.keyPattern.phoneNumber){
+                    if (err.keyPattern.phoneNumber) {
                       res.status(409).json({
                         valid: false,
                         param: 'phoneNumber',
                         message: 'phoneNumber already registered'
                       })
-                    } else{
+                    } else {
                       res.status(409).json({
                         valid: false,
                         param: 'email',
@@ -287,7 +305,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     next(err)
                   }
                 })
-  
+
             } else if (onBoardingDetails.roleName == "Analyst") {
               //TODO
             } else if (onBoardingDetails.roleName == "QA") {
@@ -302,18 +320,18 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               message: 'email already registered'
             })
           }
-          
+
         } else {
           return res.status(400).json({ status: "400", message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!` })
         }
       } else {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({emailId: onBoardingDetails.email})
+        let oboardingEmailDetails = await OnboardingEmails.findOne({ emailId: onBoardingDetails.email })
         if (oboardingEmailDetails) {
           if (onBoardingDetails.roleName == "Employee") {
             var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
             userObject = {
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.firstName ? onBoardingDetails.firstName +' '+ onBoardingDetails.middleName +' '+ onBoardingDetails.lastName : '',
+              name: onBoardingDetails.firstName ? onBoardingDetails.firstName + ' ' + onBoardingDetails.middleName + ' ' + onBoardingDetails.lastName : '',
               userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
               phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
@@ -324,6 +342,18 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               .then(async (response) => {
                 if (response) {
                   let userId = response.id;
+                  const pancardUrlFileType = onBoardingDetails.pancardUrl.split(';')[0].split('/')[1];
+                  var pancardUrl = userId + '_' + Date.now() + '.' + pancardUrlFileType;
+                  var pancards3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, pancardUrl, onBoardingDetails.pancardUrl);
+                  console.log('pancards3Insert', pancards3Insert);
+                  const aadhaarUrlFileType = onBoardingDetails.aadhaarUrl.split(';')[0].split('/')[1];
+                  var aadhaarUrl = userId + '_' + Date.now() + '.' + aadhaarUrlFileType;
+                  var aadhars3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, aadhaarUrl, onBoardingDetails.aadhaarUrl);
+                  console.log('aadhars3Insert', aadhars3Insert);
+                  const cancelledChequeUrllFileType = onBoardingDetails.cancelledChequeUrl.split(';')[0].split('/')[1];
+                  var cancelledChequeUrl = userId + '_' + Date.now() + '.' + cancelledChequeUrllFileType;
+                  var cancelledChequeUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, cancelledChequeUrl, onBoardingDetails.cancelledChequeUrl);
+                  console.log('cancelledChequeUrls3Insert', cancelledChequeUrls3Insert);
                   Employees.create({
                     userId: userId,
                     firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
@@ -334,9 +364,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
                     bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
                     accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                    pancardUrl: onBoardingDetails.pancardUrl,
-                    aadhaarUrl: onBoardingDetails.aadhaarUrl,
-                    cancelledChequeUrl: onBoardingDetails.cancelledChequeUrl,
+                    pancardUrl: pancardUrl,
+                    aadhaarUrl: aadhaarUrl,
+                    cancelledChequeUrl: cancelledChequeUrl,
                     status: true
                   }).then((resp) => {
                     if (resp) {
@@ -351,13 +381,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               })
               .catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  if(err.keyPattern.phoneNumber){
+                  if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
                       valid: false,
                       param: 'phoneNumber',
                       message: 'phoneNumber already registered'
                     })
-                  } else{
+                  } else {
                     res.status(409).json({
                       valid: false,
                       param: 'email',
@@ -385,6 +415,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               .then(async (response) => {
                 if (response) {
                   let userId = response.id;
+                  const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
+                  var authenticationLetterForClientUrl = userId + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
+                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
                   ClientRepresentatives.create({
                     userId: userId,
                     name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -392,7 +425,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForClientUrl: onBoardingDetails.authenticationLetterForClientUrl,
+                    authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                     companyIdForClient: onBoardingDetails.companyIdForClient,
                     status: true
                   });
@@ -404,13 +437,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               .catch((err) => {
                 /* istanbul ignore else */
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  if(err.keyPattern.phoneNumber){
+                  if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
                       valid: false,
                       param: 'phoneNumber',
                       message: 'phoneNumber already registered'
                     })
-                  } else{
+                  } else {
                     res.status(409).json({
                       valid: false,
                       param: 'email',
@@ -438,6 +471,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               .then(async (response) => {
                 if (response) {
                   let userId = response.id;
+                  const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
+                  var authenticationLetterForCompanyUrlUrl = userId + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
+                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
                   CompanyRepresentatives.create({
                     userId: userId,
                     name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -445,7 +481,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
                     companiesList: companiesList ? companiesList : "",
-                    authenticationLetterForCompanyUrl: onBoardingDetails.authenticationLetterForCompanyUrl,
+                    authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
                     companyIdForCompany: onBoardingDetails.companyIdForCompany,
                     status: true
                   });
@@ -456,13 +492,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               })
               .catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
-                  if(err.keyPattern.phoneNumber){
+                  if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
                       valid: false,
                       param: 'phoneNumber',
                       message: 'phoneNumber already registered'
                     })
-                  } else{
+                  } else {
                     res.status(409).json({
                       valid: false,
                       param: 'email',
@@ -473,7 +509,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   next(err)
                 }
               })
-  
+
           } else if (onBoardingDetails.roleName == "Analyst") {
             //TODO
           } else if (onBoardingDetails.roleName == "QA") {
@@ -584,8 +620,8 @@ export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) 
     }
   }
   var userDetailsInRoles = await User.find(filterQuery)
-  .populate({ path: 'roleDetails.roles' })
-  .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
+    .populate({ path: 'roleDetails.roles' })
+    .populate({ path: 'roleDetails.primaryRole' }).sort({ 'createdAt': -1, 'updatedAt': -1 }).catch((err) => { return res.json({ status: '500', message: err.message }) });
   var resArray = userDetailsInRoles.map((rec) => {
     return {
       "userDetails": {
@@ -798,8 +834,8 @@ export const onBoardingEmpolyee = async ({ bodymen: { body }, params, user }, re
     }).then(res.json({
       status: 200,
       message: "employee Added Successfully"
-    })).catch(next) 
-  }else {
+    })).catch(next)
+  } else {
     return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
   }
 }
@@ -836,7 +872,7 @@ export const onBoardingClientRep = async ({ bodymen: { body }, params, user }, r
       status: 200,
       message: "Client Rep Added Successfully"
     })).catch(next)
-  }else {
+  } else {
     return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
   }
 }
@@ -874,7 +910,7 @@ export const onBoardingCompanyRep = async ({ bodymen: { body }, params, user }, 
       status: 200,
       message: "Company Rep Added Successfully"
     })).catch(next)
-  }else {
+  } else {
     return res.status(400).json({ status: '400', message: `Invalid email for the onboarding, emailId: ${parse.email}` })
   }
 }
@@ -940,20 +976,20 @@ export const uploadEmailsFile = async (req, res, next) => {
                         pass: 'ijsfupqcuttlpcez'
                       }
                     });
-            
+
                     transporter.sendMail({
                       from: 'testmailer09876@gmail.com',
                       to: rowObject['email'],
                       subject: 'ESG - Onboarding',
                       html: content
                     });
-                      let email = `${rowObject['email']}`;
-                      await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
-                    
-                  } else if(rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
-                    let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
-                    let allAdminUserEmailIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('email');
-                    console.log("allAdminUserEmailIds",allAdminUserEmailIds);
+                    let email = `${rowObject['email']}`;
+                    await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+
+                  } else if (rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
+                    let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
+                    let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
+                    console.log("allAdminUserEmailIds", allAdminUserEmailIds);
                     for (let index = 0; index < allAdminUserEmailIds.length; index++) {
                       console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
                       let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
@@ -969,19 +1005,19 @@ export const uploadEmailsFile = async (req, res, next) => {
                           pass: 'ijsfupqcuttlpcez'
                         }
                       });
-              
+
                       transporter.sendMail({
                         from: 'testmailer09876@gmail.com',
                         to: allAdminUserEmailIds[index],
                         subject: 'ESG - Onboarding',
                         html: content
                       });
-                        let email = `${rowObject['email']}`;
-                        await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )            
+                      let email = `${rowObject['email']}`;
+                      await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
                     }
                   }
                 } else {
-                  return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits`})
+                  return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` })
                 }
               } else {
                 return res.status(400).json({ status: "400", message: "File has some invalid onboarding type, please check!" });
@@ -1054,20 +1090,20 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
               pass: 'ijsfupqcuttlpcez'
             }
           });
-  
+
           transporter.sendMail({
             from: 'testmailer09876@gmail.com',
             to: rowObject['email'],
             subject: 'ESG - Onboarding',
             html: content
           });
-            let email = `${rowObject['email']}`;
-            await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )
-          
-        } else if(rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
-          let adminRoleIds = await Role.find({ roleName: { $in: [ "SuperAdmin", "Admin" ] }, status: true }).distinct('_id');
-          let allAdminUserEmailIds = await User.find({ $or: [ { "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } } ], status: true }).distinct('email');
-          console.log("allAdminUserEmailIds",allAdminUserEmailIds);
+          let email = `${rowObject['email']}`;
+          await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+
+        } else if (rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
+          let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
+          let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
+          console.log("allAdminUserEmailIds", allAdminUserEmailIds);
           for (let index = 0; index < allAdminUserEmailIds.length; index++) {
             console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
             let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
@@ -1083,15 +1119,15 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                 pass: 'ijsfupqcuttlpcez'
               }
             });
-    
+
             transporter.sendMail({
               from: 'testmailer09876@gmail.com',
               to: allAdminUserEmailIds[index],
               subject: 'ESG - Onboarding',
               html: content
             });
-              let email = `${rowObject['email']}`;
-              await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true } )            
+            let email = `${rowObject['email']}`;
+            await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
           }
         }
       }
@@ -1127,6 +1163,6 @@ export const updateUserName = async (req, res, next) => {
       $set: {
         name: allEmployees[eIndex].firstName + " " + allEmployees[eIndex].middleName + " " + allEmployees[eIndex].lastName
       }
-    })    
+    })
   }
 }
