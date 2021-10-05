@@ -1351,7 +1351,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1372,7 +1372,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1408,7 +1408,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'],  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1430,7 +1430,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1467,7 +1467,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'],  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1489,7 +1489,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1549,7 +1549,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'],  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1578,7 +1578,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1625,7 +1625,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'],  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1655,7 +1655,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1699,7 +1699,7 @@ export const dataCollection = async ({
             year: item['fiscalYear'],
             taskId: body.taskId,
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename
+            screenShot: item['screenShot'],  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -1728,7 +1728,7 @@ export const dataCollection = async ({
             taskId: item['taskId'],
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'],
+            screenShot: item['screenShot'], //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],

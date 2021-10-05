@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, allocateTasksFromJson } from './controller'
+import { create, index, show, update, destroy, allocateTasksFromJson, taskIdMappingCorrection } from './controller'
 import { schema } from './model'
 export CompaniesTasks, { schema } from './model'
 
@@ -76,7 +76,7 @@ router.get('/:id',
 router.get('/import/tasks',
   token({ required: true }),
   query(),
-  allocateTasksFromJson)
+  taskIdMappingCorrection)
 
 /**
  * @api {put} /companies_tasks/:id Update companies tasks
