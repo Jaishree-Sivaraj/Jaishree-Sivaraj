@@ -134,6 +134,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   }
   console.log('companySourceDetails', companySourceDetails);
   // await CompanySources.create(companySourceDetails).then((detail) => {
-  //   res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
+  res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
   // });
 }
