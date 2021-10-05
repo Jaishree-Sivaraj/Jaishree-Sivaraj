@@ -162,7 +162,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         ]
       ]
     }
-    await StandaloneDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, isActive: true,status: true, companyId: companyID }).populate('datapointId').then((result) => {
+    await StandaloneDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, isActive: true, status: true, companyId: companyID }).populate('datapointId').then((result) => {
       if (result.length > 0) {
         for (let index = 0; index < result.length; index++) {
           const element = result[index];
@@ -176,7 +176,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
       }
     });
-    await DerivedDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, isActive: true,status: true, companyId: companyID }).populate('datapointId').then((result) => {
+    await DerivedDatapoints.find({ datapointId: { "$in": requiredDataPoints }, year: body.year, isActive: true, status: true, companyId: companyID }).populate('datapointId').then((result) => {
       if (result.length > 0) {
         for (let index = 0; index < result.length; index++) {
           const element = result[index];
@@ -220,7 +220,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   } else if (body.type && body.type === 'controversy') {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
     if (companyDetails) {
-      let companyControversyYears = await Controversy.find({ companyId: body.companyId, reviewedByCommittee: true, isActive: true,status: true }).distinct('year');
+      let companyControversyYears = await Controversy.find({ companyId: body.companyId, reviewedByCommittee: true, isActive: true, status: true }).distinct('year');
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
@@ -276,7 +276,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
 }
 
 export const downloadJson = async ({ bodymen: { body } }, res, next) => {
-  const myBucket = process.env.BUCKET_NAME
+  const myBucket = process.env.JSON_FILES_BUCKET_NAME
   const myKey = body.fileName;
   const signedUrlExpireSeconds = 60 * 5 // your expiry time in seconds.
   const url = s3.getSignedUrl('getObject', {
@@ -291,7 +291,7 @@ async function storeFileInS3(actualJson, type, companyId, year) {
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
     const params = {
-      Bucket: process.env.BUCKET_NAME, // pass your bucket name
+      Bucket: process.env.JSON_FILES_BUCKET_NAME, // pass your bucket name
       Key: type + '/' + fileName, // file will be saved in <folderName> folder
       Body: Buffer.from(JSON.stringify(actualJson))
     };
