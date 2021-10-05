@@ -10,9 +10,7 @@ async function storeFileInS3(bucketName, fileName, fileDataBase64) {
     console.log('in s3 file insert', bucketName, fileName, fileDataBase64);
     const bufferData = new Buffer.from(fileDataBase64.split(';base64,')[1], 'base64');
     console.log('bf', bufferData);
-    const fileType = fileDataBase64.split(';')[0].split('/')[1];
     return new Promise(function (resolve, reject) {
-        fileName = fileName + '.' + fileType;
         console.log('filName', fileName);
         const params = {
             Bucket: bucketName, // pass your bucket name 

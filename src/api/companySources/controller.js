@@ -82,7 +82,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //     console.log("File Stored Sucessfully");
   //   }
   // });
-  var fileUrl = body.companyId + '_' + Date.now();
+  const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+  var fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
   var s3Insert = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
   console.log('s3insert', s3Insert);
   let sourceDetails = {
