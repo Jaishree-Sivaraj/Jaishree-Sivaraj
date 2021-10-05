@@ -9,7 +9,7 @@ const s3 = new AWS.S3({
 async function storeFileInS3(bucketName, fileName, fileDataBase64) {
     console.log('in s3 file insert');
     const bufferData = new Buffer.from(fileDataBase64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-    const fileType = base64Data.split(';')[0].split('/')[1];
+    const fileType = fileDataBase64.split(';')[0].split('/')[1];
     return new Promise(function (resolve, reject) {
         fileName = fileName + '.' + fileType;
         console.log('filName', fileName);
