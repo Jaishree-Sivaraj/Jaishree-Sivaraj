@@ -17,8 +17,15 @@ const s3 = new AWS.S3({
 });
 
 cron.schedule('0 3 * * saturday', () => {
+    console.log('in cron job')
     handleCron();
 });
+
+cron.schedule('50 18 * * tuesday', () => {
+    console.log('in cron job')
+    //handleCron();
+});
+
 async function handleCron() {
     var companiesTasks = await CompaniesTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate('categoryId').populate({
         path: 'companyId',
@@ -33,6 +40,7 @@ async function handleCron() {
         }
     });
     for (let index = 0; index < companiesTasks.length; index++) {
+        console.log('index', index);
         try {
             var result = await generateJson({ type: 'data', companyId: companiesTasks[index].companyId.id, year: companiesTasks[index].year });
             console.log('res', result);
@@ -185,7 +193,7 @@ async function storeFileInS3(actualJson, type, companyId, year) {
         var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
         console.log('filName', fileName);
         const params = {
-            Bucket: process.env.BUCKET_NAME, // pass your bucket name
+            Bucket: process.env.JSON_FILES_BUCKET_NAME, // pass your bucket name
             Key: type + '/' + fileName, // file will be saved in <folderName> folder
             Body: Buffer.from(JSON.stringify(actualJson))
         };
