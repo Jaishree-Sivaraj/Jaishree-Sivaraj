@@ -48,7 +48,7 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
 }
 
 export const show = ({ params }, res, next) => {
-  User.findById(params.id).populate('roleId').then(notFound(res)).then(function (userDetails) {
+  User.findById(params.id).populate('roleId').then(notFound(res)).then(async function (userDetails) {
     var userType = '';
     userDetails = userDetails.toObject();
     delete userDetails.password;
@@ -60,7 +60,7 @@ export const show = ({ params }, res, next) => {
       }
     }
     if (userType === 'Employee') {
-      Employees.findOne({ userId: userDetails._id }).then(function (employee) {
+      await Employees.findOne({ userId: userDetails._id }).then(async function (employee) {
         var pancardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.pancardUrl).catch((e) => {
           pancardS3Url = "No image";
         })
@@ -88,7 +88,7 @@ export const show = ({ params }, res, next) => {
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Company Representative') {
-      CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (company) {
+      await CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (company) {
         var authenticationLetterForCompanyUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.authenticationLetterForCompanyUrl).catch((e) => {
           authenticationLetterForCompanyUrl = "No image";
         })
@@ -108,7 +108,7 @@ export const show = ({ params }, res, next) => {
         return res.status(500).json({ message: "Failed to get user" })
       })
     } else if (userType === 'Client Representative') {
-      ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(function (client) {
+      await ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (client) {
         var authenticationLetterForClientUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.authenticationLetterForClientUrl).catch((e) => {
           authenticationLetterForClientUrl = "No image";
         })
