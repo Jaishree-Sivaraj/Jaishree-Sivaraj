@@ -7,11 +7,8 @@ const s3 = new AWS.S3({
 });
 
 async function storeFileInS3(bucketName, fileName, fileDataBase64) {
-    console.log('in s3 file insert', bucketName, fileName, fileDataBase64);
     const bufferData = new Buffer.from(fileDataBase64.split(';base64,')[1], 'base64');
-    console.log('bf', bufferData);
     return new Promise(function (resolve, reject) {
-        console.log('filName', fileName);
         const params = {
             Bucket: bucketName, // pass your bucket name 
             Key: fileName, // file will be saved in <folderName> folder
