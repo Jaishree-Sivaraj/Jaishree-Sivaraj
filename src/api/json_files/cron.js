@@ -33,6 +33,12 @@ async function handleCron() {
             path: 'clientTaxonomyId'
         }
     });
+    //TODO
+    //loop companiesTasks here and in each iteration push the companyId and year as object into new array
+    //but before pushing into the array check if that companyId and year already exist in that array
+    //if exist don't push, so that we will have only one entry for each company and year
+    //and then instead of looping companiesTasks and calling generateJson you should loop that new array 
+    // and call generateJson from that so that instead of iterating 3 times same company and year it will iterate only one time
     var controversyTasks = await ControversyTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate({
         path: 'companyId',
         populate: {
