@@ -1600,7 +1600,7 @@ export const dataCollection = async ({
         });
       } else if (body.memberType == 'Board Matrix') {   
         await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
-          { $set: {status: false} });    
+          { $set: {isActive: false} });    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           const item = dpCodesDetails[dpDetailsIndex];
           let hasCorrectionValue = false;
@@ -1674,8 +1674,8 @@ export const dataCollection = async ({
           });
         }
       } else if (body.memberType == 'KMP Matrix') {  
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, status: true },
-          { $set: {status: false} });    
+        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive:true, status: true },
+          { $set: {isActive : false} });    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           const item = dpCodesDetails[dpDetailsIndex];
           let hasCorrectionValue = false;
@@ -1706,6 +1706,7 @@ export const dataCollection = async ({
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
             status: true,
+            isActive: true,
             hasError: false,
             hasCorrection: hasCorrectionValue,
             correctionStatus: 'Completed',
@@ -1737,6 +1738,7 @@ export const dataCollection = async ({
             additionalDetails: item['additionalDetails'],
             memberName: body.memberName,
             status: true,
+            isActive: true,
             createdBy: user,
             updatedAt: Date.now()
           }).catch(err =>{

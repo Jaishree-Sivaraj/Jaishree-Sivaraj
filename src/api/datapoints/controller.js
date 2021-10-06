@@ -3584,9 +3584,6 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceDetails.value = sourceValues._id;
               }
             }
-            let sourceValues = object.sourceName ? object.sourceName.split(';') : "";
-            let sourceName = sourceValues[0];
-            let sourceId = sourceValues[1] ? sourceValues[1] : ''
             if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true){
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
               if(errorDetailsObject[0]){
@@ -3820,7 +3817,6 @@ export const repDatapointDetails = async (req, res, next) => {
             };              
           }
           kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
-          kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
         let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
