@@ -1,5 +1,4 @@
 #!/bin/bash
-source /home/ubuntu/.bash_profile
 STATUS="$(systemctl is-active web.service)"
 if [ "${STATUS}" = "active" ]; then
    sudo systemctl stop web

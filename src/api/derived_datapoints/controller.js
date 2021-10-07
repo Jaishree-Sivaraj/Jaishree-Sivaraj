@@ -40,6 +40,7 @@ import { TaskAssignment } from "../taskAssignment";
 import { Ztables } from "../ztables";
 import { ProjectedValues } from "../projected_values";
 import  * as DerivedCalculationSample from '../derived_datapoints/derived_calculation';
+import { CompaniesTasks } from '../companies_tasks'
 
 export const create = ({
     user,
@@ -665,6 +666,13 @@ export const calculateForACompany = async ({
                   });
                 }
               });
+            for (let dyIndex = 0; dyIndex < distinctYears.length; dyIndex++) {
+              let companyTaskDetails = await CompaniesTasks.find({ companyId: companyId, year: distinctYears[dyIndex], status: true }).populate('taskId').populate('categoryId')
+              for (let ctdIndex = 0; ctdIndex < companyTaskDetails.length; ctdIndex++) {
+                let pillarWiseDatapoints = await Datapoints.find({ categoryId: companyTaskDetails[ctdIndex]['categoryId']['id'] })
+                await DerivedDatapoints.updateMany({ datapointId: { $in: pillarWiseDatapoints }, companyId: companyId, year: distinctYears[dyIndex] }, { $set: { taskId: companyTaskDetails[ctdIndex]['taskId']['id'] } })
+              }
+            }
           }
         }
         return res.status(200).json({

@@ -442,7 +442,16 @@ export const uploadControversies = async (req, res, next) => {
         });
       for (let compIndex = 0; compIndex < insertedCompanies.length; compIndex++) {
         let completeTaskDetails = allTaskDetails.filter(obj => obj.companyId == insertedCompanies[compIndex].id);
-        await Controversy.updateMany({ companyId: completeTaskDetails[0].companyId, status: true }, { $set: { taskId: completeTaskDetails[0].id } })
+        await Controversy.updateMany({ companyId: completeTaskDetails[0].companyId, status: true }, 
+          { $set: { taskId: completeTaskDetails[0].id, reviewedByCommittee: true } });
+        await ControversyTasks.updateOne({ companyId: completeTaskDetails[0].companyId, status: true },
+          {
+            $set: {
+              completedDate: new Date(),
+              canGenerateJson: true,
+              isJsonGenerated: false
+            }
+          });
       }
 
       return res.json({ message: "Files upload success", companies: insertedCompanies, data: controversyDetails });

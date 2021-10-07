@@ -21,11 +21,6 @@ cron.schedule('0 3 * * saturday', () => {
     handleCron();
 });
 
-cron.schedule('50 18 * * tuesday', () => {
-    console.log('in cron job')
-    //handleCron();
-});
-
 async function handleCron() {
     var companiesTasks = await CompaniesTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate('categoryId').populate({
         path: 'companyId',
@@ -33,17 +28,26 @@ async function handleCron() {
             path: 'clientTaxonomyId'
         }
     });
+    console.log('companiesTasks', companiesTasks.length);
+    var companiesTasksArr = [];
+    companiesTasks.forEach(function (rec) {
+        var obj = {};
+        obj.companyId = rec.companyId.id;
+        obj.year = rec.year;
+        if (companiesTasksArr.findIndex((rec) => rec.companyId === obj.companyId && rec.year === obj.year) === -1) {
+            companiesTasksArr.push(obj);
+        }
+    })
     var controversyTasks = await ControversyTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate({
         path: 'companyId',
         populate: {
             path: 'clientTaxonomyId'
         }
     });
-    for (let index = 0; index < companiesTasks.length; index++) {
+    for (let index = 0; index < companiesTasksArr.length; index++) {
         console.log('index', index);
         try {
-            var result = await generateJson({ type: 'data', companyId: companiesTasks[index].companyId.id, year: companiesTasks[index].year });
-            console.log('res', result);
+            var result = await generateJson({ type: 'data', companyId: companiesTasksArr[index].companyId, year: companiesTasksArr[index].year });
         } catch (e) {
             console.log('error while generating jsons for data', e);
         }
