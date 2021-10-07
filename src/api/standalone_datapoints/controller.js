@@ -764,7 +764,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             for (let stdIndex = 0; stdIndex < structuredStandaloneDetails.length; stdIndex++) {
               let item = structuredStandaloneDetails[stdIndex];
               let companyObject = companiesList.filter(obj => obj.id === item['companyId']);
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['categoryName']);
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['categoryName'].toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['year']);
               if (companyTaskObjectValue.length > 0 && companyTaskObjectValue[0].taskId) {
                 await CompaniesTasks.updateOne({taskId: companyTaskObjectValue[0].taskId, year: item['year']}, { $set: { canGenerateJson: true, isJsonGenerated: false, isOverAllCompanyTaskStatus: true, completedDate: new Date() } })
