@@ -1404,6 +1404,22 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
       }).catch((error) =>{
         return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
       });
+      
+      let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
+      let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
+      console.log("allAdminUserEmailIds", allAdminUserEmailIds);
+      for (let admIndex = 0; admIndex < allAdminUserEmailIds.length; admIndex++) {
+        await Notifications.create({
+          notifyToUser: allAdminUserEmailIds[admIndex], 
+          notificationType: "/tasklist",
+          content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
+          notificationTitle: "Reassignment Pending",
+          status: true,
+          isRead: false
+        }).catch((error) =>{
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+        });
+      }
     }
     let categoriesLength = await Categories.count({
       clientTaxonomyId: body.clientTaxonomyId,
