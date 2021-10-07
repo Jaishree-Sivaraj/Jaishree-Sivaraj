@@ -643,7 +643,10 @@ export const getMyTasks = async (
       .then(async (controversyTasks) => {
         if (controversyTasks && controversyTasks.length > 0) {
           for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
             let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
+            let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
             let object = {};
             object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.taskNumber = controversyTasks[cIndex].taskNumber;
@@ -667,6 +670,7 @@ export const getMyTasks = async (
             object.createdBy = controversyTasks[cIndex].createdBy
               ? controversyTasks[cIndex].createdBy
               : null;
+            object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
             if (controversyTasks[cIndex] && object) {
               controversyTaskList.push(object);
             }
