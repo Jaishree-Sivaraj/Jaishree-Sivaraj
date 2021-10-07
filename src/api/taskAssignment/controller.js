@@ -680,9 +680,9 @@ export const getMyTasks = async (
       userId: completeUserDetail.id,
       status: true
     });
-    if (clientRepDetail && clientRepDetail.CompanyName) {
+    if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
-        companyId: clientRepDetail.CompanyName,
+        companyId: { $in: clientRepDetail.companiesList },
         taskStatus: "Verification Completed",
         status: true
       })
