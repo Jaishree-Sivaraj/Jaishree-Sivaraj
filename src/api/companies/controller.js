@@ -26,13 +26,18 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
       .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('clientTaxonomyId')
-      .then((companies) => ({
-        count,
-        rows: companies.map((companies) => companies.view())
-      }))
+      .then((companies) => {
+        let companiesList = [];
+        for (let cmpIndex = 0; cmpIndex < companies.length; cmpIndex++) {
+          companies[cmpIndex]['companyName'] = companies[cmpIndex]['companyName'] + ' - ' + companies[cmpIndex]['clientTaxonomyId']['taxonomyName'];
+          companiesList.push(companies[cmpIndex])
+        }
+        return res.status(200).json({ status: "200", message: "Retrieved companies successfully!", data: companiesList });
+      })
     )
-    .then(success(res))
-    .catch(next)
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve companies!" });
+    })
 }
 
 export const getAllUnAssignedCompanies = ({ querymen: { query, select, cursor }, params }, res, next) => {
