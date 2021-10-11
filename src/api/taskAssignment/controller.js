@@ -334,6 +334,41 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
           status : true 
         };
       }
+      await ControversyTasks.find({ status: true })
+      .populate('companyId')
+      .populate('analystId')
+      .populate('createdBy')
+      .then(async (controversyTasks) => {
+        if (controversyTasks && controversyTasks.length > 0) {
+          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
+            let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
+            let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
+            let object = {};
+            object.taskNumber = controversyTasks[cIndex].taskNumber;
+            object.taskId = controversyTasks[cIndex].id;
+            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+            object.status = controversyTasks[cIndex].status;
+            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
+            object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+            object.totalNoOfControversy = totalNoOfControversy;
+            if (controversyTasks[cIndex] && object) {
+              finalResponseObject.adminTaskList.controversyList.push(object)
+              finalResponseObject.groupAdminTaskList.controversyList.push(object)
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+      })
       await TaskAssignment.find(findQuery)
         .sort({
           createdAt: -1,
@@ -395,41 +430,6 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
           });
         });     
     }
-    await ControversyTasks.find({ isActive: true, status: true })
-    .populate('companyId')
-    .populate('analystId')
-    .populate('createdBy')
-    .then(async (controversyTasks) => {
-      if (controversyTasks && controversyTasks.length > 0) {
-        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-          let yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
-          let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
-          let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
-          let object = {};
-          object.taskNumber = controversyTasks[cIndex].taskNumber;
-          object.taskId = controversyTasks[cIndex].id;
-          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-          object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-          object.status = controversyTasks[cIndex].status;
-          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-          object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
-          object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-          object.totalNoOfControversy = totalNoOfControversy;
-          if (controversyTasks[cIndex] && object) {
-            finalResponseObject.adminTaskList.controversyList.push(object)
-            finalResponseObject.groupAdminTaskList.controversyList.push(object)
-          }
-        }
-      }
-    })
-    .catch((error) => {
-      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
-    })
     return res.status(200).json({
       status: "200",
       message: "Tasks retrieved successfully!",
