@@ -402,6 +402,8 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
     .then(async (controversyTasks) => {
       if (controversyTasks && controversyTasks.length > 0) {
         for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
           let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
           let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
           let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
