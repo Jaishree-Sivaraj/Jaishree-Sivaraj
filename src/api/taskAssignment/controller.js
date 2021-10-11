@@ -395,13 +395,16 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
           });
         });     
     }
-    await ControversyTasks.find({ status: true })
+    await ControversyTasks.find({ isActive: true, status: true })
     .populate('companyId')
     .populate('analystId')
     .populate('createdBy')
-    .then((controversyTasks) => {
+    .then(async (controversyTasks) => {
       if (controversyTasks && controversyTasks.length > 0) {
         for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
+          let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
+          let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
           let object = {};
           object.taskNumber = controversyTasks[cIndex].taskNumber;
           object.taskId = controversyTasks[cIndex].id;
@@ -412,6 +415,9 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
           object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
           object.status = controversyTasks[cIndex].status;
           object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
+          object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+          object.totalNoOfControversy = totalNoOfControversy;
           if (controversyTasks[cIndex] && object) {
             finalResponseObject.adminTaskList.controversyList.push(object)
             finalResponseObject.groupAdminTaskList.controversyList.push(object)
@@ -647,8 +653,8 @@ export const getMyTasks = async (
             yesterday.setDate(yesterday.getDate() - 1);
             let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
             let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
+            let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
             let object = {};
-            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.taskNumber = controversyTasks[cIndex].taskNumber;
             object.taskId = controversyTasks[cIndex].id;
             object.companyId = controversyTasks[cIndex].companyId
@@ -670,7 +676,9 @@ export const getMyTasks = async (
             object.createdBy = controversyTasks[cIndex].createdBy
               ? controversyTasks[cIndex].createdBy
               : null;
+            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
             object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+            object.totalNoOfControversy = totalNoOfControversy;
             if (controversyTasks[cIndex] && object) {
               controversyTaskList.push(object);
             }
