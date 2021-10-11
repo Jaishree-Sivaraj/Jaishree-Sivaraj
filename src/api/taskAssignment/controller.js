@@ -356,7 +356,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
             object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
             object.status = controversyTasks[cIndex].status;
             object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
+            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
             object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
             object.totalNoOfControversy = totalNoOfControversy;
             if (controversyTasks[cIndex] && object) {
@@ -678,7 +678,7 @@ export const getMyTasks = async (
             object.createdBy = controversyTasks[cIndex].createdBy
               ? controversyTasks[cIndex].createdBy
               : null;
-            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "-";
+            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
             object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
             object.totalNoOfControversy = totalNoOfControversy;
             if (controversyTasks[cIndex] && object) {
