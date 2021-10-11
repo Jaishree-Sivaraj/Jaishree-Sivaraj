@@ -32,7 +32,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) => {
           companies[cmpIndex]['companyName'] = companies[cmpIndex]['companyName'] + ' - ' + companies[cmpIndex]['clientTaxonomyId']['taxonomyName'];
           companiesList.push(companies[cmpIndex])
         }
-        return res.status(200).json({ status: "200", message: "Retrieved companies successfully!", data: companiesList });
+        return res.status(200).json({ status: "200", message: "Retrieved companies successfully!", rows: companiesList });
       })
     )
     .catch((error) => {
