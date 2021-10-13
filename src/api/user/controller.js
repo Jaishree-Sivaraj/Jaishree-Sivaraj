@@ -252,7 +252,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
-                    CompanyName: onBoardingDetails.companyName ? onBoardingDetails.companyName : "",
                     authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                     companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
                     status: true
@@ -303,7 +302,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
                       userId: userFound.id,
-                      companiesList: companiesList ? companiesList : "",
                       authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
                       companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
                       status: true
@@ -437,7 +435,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               isUserApproved: false,
               status: true
             }
-            var companiesList = onBoardingDetails.companyName.map((rec) => { return rec.value });
+            // var companiesList = onBoardingDetails.companyName.map((rec) => { return rec.value });
             User.create(userObject)
               .then(async (response) => {
                 if (response) {
@@ -454,7 +452,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     email: onBoardingDetails.email ? onBoardingDetails.email : '',
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: companiesList ? companiesList : "",
+                    companiesList: [],
                     authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                     companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
                     status: true
@@ -496,7 +494,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               isUserApproved: false,
               status: true
             }
-            var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
+            // var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
             User.create(userObject)
               .then(async (response) => {
                 if (response) {
@@ -513,7 +511,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     email: onBoardingDetails.email ? onBoardingDetails.email : '',
                     password: onBoardingDetails.password ? onBoardingDetails.password : '',
                     phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: companiesList ? companiesList : "",
+                    companiesList: [],
                     authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
                     companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
                     status: true
@@ -634,6 +632,47 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
     //next(err);
     return res.status(500).json({ message: "Failed to update Role details" });
   })
+}
+
+export const assignCompanies = async({ bodymen: { body }, user }, res, next) => {
+  console.log('assignCompanies function called!');
+  if (body.type == "client") {
+    await ClientRepresentatives.findOne({ userId: body.userId })
+    .then(async(repDetail) => {
+      let companiesList = [];
+      for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+        companiesList.push(body.companies[cmpIndex].value);        
+      }
+      await ClientRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+      .then((updateObj) => {
+        return res.status(200).json({ status: "200", message: "Companies assigned to the Client-Rep successfully!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+      })
+    })
+    .catch((error) => {
+      return res.status(400).json({ status: "400", message: "User not found!" })
+    });
+  } else if(body.type == "company") {
+    await CompanyRepresentatives.findOne({ userId: body.userId })
+    .then(async(repDetail) => {
+      let companiesList = [];
+      for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+        companiesList.push(body.companies[cmpIndex].value);        
+      }
+      await CompanyRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+      .then((updateObj) => {
+        return res.status(200).json({ status: "200", message: "Companies assigned to the Company-Rep successfully!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+      })
+    })
+    .catch((error) => {
+      return res.status(400).json({ status: "400", message: "User not found!" })
+    });
+  }
 }
 
 export const genericFilterUser = async ({ bodymen: { body }, user }, res, next) => {

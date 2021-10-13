@@ -7,7 +7,7 @@ import { schema } from './model'
 export ClientRepresentatives, { schema } from './model'
 
 const router = new Router()
-const { userId, name, CompanyName, authenticationLetterForClientUrl, companyIdForClient, status } = schema.tree
+const { userId, name, companiesList, authenticationLetterForClientUrl, companyIdForClient, status } = schema.tree
 
 /**
  * @api {post} /client-representatives Create client representatives
@@ -17,7 +17,7 @@ const { userId, name, CompanyName, authenticationLetterForClientUrl, companyIdFo
  * @apiParam {String} access_token user access token.
  * @apiParam userId Client representatives's userId.
  * @apiParam name Client representatives's name.
- * @apiParam CompanyName Client representatives's CompanyName.
+ * @apiParam companiesList Client representatives's companiesList.
  * @apiParam authenticationLetterForClientUrl Client representatives's authenticationLetterForClientUrl.
  * @apiParam companyIdForClient Client representatives's companyIdForClient.
  * @apiParam status Client representatives's status.
@@ -28,7 +28,7 @@ const { userId, name, CompanyName, authenticationLetterForClientUrl, companyIdFo
  */
 router.post('/',
   token({ required: true }),
-  body({ userId, name, CompanyName, authenticationLetterForClientUrl, companyIdForClient, status }),
+  body({ userId, name, companiesList, authenticationLetterForClientUrl, companyIdForClient, status }),
   create)
 
 /**
@@ -71,7 +71,7 @@ router.get('/:id',
  * @apiParam {String} access_token user access token.
  * @apiParam userId Client representatives's userId.
  * @apiParam name Client representatives's name.
- * @apiParam CompanyName Client representatives's CompanyName.
+ * @apiParam companiesList Client representatives's companiesList.
  * @apiParam authenticationLetterForClientUrl Client representatives's authenticationLetterForClientUrl.
  * @apiParam companyIdForClient Client representatives's companyIdForClient.
  * @apiParam status Client representatives's status.
@@ -82,7 +82,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ userId, name, CompanyName, authenticationLetterForClientUrl, companyIdForClient, status }),
+  body({ userId, name, companiesList, authenticationLetterForClientUrl, companyIdForClient, status }),
   update)
 
 /**
