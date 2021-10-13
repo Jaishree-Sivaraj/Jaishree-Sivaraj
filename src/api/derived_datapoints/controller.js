@@ -853,6 +853,7 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
               denominatorResponseValue = denominatorResponseValue.replace(/[^\d.]/g, '');
 
               derivedResponse = (Number(numeratorResponseValue).toFixed(4) / Number(denominatorResponseValue).toFixed(4)) * 100;
+              derivedResponse = Number(derivedResponse).toFixed(4);
             }
           }
           let derivedDatapointsObject = {
@@ -910,6 +911,7 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
                 denominatorResponseValue = denominatorResponseValue.replace(/[^\d.]/g, '');
 
                 derivedResponse = (Number(numeratorResponseValue).toFixed(4) / Number(denominatorResponseValue).toFixed(4)) * 100;
+                derivedResponse = Number(derivedResponse).toFixed(4);
               }
             }
 
@@ -1004,7 +1006,8 @@ async function addCalculation(companyId, mergedDetails, distinctYears, allDatapo
           } else if (denominatorValue.response == 0 || denominatorValue.response == '' || denominatorValue.response == ' ' || denominatorValue.response == 'NA') {
             derivedResponse = 'NA';
           } else {
-            derivedResponse = Number(numeratorValue.response).toFixed(4) + Number(denominatorValue.response).toFixed(4);
+            derivedResponse = Number(numeratorValue.response) + Number(denominatorValue.response);
+            derivedResponse = Number(derivedResponse).toFixed(4);
           }
           await StandaloneDatapoints.updateOne({
             _id: ruleResponseObject.id
@@ -1138,6 +1141,7 @@ async function asPercentageCalculation(companyId, mergedDetails, distinctYears, 
             derivedResponse = 'NA';
           } else {
             derivedResponse = (Number(numeratorValue.response).toFixed(4) / Number(denominatorValue.response).toFixed(4)) * 100;
+            derivedResponse = Number(derivedResponse).toFixed(4);
           }
           await StandaloneDatapoints.updateOne({
             _id: ruleResponseObject.id
@@ -1209,7 +1213,8 @@ async function asRatioCalculation(companyId, mergedDetails, distinctYears, allDa
           } else if (denominatorValue.response == 0 || denominatorValue.response == '' || denominatorValue.response == ' ' || denominatorValue.response == 'NA') {
             derivedResponse = 'NA';
           } else {
-            derivedResponse = Number(numeratorValue.response).toFixed(4) / Number(denominatorValue.response).toFixed(4)
+            derivedResponse = Number(numeratorValue.response) / Number(denominatorValue.response)
+            derivedResponse = Number(derivedResponse).toFixed(4);
           }
           await StandaloneDatapoints.updateOne({
             _id: ruleResponseObject.id
@@ -1455,6 +1460,7 @@ async function multiplyCalculation(companyId, mergedDetails, distinctYears, allD
               denominator = Number(secondParameterValue.response).toFixed(4);
             }
             multipliedResponse = (numerator / denominator) * 2000 * 1000000;
+            multipliedResponse = Number(multipliedResponse).toFixed(4);
           }
           if (asMultiplyRules[i].methodType == "composite") {
             if (multipliedResponse == 'NA') {
@@ -1545,8 +1551,8 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
             if (prev && next) {
               let prevResponse = prev.replace(/[^\d.]/g, '');
               let nextResponse = next.replace(/[^\d.]/g, '');
-              let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-              return sum.toString();
+              let sum = Number(prevResponse) + Number(nextResponse);
+              return sum.toFixed(4);
             }
           });
         } else {
@@ -1557,14 +1563,15 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
             if (prev && next) {
               let prevResponse = prev.replace(/[^\d.]/g, '');
               let nextResponse = next.replace(/[^\d.]/g, '');
-              let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-              return sum.toString();
+              let sum = Number(prevResponse) + Number(nextResponse);
+              return sum.toFixed(4);
             }
           });
         } else {
           denominatorSum = 0;
         }
         derivedResponse = isNaN((numeratorSum / denominatorSum) * 100) ? 0 : (numeratorSum / denominatorSum) * 100;
+        derivedResponse = Number(derivedResponse).toFixed(4);
         let derivedDatapointsObject = {
           companyId: companyId,
           datapointId: percentageRules[i].datapointId.id,
@@ -1645,7 +1652,8 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
             if (denominatorValues[j].response == ' ' || denominatorValues[j].response == '' || denominatorValues[j].response == 'NA' || denominatorValues[j].response == '0' || denominatorValues[j].response == 0) {
               derivedResponse = 'NA';
             } else {
-              derivedResponse = (Number(numeratorValues[j].response.replace(/[^\d.]/g, '')).toFixed(4) / Number(denominatorValues[j].response.replace(/[^\d.]/g, '')).toFixed(4)) * 100;
+              derivedResponse = (Number(numeratorValues[j].response.replace(/[^\d.]/g, '')) / Number(denominatorValues[j].response.replace(/[^\d.]/g, ''))) * 100;
+              derivedResponse = Number(derivedResponse).toFixed(4);
             }
           }
           let derivedDatapointsObject = {
@@ -1720,7 +1728,8 @@ async function ratioAddCalculation(companyId, mergedDetails, distinctYears, allD
       if (numeratorValue.response === " " || denominatorValue.response === " ") {
         addResponse = 'NA';
       } else {
-        addResponse = Number(numeratorValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4) + Number(denominatorValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4);
+        addResponse = Number(numeratorValue.response.replace(/[^\d.]/g, '').trim()) + Number(denominatorValue.response.replace(/[^\d.]/g, '').trim());
+        addResponse = Number(addResponse).toFixed(4);
         //  = await percent(numeratorValue.response, addResponse);
         if (numeratorValue.response === " " || numeratorValue.response == 'NA') {
           percentResponse = 'NA';
@@ -1736,6 +1745,7 @@ async function ratioAddCalculation(companyId, mergedDetails, distinctYears, allD
             numeratorNumber = Number(numeratorValue.response).toFixed(4);
           }
           percentResponse = (numeratorNumber / addResponse) * 100;
+          percentResponse = Number(percentResponse).toFixed(4);
         }
       }
       let derivedDatapointsObject = {
@@ -1804,8 +1814,8 @@ async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapo
           if (prev && next) {
             let prevResponse = prev.trim().replace(/[^\d.]/g, '');
             let nextResponse = next.trim().replace(/[^\d.]/g, '');
-            let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-            return sum.toString();
+            let sum = Number(prevResponse) + Number(nextResponse);
+            return sum.toFixed(4);
           } else {
             sumValue = 0;
           }
@@ -2185,6 +2195,7 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
             derivedResponse = 'NA';
           } else {
             derivedResponse = Number(numeratorResponse.response.replace(/[^\d.]/g, '')).toFixed(4) / Number(denominatorResponse.response.replace(/[^\d.]/g, '')).toFixed(4);
+            derivedResponse = Number(derivedResponse).toFixed(4);
           }
 
           let derivedDatapointsObject = {
@@ -2253,8 +2264,8 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
                 if (prev && next) {
                   let prevResponse = prev.replace(/[^\d.]/g, '');
                   let nextResponse = next.replace(/[^\d.]/g, '');
-                  let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                  return sum.toString();
+                  let sum = Number(prevResponse) + Number(nextResponse);
+                  return sum.toFixed(4);
                 }
               });
             }
@@ -2342,6 +2353,7 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
                 denominatorValues = denominatorValues.replace(/[^\d.]/g, '');
               }
               derivedValue = (Number(numeratorValues).toFixed(4) / Number(denominatorValues).toFixed(4));
+              derivedValue = Number(derivedValue).toFixed(4);
             }
           }
           let derivedDatapointsObject = {
