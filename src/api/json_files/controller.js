@@ -220,7 +220,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   } else if (body.type && body.type === 'controversy') {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
     if (companyDetails) {
-      let companyControversyYears = await Controversy.find({ companyId: body.companyId, reviewedByCommittee: true, isActive: true, status: true }).distinct('year');
+      let companyControversyYears = await Controversy.find({ companyId: params.companyId, isActive: true, status: true }).distinct('year');
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
@@ -229,22 +229,80 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       };
       if (companyControversyYears.length > 0) {
         for (let yearIndex = 0; yearIndex < companyControversyYears.length; yearIndex++) {
-          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, reviewedByCommittee: true, isActive: true, status: true })
+          const year = companyControversyYears[yearIndex];
+          let yearwiseData = {
+            year: year,
+            companyName: companyDetails.companyName,
+            Data: []
+          };
+          let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, isActive: true, status: true })
             .populate('createdBy')
             .populate('companyId')
             .populate('datapointId');
           if (companyControversiesYearwise.length > 0) {
-            for (let index = 0; index < companyControversiesYearwise.length; index++) {
-              const element = companyControversiesYearwise[index];
+            let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
+            for (let index = 0; index < uniqDatapoints.length; index++) {
+              let element = uniqDatapoints[index];
+              let singleControversyDetail = companyControversiesYearwise.find((obj) => obj.datapointId.id == element.datapointId.id)
+              let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
               let dataObject = {
-                Dpcode: element.datapointId.code,
-                Year: element.year,
-                ResponseUnit: element.response,
-                controversy: element.controversyDetails
+                Dpcode: singleControversyDetail.datapointId.code,
+                Year: singleControversyDetail.year,
+                ResponseUnit: singleControversyDetail.response,
+                controversy: []
               }
-              responseObject.data.push(dataObject);
+              let currentResponseValue;
+              if (singleControversyDetail.response == 'Very High') {
+                currentResponseValue = 4;
+              } else if (singleControversyDetail.response == 'High') {
+                currentResponseValue = 3;
+              } else if (singleControversyDetail.response == 'Medium') {
+                currentResponseValue = 2;
+              } else if (singleControversyDetail.response == 'Low') {
+                currentResponseValue = 1;
+              } else {
+                currentResponseValue = 0;
+              }
+              if (datapointControversies.length > 0) {
+                for (let dpControIndex = 0; dpControIndex < datapointControversies.length; dpControIndex++) {
+                  if (singleControversyDetail.response != '' && singleControversyDetail.response != ' ') {
+                    let dpObj = datapointControversies[dpControIndex];
+                    let responseValue;
+                    dataObject.controversy.push({
+                      sourceName: dpObj.sourceName,
+                      sourceURL: dpObj.sourceURL,
+                      Textsnippet: dpObj.textSnippet,
+                      sourcePublicationDate: dpObj.sourcePublicationDate
+                    })  
+                    if (dpObj.response == 'Very High') {
+                      responseValue = 4;
+                    } else if (dpObj.response == 'High') {
+                      responseValue = 3;
+                    } else if (dpObj.response == 'Medium') {
+                      responseValue = 2;
+                    } else if (dpObj.response == 'Low') {
+                      responseValue = 1;
+                    } else {
+                      responseValue = 0;
+                    }   
+                    if( responseValue > currentResponseValue ) {
+                      if (responseValue == 4) {
+                        dataObject.ResponseUnit =  'Very High';
+                      } else if (responseValue == 3) {
+                        dataObject.ResponseUnit = 'High';
+                      } else if (responseValue == 2) {
+                        dataObject.ResponseUnit = 'Medium';
+                      } else if (responseValue == 1) {
+                        dataObject.ResponseUnit = 'Low';
+                      }
+                    }             
+                  }
+                }
+              }
+              yearwiseData.Data.push(dataObject);
             }
           }
+          responseObject.data.push(yearwiseData)
         }
       }
       await storeFileInS3(responseObject, 'controversy', body.companyId).then(async function (s3Data) {
