@@ -1550,7 +1550,7 @@ export const reports = async ({ user, params }, res, next) => {
       var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       if (clientRep && clientRep.length > 0) {
         for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
-          if (companyRep[cmpIndex] && companyRep[cmpIndex].userId && companyRep[cmpIndex].userId.name) {
+          if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
             clientRepNamesList.push(clientRep[clnIndex].userId.name);
           }
         }
