@@ -1466,22 +1466,106 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
 };
 
 export const reports = async ({ user, params }, res, next) => {
-  var allTasks = await TaskAssignment.find({}).populate('companyId').populate('categoryId');
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  })
+  .populate({
+    path: "roleDetails.roles",
+  })
+  .populate({
+    path: "roleDetails.primaryRole",
+  })
+  .catch((error) => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message,
+    });
+  });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  let findQuery = {};
+  if (userRoles.includes("SuperAdmin") || userRoles.includes("Admin")) {
+    findQuery = { status : true };
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      findQuery = { groupId: { $in: groupIds }, status : true };
+    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+      findQuery = { status : true };
+    } else {
+      return res.status(400).json({ completed: [], pending: [], controversy: [] });
+    }
+  } else if (userRoles.includes("GroupAdmin")){
+    let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+    findQuery = { groupId: { $in: groupIds }, status : true };
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      findQuery = { groupId: { $in: groupIds }, status : true };
+    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+      findQuery = { status : true };
+    } else {
+      return res.status(200).json({ status: "200", completed: [], pending: [], controversy: [] });
+    }
+  } else {
+    return res.status(200).json({ status: "200", completed: [], pending: [], controversy: [] });
+  }
+  var allTasks = await TaskAssignment.find(findQuery).populate('companyId').populate('categoryId');
   var completedTask = [];
   var pendingTask = [];
+  let clientRepNamesList = [], companyRepNamesList = [];
+  let clientRepNames = "", companyRepNames = "";
   for (var i = 0; i < allTasks.length; i++) {
     if (allTasks[i].companyId) {
-      var companyRep = await CompanyRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
-      var clientRep = await ClientRepresentatives.findOne({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
+      var companyRep = await CompanyRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
+      if (companyRep && companyRep.length > 0) {
+        for (let cmpIndex = 0; cmpIndex < companyRep.length; cmpIndex++) {
+          if (companyRep[cmpIndex] && companyRep[cmpIndex].userId && companyRep[cmpIndex].userId.name) {
+            companyRepNamesList.push(companyRep[cmpIndex].userId.name);
+          }
+        }
+        companyRepNames = companyRepNamesList.join();
+      }
+      var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
+      if (clientRep && clientRep.length > 0) {
+        for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
+          if (companyRep[cmpIndex] && companyRep[cmpIndex].userId && companyRep[cmpIndex].userId.name) {
+            clientRepNamesList.push(clientRep[clnIndex].userId.name);
+          }
+        }
+        clientRepNames = clientRepNamesList.join();
+      }
       var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
-    } if (allTasks[i].categoryId) {
+    } 
+    if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
     var obj = {
       taxonomy: categoryWithClientTaxonomy && categoryWithClientTaxonomy.clientTaxonomyId ? categoryWithClientTaxonomy.clientTaxonomyId.taxonomyName : null,
       companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
-      companyRepresentative: companyRep && companyRep.userId ? companyRep.userId.name : null,
-      clientRrepresentative: clientRep && clientRep.userId ? clientRep.userId.name : null,
+      companyRepresentative: companyRepNames,
+      clientRrepresentative: clientRepNames,
       isChecked: false,
       companyId: allTasks[i].companyId ? allTasks[i].companyId.id : null,
     }
@@ -1499,7 +1583,6 @@ export const reports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
   for (var i = 0; i < controversyTask.length; i++) {
-    console.log(JSON.stringify(controversyTask[i], null, 3))
     if (controversyTask[i].companyId) {
       var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
     }

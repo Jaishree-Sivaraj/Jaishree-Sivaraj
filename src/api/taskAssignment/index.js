@@ -107,7 +107,7 @@ router.post('/getQaAndAnalyst',
   getQaAndAnalystFromGrp)
 
 /**
-* @api {get} /taskAssignments/task/reports Retrieve my task assignments
+* @api {get} /taskAssignments/task/reports/:role Retrieve my task assignments
 * @apiName RetrieveTaskAssignments
 * @apiGroup TaskAssignment
 * @apiPermission user
@@ -118,7 +118,7 @@ router.post('/getQaAndAnalyst',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/task/reports',
+router.get('/task/reports/:role',
   token({
     required: true
   }),
