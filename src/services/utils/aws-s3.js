@@ -42,7 +42,7 @@ async function fetchFileFromS3(bucketName, keyName) {
             console.log('headErr', headErr)
             var myBucket = bucketName;
             var signedUrlExpireSeconds = 60 * 10;
-            console.log('myBucket', myBucket);
+            console.log('myBucket', myBucket, keyName);
             if (headErr.code === 'NotFound') {
                 var noImageurl = s3.getSignedUrl('getObject', {
                     Bucket: myBucket,
