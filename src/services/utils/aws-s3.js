@@ -46,7 +46,7 @@ async function fetchFileFromS3(bucketName, keyName) {
             if (headErr.code === 'NotFound') {
                 var noImageurl = s3.getSignedUrl('getObject', {
                     Bucket: myBucket,
-                    Key: "no-image.jpg",
+                    Key: "no-image.png",
                     Expires: signedUrlExpireSeconds
                 })
                 console.log('noImageurl', noImageurl);
