@@ -49,6 +49,7 @@ async function fetchFileFromS3(bucketName, keyName) {
                     Key: "no-image.jpg",
                     Expires: signedUrlExpireSeconds
                 })
+                console.log('noImageurl', noImageurl);
                 resolve(noImageurl);
             } else {
                 console.log('in else catch')
