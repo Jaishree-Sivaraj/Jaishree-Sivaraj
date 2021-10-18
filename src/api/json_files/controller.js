@@ -80,10 +80,10 @@ export const retrieveJsonFiles = async ({ params }, res, next) => {
 export const payLoadGenerationDetails = async ({ params }, res, next) => {
   let response = { pendingCompaniesData: [], completedCompaniesData: [] };
   if (params.type == 'data') {
-    var companiesTasks = await CompaniesTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate('categoryId').populate({
+    var companiesTasks = await CompaniesTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true, overAllCompanyTaskStatus: true }).populate('categoryId').populate({
       path: 'companyId',
       populate: {
-        path: 'clientTaxonomyId'
+        path: 'clientTaxonomyId',
       }
     });
     for (let index = 0; index < companiesTasks.length; index++) {
@@ -95,7 +95,12 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
         "taxonomyName": (companiesTasks[index].companyId && companiesTasks[index].companyId.clientTaxonomyId) ? companiesTasks[index].companyId.clientTaxonomyId.taxonomyName : null,
         "year": companiesTasks[index].year
       }
-      response.pendingCompaniesData.push(obj);
+      var companyFound = response.pendingCompaniesData.find(function (rec) {
+        return (rec.companyId === obj.companyId && rec.year === obj.year)
+      })
+      if (!companyFound) {
+        response.pendingCompaniesData.push(obj);
+      }
     }
   } else if (params.type == 'controversy') {
     var controversyTasks = await ControversyTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate({
@@ -115,10 +120,7 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       response.pendingCompaniesData.push(obj);
     }
   }
-  await JsonFiles.find({
-    'type': params.type,
-    'status': true
-  }).populate({
+  await JsonFiles.find({ 'type': params.type, 'status': true }).populate({
     path: 'companyId',
     populate: {
       path: 'clientTaxonomyId'
