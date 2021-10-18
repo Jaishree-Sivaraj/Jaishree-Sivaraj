@@ -2,6 +2,7 @@ import { success, notFound } from '../../services/response/'
 import { JsonFiles } from '.'
 import { CompaniesTasks } from "../companies_tasks";
 import { Controversy } from "../controversy"
+import _ from 'lodash'
 import { ControversyTasks } from "../controversy_tasks"
 import * as AWS from 'aws-sdk'
 import { DerivedDatapoints } from '../derived_datapoints'
@@ -190,11 +191,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
         }
       }
     });
-    await storeFileInS3({
-      "message": "Success.",
-      "status": 200,
-      "data": jsonResponseObject
-    }, body.companyId, body.year).then(async function (s3Data) {
+    await storeFileInS3({ "message": "Success.", "status": 200, "data": jsonResponseObject }, 'data', body.companyId, body.year).then(async function (s3Data) {
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
@@ -220,7 +217,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   } else if (body.type && body.type === 'controversy') {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
     if (companyDetails) {
-      let companyControversyYears = await Controversy.find({ companyId: params.companyId, isActive: true, status: true }).distinct('year');
+      let companyControversyYears = await Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year');
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
@@ -235,7 +232,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
             companyName: companyDetails.companyName,
             Data: []
           };
-          let companyControversiesYearwise = await Controversy.find({ companyId: params.companyId, year: year, isActive: true, status: true })
+          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, isActive: true, status: true })
             .populate('createdBy')
             .populate('companyId')
             .populate('datapointId');
@@ -273,7 +270,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
                       sourceURL: dpObj.sourceURL,
                       Textsnippet: dpObj.textSnippet,
                       sourcePublicationDate: dpObj.sourcePublicationDate
-                    })  
+                    })
                     if (dpObj.response == 'Very High') {
                       responseValue = 4;
                     } else if (dpObj.response == 'High') {
@@ -284,10 +281,10 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
                       responseValue = 1;
                     } else {
                       responseValue = 0;
-                    }   
-                    if( responseValue > currentResponseValue ) {
+                    }
+                    if (responseValue > currentResponseValue) {
                       if (responseValue == 4) {
-                        dataObject.ResponseUnit =  'Very High';
+                        dataObject.ResponseUnit = 'Very High';
                       } else if (responseValue == 3) {
                         dataObject.ResponseUnit = 'High';
                       } else if (responseValue == 2) {
@@ -295,7 +292,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
                       } else if (responseValue == 1) {
                         dataObject.ResponseUnit = 'Low';
                       }
-                    }             
+                    }
                   }
                 }
               }
