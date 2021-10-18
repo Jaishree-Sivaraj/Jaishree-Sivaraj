@@ -370,16 +370,13 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
         return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
       })
       await TaskAssignment.find(findQuery)
-        .sort({
-          createdAt: -1,
-        })
         .populate("createdBy")
-        .populate("companyId")
         .populate("categoryId")
         .populate("groupId")
         .populate("batchId")
         .populate("analystId")
         .populate("qaId")
+        .populate("companyId")
         .then((taskAssignments) => {
           for (let index = 0; index < taskAssignments.length; index++) {
             const object = taskAssignments[index];
@@ -410,7 +407,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
 
             if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
               if (object.taskStatus != "Completed") {
-                finalResponseObject.adminTaskList.pendingList.push(taskObject)
+                finalResponseObject.adminTaskList.pendingList.push(taskObject);
               } else if (object.taskStatus == "Completed"){
                 finalResponseObject.adminTaskList.completedList.push(taskObject)
               }
@@ -430,6 +427,13 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
           });
         });     
     }
+    finalResponseObject.groupAdminTaskList.controversyList = _.sortBy(finalResponseObject.groupAdminTaskList.controversyList, 'company')
+    finalResponseObject.adminTaskList.controversyList = _.sortBy(finalResponseObject.adminTaskList.controversyList, 'company')
+    finalResponseObject.groupAdminTaskList.completedList = _.sortBy(finalResponseObject.groupAdminTaskList.completedList, 'company')
+    finalResponseObject.groupAdminTaskList.pendingList = _.sortBy(finalResponseObject.groupAdminTaskList.pendingList, 'company')
+    finalResponseObject.adminTaskList.pendingList = _.sortBy(finalResponseObject.adminTaskList.pendingList, 'company');
+    finalResponseObject.adminTaskList.completedList = _.sortBy(finalResponseObject.adminTaskList.completedList, 'company');
+    
     return res.status(200).json({
       status: "200",
       message: "Tasks retrieved successfully!",
@@ -1603,6 +1607,10 @@ export const reports = async ({ user, params }, res, next) => {
   pendingTask = _.uniqBy(pendingTask, function (e) {
     return e.companyId;
   })
+  completedTask = _.sortBy(completedTask, 'companyName');
+  pendingTask = _.sortBy(pendingTask, 'companyName');
+  controversy = _.sortBy(controversy, 'companyName');
+  
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
