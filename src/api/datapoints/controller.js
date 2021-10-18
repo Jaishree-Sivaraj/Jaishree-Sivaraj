@@ -2996,7 +2996,6 @@ export const repDatapointDetails = async (req, res, next) => {
           };                            
         }
         datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
-        datapointsObject.currentData.push(currentDatapointsObject);
       }
       let totalHistories = 0;
       if (historyYear.length > 5 ) {
@@ -3187,40 +3186,40 @@ export const repDatapointDetails = async (req, res, next) => {
                 boardDatapointsObject.comments.push(rejectComment);
               } 
             }
-              currentDatapointsObject = {
-                status: 'Completed',
-                dpCode: dpTypeValues.code,
-                dpCodeId: dpTypeValues.id,
-                fiscalYear: currentYear[currentYearIndex],
-                description: dpTypeValues.description,
-                dataType: dpTypeValues.dataType,
-                inputValues:inputValues,
-                textSnippet: object.textSnippet,
-                pageNo: object.pageNumber,
-                screenShot: s3DataScreenshot,
-                response: object.response,
-                memberName: object.memberName,
-                sourceList: sourceTypeDetails,
-                source: sourceDetails,
-                error: {
-                  hasError: object.hasError,
-                  refData: {
-                    description : dpTypeValues.description,
-                    response : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.response : '',
-                    screenShot : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : '',
-                    dataType : dpTypeValues.dataType,
-                    fiscalYear : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
-                    textSnippet : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
-                    pageNo : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
-                    source : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.source : '',
-                    additionalDetails: []
-                  },
-                  comment: '',
-                  errorStatus: object.correctionStatus
+            currentDatapointsObject = {
+              status: 'Completed',
+              dpCode: dpTypeValues.code,
+              dpCodeId: dpTypeValues.id,
+              fiscalYear: currentYear[currentYearIndex],
+              description: dpTypeValues.description,
+              dataType: dpTypeValues.dataType,
+              inputValues:inputValues,
+              textSnippet: object.textSnippet,
+              pageNo: object.pageNumber,
+              screenShot: s3DataScreenshot,
+              response: object.response,
+              memberName: object.memberName,
+              sourceList: sourceTypeDetails,
+              source: sourceDetails,
+              error: {
+                hasError: object.hasError,
+                refData: {
+                  description : dpTypeValues.description,
+                  response : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.response : '',
+                  screenShot : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : '',
+                  dataType : dpTypeValues.dataType,
+                  fiscalYear : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
+                  textSnippet : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
+                  pageNo : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  source : errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.source : '',
+                  additionalDetails: []
                 },
-                comments: [],
-                additionalDetails:[]
-              } 
+                comment: '',
+                errorStatus: object.correctionStatus
+              },
+              comments: [],
+              additionalDetails:[]
+            } 
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                 let optionValues = [], optionVal = '', currentValue;
@@ -3316,99 +3315,99 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceDetails.value = sourceValues._id;
               }
             }
-              if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
-                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
-                if(errorDetailsObject[0]){
-                if(errorDetailsObject[0].raisedBy == req.body.role){
-                  let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
-                  let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
-                  boardDatapointsObject.comments.push(comments);
-                  boardDatapointsObject.comments.push(rejectComment);
-                }
-               }
-                currentDatapointsObject = {
-                  status: 'Completed',
-                  dpCode: dpTypeValues.code,
-                  dpCodeId: dpTypeValues.id,
-                  fiscalYear: currentYear[currentYearIndex],
-                  description: dpTypeValues.description,
-                  dataType: dpTypeValues.dataType,
-                  inputValues:inputValues,
-                  textSnippet: object.textSnippet,
-                  pageNo: object.pageNumber,
-                  screenShot: s3DataScreenshot,
-                  response: object.response,
-                  memberName: object.memberName,
-                  sourceList: sourceTypeDetails,
-                  source: sourceDetails,
-                  error: {
-                    hasError: object.hasError,
-                    refData: {                  
-                      description: dpTypeValues.description,
-                      dataType: dpTypeValues.dataType,
-                      textSnippet: '',
-                      pageNo: '',
-                      screenShot: null,
-                      response: '',
-                      source: null,
-                      additionalDetails:[]
-                    },
-                    comment: '',
-                    errorStatus: object.correctionStatus
-                  },
-                  comments: [],
-                  additionalDetails:[]
-              } 
-              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                if(!requiredFields.includes(displayFields[dIndex].fieldName)){
-                  let optionValues = [], optionVal = '', currentValue;
-                  if(displayFields[dIndex].inputType == 'Select'){
-                    let options = displayFields[dIndex].inputValues.split(',');
-                    if(options.length > 0){
-                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                        optionValues.push({
-                          value: options[optIndex],
-                          label: options[optIndex]
-                        });                        
-                      }
-                    } else {
-                      optionValues = [];
-                    }
-                  } else {
-                    optionVal = displayFields[dIndex].inputValues;
-                  }
-                  if(displayFields[dIndex].inputType == 'Static'){
-                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
-                  } else {
-                    let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
-                    if(displayFields[dIndex].inputType == 'Select'){
-                      currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                    } else {
-                      currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
-                    }
-                  }
-                  currentDatapointsObject.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
-                  currentDatapointsObject.error.refData.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue: '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
-                }
+            if(object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false){
+              let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
+              if(errorDetailsObject[0]){
+              if(errorDetailsObject[0].raisedBy == req.body.role){
+                let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
+                let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
+                boardDatapointsObject.comments.push(comments);
+                boardDatapointsObject.comments.push(rejectComment);
               }
-              }                   
-               boardDatapointsObject.status = object.correctionStatus;
+              }
+              currentDatapointsObject = {
+                status: 'Completed',
+                dpCode: dpTypeValues.code,
+                dpCodeId: dpTypeValues.id,
+                fiscalYear: currentYear[currentYearIndex],
+                description: dpTypeValues.description,
+                dataType: dpTypeValues.dataType,
+                inputValues:inputValues,
+                textSnippet: object.textSnippet,
+                pageNo: object.pageNumber,
+                screenShot: s3DataScreenshot,
+                response: object.response,
+                memberName: object.memberName,
+                sourceList: sourceTypeDetails,
+                source: sourceDetails,
+                error: {
+                  hasError: object.hasError,
+                  refData: {                  
+                    description: dpTypeValues.description,
+                    dataType: dpTypeValues.dataType,
+                    textSnippet: '',
+                    pageNo: '',
+                    screenShot: null,
+                    response: '',
+                    source: null,
+                    additionalDetails:[]
+                  },
+                  comment: '',
+                  errorStatus: object.correctionStatus
+                },
+                comments: [],
+                additionalDetails:[]
+            } 
+            for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+              if(!requiredFields.includes(displayFields[dIndex].fieldName)){
+                let optionValues = [], optionVal = '', currentValue;
+                if(displayFields[dIndex].inputType == 'Select'){
+                  let options = displayFields[dIndex].inputValues.split(',');
+                  if(options.length > 0){
+                    for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                      optionValues.push({
+                        value: options[optIndex],
+                        label: options[optIndex]
+                      });                        
+                    }
+                  } else {
+                    optionValues = [];
+                  }
+                } else {
+                  optionVal = displayFields[dIndex].inputValues;
+                }
+                if(displayFields[dIndex].inputType == 'Static'){
+                  currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+                } else {
+                  let responseDetails = currentAllBoardMemberMatrixDetails.find((obj) => obj.year == currentYear[currentYearIndex]);
+                  if(displayFields[dIndex].inputType == 'Select'){
+                    currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                  } else {
+                    currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                  }
+                }
+                currentDatapointsObject.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+                currentDatapointsObject.error.refData.additionalDetails.push({
+                  fieldName: displayFields[dIndex].fieldName,
+                  name: displayFields[dIndex].name,
+                  value: currentValue ? currentValue: '',
+                  inputType: displayFields[dIndex].inputType,
+                  inputValues: optionValues.length > 0 ? optionValues : optionVal
+                })
+              }
+            }            
+            boardDatapointsObject.currentData.push(currentDatapointsObject);                 
+            boardDatapointsObject.status = object.correctionStatus;
+            }    
             };
           }        
           boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
-          boardDatapointsObject.currentData.push(currentDatapointsObject);  
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
           let historicalDatapointsObject = {};
@@ -3491,10 +3490,10 @@ export const repDatapointDetails = async (req, res, next) => {
                     inputValues: optionValues.length > 0 ? optionValues : optionVal
                   })
                 }
-              }
+              }              
+            boardDatapointsObject.historicalData.push(historicalDatapointsObject);
             }
           });
-          boardDatapointsObject.historicalData.push(historicalDatapointsObject);
       }
       return res.status(200).send({
         status: "200",
