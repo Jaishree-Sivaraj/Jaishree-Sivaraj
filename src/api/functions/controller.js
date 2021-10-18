@@ -64,47 +64,219 @@ export const destroy = ({ params }, res, next) =>
     .catch(next)
 
 export const updateSourceUrls = async ({ params }, res, next) => {
-
-  var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, isActive : true, status: true, url: { $nin: ["", " "]} }).limit(2000);
-  let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
-  console.log('uniq urls length ==>', standAlonepointsList.length);
-  //launch
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  for (let index = 0; index < standAlonepointsList.length; index++) {
-    let url = '';
-    if (standAlonepointsList[index] && standAlonepointsList[index].url) {
-      url = standAlonepointsList[index].url;
-    }
-    if (standAlonepointsList[index]) {
-      let link = standAlonepointsList[index].url ? standAlonepointsList[index].url.trim() : '';
-      console.log('link===>', link);
-      let urlResult = false;
-      await validUrl.isUri(link, function (err, exists) {
-        urlResult = exists;
-      });
-      await validUrl.isHttpUri(link, function (err, exists) {
-        urlResult = exists;
-      });
-      await validUrl.isHttpsUri(link, function (err, exists) {
-        urlResult = exists;
-      });
-      await validUrl.isWebUri(link, function (err, exists) {
-        urlResult = exists;
-      });
-      if (!urlResult) {
-        let validationResult = await validateURL(link);
-        if (!validationResult) {
-          link = "http://" + link;
-          let httpValidationResult = await validUrl.isUri(link);
-          if (!httpValidationResult) {
-            link = "https://" + link;
-            let httpsValidationResult = await validUrl.isUri(link);
-            if (!httpsValidationResult) {
-              await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+  if (params.id == 'Standalone') {
+    var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(2000);
+    let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
+    console.log('uniq urls length ==>', standAlonepointsList.length);
+    //launch
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    for (let index = 0; index < standAlonepointsList.length; index++) {
+      let url = '';
+      if (standAlonepointsList[index] && standAlonepointsList[index].url) {
+        url = standAlonepointsList[index].url;
+      }
+      if (standAlonepointsList[index]) {
+        let link = standAlonepointsList[index].url ? standAlonepointsList[index].url.trim() : '';
+        console.log('link===>', link);
+        let urlResult = false;
+        await validUrl.isUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isHttpUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isHttpsUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isWebUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        if (!urlResult) {
+          let validationResult = await validateURL(link);
+          if (!validationResult) {
+            link = "http://" + link;
+            let httpValidationResult = await validUrl.isUri(link);
+            if (!httpValidationResult) {
+              link = "https://" + link;
+              let httpsValidationResult = await validUrl.isUri(link);
+              if (!httpsValidationResult) {
+                await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+              } else {
+                try {
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  await page.goto(link);
+                  let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+                  console.log('actualfile', actualFile);
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                  console.log('s3FileObject1', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                    .catch((error) => { 
+                      console.log('1', error.message); 
+                    })
+                  }
+                  await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                } catch (e) {
+                  if (path.extname(link).includes('.pdf')) {
+                    await axios({
+                      method: "get",
+                      url: link,
+                      responseType: "stream"
+                    }).then(async function (resp) {
+                      let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                      console.log('matchingRecords length', matchingRecords.length);
+                      let fileName = '', publicationDate = '', fiscalYear = '';
+                      if (matchingRecords.length > 0) {
+                        fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                        try {
+                          publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                        } catch (error) {
+                          publicationDate = new Date();
+                        }
+                        fiscalYear = matchingRecords[0].year;
+                      } else {
+                        fileName = 'cmp_source_' + index + 1;
+                      }
+                      let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                      let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                      console.log('s3FileObject2', s3FileObject);
+                      if (matchingRecords.length > 0) {
+                        await CompanySources.create({
+                          companyId: matchingRecords[0].companyId.id,
+                          sourceTypeId: null,
+                          sourceSubTypeId: null,
+                          isMultiYear: false,
+                          isMultiSource: false,
+                          sourceUrl: link,
+                          sourceFile: fileName,
+                          publicationDate: publicationDate,
+                          fiscalYear: fiscalYear,
+                          name: 'cmp_source' + index + 1,
+                          newSourceTypeName: '',
+                          newSubSourceTypeName: '',
+                          status: true
+                        })
+                        .catch((error) => { 
+                          console.log('2', error.message); 
+                        })
+                      }
+                      await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                      for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                        let recordObject = matchingRecords[recordsIndex];
+                        if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                          await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                            $set: {
+                              sourceName1: 'cmp_source' + (recordsIndex + 1),
+                              sourceFile: s3FileObject.Key
+                            }
+                          });
+                        }
+                      }
+                    })
+                      .catch(async (error) => {
+                        await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                      });
+                  } else {
+                    try {
+                      await page.goto(link);
+                      let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                      console.log('matchingRecords length', matchingRecords.length);
+                      let fileName = '', publicationDate = '', fiscalYear = '';
+                      if (matchingRecords.length > 0) {
+                        fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                        try {
+                          publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                        } catch (error) {
+                          publicationDate = new Date();
+                        }
+                        fiscalYear = matchingRecords[0].year;
+                      } else {
+                        fileName = 'cmp_source_' + index + 1;
+                      }
+                      let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                      let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                      console.log('s3FileObject3', s3FileObject);
+                      if (matchingRecords.length > 0) {
+                        await CompanySources.create({
+                          companyId: matchingRecords[0].companyId.id,
+                          sourceTypeId: null,
+                          sourceSubTypeId: null,
+                          isMultiYear: false,
+                          isMultiSource: false,
+                          sourceUrl: link,
+                          sourceFile: fileName,
+                          publicationDate: publicationDate,
+                          fiscalYear: fiscalYear,
+                          name: 'cmp_source' + index + 1,
+                          newSourceTypeName: '',
+                          newSubSourceTypeName: '',
+                          status: true
+                        })
+                        .catch((error) => { 
+                          console.log('3', error.message); 
+                        })
+                      }
+                      await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                      for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                        let recordObject = matchingRecords[recordsIndex];
+                        if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                          await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                            $set: {
+                              sourceName1: 'cmp_source' + (recordsIndex + 1),
+                              sourceFile: s3FileObject.Key
+                            }
+                          });
+                        }
+                      }
+                    } catch (err) {
+                      await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                    }
+                  }
+                }
+              }
             } else {
               try {
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                await page.goto(link);
+                let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
                 if (matchingRecords.length > 0) {
@@ -118,11 +290,9 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 } else {
                   fileName = 'cmp_source_' + index + 1;
                 }
-                await page.goto(link);
                 let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
-                console.log('actualfile', actualFile);
                 let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                console.log('s3FileObject1', s3FileObject);
+                console.log('s3FileObject4', s3FileObject);
                 if (matchingRecords.length > 0) {
                   await CompanySources.create({
                     companyId: matchingRecords[0].companyId.id,
@@ -140,7 +310,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     status: true
                   })
                   .catch((error) => { 
-                    console.log('1', error.message); 
+                    console.log('4', error.message); 
                   })
                 }
                 await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
@@ -162,6 +332,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     url: link,
                     responseType: "stream"
                   }).then(async function (resp) {
+  
                     let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
@@ -178,7 +349,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                     let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
                     let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                    console.log('s3FileObject2', s3FileObject);
+                    console.log('s3FileObject5', s3FileObject);
                     if (matchingRecords.length > 0) {
                       await CompanySources.create({
                         companyId: matchingRecords[0].companyId.id,
@@ -196,10 +367,10 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         status: true
                       })
                       .catch((error) => { 
-                        console.log('2', error.message); 
+                        console.log('5', error.message); 
                       })
                     }
-                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url,isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                     for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                       let recordObject = matchingRecords[recordsIndex];
                       if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -218,7 +389,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 } else {
                   try {
                     await page.goto(link);
-                    let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                    let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
                     console.log('matchingRecords length', matchingRecords.length);
                     let fileName = '', publicationDate = '', fiscalYear = '';
                     if (matchingRecords.length > 0) {
@@ -234,7 +405,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                     let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
                     let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                    console.log('s3FileObject3', s3FileObject);
+                    console.log('s3FileObject6', s3FileObject);
                     if (matchingRecords.length > 0) {
                       await CompanySources.create({
                         companyId: matchingRecords[0].companyId.id,
@@ -252,7 +423,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                         status: true
                       })
                       .catch((error) => { 
-                        console.log('3', error.message); 
+                        console.log('6', error.message); 
                       })
                     }
                     await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
@@ -292,7 +463,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
               let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-              console.log('s3FileObject4', s3FileObject);
+              console.log('s3FileObject7', s3FileObject);
               if (matchingRecords.length > 0) {
                 await CompanySources.create({
                   companyId: matchingRecords[0].companyId.id,
@@ -310,10 +481,10 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   status: true
                 })
                 .catch((error) => { 
-                  console.log('4', error.message); 
+                  console.log('7', error.message); 
                 })
               }
-              await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -332,8 +503,8 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   url: link,
                   responseType: "stream"
                 }).then(async function (resp) {
-
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+  
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
@@ -347,9 +518,13 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   } else {
                     fileName = 'cmp_source_' + index + 1;
                   }
-                  let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                  console.log('resp.data', resp.data);
+                  // let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                  let actualFile = resp.data;
+                  console.log('actualFile', actualFile);
                   let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                  console.log('s3FileObject5', s3FileObject);
+                  console.log('s3FileObject8', s3FileObject);
+                  console.log('matchingRecords.length', matchingRecords.length);
                   if (matchingRecords.length > 0) {
                     await CompanySources.create({
                       companyId: matchingRecords[0].companyId.id,
@@ -358,7 +533,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       isMultiYear: false,
                       isMultiSource: false,
                       sourceUrl: link,
-                      sourceFile: fileName,
+                      sourceFile: s3FileObject.Key,
                       publicationDate: publicationDate,
                       fiscalYear: fiscalYear,
                       name: 'cmp_source' + index + 1,
@@ -367,13 +542,15 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       status: true
                     })
                     .catch((error) => { 
-                      console.log('5', error.message); 
-                    })
+                      console.log('8', error.message); 
+                    });
                   }
-                  await StandaloneDatapoints.updateMany({ url: url,isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    console.log('inside for loop8');
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      console.log('inside if block8');
                       await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
                         $set: {
                           sourceName1: 'cmp_source' + (recordsIndex + 1),
@@ -384,12 +561,12 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   }
                 })
                   .catch(async (error) => {
-                    await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                    await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
                   });
               } else {
                 try {
                   await page.goto(link);
-                  let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
+                  let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                   console.log('matchingRecords length', matchingRecords.length);
                   let fileName = '', publicationDate = '', fiscalYear = '';
                   if (matchingRecords.length > 0) {
@@ -405,7 +582,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   }
                   let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
                   let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                  console.log('s3FileObject6', s3FileObject);
+                  console.log('s3FileObject9', s3FileObject);
                   if (matchingRecords.length > 0) {
                     await CompanySources.create({
                       companyId: matchingRecords[0].companyId.id,
@@ -423,10 +600,10 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                       status: true
                     })
                     .catch((error) => { 
-                      console.log('6', error.message); 
-                    })
+                      console.log('9', error.message); 
+                    });
                   }
-                  await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                   for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                     let recordObject = matchingRecords[recordsIndex];
                     if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
@@ -439,7 +616,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     }
                   }
                 } catch (err) {
-                  await StandaloneDatapoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
                 }
               }
             }
@@ -447,7 +624,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
         } else {
           try {
             await page.goto(link);
-            let matchingRecords = await StandaloneDatapoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
+            let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
             console.log('matchingRecords length', matchingRecords.length);
             let fileName = '', publicationDate = '', fiscalYear = '';
             if (matchingRecords.length > 0) {
@@ -463,7 +640,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
             }
             let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
             let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-            console.log('s3FileObject7', s3FileObject);
+            console.log('s3FileObject10', s3FileObject);
             if (matchingRecords.length > 0) {
               await CompanySources.create({
                 companyId: matchingRecords[0].companyId.id,
@@ -481,8 +658,8 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 status: true
               })
               .catch((error) => { 
-                console.log('7', error.message); 
-              })
+                console.log('10', error.message); 
+              });            
             }
             await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
             for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
@@ -503,7 +680,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 url: link,
                 responseType: "stream"
               }).then(async function (resp) {
-
+  
                 let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
                 console.log('matchingRecords length', matchingRecords.length);
                 let fileName = '', publicationDate = '', fiscalYear = '';
@@ -518,71 +695,9 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 } else {
                   fileName = 'cmp_source_' + index + 1;
                 }
-                console.log('resp.data', resp.data);
-                // let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
                 let actualFile = resp.data;
-                console.log('actualFile', actualFile);
                 let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-                console.log('s3FileObject8', s3FileObject);
-                console.log('matchingRecords.length', matchingRecords.length);
-                if (matchingRecords.length > 0) {
-                  await CompanySources.create({
-                    companyId: matchingRecords[0].companyId.id,
-                    sourceTypeId: null,
-                    sourceSubTypeId: null,
-                    isMultiYear: false,
-                    isMultiSource: false,
-                    sourceUrl: link,
-                    sourceFile: s3FileObject.Key,
-                    publicationDate: publicationDate,
-                    fiscalYear: fiscalYear,
-                    name: 'cmp_source' + index + 1,
-                    newSourceTypeName: '',
-                    newSubSourceTypeName: '',
-                    status: true
-                  })
-                  .catch((error) => { 
-                    console.log('8', error.message); 
-                  });
-                }
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
-                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
-                  console.log('inside for loop8');
-                  let recordObject = matchingRecords[recordsIndex];
-                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
-                    console.log('inside if block8');
-                    await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
-                      $set: {
-                        sourceName1: 'cmp_source' + (recordsIndex + 1),
-                        sourceFile: s3FileObject.Key
-                      }
-                    });
-                  }
-                }
-              })
-                .catch(async (error) => {
-                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
-                });
-            } else {
-              try {
-                await page.goto(link);
-                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
-                console.log('matchingRecords length', matchingRecords.length);
-                let fileName = '', publicationDate = '', fiscalYear = '';
-                if (matchingRecords.length > 0) {
-                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
-                  try {
-                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
-                  } catch (error) {
-                    publicationDate = new Date();
-                  }
-                  fiscalYear = matchingRecords[0].year;
-                } else {
-                  fileName = 'cmp_source_' + index + 1;
-                }
-                let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
-                let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-                console.log('s3FileObject9', s3FileObject);
+                console.log('s3FileObject11', s3FileObject);
                 if (matchingRecords.length > 0) {
                   await CompanySources.create({
                     companyId: matchingRecords[0].companyId.id,
@@ -599,9 +714,66 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                     newSubSourceTypeName: '',
                     status: true
                   })
-                  .catch((error) => { 
-                    console.log('9', error.message); 
-                  });
+                  .catch((error) => {
+                    console.log('11', error.message);
+                  })
+                }
+                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              })
+                .catch(async (error) => {
+                  await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                });
+            } else {
+              try {
+                await page.goto(link);
+  
+                let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                console.log('s3FileObject12', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => {
+                    console.log('12', error.message);
+                  })
                 }
                 await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
                 for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
@@ -622,9 +794,395 @@ export const updateSourceUrls = async ({ params }, res, next) => {
           }
         }
       } else {
+        await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+      }
+    }
+    await browser.close();
+    return res.status(200).json({ status: "200", message: "Completed successfully!" });
+  } else if(params.id == 'Board') {
+    var standAlonepoints = await BoardMembersMatrixDataPoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(2000);
+    let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
+    console.log('uniq urls length ==>', standAlonepointsList.length);
+    //launch
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    for (let index = 0; index < standAlonepointsList.length; index++) {
+    let url = '';
+    if (standAlonepointsList[index] && standAlonepointsList[index].url) {
+    url = standAlonepointsList[index].url;
+    }
+    if (standAlonepointsList[index]) {
+    let link = standAlonepointsList[index].url ? standAlonepointsList[index].url.trim() : '';
+    console.log('link===>', link);
+    let urlResult = false;
+    await validUrl.isUri(link, function (err, exists) {
+      urlResult = exists;
+    });
+    await validUrl.isHttpUri(link, function (err, exists) {
+      urlResult = exists;
+    });
+    await validUrl.isHttpsUri(link, function (err, exists) {
+      urlResult = exists;
+    });
+    await validUrl.isWebUri(link, function (err, exists) {
+      urlResult = exists;
+    });
+    if (!urlResult) {
+      let validationResult = await validateURL(link);
+      if (!validationResult) {
+        link = "http://" + link;
+        let httpValidationResult = await validUrl.isUri(link);
+        if (!httpValidationResult) {
+          link = "https://" + link;
+          let httpsValidationResult = await validUrl.isUri(link);
+          if (!httpsValidationResult) {
+            await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+          } else {
+            try {
+              let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+              console.log('matchingRecords length', matchingRecords.length);
+              let fileName = '', publicationDate = '', fiscalYear = '';
+              if (matchingRecords.length > 0) {
+                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                try {
+                  publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                } catch (error) {
+                  publicationDate = new Date();
+                }
+                fiscalYear = matchingRecords[0].year;
+              } else {
+                fileName = 'cmp_source_' + index + 1;
+              }
+              await page.goto(link);
+              let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+              console.log('actualfile', actualFile);
+              let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+              console.log('s3FileObject1', s3FileObject);
+              if (matchingRecords.length > 0) {
+                await CompanySources.create({
+                  companyId: matchingRecords[0].companyId.id,
+                  sourceTypeId: null,
+                  sourceSubTypeId: null,
+                  isMultiYear: false,
+                  isMultiSource: false,
+                  sourceUrl: link,
+                  sourceFile: fileName,
+                  publicationDate: publicationDate,
+                  fiscalYear: fiscalYear,
+                  name: 'cmp_source' + index + 1,
+                  newSourceTypeName: '',
+                  newSubSourceTypeName: '',
+                  status: true
+                })
+                .catch((error) => { 
+                  console.log('1', error.message); 
+                })
+              }
+              await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                let recordObject = matchingRecords[recordsIndex];
+                if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                  await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                    $set: {
+                      sourceName1: 'cmp_source' + (recordsIndex + 1),
+                      sourceFile: s3FileObject.Key
+                    }
+                  });
+                }
+              }
+            } catch (e) {
+              if (path.extname(link).includes('.pdf')) {
+                await axios({
+                  method: "get",
+                  url: link,
+                  responseType: "stream"
+                }).then(async function (resp) {
+                  let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                  console.log('s3FileObject2', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                    .catch((error) => { 
+                      console.log('2', error.message); 
+                    })
+                  }
+                  await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                })
+                  .catch(async (error) => {
+                    await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                  });
+              } else {
+                try {
+                  await page.goto(link);
+                  let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                  console.log('s3FileObject3', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                    .catch((error) => { 
+                      console.log('3', error.message); 
+                    })
+                  }
+                  await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                } catch (err) {
+                  await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                }
+              }
+            }
+          }
+        } else {
+          try {
+            await page.goto(link);
+            let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
+            console.log('matchingRecords length', matchingRecords.length);
+            let fileName = '', publicationDate = '', fiscalYear = '';
+            if (matchingRecords.length > 0) {
+              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+              try {
+                publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+              } catch (error) {
+                publicationDate = new Date();
+              }
+              fiscalYear = matchingRecords[0].year;
+            } else {
+              fileName = 'cmp_source_' + index + 1;
+            }
+            let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+            let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+            console.log('s3FileObject4', s3FileObject);
+            if (matchingRecords.length > 0) {
+              await CompanySources.create({
+                companyId: matchingRecords[0].companyId.id,
+                sourceTypeId: null,
+                sourceSubTypeId: null,
+                isMultiYear: false,
+                isMultiSource: false,
+                sourceUrl: link,
+                sourceFile: fileName,
+                publicationDate: publicationDate,
+                fiscalYear: fiscalYear,
+                name: 'cmp_source' + index + 1,
+                newSourceTypeName: '',
+                newSubSourceTypeName: '',
+                status: true
+              })
+              .catch((error) => { 
+                console.log('4', error.message); 
+              })
+            }
+            await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+            for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+              let recordObject = matchingRecords[recordsIndex];
+              if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                  $set: {
+                    sourceName1: 'cmp_source' + (recordsIndex + 1),
+                    sourceFile: s3FileObject.Key
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            if (path.extname(link).includes('.pdf')) {
+              await axios({
+                method: "get",
+                url: link,
+                responseType: "stream"
+              }).then(async function (resp) {
+
+                let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, isActive: true,status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                console.log('s3FileObject5', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => { 
+                    console.log('5', error.message); 
+                  })
+                }
+                await BoardMembersMatrixDataPoints.updateMany({ url: url,isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              })
+                .catch(async (error) => {
+                  await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+                });
+            } else {
+              try {
+                await page.goto(link);
+                let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                console.log('s3FileObject6', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                  .catch((error) => { 
+                    console.log('6', error.message); 
+                  })
+                }
+                await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              } catch (err) {
+                await BoardMembersMatrixDataPoints.updateMany({ url: url, isActive: true,status: true }, { $set: { isCounted: true } });
+              }
+            }
+          }
+        }
+      } else {
         try {
           await page.goto(link);
-          let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+          let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url,isActive: true, status: true }).populate('companyId').populate('datapointId');
           console.log('matchingRecords length', matchingRecords.length);
           let fileName = '', publicationDate = '', fiscalYear = '';
           if (matchingRecords.length > 0) {
@@ -640,7 +1198,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
           }
           let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
           let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-          console.log('s3FileObject10', s3FileObject);
+          console.log('s3FileObject7', s3FileObject);
           if (matchingRecords.length > 0) {
             await CompanySources.create({
               companyId: matchingRecords[0].companyId.id,
@@ -658,14 +1216,14 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               status: true
             })
             .catch((error) => { 
-              console.log('10', error.message); 
-            });            
+              console.log('7', error.message); 
+            })
           }
-          await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+          await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
           for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
             let recordObject = matchingRecords[recordsIndex];
             if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
-              await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+              await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
                 $set: {
                   sourceName1: 'cmp_source' + (recordsIndex + 1),
                   sourceFile: s3FileObject.Key
@@ -681,7 +1239,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               responseType: "stream"
             }).then(async function (resp) {
 
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+              let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
@@ -695,9 +1253,13 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               } else {
                 fileName = 'cmp_source_' + index + 1;
               }
+              console.log('resp.data', resp.data);
+              // let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
               let actualFile = resp.data;
+              console.log('actualFile', actualFile);
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
-              console.log('s3FileObject11', s3FileObject);
+              console.log('s3FileObject8', s3FileObject);
+              console.log('matchingRecords.length', matchingRecords.length);
               if (matchingRecords.length > 0) {
                 await CompanySources.create({
                   companyId: matchingRecords[0].companyId.id,
@@ -706,7 +1268,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   isMultiYear: false,
                   isMultiSource: false,
                   sourceUrl: link,
-                  sourceFile: fileName,
+                  sourceFile: s3FileObject.Key,
                   publicationDate: publicationDate,
                   fiscalYear: fiscalYear,
                   name: 'cmp_source' + index + 1,
@@ -714,15 +1276,17 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   newSubSourceTypeName: '',
                   status: true
                 })
-                .catch((error) => {
-                  console.log('11', error.message);
-                })
+                .catch((error) => { 
+                  console.log('8', error.message); 
+                });
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                console.log('inside for loop8');
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
-                  await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                  console.log('inside if block8');
+                  await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
                     $set: {
                       sourceName1: 'cmp_source' + (recordsIndex + 1),
                       sourceFile: s3FileObject.Key
@@ -732,13 +1296,12 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
             })
               .catch(async (error) => {
-                await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
               });
           } else {
             try {
               await page.goto(link);
-
-              let matchingRecords = await StandaloneDatapoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+              let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
               console.log('matchingRecords length', matchingRecords.length);
               let fileName = '', publicationDate = '', fiscalYear = '';
               if (matchingRecords.length > 0) {
@@ -754,7 +1317,7 @@ export const updateSourceUrls = async ({ params }, res, next) => {
               }
               let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
               let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
-              console.log('s3FileObject12', s3FileObject);
+              console.log('s3FileObject9', s3FileObject);
               if (matchingRecords.length > 0) {
                 await CompanySources.create({
                   companyId: matchingRecords[0].companyId.id,
@@ -771,15 +1334,15 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                   newSubSourceTypeName: '',
                   status: true
                 })
-                .catch((error) => {
-                  console.log('12', error.message);
-                })
+                .catch((error) => { 
+                  console.log('9', error.message); 
+                });
               }
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
               for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
                 let recordObject = matchingRecords[recordsIndex];
                 if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
-                  await StandaloneDatapoints.updateOne({ _id: recordObject.id }, {
+                  await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
                     $set: {
                       sourceName1: 'cmp_source' + (recordsIndex + 1),
                       sourceFile: s3FileObject.Key
@@ -788,17 +1351,925 @@ export const updateSourceUrls = async ({ params }, res, next) => {
                 }
               }
             } catch (err) {
-              await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+              await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
             }
           }
         }
       }
     } else {
-      await StandaloneDatapoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+      try {
+        await page.goto(link);
+        let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+        console.log('matchingRecords length', matchingRecords.length);
+        let fileName = '', publicationDate = '', fiscalYear = '';
+        if (matchingRecords.length > 0) {
+          fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+          try {
+            publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+          } catch (error) {
+            publicationDate = new Date();
+          }
+          fiscalYear = matchingRecords[0].year;
+        } else {
+          fileName = 'cmp_source_' + index + 1;
+        }
+        let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+        let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+        console.log('s3FileObject10', s3FileObject);
+        if (matchingRecords.length > 0) {
+          await CompanySources.create({
+            companyId: matchingRecords[0].companyId.id,
+            sourceTypeId: null,
+            sourceSubTypeId: null,
+            isMultiYear: false,
+            isMultiSource: false,
+            sourceUrl: link,
+            sourceFile: fileName,
+            publicationDate: publicationDate,
+            fiscalYear: fiscalYear,
+            name: 'cmp_source' + index + 1,
+            newSourceTypeName: '',
+            newSubSourceTypeName: '',
+            status: true
+          })
+          .catch((error) => { 
+            console.log('10', error.message); 
+          });            
+        }
+        await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+        for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+          let recordObject = matchingRecords[recordsIndex];
+          if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+            await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+              $set: {
+                sourceName1: 'cmp_source' + (recordsIndex + 1),
+                sourceFile: s3FileObject.Key
+              }
+            });
+          }
+        }
+      } catch (e) {
+        if (path.extname(link).includes('.pdf')) {
+          await axios({
+            method: "get",
+            url: link,
+            responseType: "stream"
+          }).then(async function (resp) {
+
+            let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+            console.log('matchingRecords length', matchingRecords.length);
+            let fileName = '', publicationDate = '', fiscalYear = '';
+            if (matchingRecords.length > 0) {
+              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+              try {
+                publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+              } catch (error) {
+                publicationDate = new Date();
+              }
+              fiscalYear = matchingRecords[0].year;
+            } else {
+              fileName = 'cmp_source_' + index + 1;
+            }
+            let actualFile = resp.data;
+            let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+            console.log('s3FileObject11', s3FileObject);
+            if (matchingRecords.length > 0) {
+              await CompanySources.create({
+                companyId: matchingRecords[0].companyId.id,
+                sourceTypeId: null,
+                sourceSubTypeId: null,
+                isMultiYear: false,
+                isMultiSource: false,
+                sourceUrl: link,
+                sourceFile: fileName,
+                publicationDate: publicationDate,
+                fiscalYear: fiscalYear,
+                name: 'cmp_source' + index + 1,
+                newSourceTypeName: '',
+                newSubSourceTypeName: '',
+                status: true
+              })
+              .catch((error) => {
+                console.log('11', error.message);
+              })
+            }
+            await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+            for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+              let recordObject = matchingRecords[recordsIndex];
+              if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                  $set: {
+                    sourceName1: 'cmp_source' + (recordsIndex + 1),
+                    sourceFile: s3FileObject.Key
+                  }
+                });
+              }
+            }
+          })
+            .catch(async (error) => {
+              await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+            });
+        } else {
+          try {
+            await page.goto(link);
+
+            let matchingRecords = await BoardMembersMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+            console.log('matchingRecords length', matchingRecords.length);
+            let fileName = '', publicationDate = '', fiscalYear = '';
+            if (matchingRecords.length > 0) {
+              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+              try {
+                publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+              } catch (error) {
+                publicationDate = new Date();
+              }
+              fiscalYear = matchingRecords[0].year;
+            } else {
+              fileName = 'cmp_source_' + index + 1;
+            }
+            let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+            let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+            console.log('s3FileObject12', s3FileObject);
+            if (matchingRecords.length > 0) {
+              await CompanySources.create({
+                companyId: matchingRecords[0].companyId.id,
+                sourceTypeId: null,
+                sourceSubTypeId: null,
+                isMultiYear: false,
+                isMultiSource: false,
+                sourceUrl: link,
+                sourceFile: fileName,
+                publicationDate: publicationDate,
+                fiscalYear: fiscalYear,
+                name: 'cmp_source' + index + 1,
+                newSourceTypeName: '',
+                newSubSourceTypeName: '',
+                status: true
+              })
+              .catch((error) => {
+                console.log('12', error.message);
+              })
+            }
+            await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+            for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+              let recordObject = matchingRecords[recordsIndex];
+              if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                await BoardMembersMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                  $set: {
+                    sourceName1: 'cmp_source' + (recordsIndex + 1),
+                    sourceFile: s3FileObject.Key
+                  }
+                });
+              }
+            }
+          } catch (err) {
+            await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+          }
+        }
+      }
     }
+    } else {
+    await BoardMembersMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+    }
+    }
+    await browser.close();
+    return res.status(200).json({ status: "200", message: "Completed successfully!" });
+  } else if (params.id == 'KMP') {
+    var standAlonepoints = await KmpMatrixDataPoints.find({ isCounted: false, isActive: true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(20000);
+    let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
+    console.log('uniq urls length ==>', standAlonepointsList.length);
+    //launch
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    for (let index = 0; index < standAlonepointsList.length; index++) {
+      let url = '';
+      if (standAlonepointsList[index] && standAlonepointsList[index].url) {
+        url = standAlonepointsList[index].url;
+      }
+      if (standAlonepointsList[index]) {
+        let link = standAlonepointsList[index].url ? standAlonepointsList[index].url.trim() : '';
+        console.log('link===>', link);
+        let urlResult = false;
+        await validUrl.isUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isHttpUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isHttpsUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        await validUrl.isWebUri(link, function (err, exists) {
+          urlResult = exists;
+        });
+        if (!urlResult) {
+          let validationResult = await validateURL(link);
+          if (!validationResult) {
+            link = "http://" + link;
+            let httpValidationResult = await validUrl.isUri(link);
+            if (!httpValidationResult) {
+              link = "https://" + link;
+              let httpsValidationResult = await validUrl.isUri(link);
+              if (!httpsValidationResult) {
+                await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isCounted: true } });
+              } else {
+                try {
+                  let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  await page.goto(link);
+                  let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+                  console.log('actualfile', actualFile);
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                  console.log('s3FileObject1', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                      .catch((error) => {
+                        console.log('1', error.message);
+                      })
+                  }
+                  await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                } catch (e) {
+                  if (path.extname(link).includes('.pdf')) {
+                    await axios({
+                      method: "get",
+                      url: link,
+                      responseType: "stream"
+                    }).then(async function (resp) {
+                      let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                      console.log('matchingRecords length', matchingRecords.length);
+                      let fileName = '', publicationDate = '', fiscalYear = '';
+                      if (matchingRecords.length > 0) {
+                        fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                        try {
+                          publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                        } catch (error) {
+                          publicationDate = new Date();
+                        }
+                        fiscalYear = matchingRecords[0].year;
+                      } else {
+                        fileName = 'cmp_source_' + index + 1;
+                      }
+                      let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                      let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                      console.log('s3FileObject2', s3FileObject);
+                      if (matchingRecords.length > 0) {
+                        await CompanySources.create({
+                          companyId: matchingRecords[0].companyId.id,
+                          sourceTypeId: null,
+                          sourceSubTypeId: null,
+                          isMultiYear: false,
+                          isMultiSource: false,
+                          sourceUrl: link,
+                          sourceFile: fileName,
+                          publicationDate: publicationDate,
+                          fiscalYear: fiscalYear,
+                          name: 'cmp_source' + index + 1,
+                          newSourceTypeName: '',
+                          newSubSourceTypeName: '',
+                          status: true
+                        })
+                          .catch((error) => {
+                            console.log('2', error.message);
+                          })
+                      }
+                      await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                      for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                        let recordObject = matchingRecords[recordsIndex];
+                        if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                          await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                            $set: {
+                              sourceName1: 'cmp_source' + (recordsIndex + 1),
+                              sourceFile: s3FileObject.Key
+                            }
+                          });
+                        }
+                      }
+                    })
+                      .catch(async (error) => {
+                        await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isCounted: true } });
+                      });
+                  } else {
+                    try {
+                      await page.goto(link);
+                      let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                      console.log('matchingRecords length', matchingRecords.length);
+                      let fileName = '', publicationDate = '', fiscalYear = '';
+                      if (matchingRecords.length > 0) {
+                        fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                        try {
+                          publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                        } catch (error) {
+                          publicationDate = new Date();
+                        }
+                        fiscalYear = matchingRecords[0].year;
+                      } else {
+                        fileName = 'cmp_source_' + index + 1;
+                      }
+                      let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                      let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                      console.log('s3FileObject3', s3FileObject);
+                      if (matchingRecords.length > 0) {
+                        await CompanySources.create({
+                          companyId: matchingRecords[0].companyId.id,
+                          sourceTypeId: null,
+                          sourceSubTypeId: null,
+                          isMultiYear: false,
+                          isMultiSource: false,
+                          sourceUrl: link,
+                          sourceFile: fileName,
+                          publicationDate: publicationDate,
+                          fiscalYear: fiscalYear,
+                          name: 'cmp_source' + index + 1,
+                          newSourceTypeName: '',
+                          newSubSourceTypeName: '',
+                          status: true
+                        })
+                          .catch((error) => {
+                            console.log('3', error.message);
+                          })
+                      }
+                      await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                      for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                        let recordObject = matchingRecords[recordsIndex];
+                        if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                          await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                            $set: {
+                              sourceName1: 'cmp_source' + (recordsIndex + 1),
+                              sourceFile: s3FileObject.Key
+                            }
+                          });
+                        }
+                      }
+                    } catch (err) {
+                      await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isCounted: true } });
+                    }
+                  }
+                }
+              }
+            } else {
+              try {
+                await page.goto(link);
+                let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                console.log('s3FileObject4', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                    .catch((error) => {
+                      console.log('4', error.message);
+                    })
+                }
+                await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              } catch (e) {
+                if (path.extname(link).includes('.pdf')) {
+                  await axios({
+                    method: "get",
+                    url: link,
+                    responseType: "stream"
+                  }).then(async function (resp) {
+
+                    let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                    console.log('matchingRecords length', matchingRecords.length);
+                    let fileName = '', publicationDate = '', fiscalYear = '';
+                    if (matchingRecords.length > 0) {
+                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                      try {
+                        publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                      } catch (error) {
+                        publicationDate = new Date();
+                      }
+                      fiscalYear = matchingRecords[0].year;
+                    } else {
+                      fileName = 'cmp_source_' + index + 1;
+                    }
+                    let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                    let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                    console.log('s3FileObject5', s3FileObject);
+                    if (matchingRecords.length > 0) {
+                      await CompanySources.create({
+                        companyId: matchingRecords[0].companyId.id,
+                        sourceTypeId: null,
+                        sourceSubTypeId: null,
+                        isMultiYear: false,
+                        isMultiSource: false,
+                        sourceUrl: link,
+                        sourceFile: fileName,
+                        publicationDate: publicationDate,
+                        fiscalYear: fiscalYear,
+                        name: 'cmp_source' + index + 1,
+                        newSourceTypeName: '',
+                        newSubSourceTypeName: '',
+                        status: true
+                      })
+                        .catch((error) => {
+                          console.log('5', error.message);
+                        })
+                    }
+                    await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                    for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                      let recordObject = matchingRecords[recordsIndex];
+                      if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                        await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                          $set: {
+                            sourceName1: 'cmp_source' + (recordsIndex + 1),
+                            sourceFile: s3FileObject.Key
+                          }
+                        });
+                      }
+                    }
+                  })
+                    .catch(async (error) => {
+                      await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isCounted: true } });
+                    });
+                } else {
+                  try {
+                    await page.goto(link);
+                    let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+                    console.log('matchingRecords length', matchingRecords.length);
+                    let fileName = '', publicationDate = '', fiscalYear = '';
+                    if (matchingRecords.length > 0) {
+                      fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                      try {
+                        publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                      } catch (error) {
+                        publicationDate = new Date();
+                      }
+                      fiscalYear = matchingRecords[0].year;
+                    } else {
+                      fileName = 'cmp_source_' + index + 1;
+                    }
+                    let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                    let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                    console.log('s3FileObject6', s3FileObject);
+                    if (matchingRecords.length > 0) {
+                      await CompanySources.create({
+                        companyId: matchingRecords[0].companyId.id,
+                        sourceTypeId: null,
+                        sourceSubTypeId: null,
+                        isMultiYear: false,
+                        isMultiSource: false,
+                        sourceUrl: link,
+                        sourceFile: fileName,
+                        publicationDate: publicationDate,
+                        fiscalYear: fiscalYear,
+                        name: 'cmp_source' + index + 1,
+                        newSourceTypeName: '',
+                        newSubSourceTypeName: '',
+                        status: true
+                      })
+                        .catch((error) => {
+                          console.log('6', error.message);
+                        })
+                    }
+                    await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                    for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                      let recordObject = matchingRecords[recordsIndex];
+                      if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                        await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                          $set: {
+                            sourceName1: 'cmp_source' + (recordsIndex + 1),
+                            sourceFile: s3FileObject.Key
+                          }
+                        });
+                      }
+                    }
+                  } catch (err) {
+                    await KmpMatrixDataPoints.updateMany({ url: url, isActive: true, status: true }, { $set: { isCounted: true } });
+                  }
+                }
+              }
+            }
+          } else {
+            try {
+              await page.goto(link);
+              let matchingRecords = await KmpMatrixDataPoints.find({ url: url, isActive: true, status: true }).populate('companyId').populate('datapointId');
+              console.log('matchingRecords length', matchingRecords.length);
+              let fileName = '', publicationDate = '', fiscalYear = '';
+              if (matchingRecords.length > 0) {
+                fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                try {
+                  publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                } catch (error) {
+                  publicationDate = new Date();
+                }
+                fiscalYear = matchingRecords[0].year;
+              } else {
+                fileName = 'cmp_source_' + index + 1;
+              }
+              let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+              let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+              console.log('s3FileObject7', s3FileObject);
+              if (matchingRecords.length > 0) {
+                await CompanySources.create({
+                  companyId: matchingRecords[0].companyId.id,
+                  sourceTypeId: null,
+                  sourceSubTypeId: null,
+                  isMultiYear: false,
+                  isMultiSource: false,
+                  sourceUrl: link,
+                  sourceFile: fileName,
+                  publicationDate: publicationDate,
+                  fiscalYear: fiscalYear,
+                  name: 'cmp_source' + index + 1,
+                  newSourceTypeName: '',
+                  newSubSourceTypeName: '',
+                  status: true
+                })
+                  .catch((error) => {
+                    console.log('7', error.message);
+                  })
+              }
+              await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+              for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                let recordObject = matchingRecords[recordsIndex];
+                if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                  await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                    $set: {
+                      sourceName1: 'cmp_source' + (recordsIndex + 1),
+                      sourceFile: s3FileObject.Key
+                    }
+                  });
+                }
+              }
+            } catch (e) {
+              if (path.extname(link).includes('.pdf')) {
+                await axios({
+                  method: "get",
+                  url: link,
+                  responseType: "stream"
+                }).then(async function (resp) {
+
+                  let matchingRecords = await KmpMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  console.log('resp.data', resp.data);
+                  // let actualFile = resp.data.pipe(fs.createWriteStream(`./${fileName}.pdf`));
+                  let actualFile = resp.data;
+                  console.log('actualFile', actualFile);
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                  console.log('s3FileObject8', s3FileObject);
+                  console.log('matchingRecords.length', matchingRecords.length);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: s3FileObject.Key,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                      .catch((error) => {
+                        console.log('8', error.message);
+                      });
+                  }
+                  await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    console.log('inside for loop8');
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      console.log('inside if block8');
+                      await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                })
+                  .catch(async (error) => {
+                    await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                  });
+              } else {
+                try {
+                  await page.goto(link);
+                  let matchingRecords = await KmpMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                  console.log('matchingRecords length', matchingRecords.length);
+                  let fileName = '', publicationDate = '', fiscalYear = '';
+                  if (matchingRecords.length > 0) {
+                    fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                    try {
+                      publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                    } catch (error) {
+                      publicationDate = new Date();
+                    }
+                    fiscalYear = matchingRecords[0].year;
+                  } else {
+                    fileName = 'cmp_source_' + index + 1;
+                  }
+                  let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                  let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                  console.log('s3FileObject9', s3FileObject);
+                  if (matchingRecords.length > 0) {
+                    await CompanySources.create({
+                      companyId: matchingRecords[0].companyId.id,
+                      sourceTypeId: null,
+                      sourceSubTypeId: null,
+                      isMultiYear: false,
+                      isMultiSource: false,
+                      sourceUrl: link,
+                      sourceFile: fileName,
+                      publicationDate: publicationDate,
+                      fiscalYear: fiscalYear,
+                      name: 'cmp_source' + index + 1,
+                      newSourceTypeName: '',
+                      newSubSourceTypeName: '',
+                      status: true
+                    })
+                      .catch((error) => {
+                        console.log('9', error.message);
+                      });
+                  }
+                  await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                  for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                    let recordObject = matchingRecords[recordsIndex];
+                    if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                      await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                        $set: {
+                          sourceName1: 'cmp_source' + (recordsIndex + 1),
+                          sourceFile: s3FileObject.Key
+                        }
+                      });
+                    }
+                  }
+                } catch (err) {
+                  await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                }
+              }
+            }
+          }
+        } else {
+          try {
+            await page.goto(link);
+            let matchingRecords = await KmpMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+            console.log('matchingRecords length', matchingRecords.length);
+            let fileName = '', publicationDate = '', fiscalYear = '';
+            if (matchingRecords.length > 0) {
+              fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+              try {
+                publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+              } catch (error) {
+                publicationDate = new Date();
+              }
+              fiscalYear = matchingRecords[0].year;
+            } else {
+              fileName = 'cmp_source_' + index + 1;
+            }
+            let actualFile = await page.pdf({ path: `./${fileName}.pdf`, format: 'A4' });
+            let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+            console.log('s3FileObject10', s3FileObject);
+            if (matchingRecords.length > 0) {
+              await CompanySources.create({
+                companyId: matchingRecords[0].companyId.id,
+                sourceTypeId: null,
+                sourceSubTypeId: null,
+                isMultiYear: false,
+                isMultiSource: false,
+                sourceUrl: link,
+                sourceFile: fileName,
+                publicationDate: publicationDate,
+                fiscalYear: fiscalYear,
+                name: 'cmp_source' + index + 1,
+                newSourceTypeName: '',
+                newSubSourceTypeName: '',
+                status: true
+              })
+                .catch((error) => {
+                  console.log('10', error.message);
+                });
+            }
+            await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+            for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+              let recordObject = matchingRecords[recordsIndex];
+              if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                  $set: {
+                    sourceName1: 'cmp_source' + (recordsIndex + 1),
+                    sourceFile: s3FileObject.Key
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            if (path.extname(link).includes('.pdf')) {
+              await axios({
+                method: "get",
+                url: link,
+                responseType: "stream"
+              }).then(async function (resp) {
+
+                let matchingRecords = await KmpMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = resp.data;
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.pdf', 'application/pdf');
+                console.log('s3FileObject11', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                    .catch((error) => {
+                      console.log('11', error.message);
+                    })
+                }
+                await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              })
+                .catch(async (error) => {
+                  await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+                });
+            } else {
+              try {
+                await page.goto(link);
+
+                let matchingRecords = await KmpMatrixDataPoints.find({ url: url, status: true }).populate('companyId').populate('datapointId');
+                console.log('matchingRecords length', matchingRecords.length);
+                let fileName = '', publicationDate = '', fiscalYear = '';
+                if (matchingRecords.length > 0) {
+                  fileName = matchingRecords[0].companyId.cmieProwessCode + '_' + matchingRecords[0].datapointId.code + '_' + 'cmp_source_' + (index + 1);
+                  try {
+                    publicationDate = getJsDateFromExcel(matchingRecords[0].publicationDate);
+                  } catch (error) {
+                    publicationDate = new Date();
+                  }
+                  fiscalYear = matchingRecords[0].year;
+                } else {
+                  fileName = 'cmp_source_' + index + 1;
+                }
+                let actualFile = await page.screenshot({ path: `./${fileName}.png`, fullPage: true });
+                let s3FileObject = await storeFileInS3(actualFile, fileName + '.png', 'image/png');
+                console.log('s3FileObject12', s3FileObject);
+                if (matchingRecords.length > 0) {
+                  await CompanySources.create({
+                    companyId: matchingRecords[0].companyId.id,
+                    sourceTypeId: null,
+                    sourceSubTypeId: null,
+                    isMultiYear: false,
+                    isMultiSource: false,
+                    sourceUrl: link,
+                    sourceFile: fileName,
+                    publicationDate: publicationDate,
+                    fiscalYear: fiscalYear,
+                    name: 'cmp_source' + index + 1,
+                    newSourceTypeName: '',
+                    newSubSourceTypeName: '',
+                    status: true
+                  })
+                    .catch((error) => {
+                      console.log('12', error.message);
+                    })
+                }
+                await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isDownloaded: true, isCounted: true } });
+                for (let recordsIndex = 0; recordsIndex < matchingRecords.length; recordsIndex++) {
+                  let recordObject = matchingRecords[recordsIndex];
+                  if (recordObject.sourceName != "" || recordObject.sourceName != " ") {
+                    await KmpMatrixDataPoints.updateOne({ _id: recordObject.id }, {
+                      $set: {
+                        sourceName1: 'cmp_source' + (recordsIndex + 1),
+                        sourceFile: s3FileObject.Key
+                      }
+                    });
+                  }
+                }
+              } catch (err) {
+                await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+              }
+            }
+          }
+        }
+      } else {
+        await KmpMatrixDataPoints.updateMany({ url: url, status: true }, { $set: { isCounted: true } });
+      }
+    }
+    await browser.close();
+    return res.status(200).json({ status: "200", message: "Completed successfully!" });
   }
-  await browser.close();
-  return res.status(200).json({ status: "200", message: "Completed successfully!" });
 }
 
 export const updateControversySourceUrls = async ({ params }, res, next) => {
@@ -1700,7 +3171,7 @@ async function storeFileInS3(actualFile, fileName, contentType) {
   console.log('actualFile', actualFile, 'fileName', fileName, 'contentType', contentType);
   return new Promise(function (resolve, reject) {
     const params = {
-      Bucket: 'esg-app-store-dev',
+      Bucket: 'esgds-company-sources-prod',
       Key: fileName,
       Body: actualFile,
       ContentType: contentType

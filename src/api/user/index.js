@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, showMe, show, create, update, updatePassword, destroy, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks, genericFilterUser } from './controller'
+import { index, showMe, show, create, update, updatePassword, destroy, onBoardNewUser, getUsersApprovals, updateUserStatus, updateUserRoles, assignRole, assignCompanies, uploadEmailsFile, getAllUsersToAssignRoles, sendMultipleOnBoardingLinks, genericFilterUser } from './controller'
 import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
 const { email, password, name, picture, role, roleId, otp, phoneNumber, comments, isUserApproved, status, userType } = schema.tree
-const onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {}, emailList = [], filterWith = '', value = '', filters = [];
+const companies = [], type = '', onBoardingDetails = '', userId = '', companyId = '', companiesList = '', firstName = '', middleName = '', lastName = '', panNumber = '', aadhaarNumber = '', bankAccountNumber = '', bankIFSCCode = '', accountHolderName = '', pancardUrl = '', aadhaarUrl = '', cancelledChequeUrl = '', authenticationLetterForClientUrl = '', companyIdForClient = '', authenticationLetterForCompanyUrl = '', companyIdForCompany = '', roleDetails = [], userDetails = {}, emailList = [], filterWith = '', value = '', filters = [];
 /**
  * @api {get} /users Retrieve users
  * @apiName RetrieveUsers
@@ -205,6 +205,25 @@ router.put('/assign-role',
   assignRole)
 
 /**
+* @api {put} /users/assign-companies to update companies for user
+* @apiName assign-companies
+* @apiGroup User
+* @apiPermission user
+* @apiParam {String} access_token User access_token.
+* @apiParam {String} userId User's userId.
+* @apiParam {String} type User's type.
+* @apiParam {String} companies User's companies.
+* @apiSuccess {Object} user User's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 Current user or admin access only.
+* @apiError 404 User not found.
+*/
+router.put('/assign-companies',
+  token({ required: true }),
+  body({ userId, type, companies }),
+  assignCompanies)
+
+/**
  * @api {put} /users/update/roles Update user roles
  * @apiName UpdateUserRoles
  * @apiGroup User
@@ -223,7 +242,7 @@ router.put('/update/roles',
   updateUserRoles)
 
 /**
- * @api {put} /users/:id Update user
+ * @api {put} /users Update user
  * @apiName UpdateUser
  * @apiGroup User
  * @apiPermission user

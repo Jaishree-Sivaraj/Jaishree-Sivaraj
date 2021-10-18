@@ -90,7 +90,9 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
               filteredDpResponses = filteredDpResponses.map(e => Number(e));
               if (filteredDpResponses.length > 1) {
                 averageValue = filteredDpResponses.reduce((prev, next) => prev + next) / filteredDpResponses.length;
+                averageValue = Number(averageValue).toFixed(4);
                 stdDeviation = Math.sqrt(filteredDpResponses.map(x => Math.pow(x - averageValue, 2)).reduce((a, b) => a + b) / (filteredDpResponses.length - 1));
+                stdDeviation = Number(stdDeviation).toFixed(4);
               } else {
                 stdDeviation = 'NA';
               }
@@ -131,6 +133,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
                         let zValues = ztableValue.values[0].split(",");
                         let zScore = zValues[Number(lastDigit)]
                         let percentile = zScore * 100;
+                        percentile = Number(percentile).toFixed(4);
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile, standaradDeviation : stdDeviation, average : averageValue} });
                       } else {
                         await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA', standaradDeviation : stdDeviation, average : averageValue } });
@@ -159,7 +162,9 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
               filteredDpResponses = filteredDpResponses.map(e => Number(e));
               if (filteredDpResponses.length > 1) {
                 averageValue = filteredDpResponses.reduce((prev, next) => prev + next) / filteredDpResponses.length;
+                averageValue = Number(averageValue).toFixed(4);
                 stdDeviation = Math.sqrt(filteredDpResponses.map(x => Math.pow(x - averageValue, 2)).reduce((a, b) => a + b) / (filteredDpResponses.length - 1));
+                stdDeviation = Number(stdDeviation).toFixed(4);
               } else {
                 stdDeviation = 'NA';
               }
@@ -196,6 +201,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
                       let zValues = ztableValue.values[0].split(",");
                       let zScore = zValues[Number(lastDigit)]
                       let percentile = zScore * 100;
+                      percentile = Number(percentile).toFixed(4);
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: percentile, standaradDeviation : stdDeviation, average : averageValue } });
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA', standaradDeviation : stdDeviation, average : averageValue } });

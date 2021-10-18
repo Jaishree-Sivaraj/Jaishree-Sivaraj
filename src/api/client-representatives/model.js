@@ -21,9 +21,6 @@ const clientRepresentativesSchema = new Schema({
   authenticationLetterForClientUrl: {
     type: String
   },
-  CompanyName:{
-    type: String
-  },
   companyIdForClient: {
     type: String
   },
@@ -48,7 +45,6 @@ clientRepresentativesSchema.methods = {
       userId: this.userId ? this.userId.view(full) : null,
       name: this.name,
       companiesList: this.companiesList ? companiesList : [],
-      CompanyName: this.CompanyName ? this.CompanyName : null,
       authenticationLetterForClientUrl: this.authenticationLetterForClientUrl,
       companyIdForClient: this.companyIdForClient,
       status: this.status,
