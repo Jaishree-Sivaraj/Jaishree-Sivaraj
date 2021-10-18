@@ -192,6 +192,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       }
     });
     await storeFileInS3({ "message": "Success.", "status": 200, "data": jsonResponseObject }, 'data', body.companyId, body.year).then(async function (s3Data) {
+      console.log('se', s3Data);
       let jsonFileObject = {
         companyId: companyID,
         year: body.year,
@@ -343,6 +344,7 @@ export const downloadJson = async ({ bodymen: { body } }, res, next) => {
 }
 
 async function storeFileInS3(actualJson, type, companyId, year) {
+  console.log('type', type)
   return new Promise(function (resolve, reject) {
     var fileName = `${companyId}_${year ? year + '_' : ''}${Date.now()}.json`;
     const params = {
