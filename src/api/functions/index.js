@@ -44,7 +44,7 @@ router.get('/',
   index)
   
 /**
-* @api {get} /functions/test Retrieve functions
+* @api {get} /functions/test/:id Retrieve functions
 * @apiName RetrieveFunctions
 * @apiGroup Functions
 * @apiPermission user
@@ -55,7 +55,7 @@ router.get('/',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/test',
+router.get('/test/:id',
   query(),
   updateSourceUrls)
   
