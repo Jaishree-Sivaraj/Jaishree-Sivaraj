@@ -275,7 +275,7 @@ export const getQaAndAnalystFromGrp = async (
   });
 };
 
-export const index = async({ user, querymen: { query, select, cursor } }, res, next) => {
+export const index = async({ user, params, querymen: { query, select, cursor } }, res, next) => {
   let completeUserDetail = await User.findOne({
     _id: user.id,
     isUserActive: true
@@ -310,136 +310,128 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
     });
   }
   let finalResponseObject = {
-    groupAdminTaskList : {
-      pendingList: [],
-      completedList: [],
-      controversyList: []
-    },
-    adminTaskList : {
-      pendingList: [],
-      completedList: [],
-      controversyList: []
-    }
+    pendingList: [],
+    completedList: [],
+    controversyList: []
   };
   userRoles = _.uniq(userRoles);
   if (userRoles.length > 0) {
-    for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
-      let findQuery = {};
-      if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
-        findQuery = { status : true };
-      } else if (userRoles[roleIndex] == "GroupAdmin"){
+    let findQuery = {};
+    if (userRoles.includes("SuperAdmin") || userRoles.includes("Admin")) {
+      findQuery = { status : true };
+      if (params.role == "GroupAdmin") {
         let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-        findQuery = { 
-          groupId: { $in: groupIds },
-          status : true 
-        };
+        findQuery = { groupId: { $in: groupIds }, status : true };
+      } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+        findQuery = { status : true };
+      } else {
+        return res.status(400).json({ completed: [], pending: [], controversy: [], message: "Task list retrieved successfully!" });
       }
-      await ControversyTasks.find({ status: true })
-      .populate('companyId')
-      .populate('analystId')
-      .populate('createdBy')
-      .then(async (controversyTasks) => {
-        if (controversyTasks && controversyTasks.length > 0) {
-          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-            let yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
-            let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
-            let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
-            let object = {};
-            object.taskNumber = controversyTasks[cIndex].taskNumber;
-            object.taskId = controversyTasks[cIndex].id;
-            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-            object.status = controversyTasks[cIndex].status;
-            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-            object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-            object.totalNoOfControversy = totalNoOfControversy;
-            if (controversyTasks[cIndex] && object) {
-              finalResponseObject.adminTaskList.controversyList.push(object)
-              finalResponseObject.groupAdminTaskList.controversyList.push(object)
-            }
+    } else if (userRoles.includes("GroupAdmin")){
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      findQuery = { groupId: { $in: groupIds }, status : true };
+      if (params.role == "GroupAdmin") {
+        let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+        findQuery = { groupId: { $in: groupIds }, status : true };
+      } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+        findQuery = { status : true };
+      } else {
+        return res.status(200).json({ status: "200", completed: [], pending: [], controversy: [], message: "Task list retrieved successfully!" });
+      }
+    } else {
+      return res.status(200).json({ status: "200", pendingList: [], completedList: [], controversyList: [], message: "Task list retrieved successfully!" });
+    }
+    await ControversyTasks.find(findQuery)
+    .populate('companyId')
+    .populate('analystId')
+    .populate('createdBy')
+    .then(async (controversyTasks) => {
+      if (controversyTasks && controversyTasks.length > 0) {
+        for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+          let yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
+          let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
+          let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
+          let object = {};
+          object.taskNumber = controversyTasks[cIndex].taskNumber;
+          object.taskId = controversyTasks[cIndex].id;
+          object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+          object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+          object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+          object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+          object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+          object.status = controversyTasks[cIndex].status;
+          object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+          object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+          object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+          object.totalNoOfControversy = totalNoOfControversy;
+          if (controversyTasks[cIndex] && object) {
+            finalResponseObject.controversyList.push(object)
           }
         }
-      })
-      .catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
-      })
-      await TaskAssignment.find(findQuery)
-        .populate("createdBy")
-        .populate("categoryId")
-        .populate("groupId")
-        .populate("batchId")
-        .populate("analystId")
-        .populate("qaId")
-        .populate("companyId")
-        .then((taskAssignments) => {
-          for (let index = 0; index < taskAssignments.length; index++) {
-            const object = taskAssignments[index];
-            let taskObject = {
-              taskId: object.id,
-              taskNumber: object.taskNumber,
-              pillar: object.categoryId ? object.categoryId.categoryName : null,
-              pillarId: object.categoryId ? object.categoryId.id : null,
-              group: object.groupId ? object.groupId.groupName : null,
-              groupId: object.groupId ? object.groupId.id : null,
-              batch: object.batchId ? object.batchId.batchName : null,
-              batchId: object.batchId ? object.batchId.id : null,
-              company: object.companyId ? object.companyId.companyName : null,
-              companyId: object.companyId ? object.companyId.id : null,
-              analyst: object.analystId ? object.analystId.name : null,
-              analystId: object.analystId ? object.analystId.id : null,
-              qa: object.qaId ? object.qaId.name : null,
-              analystSLA: object.analystSLADate ? object.analystSLADate : null,
-              qaSLA: object.qaSLADate ? object.qaSLADate : null,
-              qaId: object.qaId ? object.qaId.id : null,
-              fiscalYear: object.year,
-              taskStatus: object.taskStatus,
-              overAllCompletedDate: object.overAllCompletedDate,
-              overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
-              createdBy: object.createdBy ? object.createdBy.name : null,
-              createdById: object.createdBy ? object.createdBy.id : null,
-            };
-
-            if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
-              if (object.taskStatus != "Completed") {
-                finalResponseObject.adminTaskList.pendingList.push(taskObject);
-              } else if (object.taskStatus == "Completed"){
-                finalResponseObject.adminTaskList.completedList.push(taskObject)
-              }
-            } else if (userRoles[roleIndex] == "GroupAdmin"){
-              if (object.taskStatus != "Completed") {
-                finalResponseObject.groupAdminTaskList.pendingList.push(taskObject)
-              } else if (object.taskStatus == "Completed"){
-                finalResponseObject.groupAdminTaskList.completedList.push(taskObject)
-              }
-            }
-          }
-        })
-        .catch((error) => {
-          return res.status(400).json({
-            status: "400",
-            message: error.message ? error.message : "Failed to retrieve tasks!",
-          });
-        });     
-    }
-    finalResponseObject.groupAdminTaskList.controversyList = _.sortBy(finalResponseObject.groupAdminTaskList.controversyList, 'company')
-    finalResponseObject.adminTaskList.controversyList = _.sortBy(finalResponseObject.adminTaskList.controversyList, 'company')
-    finalResponseObject.groupAdminTaskList.completedList = _.sortBy(finalResponseObject.groupAdminTaskList.completedList, 'company')
-    finalResponseObject.groupAdminTaskList.pendingList = _.sortBy(finalResponseObject.groupAdminTaskList.pendingList, 'company')
-    finalResponseObject.adminTaskList.pendingList = _.sortBy(finalResponseObject.adminTaskList.pendingList, 'company');
-    finalResponseObject.adminTaskList.completedList = _.sortBy(finalResponseObject.adminTaskList.completedList, 'company');
-    
-    return res.status(200).json({
-      status: "200",
-      message: "Tasks retrieved successfully!",
-      data: finalResponseObject,
+      }
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+    })
+    await TaskAssignment.find(findQuery)
+    .sort({
+      createdAt: -1,
+    })
+    .populate("createdBy")
+    .populate("companyId")
+    .populate("categoryId")
+    .populate("groupId")
+    .populate("batchId")
+    .populate("analystId")
+    .populate("qaId")
+    .then((taskAssignments) => {
+      for (let index = 0; index < taskAssignments.length; index++) {
+        const object = taskAssignments[index];
+        let taskObject = {
+          taskId: object.id,
+          taskNumber: object.taskNumber,
+          pillar: object.categoryId ? object.categoryId.categoryName : null,
+          pillarId: object.categoryId ? object.categoryId.id : null,
+          group: object.groupId ? object.groupId.groupName : null,
+          groupId: object.groupId ? object.groupId.id : null,
+          batch: object.batchId ? object.batchId.batchName : null,
+          batchId: object.batchId ? object.batchId.id : null,
+          company: object.companyId ? object.companyId.companyName : null,
+          companyId: object.companyId ? object.companyId.id : null,
+          analyst: object.analystId ? object.analystId.name : null,
+          analystId: object.analystId ? object.analystId.id : null,
+          qa: object.qaId ? object.qaId.name : null,
+          analystSLA: object.analystSLADate ? object.analystSLADate : null,
+          qaSLA: object.qaSLADate ? object.qaSLADate : null,
+          qaId: object.qaId ? object.qaId.id : null,
+          fiscalYear: object.year,
+          taskStatus: object.taskStatus,
+          overAllCompletedDate: object.overAllCompletedDate,
+          overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
+          createdBy: object.createdBy ? object.createdBy.name : null,
+          createdById: object.createdBy ? object.createdBy.id : null,
+        };
+        if (object.taskStatus != "Completed") {
+          finalResponseObject.pendingList.push(taskObject)
+        } else if (object.taskStatus == "Completed"){
+          finalResponseObject.completedList.push(taskObject)
+        }
+      }
+    })
+    .catch((error) => {
+      return res.status(400).json({
+        status: "400",
+        message: error.message ? error.message : "Failed to retrieve tasks!",
+      });
     });
   }
+  return res.status(200).json({
+    status: "200",
+    message: "Tasks retrieved successfully!",
+    data: finalResponseObject,
+  });
 };
 
 export const getMyTasks = async (
@@ -1538,9 +1530,9 @@ export const reports = async ({ user, params }, res, next) => {
   var allTasks = await TaskAssignment.find(findQuery).populate('companyId').populate('categoryId');
   var completedTask = [];
   var pendingTask = [];
-  let clientRepNamesList = [], companyRepNamesList = [];
-  let clientRepNames = "", companyRepNames = "";
   for (var i = 0; i < allTasks.length; i++) {
+    let clientRepNamesList = [], companyRepNamesList = [];
+    let clientRepNames = "", companyRepNames = "";
     if (allTasks[i].companyId) {
       var companyRep = await CompanyRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       if (companyRep && companyRep.length > 0) {
@@ -1554,7 +1546,7 @@ export const reports = async ({ user, params }, res, next) => {
       var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       if (clientRep && clientRep.length > 0) {
         for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
-          if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
+          if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
             clientRepNamesList.push(clientRep[clnIndex].userId.name);
           }
         }
@@ -1607,10 +1599,6 @@ export const reports = async ({ user, params }, res, next) => {
   pendingTask = _.uniqBy(pendingTask, function (e) {
     return e.companyId;
   })
-  completedTask = _.sortBy(completedTask, 'companyName');
-  pendingTask = _.sortBy(pendingTask, 'companyName');
-  controversy = _.sortBy(controversy, 'companyName');
-  
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
