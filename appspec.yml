@@ -26,7 +26,7 @@ hooks:
                   #check purpose second time
         AfterInstall:
                 - location: scripts/appbuild.sh
-                  timeout: 180
+                  timeout: 600
                   runas: ubuntu
         ApplicationStart:
                 - location: scripts/webstartservice.sh
