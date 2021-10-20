@@ -1607,6 +1607,9 @@ export const reports = async ({ user, params }, res, next) => {
   pendingTask = _.uniqBy(pendingTask, function (e) {
     return e.companyId;
   })
+  completedTask = _.sortBy(completedTask, 'companyName');
+  pendingTask = _.sortBy(pendingTask, 'companyName');
+  controversy = _.sortBy(controversy, 'companyName');  
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
