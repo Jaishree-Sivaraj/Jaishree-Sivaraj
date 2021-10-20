@@ -1,5 +1,5 @@
 import { Rules } from "../rules";
-import _ from 'lodash';
+import _, { add } from 'lodash';
 import moment from 'moment'
 import { Datapoints } from '../datapoints'
 import { StandaloneDatapoints } from '../standalone_datapoints'
@@ -66,14 +66,18 @@ export const multiplyCalculation = async function (taskId, companyId, distinctYe
             } else {
               let numerator, denominator;
               if (isNaN(firstParameterValue.response)) {
-                numerator = Number(firstParameterValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4);
+                numerator = Number(firstParameterValue.response.replace(/[^\d.]/g, '').trim());
+                numerator = Number(numerator).toFixed(4);
               } else {
-                numerator = Number(firstParameterValue.response).toFixed(4);
+                numerator = Number(firstParameterValue.response);
+                numerator = Number(numerator).toFixed(4);
               }
               if (isNaN(secondParameterValue.response)) {
-                denominator = Number(secondParameterValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4);
+                denominator = Number(secondParameterValue.response.replace(/[^\d.]/g, '').trim());
+                denominator = Number(denominator).toFixed(4);
               } else {
-                denominator = Number(secondParameterValue.response).toFixed(4);
+                denominator = Number(secondParameterValue.response);
+                denominator = Number(denominator).toFixed(4);
               }
               multipliedResponse = (numerator / denominator) * 2000 * 1000000;
             }
@@ -172,6 +176,7 @@ export const matrixPercentageCalculation = async function (taskId, companyId, me
                 denominatorResponseValue = denominatorResponseValue.replace(/[^\d.]/g, '');
   
                 derivedResponse = (Number(numeratorResponseValue).toFixed(4) / Number(denominatorResponseValue).toFixed(4)) * 100;
+                derivedResponse = Number(derivedResponse).toFixed(4);
               }
             }
             let derivedDatapointsObject = {
@@ -230,6 +235,7 @@ export const matrixPercentageCalculation = async function (taskId, companyId, me
                   denominatorResponseValue = denominatorResponseValue.replace(/[^\d.]/g, '');
   
                   derivedResponse = (Number(numeratorResponseValue).toFixed(4) / Number(denominatorResponseValue).toFixed(4)) * 100;
+                  derivedResponse = Number(derivedResponse).toFixed(4);
                 }
               }
   
@@ -373,6 +379,7 @@ export const asRatioCalculation = async function (taskId, companyId, distinctYea
               derivedResponse = 'NA';
             } else {
               derivedResponse = Number(numeratorValue.response).toFixed(4) / Number(denominatorValue.response).toFixed(4)
+              derivedResponse = Number(derivedResponse).toFixed(4);
             }
             await StandaloneDatapoints.updateOne({
               _id: ruleResponseObject.id
@@ -446,6 +453,7 @@ export const asPercentageCalculation = async function (taskId, companyId, distin
               derivedResponse = 'NA';
             } else {
               derivedResponse = (Number(numeratorValue.response).toFixed(4) / Number(denominatorValue.response).toFixed(4)) * 100;
+              derivedResponse = Number(derivedResponse).toFixed(4);
             }
             await StandaloneDatapoints.updateOne({
               _id: ruleResponseObject.id
@@ -517,7 +525,8 @@ export const addCalculation = async function (taskId, companyId, distinctYears, 
             } else if (denominatorValue.response == 0 || denominatorValue.response == '' || denominatorValue.response == ' ' || denominatorValue.response == 'NA') {
               derivedResponse = 'NA';
             } else {
-              derivedResponse = Number(numeratorValue.response).toFixed(4) + Number(denominatorValue.response).toFixed(4);
+              derivedResponse = Number(numeratorValue.response) + Number(denominatorValue.response);
+              derivedResponse = Number(derivedResponse).toFixed(4);
             }
             await StandaloneDatapoints.updateOne({
               _id: ruleResponseObject.id
@@ -661,6 +670,7 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
           } else {
             // derivedResponse = Number(numeratorResponse.response)/Number(denominatorResponse.response)
             derivedResponse = Number(numeratorResponse.response.replace(/[^\d.]/g, '')).toFixed(4) / Number(denominatorResponse.response.replace(/[^\d.]/g, '')).toFixed(4);
+            derivedResponse = Number(derivedResponse).toFixed(4);
           }
 
           let derivedDatapointsObject = {
@@ -731,8 +741,8 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
                 if (prev && next) {
                   let prevResponse = prev.replace(/[^\d.]/g, '');
                   let nextResponse = next.replace(/[^\d.]/g, '');
-                  let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                  return sum.toString();
+                  let sum = Number(prevResponse) + Number(nextResponse);
+                  return sum.toFixed(4);
                 }
               });
             }
@@ -823,6 +833,7 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
                 denominatorValues = denominatorValues.replace(/[^\d.]/g, '');
               }
               derivedValue = (Number(numeratorValues).toFixed(4) / Number(denominatorValues).toFixed(4));
+              derivedValue = Number(derivedValue).toFixed(4);
             }
           }
           let derivedDatapointsObject = {
@@ -890,8 +901,8 @@ export const sumCalculation = async function (taskId, companyId, mergedDetails, 
             if (prev && next) {
               let prevResponse = prev.trim().replace(/[^\d.]/g, '');
               let nextResponse = next.trim().replace(/[^\d.]/g, '');
-              let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-              return sum.toString();
+              let sum = Number(prevResponse) + Number(nextResponse);
+              return sum.toFixed(4);
             } else {
               sumValue = 0;
             }
@@ -1180,7 +1191,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
                 let prevResponse = prev.replace(/[^\d.]/g, '');
                 let nextResponse = next.replace(/[^\d.]/g, '');
                 let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                return sum.toString();
+                return sum.toFixed(4);
               }
             });
           } else {
@@ -1192,7 +1203,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
                 let prevResponse = prev.replace(/[^\d.]/g, '');
                 let nextResponse = next.replace(/[^\d.]/g, '');
                 let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                return sum.toString();
+                return sum.toFixed(4);
               }
             });
           } else {
@@ -1281,6 +1292,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
                 derivedResponse = 'NA';
               } else {
                 derivedResponse = (Number(numeratorValues[j].response.replace(/[^\d.]/g, '').toFixed(4)) / Number(denominatorValues[j].response.replace(/[^\d.]/g, '')).toFixed(4)) * 100;
+                derivedResponse = Number(derivedResponse).toFixed(4);
               }
             }
             let derivedDatapointsObject = {
@@ -1353,7 +1365,8 @@ export const ratioAddCalculation = async function (taskId, companyId, distinctYe
         if (numeratorValue.response === " " || denominatorValue.response === " ") {
           addResponse = 'NA';
         } else {
-          addResponse = Number(numeratorValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4) + Number(denominatorValue.response.replace(/[^\d.]/g, '').trim()).toFixed(4);
+          addResponse = Number(numeratorValue.response.replace(/[^\d.]/g, '').trim()) + Number(denominatorValue.response.replace(/[^\d.]/g, '').trim());
+          addResponse = Number(addResponse).toFixed(4);
           //  = await percent(numeratorValue.response, addResponse);
           if (numeratorValue.response === " " || numeratorValue.response == 'NA') {
             percentResponse = 'NA';
@@ -1369,6 +1382,7 @@ export const ratioAddCalculation = async function (taskId, companyId, distinctYe
               numeratorNumber = Number(numeratorValue.response).toFixed(4);
             }
             percentResponse = (numeratorNumber / addResponse) * 100;
+            percentResponse = Number(percentResponse).toFixed(4);
           }
         }
         let derivedDatapointsObject = {
