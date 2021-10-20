@@ -80,6 +80,7 @@ export const multiplyCalculation = async function (taskId, companyId, distinctYe
                 denominator = Number(denominator).toFixed(4);
               }
               multipliedResponse = (numerator / denominator) * 2000 * 1000000;
+              multipliedResponse = Number(multipliedResponse).toFixed(4);
             }
             if (asMultiplyRules[i].methodType == "composite") {
               if (multipliedResponse == 'NA') {
