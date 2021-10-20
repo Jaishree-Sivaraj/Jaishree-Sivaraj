@@ -1538,9 +1538,9 @@ export const reports = async ({ user, params }, res, next) => {
   var allTasks = await TaskAssignment.find(findQuery).populate('companyId').populate('categoryId');
   var completedTask = [];
   var pendingTask = [];
-  let clientRepNamesList = [], companyRepNamesList = [];
-  let clientRepNames = "", companyRepNames = "";
   for (var i = 0; i < allTasks.length; i++) {
+    let clientRepNamesList = [], companyRepNamesList = [];
+    let clientRepNames = "", companyRepNames = "";
     if (allTasks[i].companyId) {
       var companyRep = await CompanyRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       if (companyRep && companyRep.length > 0) {
@@ -1554,7 +1554,7 @@ export const reports = async ({ user, params }, res, next) => {
       var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [allTasks[i].companyId.id] } }).populate('userId');
       if (clientRep && clientRep.length > 0) {
         for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
-          if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
+          if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
             clientRepNamesList.push(clientRep[clnIndex].userId.name);
           }
         }
@@ -1609,8 +1609,7 @@ export const reports = async ({ user, params }, res, next) => {
   })
   completedTask = _.sortBy(completedTask, 'companyName');
   pendingTask = _.sortBy(pendingTask, 'companyName');
-  controversy = _.sortBy(controversy, 'companyName');
-  
+  controversy = _.sortBy(controversy, 'companyName');  
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
