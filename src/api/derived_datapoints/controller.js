@@ -861,7 +861,7 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
             datapointId: matrixPercentageRules[i].datapointId.id,
             year: numeratorValues[j].year,
             response: derivedResponse,
-            memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
+            memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace(/[\s\r\n]/g, '') : '',
             memberStatus: true,
             status: true,
             createdBy: userDetail
@@ -920,7 +920,7 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
               datapointId: matrixPercentageRules[i].datapointId.id,
               year: numeratorValues[j].year,
               response: derivedResponse,
-              memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
+              memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace(/[\s\r\n]/g, '') : '',
               memberStatus: true,
               status: true,
               createdBy: userDetail
@@ -1374,7 +1374,7 @@ async function minusCalculation(companyId, mergedDetails, distinctYears, allData
           datapointId: minusRules[i].datapointId.id,
           year: numeratorValues[j].year,
           response: derivedResponse ? derivedResponse.toString() : derivedResponse,
-          memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace('\r\n', '') : '',
+          memberName: numeratorValues[j].memberName ? numeratorValues[j].memberName.replace(/[\s\r\n]/g, '') : '',
           memberStatus: true,
           status: true,
           createdBy: userDetail
