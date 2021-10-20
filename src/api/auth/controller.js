@@ -12,35 +12,42 @@ export const login = async ({ user }, res, next) => {
     .then(async (response) => {
       console.log('user ' + user)
       if (user) {
-        // let superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
-        // let adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
-        // let userDetailType1 = await User.findOne({
-        //   _id: user.id,
-        //   isUserActive: true,
-        //   isUserApproved: true,
-        //   status: true,
-        //   '$or': [{
-        //     'roleDetails.roles': { '$in': [superAdminRoleDetails.id] }
-        //   }, { 'roleDetails.primaryRole': superAdminRoleDetails.id }]
-        // }).populate({ path: 'roleDetails.roles' }).
-        //   populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+        let superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+        let adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
+        let userDetailType1 = await User.findOne({
+          _id: user.id,
+          isUserActive: true,
+          isUserApproved: true,
+          status: true,
+          '$or': [{
+            'roleDetails.roles': { '$in': [superAdminRoleDetails.id] }
+          }, { 'roleDetails.primaryRole': superAdminRoleDetails.id }]
+        }).populate({ path: 'roleDetails.roles' }).
+          populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
 
-        // let userDetailType2 = await User.findOne({
-        //   _id: user.id,
-        //   isUserActive: true,
-        //   isUserApproved: true,
-        //   status: true,
-        //   '$or': [{
-        //     'roleDetails.roles': { '$in': [adminRoleDetails.id] }
-        //   }, { 'roleDetails.primaryRole': adminRoleDetails.id }]
-        // }).populate({ path: 'roleDetails.roles' }).
-        //   populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
-
-        //if (userDetailType1 || userDetailType2) {
+        let userDetailType2 = await User.findOne({
+          _id: user.id,
+          isUserActive: true,
+          isUserApproved: true,
+          status: true,
+          '$or': [{
+            'roleDetails.roles': { '$in': [adminRoleDetails.id] }
+          }, { 'roleDetails.primaryRole': adminRoleDetails.id }]
+        }).populate({ path: 'roleDetails.roles' }).
+          populate({ path: 'roleDetails.primaryRole' }).catch((error) => { return res.status(500).json({ "status": "500", message: error.message }) });
+        var otpNumber;
+        if (process.env.NODE_ENV === 'production') {
+          otpNumber = Math.floor(1000 + Math.random() * 9000);
+        } else {
+          if (userDetailType1 || userDetailType2) {
+            otpNumber = '4321';
+          } else {
+            otpNumber = '1234';
+          }
+        }
         //Generating 4 digit random number for OTP
-        let otpNumber = Math.floor(1000 + Math.random() * 9000);
         //update the otp value in user data
-        let updateObject = { otp: otpNumber ? '1234' : '' };
+        let updateObject = { otp: otpNumber ? otpNumber : '' };
         User.updateOne({ _id: user.id },
           {
             $set: updateObject
@@ -50,7 +57,8 @@ export const login = async ({ user }, res, next) => {
         );
 
         //nodemail code will come here to send OTP
-        const content = `
+        if (process.env.NODE_ENV === 'production') {
+          const content = `
             Hi ${user.name},<br/><br/>
             Please use the below OTP to login into your ESG API account.<br/>
             OTP - <b>${otpNumber}</b>.<br/>
@@ -58,20 +66,21 @@ export const login = async ({ user }, res, next) => {
             Thanks<br/>
             ESG API Team
           `;
-        var transporter = nodemailer.createTransport({
-          service: 'Gmail',
-          auth: {
-            user: 'testmailer09876@gmail.com',
-            pass: 'ijsfupqcuttlpcez'
-          }
-        });
+          var transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+              user: 'testmailer09876@gmail.com',
+              pass: 'ijsfupqcuttlpcez'
+            }
+          });
 
-        transporter.sendMail({
-          from: 'testmailer09876@gmail.com',
-          to: user.email,
-          subject: 'ESG - OTP',
-          html: content
-        });
+          transporter.sendMail({
+            from: 'testmailer09876@gmail.com',
+            to: user.email,
+            subject: 'ESG - OTP',
+            html: content
+          });
+        }
         return res.send({ status: "200", message: "Otp sent to registered email" });
         // } else {
         //   let userDetail = await User.findOne({
