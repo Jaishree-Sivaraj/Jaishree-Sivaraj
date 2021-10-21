@@ -35,5 +35,5 @@ hooks:
           
         ValidateService:
                 - location: scripts/monitorservice.sh
-                  timeout: 180
+                  timeout: 600
                   runas: ubuntu
