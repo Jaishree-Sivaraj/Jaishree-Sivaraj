@@ -4,7 +4,7 @@ runas: ubuntu
 files:
   - source: /
     destination: /app/esgapi
-file_exists_behavior: RETAIN
+file_exists_behavior: OVERWRITE
 
 permissions:
   - object: /
@@ -26,7 +26,7 @@ hooks:
                   #check purpose second time
         AfterInstall:
                 - location: scripts/appbuild.sh
-                  timeout: 180
+                  timeout: 600
                   runas: ubuntu
         ApplicationStart:
                 - location: scripts/webstartservice.sh
