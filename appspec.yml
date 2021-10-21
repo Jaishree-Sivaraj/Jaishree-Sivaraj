@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 runas: ubuntu
 files:
-  - source: source
+  - source: /
     destination: /app/esgapi
 #file_exists_behavior: OVERWRITE
 
