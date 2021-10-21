@@ -178,20 +178,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       if (row == 1) {
                         if (value != "Error types and definitions") {
                           if (isNaN(value)) {
-                            headers[col] = value.replace('\r\n', ' ');
+                            headers[col] = value.replace(/[\s\r\n]/g, ' ');
                           }
                         }
                         // storing the header names
                         continue;
                       } else if (headerRowsNumber.includes(row) && row != 1 && row == 32) {
                         if (isNaN(value)) {
-                          headers1[col] = value.replace('\r\n', ' ');
+                          headers1[col] = value.replace(/[\s\r\n]/g, ' ');
                         }
                         // storing the header names
                         continue;
                       } else if (headerRowsNumber.includes(row) && row != 1 && row == 63) {
                         if (isNaN(value)) {
-                          headers2[col] = value.replace('\r\n', ' ');
+                          headers2[col] = value.replace(/[\s\r\n]/g, ' ');
                         }
                         // storing the header names
                         continue;
@@ -235,7 +235,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                            data[row][headers1[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers1[col]] = value;
                           }
@@ -278,7 +278,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                            data[row][headers2[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers2[col]] = value;
                           }
@@ -328,7 +328,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                            data[row][headers[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers[col]] = value;
                           }
@@ -338,20 +338,20 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       if (row == 1) {
                         if (value != "Error types and definitions") {
                           if (isNaN(value)) {
-                            headers[col] = value.replace('\r\n', ' ');
+                            headers[col] = value.replace(/[\s\r\n]/g, ' ');
                           }
                         }
                         // storing the header names
                         continue;
                       } else if (headerRowsNumber.includes(row) && row != 1 && row == 12) {
                         if (isNaN(value)) {
-                          headers1[col] = value.replace('\r\n', ' ');
+                          headers1[col] = value.replace(/[\s\r\n]/g, ' ');
                         }
                         // storing the header names
                         continue;
                       } else if (headerRowsNumber.includes(row) && row != 1 && row == 23) {
                         if (isNaN(value)) {
-                          headers2[col] = value.replace('\r\n', ' ');
+                          headers2[col] = value.replace(/[\s\r\n]/g, ' ');
                         }
                         // storing the header names
                         continue;
@@ -395,7 +395,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers1[col]] = value.replace('\r\n', ' ');
+                            data[row][headers1[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers1[col]] = value;
                           }
@@ -438,7 +438,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers2[col]] = value.replace('\r\n', ' ');
+                            data[row][headers2[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers2[col]] = value;
                           }
@@ -488,7 +488,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                           }
                         } else {
                           if (isNaN(value)) {
-                            data[row][headers[col]] = value.replace('\r\n', ' ');
+                            data[row][headers[col]] = value.replace(/[\s\r\n]/g, ' ');
                           } else {
                             data[row][headers[col]] = value;
                           }
@@ -595,7 +595,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
             let categoriesToBeCheck = _.filter(allStandaloneDetails, function (object) {
-              if (object.CIN.replace('\r\n', '') == companiesToBeAdded[cinIndex].CIN.replace('\r\n', '')) {
+              if (object.CIN.replace(/[\s\r\n]/g, '') == companiesToBeAdded[cinIndex].CIN.replace(/[\s\r\n]/g, '')) {
                 return object;
               }
             });
@@ -629,7 +629,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               let nicString = item['NIC Code'].toString();
               let companyObject = {
                 companyName: item['Company Name'],
-                cin: item['CIN'].replace('\r\n', ''),
+                cin: item['CIN'].replace(/[\s\r\n]/g, ''),
                 nicCode: item['NIC Code'],
                 nic: nicString.substring(0, 2),
                 nicIndustry: item['NIC industry'],
@@ -642,7 +642,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 createdBy: userDetail
               }
               await Companies.updateOne({
-                cin: item['CIN'].replace('\r\n', '').trim()
+                cin: item['CIN'].replace(/[\s\r\n]/g, '').trim()
               }, {
                 $set: companyObject
               }, {
@@ -676,13 +676,13 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
             const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
+              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue, hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
                 hasError = true;
                 // console.log("companyTaskObjectValue[0].taskId", companyTaskObjectValue[0].taskId);
                 let errorListObject = {
@@ -796,11 +796,11 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             let inactiveBoardMembersList = [];
             let kmpMembersList = [];
             const structuredBoardMemberMatrixDetails = filteredBoardMemberMatrixDetails.map(async function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
+              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let allKeyNamesList = Object.keys(item);
               const boardMembersNameList = _.filter(allKeyNamesList, function (keyName) {
-                let trimmedKeyName = keyName.replace(/\s/g, "").replace('\r\n', '').toLowerCase();
+                let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
                 return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
                   trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
                   trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
@@ -817,10 +817,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
                 hasError = true;
                 let errorListObject = {
                   datapointId: datapointObject[0] ? datapointObject[0].id : null,
@@ -926,11 +926,11 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             });
 
             const structuredKmpMatrixDetails = filteredKmpMatrixDetails.map(async function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace('\r\n', ''));
+              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let allKeyNamesList = Object.keys(item);
               const kmpMembersNameList = _.filter(allKeyNamesList, function (keyName) {
-                let trimmedKeyName = keyName.replace(/\s/g, "").replace('\r\n', '').toLowerCase();
+                let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
                 return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
                   trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
                   trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
@@ -947,10 +947,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace('\r\n', '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace('\r\n', ''))
+                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
                 hasError = true;
                 let errorListObject = {
                   datapointId: datapointObject[0] ? datapointObject[0].id : null,
