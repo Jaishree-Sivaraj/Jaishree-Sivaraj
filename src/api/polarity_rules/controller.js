@@ -7,6 +7,7 @@ import { Datapoints } from '../datapoints'
 import { DerivedDatapoints } from '../derived_datapoints'
 import { Ztables } from '../ztables'
 import { Company } from '../companies'
+import { conditionalExpression } from '@babel/types'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   PolarityRules.create({ ...body, createdBy: user })
@@ -73,8 +74,11 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
       if (percentileDatapointsList.length > 0) {
         for (let pdpIndex = 0; pdpIndex < percentileDatapointsList.length; pdpIndex++) {
           if (percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "yes" || percentileDatapointsList[pdpIndex].dataCollection.toLowerCase() == "y") {
-            //Find the datapoint response value in StandaloneDatapoints collection
+            //Find the datapoint response value in StandaloneDatapoints collection           
             let dpResponseOfNicCompanies = await StandaloneDatapoints.find({ companyId: { $in: nicCompaniesIds }, datapointId: percentileDatapointsList[pdpIndex].id, year: year, isActive: true,status: true }, { response: 1, _id: 0 });
+            if(percentileDatapointsList[pdpIndex].code == "EMQR002" && year == "2020-2021"){
+              console.log("data :", percentileDatapointsList[pdpIndex].code)
+            } 
             console.log('dpResponseOfNicCompanies', dpResponseOfNicCompanies);
             let filteredDpResponses = [];
             _.filter(dpResponseOfNicCompanies, (currentObject, index) => {
@@ -84,10 +88,12 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
             });
             let stdDeviation, averageValue;
             if (filteredDpResponses.length > 1) {
+              console.log(filteredDpResponses);
               //calculate average and SD
               filteredDpResponses = filteredDpResponses.filter(e => e != "NA");
               filteredDpResponses = filteredDpResponses.filter(e => e.trim());
-              filteredDpResponses = filteredDpResponses.map(e => Number(e));
+              filteredDpResponses = filteredDpResponses.map(e => Number(e));              
+              console.log(filteredDpResponses);
               if (filteredDpResponses.length > 1) {
                 averageValue = filteredDpResponses.reduce((prev, next) => prev + next) / filteredDpResponses.length;
                 averageValue = Number(averageValue).toFixed(4);
@@ -110,6 +116,7 @@ export const percentileCalculation = async ({ user, params }, res, next) => {
                   let polarityDetail = await Datapoints.findOne({ _id: percentileDatapointsList[pdpIndex].id });
                   let zscoreValue;
                   if (stdDeviation == 'NA') {
+                    console.log(stdDeviation)
                     await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                   } else {
                     if (polarityDetail.polarity == 'Positive') {
