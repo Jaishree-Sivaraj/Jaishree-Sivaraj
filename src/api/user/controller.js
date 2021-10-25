@@ -513,7 +513,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   console.log('authenticationLetterForClientUrls3Insert', authenticationLetterForClientUrls3Insert);
                   const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
                   var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
-                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
+                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForCompany);
                   console.log('authenticationLetterForCompanyUrlUrl', authenticationLetterForCompanyUrlUrl, companyIdForCompany)
                   CompanyRepresentatives.create({
                     userId: userId,
