@@ -13,6 +13,10 @@ coverage
 cassettes
 package-lock.json
 DOCS.md
+src/api/controversy/uploads
+src/api/companies/uploads
+src/api/datapoints/uploads
+src/api/standalone_datapoints/uploads
 .vscode/launch.json
 uploads
 src/config.js
