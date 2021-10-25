@@ -246,7 +246,7 @@ export const uploadControversies = async (req, res, next) => {
           if (allFilesObject[index].length == 1) {
             let companyObject = {
               companyName: allFilesObject[index][0]['Company Name'],
-              cin: allFilesObject[index][0]['CIN'],
+              cin: allFilesObject[index][0]['CIN'].replace(/[\s\r\n]/g, ' '),
               nicCode: allFilesObject[index][0]['NIC Code'],
               nic: allFilesObject[index][0]['NIC Code'].toString().substring(0, 2),
               nicIndustry: allFilesObject[index][0]['NIC industry'],
@@ -443,7 +443,7 @@ export const uploadControversies = async (req, res, next) => {
       for (let compIndex = 0; compIndex < insertedCompanies.length; compIndex++) {
         let completeTaskDetails = allTaskDetails.filter(obj => obj.companyId == insertedCompanies[compIndex].id);
         await Controversy.updateMany({ companyId: completeTaskDetails[0].companyId, status: true }, 
-          { $set: { taskId: completeTaskDetails[0].id, reviewedByCommittee: true } });
+          { $set: { taskId: completeTaskDetails[0] ? completeTaskDetails[0].id : null, reviewedByCommittee: true } });
         await ControversyTasks.updateOne({ companyId: completeTaskDetails[0].companyId, status: true },
           {
             $set: {

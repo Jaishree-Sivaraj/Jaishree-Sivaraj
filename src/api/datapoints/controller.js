@@ -288,6 +288,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let boardDatapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                    dpName: dpTypeDatapoints[datapointsIndex].name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -347,6 +348,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let kmpDatapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                    dpName: dpTypeDatapoints[datapointsIndex].name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -378,6 +380,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let datapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                    dpName: dpTypeDatapoints[datapointsIndex].name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -402,6 +405,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let datapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                    dpName: dpTypeDatapoints[datapointsIndex].name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -464,6 +468,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let datapointsObject = {
                 dpCode: dpTypeDatapoints[datapointsIndex].code,
                 dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                dpName: dpTypeDatapoints[datapointsIndex].name,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -472,7 +477,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
                 priority: {                               
                   isDpcodeValidForCollection: true,
-                  message: "" },
+                  message: "" 
+                },
                 fiscalYear: taskDetails.year,
                 status: 'Yet to Start'
               }
@@ -488,6 +494,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let datapointsObject = {
                   dpCode: dpTypeDatapoints[datapointsIndex].code,
                   dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                  dpName: dpTypeDatapoints[datapointsIndex].name,
                   companyId: taskDetails.companyId.id,
                   companyName: taskDetails.companyId.companyName,
                   keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
@@ -580,6 +587,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let boardDatapointsObject = {
                   dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
                   dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
+                  dpName: errorboardDatapoints[errorDpIndex].datapointId.name,
                   companyId: taskDetails.companyId.id,
                   companyName: taskDetails.companyId.companyName,
                   keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -655,6 +663,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let kmpDatapointsObject = {
                     dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
                     dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
+                    dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -699,6 +708,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let datapointsObject = {
                 dpCode: errorDatapoints[errorDpIndex].datapointId.code,
                 dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
+                dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -752,6 +762,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let datapointsObject = {
               dpCode: errorDatapoints[errorDpIndex].datapointId.code,
               dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
+              dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -842,6 +853,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let boardDatapointsObject = {
                     dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
                     dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
+                    dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -918,6 +930,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let kmpDatapointsObject = {
                     dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
                     dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
+                    dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -965,6 +978,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let datapointsObject = {
                 dpCode: errorDatapoints[errorDpIndex].datapointId.code,
                 dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
+                dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -1020,6 +1034,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let datapointsObject = {
               dpCode: errorDatapoints[errorDpIndex].datapointId.code,
               dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
+              dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -1040,16 +1055,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             } else {
             dpCodesData.push(datapointsObject);
             }
-
           }
-
           return res.status(200).send({
             status: "200",
             message: "Data correction dp codes retrieved successfully!",
             standalone: {
               dpCodesData: dpCodesData
             }
-
           });
         } catch (error) {
           return res.status(500).json({
