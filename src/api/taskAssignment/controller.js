@@ -918,7 +918,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 
 
 export const updateSlaDates = async({ user, bodymen: { body }, params }, res, next) => {
-  await TaskAssignment.findById(body.taskId).populate('companyId').populate('categoryId')
+  await TaskAssignment.findById(body.taskId).populate('companyId').populate('categoryId').populate('groupId')
   .then(async(result) => {
     if(result.taskStatus == "Reassignment Pending"){
       body.taskDetails['taskStatus'] = "Correction Pending";
@@ -1014,6 +1014,30 @@ export const updateSlaDates = async({ user, bodymen: { body }, params }, res, ne
         }).catch((error) =>{
           return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
         });
+        await Notifications.create({
+          notifyToUser: result.groupId.groupAdmin, 
+          notificationType: "/tasklist",
+          content: "Reassign the task for Analyst as it has some errors TaskID - "+ result.taskNumber, 
+          notificationTitle: "Reassignment Pending",
+          status: true,
+          isRead: false
+        }).catch((error) =>{
+          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+        });
+        let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
+        let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
+        for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
+          await Notifications.create({
+            notifyToUser: allAdminUserIds[admIndex], 
+            notificationType: "/tasklist",
+            content: "Reassign the task for Analyst as it has some errors TaskID - "+ result.taskNumber, 
+            notificationTitle: "Reassignment Pending",
+            status: true,
+            isRead: false
+          }).catch((error) =>{
+            return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+          });
+        }
       }
       res.send({
         status: 200,
@@ -1420,11 +1444,10 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
       });
       
       let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
-      let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
-      console.log("allAdminUserEmailIds", allAdminUserEmailIds);
-      for (let admIndex = 0; admIndex < allAdminUserEmailIds.length; admIndex++) {
+      let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
+      for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
         await Notifications.create({
-          notifyToUser: allAdminUserEmailIds[admIndex], 
+          notifyToUser: allAdminUserIds[admIndex], 
           notificationType: "/tasklist",
           content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
           notificationTitle: "Reassignment Pending",
@@ -1607,6 +1630,9 @@ export const reports = async ({ user, params }, res, next) => {
   pendingTask = _.uniqBy(pendingTask, function (e) {
     return e.companyId;
   })
+  completedTask = _.sortBy(completedTask, 'companyName');
+  pendingTask = _.sortBy(pendingTask, 'companyName');
+  controversy = _.sortBy(controversy, 'companyName');  
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
