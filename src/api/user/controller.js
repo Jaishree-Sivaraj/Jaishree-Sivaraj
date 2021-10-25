@@ -456,8 +456,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     authenticationLetterForClientUrl: authenticationLetterForClientUrl,
                     companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
                     status: true
+                  }).then((success) => {
+                    if (success) {
+                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
+                    } else {
+                      return res.status(500).json({ message: "Failed to onboard client representative" });
+                    }
                   });
-                  return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard client representative" });
                 }
@@ -499,12 +504,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               .then(async (response) => {
                 if (response) {
                   let userId = response.id;
+                  console.log('userId', userId);
                   const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
                   var authenticationLetterForCompanyUrlUrl = userId + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
                   var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
                   const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
                   var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
                   var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
+                  console.log('authenticationLetterForCompanyUrlUrl', authenticationLetterForCompanyUrlUrl, companyIdForCompany)
                   CompanyRepresentatives.create({
                     userId: userId,
                     name: onBoardingDetails.name ? onBoardingDetails.name : '',
@@ -515,8 +522,13 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
                     companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
                     status: true
+                  }).then((success) => {
+                    if (success) {
+                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
+                    } else {
+                      return res.status(500).json({ message: "Failed to onboard company representative" });
+                    }
                   });
-                  return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
                 } else {
                   return res.status(500).json({ message: "Failed to onboard company representative" });
                 }
@@ -634,44 +646,44 @@ export const assignRole = ({ bodymen: { body }, user }, res, next) => {
   })
 }
 
-export const assignCompanies = async({ bodymen: { body }, user }, res, next) => {
+export const assignCompanies = async ({ bodymen: { body }, user }, res, next) => {
   console.log('assignCompanies function called!');
   if (body.type == "client") {
     await ClientRepresentatives.findOne({ userId: body.userId })
-    .then(async(repDetail) => {
-      let companiesList = [];
-      for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
-        companiesList.push(body.companies[cmpIndex].value);        
-      }
-      await ClientRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
-      .then((updateObj) => {
-        return res.status(200).json({ status: "200", message: "Companies assigned to the Client-Rep successfully!" });
+      .then(async (repDetail) => {
+        let companiesList = [];
+        for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+          companiesList.push(body.companies[cmpIndex].value);
+        }
+        await ClientRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+          .then((updateObj) => {
+            return res.status(200).json({ status: "200", message: "Companies assigned to the Client-Rep successfully!" });
+          })
+          .catch((error) => {
+            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+          })
       })
       .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
-      })
-    })
-    .catch((error) => {
-      return res.status(400).json({ status: "400", message: "User not found!" })
-    });
-  } else if(body.type == "company") {
+        return res.status(400).json({ status: "400", message: "User not found!" })
+      });
+  } else if (body.type == "company") {
     await CompanyRepresentatives.findOne({ userId: body.userId })
-    .then(async(repDetail) => {
-      let companiesList = [];
-      for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
-        companiesList.push(body.companies[cmpIndex].value);        
-      }
-      await CompanyRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
-      .then((updateObj) => {
-        return res.status(200).json({ status: "200", message: "Companies assigned to the Company-Rep successfully!" });
+      .then(async (repDetail) => {
+        let companiesList = [];
+        for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+          companiesList.push(body.companies[cmpIndex].value);
+        }
+        await CompanyRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+          .then((updateObj) => {
+            return res.status(200).json({ status: "200", message: "Companies assigned to the Company-Rep successfully!" });
+          })
+          .catch((error) => {
+            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+          })
       })
       .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
-      })
-    })
-    .catch((error) => {
-      return res.status(400).json({ status: "400", message: "User not found!" })
-    });
+        return res.status(400).json({ status: "400", message: "User not found!" })
+      });
   }
 }
 
