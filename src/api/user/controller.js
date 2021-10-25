@@ -506,8 +506,11 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   let userId = response.id;
                   console.log('userId', userId);
                   const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
+                  console.log('authenticationLetterForCompanyUrlUrlFileType', authenticationLetterForCompanyUrlUrlFileType);
                   var authenticationLetterForCompanyUrlUrl = userId + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
+                  console.log('authenticationLetterForCompanyUrlUrl', authenticationLetterForCompanyUrlUrl);
                   var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
+                  console.log('authenticationLetterForClientUrls3Insert', authenticationLetterForClientUrls3Insert);
                   const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
                   var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
                   var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
@@ -532,8 +535,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 } else {
                   return res.status(500).json({ message: "Failed to onboard company representative" });
                 }
-              })
-              .catch((err) => {
+              }).catch((err) => {
                 if (err.name === 'MongoError' && err.code === 11000) {
                   if (err.keyPattern.phoneNumber) {
                     res.status(409).json({
