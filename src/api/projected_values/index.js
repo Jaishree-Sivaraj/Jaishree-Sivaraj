@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getAverageByNic, getPercentileByPillar, saveProjectedValue } from './controller'
+import { create, index, show, update, destroy, getAverageByNic, copyActualValuesAsProjected, getPercentileByPillar, saveProjectedValue } from './controller'
 import { schema } from './model'
 export ProjectedValues, { schema } from './model'
 
@@ -54,6 +54,25 @@ router.post('/',
  token({ required: true }),
  body({ clientTaxonomyId, nicCode, year}),
  getAverageByNic)
+
+/**
+* @api {post} /projected_values/copy_actuals_as_projected Copy actuals as projected values
+* @apiName CopyActualsAsProjectedValues
+* @apiGroup ProjectedValues
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam clientTaxonomyId Projected values's clientTaxonomyId.
+* @apiParam nicCode Projected values's nicCode.
+* @apiParam year Projected values's year.
+* @apiSuccess {Object} projectedValues Projected values's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Projected values not found.
+* @apiError 401 user access only.
+*/
+router.post('/copy_actuals_as_projected',
+token({ required: true }),
+body({ clientTaxonomyId, nicCode, year}),
+copyActualValuesAsProjected)
 
 /**
  * @api {post} /projected_values/pillar_wise_percentile Create projected values
