@@ -62,13 +62,12 @@ export const test = async(req,res,next) => {
  return res.status(200).json({ status: "200", message: "Test case successfully executed..!"});
 }
 async function testAsyncMethod(count, triggeredBy){
-  // for (let index = 0; index < count; index++) {
-  //   if (index == 0) {
-  //     console.log('***nested for loop started ',triggeredBy, new Date());
-  //   }
-  //   if(index == 9){
-  //     console.log('***nested for loop ended ',triggeredBy, new Date());
-  //   }
-  // }
-  return true;
+  for (let index = 0; index < count; index++) {
+    if (index == 0) {
+      console.log('***nested for loop started ',triggeredBy, new Date());
+    }
+    if(index == 9){
+      console.log('***nested for loop ended ',triggeredBy, new Date());
+    }
+  }
 }
