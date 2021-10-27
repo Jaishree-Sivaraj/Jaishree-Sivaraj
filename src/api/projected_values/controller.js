@@ -71,8 +71,11 @@ export const getAverageByNic = async ({body},res,next)=> {
     nicCompaniesIds.push(nicCompaniesList[Index].id);
   }
   let percentileDatapoints = [], avgResponse = '0', stdDeviation = '0';
-  let negativeNews = await Functions.find({"functionType" : "Negative News", "status": true})
+  let negativeNews = await Functions.findOne({"functionType" : "Negative News", "status": true});
   percentileDatapoints = await Datapoints.find({"clientTaxonomyId": body.clientTaxonomyId, "percentile": "Yes", "functionId": { $ne : negativeNews.id }, "status": true});
+  if (percentileDatapoints.length <= 0) {
+    return res.status(400).json({ status: "400", message: "There is no percentile datapoints for the selected fields!"})
+  }
   for (let dIndex = 0; dIndex < percentileDatapoints.length; dIndex++) {
     datapointIds.push(percentileDatapoints[dIndex].id);
   }
@@ -112,68 +115,74 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
-  for (let index = 0; index < percentileDatapoints.length; index++) {
-    let sumOfResponse = 0;
-    let allResponses = [];
-    var responseValue = 0;
-    for (let cIndex = 0; cIndex < nicCompaniesIds.length; cIndex++) {
-      let foundResponse = {};
-      // allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      // responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : 
-      foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
-      if (foundResponse && foundResponse.response) {
-        responseValue = foundResponse.response; 
+  if (mergedDetails.length > 0) {
+    for (let index = 0; index < percentileDatapoints.length; index++) {
+      let sumOfResponse = 0;
+      let allResponses = [];
+      var responseValue = 0;
+      for (let cIndex = 0; cIndex < nicCompaniesIds.length; cIndex++) {
+        let foundResponse = {};
+        // allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+        // responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : 
+        foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+        if (foundResponse && foundResponse.response) {
+          responseValue = foundResponse.response; 
+        }
+        // allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+        // responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
+        // allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+        // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
+        // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
+        // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
+        let currentCompanyResponse = responseValue;
+        if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
+            currentCompanyResponse = 0;        
+        }
+        sumOfResponse += Number(currentCompanyResponse);
+        allResponses.push(Number(currentCompanyResponse));
       }
-      // allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      // responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
-      // allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
-      // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-      // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
-      let currentCompanyResponse = responseValue;
-      if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
-          currentCompanyResponse = 0;        
+      let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
+      // avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
+      let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
+      // stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
+      let avgResponseObject = {
+        clientTaxonomyId: body.clientTaxonomyId,
+        datapointId: percentileDatapoints[index].id,
+        nic: body.nic,
+        year: body.year,
+        categoryId: percentileDatapoints[index].categoryId,
+        actualAverage: avgResponseValue,
+        actualStdDeviation: stdDeviationValue
       }
-      sumOfResponse += Number(currentCompanyResponse);
-      allResponses.push(Number(currentCompanyResponse));
+      responseData.push(avgResponseObject);
     }
-    let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
-    // avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
-    let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
-    // stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
-    let avgResponseObject = {
-      clientTaxonomyId: body.clientTaxonomyId,
-      datapointId: percentileDatapoints[index].id,
-      nic: body.nic,
-      year: body.year,
-      categoryId: percentileDatapoints[index].categoryId,
-      actualAverage: avgResponseValue,
-      actualStdDeviation: stdDeviationValue
-    }
-    responseData.push(avgResponseObject);
-  }
-  if (responseData.length > 0) {
-    for (let index = 0; index < responseData.length; index++) {
-      await ProjectedValues.updateOne({ 
-        clientTaxonomyId: responseData[index].clientTaxonomyId, 
-        datapointId: responseData[index].datapointId, 
-        year: responseData[index].year, 
-        nic: body.nic }, 
-        { 
-          $set: responseData[index] 
-        }, 
-        { 
-          upsert: true 
-        })
-        .catch((error) => {
-          return res.status(500).json({
-            status: "500",
-            message: error.message ? error.message : "Failed to update actual value" 
+    if (responseData.length > 0) {
+      for (let index = 0; index < responseData.length; index++) {
+        await ProjectedValues.updateOne({ 
+          clientTaxonomyId: responseData[index].clientTaxonomyId, 
+          datapointId: responseData[index].datapointId, 
+          year: responseData[index].year, 
+          nic: body.nic }, 
+          { 
+            $set: responseData[index] 
+          }, 
+          { 
+            upsert: true 
           })
-        });
-    }
+          .catch((error) => {
+            return res.status(500).json({
+              status: "500",
+              message: error.message ? error.message : "Failed to update actual value" 
+            })
+          });
+      }
+      return res.status(200).json({ status: "200", message: "response updated for datapoints", count: responseData.length, data: responseData})
+    } else {
+      return res.status(500).json({ status: "500", message: "There is no response values for percentile datapoints added yet!" })
+    }    
+  } else {
+    return res.status(500).json({ status: "500", message: "There is no response values for percentile datapoints added yet!" })
   }
-  return res.status(200).json({ status: ("200"), message: "response updated for datapoints", count: responseData.length, data: responseData})
 }
 
 export const copyActualValuesAsProjected = async ({body}, res, next) => {
@@ -287,12 +296,12 @@ export const getPercentileByPillar = async ({body}, res, next) => {
         }
         completeDetails.push(yearObj);
       }
-      res.status(200).json({ status: ("200"), message: "data retrieved sucessfully", response: completeDetails });
+      res.status(200).json({ status: "200", message: "data retrieved sucessfully", response: completeDetails });
     } else {
-      res.status(500).json({ status: ("500"), message: "No percentile datapoints available!" });
+      res.status(500).json({ status: "500", message: "No percentile datapoints available!" });
     }    
   } catch (error) {
-    res.status(500).json({ status: ("500"), message: error.message ? error.message : "No percentile datapoints available!" });
+    res.status(500).json({ status: "500", message: error.message ? error.message : "No percentile datapoints available!" });
   }
 }
 
@@ -336,6 +345,6 @@ export const saveProjectedValue = async ({body}, res, next) => {
       return res.status(500).json({ status: "500", message: "No data available!"})
     }
   } catch (error) {
-    res.status(500).json({ status: ("500"), message: error.message ? error.message : "No data available!" }); 
+    res.status(500).json({ status: "500", message: error.message ? error.message : "No data available!" }); 
   }
 }
