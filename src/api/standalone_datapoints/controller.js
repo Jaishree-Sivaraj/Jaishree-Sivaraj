@@ -1347,7 +1347,7 @@ export const dataCollection = async ({
 }, res, next) => {
   try {
     let taskDetailsObject = await TaskAssignment.findOne({ _id: body.taskId }).populate('companyId').populate('categoryId');
-    if (taskDetailsObject.taskStatus == 'Pending' || taskDetailsObject.taskStatus == 'Pending') {
+    if (taskDetailsObject.taskStatus == 'Pending') {
       let dpCodesDetails = body.currentData;
       let dpHistoricalDpDetails = body.historicalData;
       let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
