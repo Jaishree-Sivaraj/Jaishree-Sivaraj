@@ -15,7 +15,7 @@ cd /app
 rm -rf esgapi-$(date +"%Y-%m-%d")_old.zip
 mv esgapi-$(date +"%Y-%m-%d").zip esgapi-$(date +"%Y-%m-%d")_old.zip
 #rm -rf esgapi.zip
-zip -r -X esgapi-$(date +"%Y-%m-%d").zip *
+zip -r -X esgapi-$(date +"%Y-%m-%d").zip esgapi
 
 ##upload to s3. AWS CLI must be installed
 

@@ -4,7 +4,7 @@ runas: ubuntu
 files:
   - source: /
     destination: /app/esgapi
-file_exists_behavior: RETAIN
+#file_exists_behavior: OVERWRITE
 
 permissions:
   - object: /
@@ -12,28 +12,26 @@ permissions:
     group: ubuntu
     
 hooks:
-        ApplicationStop:
-                - location: scripts/webstop.sh
-                  timeout: 180
-                  runas: ubuntu
-        # Execute BeforeInstall only for the first time if node is not configured in system 
-        #BeforeInstall:
-        #        - location: scripts/nodeconfigure.sh
-        Install:
-                - location: scripts/webconfigure.sh
-                  timeout: 180
-                  runas: ubuntu
-                  #check purpose second time
-        AfterInstall:
-                - location: scripts/appbuild.sh
-                  timeout: 180
-                  runas: ubuntu
-        ApplicationStart:
-                - location: scripts/webstartservice.sh
-                  timeout: 600
-                  runas: ubuntu
-          
-        ValidateService:
-                - location: scripts/monitorservice.sh
-                  timeout: 180
-                  runas: ubuntu
+  ApplicationStop:
+    - location: scripts/webstop.sh
+      timeout: 180
+      runas: ubuntu
+  # Execute BeforeInstall only for the first time if node is not configured in system 
+  #BeforeInstall:
+    #- location: scripts/nodeconfigure.sh
+  Install:
+    - location: scripts/webconfigure.sh
+      timeout: 180
+      runas: ubuntu
+  AfterInstall:
+    - location: scripts/appbuild.sh
+      timeout: 600
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/webstartservice.sh
+      timeout: 600
+      runas: ubuntu
+  ValidateService:
+    - location: scripts/monitorservice.sh
+      timeout: 600
+      runas: ubuntu

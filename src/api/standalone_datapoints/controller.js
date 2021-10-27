@@ -676,10 +676,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
             const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
+              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\r\n]/g, ''));
               let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
               let responseValue, hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase())
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
@@ -817,7 +817,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
@@ -947,7 +947,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
               });
               let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\s\r\n]/g, '').toLowerCase());
+              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
               let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
               if (item['Error Type'] != undefined && item['Error Type'] != "") {
                 let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))

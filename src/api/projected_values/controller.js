@@ -176,6 +176,39 @@ export const getAverageByNic = async ({body},res,next)=> {
   return res.status(200).json({ status: ("200"), message: "response updated for datapoints", count: responseData.length, data: responseData})
 }
 
+export const copyActualValuesAsProjected = async ({body}, res, next) => {
+  await ProjectedValues.find({ 
+    clientTaxonomyId: body.clientTaxonomyId ? body.clientTaxonomyId : null, 
+    year: body.year ? body.year : '', 
+    nic: body.nic ? body.nic : '' 
+  })
+  .populate('clientTaxonomyId')
+  .populate('categoryId')
+  .populate('datapointId')
+  .then(async(projectedValues) => {
+    if (projectedValues && projectedValues.length > 0) {
+      for (let proIndex = 0; proIndex < projectedValues.length; proIndex++) {
+        await ProjectedValues.updateOne({ _id: projectedValues[proIndex].id }, { 
+          $set: { 
+            projectedAverage: projectedValues[proIndex].actualAverage,
+            projectedStdDeviation: projectedValues[proIndex].actualStdDeviation 
+          } 
+        })
+        .catch((error) => { return res.status(500).json({ message: error.message ? error.message : 'Failed to update projected values!' }) });
+      }
+      return res.status(200).json({ status: "200", message: "Copied actual values to projected successfully!" });
+    } else {
+      return res.status(400).json({ status: "400", message: "There is no actuals available for the selected fields!" });
+    }
+  })
+  .catch((error) => { 
+    return res.status(500).json({ 
+      status: "500", 
+      message: error.message ? error.message : 'There is no actuals available for the selected fields!' 
+    })
+  });
+}
+
 export const getPercentileByPillar = async ({body}, res, next) => {
   try {
     let percentileDatapoints = await Datapoints.find({
@@ -224,7 +257,7 @@ export const getPercentileByPillar = async ({body}, res, next) => {
             clientTaxonomyId: body.taxonomy, 
             datapointId: percentileDatapoints[index].id, 
             year: years[yIndex], 
-            nic: body.nicCode 
+            nic: body.nic 
           }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoints value not found for the '+ years[yIndex] + ' year!' }) });
           console.log("Datapoint Response", dpResponse);
           if (dpResponse) {
@@ -241,7 +274,7 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           clientTaxonomyId: body.taxonomy, 
           datapointId: percentileDatapoints[index].id, 
           year: body.currentYear, 
-          nic: body.nicCode
+          nic: body.nic
         }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
         if (currentYearValues) {
           let currentActualAverageValue = Math.round( currentYearValues.actualAverage * 100 + Number.EPSILON ) / 100;
@@ -274,7 +307,7 @@ export const saveProjectedValue = async ({body}, res, next) => {
           datapointId: datapointData[index].dpCodeId,
           year: body.currentYear,
           categoryId: body.pillar,
-          nic: body.nicCode,
+          nic: body.nic,
           projectedAverage: datapointData[index].projectedAvg,
           projectedStdDeviation: datapointData[index].projectedSd,
           actualAverage : "",
@@ -285,7 +318,7 @@ export const saveProjectedValue = async ({body}, res, next) => {
           "datapointId": datapointData[index].dpCodeId,
           "year": body.currentYear,
           "categoryId": body.pillar,
-          "nic": body.nicCode
+          "nic": body.nic
         },
         {
           $set: objectToUpdate
