@@ -1196,7 +1196,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           }
         });
       }
-      var assignedCompanyList = await CompaniesTasks.find({ categoryId: body.categoryId, year: years, companyId: batch.companiesList[index].id }).populate("companyId");
+      var assignedCompanyList = await TaskAssignment.find({ categoryId: body.categoryId, year: years, companyId: batch.companiesList[index].id }).populate("companyId");
       if (assignedCompanyList.length === 0) {
         unAssignedCompanyList.push({
           id: batch.companiesList[index].id,
