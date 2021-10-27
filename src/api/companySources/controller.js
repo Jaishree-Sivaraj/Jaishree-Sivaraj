@@ -37,9 +37,9 @@ export const show = async ({ params }, res, next) => {
   sourceDetails = await CompanySources.find({ "status": true });
   companySourceDetails = await sourceDetails.find((object) => params.id == object.companyId);
   if (companySourceDetails) {
-    res.status(200).json({ status: ("200"), message: "data retrieved Sucessfully", data: companySourceDetails });
+    res.status(200).json({ status: "200", message: "data retrieved Sucessfully", data: companySourceDetails });
   } else {
-    res.status(400).json({ status: ("400"), message: "no data present for the companyId..!" });
+    res.status(400).json({ status: "400", message: "no data present for the companyId..!" });
   }
 }
 
@@ -77,7 +77,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   // let fileUrl = path.join(__dirname, "uploads", fileName)
   // await fs.writeFile(fileUrl, convertedPdf, error => {
   //   if (error) {
-  //     //res.status(400).json({ status: ("400"), message: "Unable to write the file" });
+  //     //res.status(400).json({ status: "400", message: "Unable to write the file" });
   //   } else {
   //     console.log("File Stored Sucessfully");
   //   }
