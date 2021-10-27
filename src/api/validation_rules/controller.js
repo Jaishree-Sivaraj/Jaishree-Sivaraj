@@ -50,12 +50,12 @@ export const destroy = ({ user, params }, res, next) =>
 
 export const test = async(req,res,next) => {
  console.log("Test Function called..!", req.query);
- for (let id = 0; id < 1000000; id++) {
+ for (let id = 0; id < 10000; id++) {
    if(id == 0){
      console.log(">>>For loop started ", req.query.from ? req.query.from : 'unknown', new Date());
    }
    await testAsyncMethod(10, req.query.from ? req.query.from : 'unknown');
-   if (id == 999999) {
+   if (id == 9999) {
      console.log("<<<For loop completed ",req.query.from ? req.query.from : 'unknown', new Date());     
    }   
  }
