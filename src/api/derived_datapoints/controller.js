@@ -504,7 +504,7 @@ export const calculateForACompany = async ({
                             _id: foundResponse.id
                           }, {
                             $set: {
-                              performanceResult: 'Positive'
+                              performanceResult: 'Negative'
                             }
                           });
                         } else if (foundResponse.response == 'Yes' || foundResponse.response == 'Y') {
@@ -512,7 +512,7 @@ export const calculateForACompany = async ({
                             _id: foundResponse.id
                           }, {
                             $set: {
-                              performanceResult: 'Negative'
+                              performanceResult: 'Positive'
                             }
                           });
                         }
@@ -596,9 +596,9 @@ export const calculateForACompany = async ({
                       if (datapointDetail.code == 'BUSP009' || datapointDetail.code == 'BUSP008') {
                         if (foundResponse) {
                           if (foundResponse.response == 'No' || foundResponse.response == 'N') {
-                            allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
-                          } else if (foundResponse.response == 'Yes' || foundResponse.response == 'Y') {
                             allDerivedDatapoints[foundResponseIndex].performanceResult = 'Negative';
+                          } else if (foundResponse.response == 'Yes' || foundResponse.response == 'Y') {
+                            allDerivedDatapoints[foundResponseIndex].performanceResult = 'Positive';
                           }
                         }
                       } else if (foundResponse.response == "Yes" || foundResponse.response == "Y" || foundResponse.response == "yes" || foundResponse.response == "y") {
@@ -2816,9 +2816,9 @@ export const derivedCalculation = async ({
               } else {
                 if (datapointDetail.code == 'BUSP009' || datapointDetail.code == 'BUSP008') {
                   if (foundResponse.response == 'No' || foundResponse.response == 'N') {
-                    performanceResult = 'Positive'
+                    performanceResult = 'Negative'
                   } else if (foundResponse.response == 'Yes' || foundResponse.response == 'Y') {
-                    performanceResult = 'Negative';
+                    performanceResult = 'Positive';
                   }
                 } else if (foundResponse.response == "Yes" || foundResponse.response == "Y" || foundResponse.response == "yes" || foundResponse.response == "y") {
                   if (datapointDetail.polarity == 'Positive') {
