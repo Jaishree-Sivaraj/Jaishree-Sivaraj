@@ -15,6 +15,7 @@ import path from 'path'
 import { compareSync } from 'bcrypt'
 import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
+import { sendEmail } from "../../services/utils/mailing"
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -783,7 +784,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   }
   User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
     if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
-      User.findById(body.userId).then(function (userDetails) {
+      User.findById(body.userId).then(async function (userDetails) {
         var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
         if (userDetails && userDetails.userType) {
           userDetails.userType = userDetails.userType.split(" ").join("");
@@ -799,19 +800,21 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
           Thanks<br/>
           ESGDS Team `;
-        var transporter = nodemailer.createTransport({
-          service: 'Gmail',
-          auth: {
-            user: 'testmailer09876@gmail.com',
-            pass: 'ijsfupqcuttlpcez'
-          }
-        });
-        transporter.sendMail({
-          from: 'testmailer09876@gmail.com',
-          to: userDetails['email'],
-          subject: 'ESG - Onboarding',
-          html: content
-        });
+        // var transporter = nodemailer.createTransport({
+        //   service: 'Gmail',
+        //   auth: {
+        //     user: 'testmailer09876@gmail.com',
+        //     pass: 'ijsfupqcuttlpcez'
+        //   }
+        // });
+        // transporter.sendMail({
+        //   from: 'testmailer09876@gmail.com',
+        //   to: userDetails['email'],
+        //   subject: 'ESG - Onboarding',
+        //   html: content
+        // });
+        await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+        .then((resp) => { console.log('Mail sent!'); });
       })
       // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
       return res.status(200).json({
@@ -1050,20 +1053,22 @@ export const uploadEmailsFile = async (req, res, next) => {
                       Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
                       Thanks<br/>
                       ESGDS Team `;
-                    var transporter = nodemailer.createTransport({
-                      service: 'Gmail',
-                      auth: {
-                        user: 'testmailer09876@gmail.com',
-                        pass: 'ijsfupqcuttlpcez'
-                      }
-                    });
+                    // var transporter = nodemailer.createTransport({
+                    //   service: 'Gmail',
+                    //   auth: {
+                    //     user: 'testmailer09876@gmail.com',
+                    //     pass: 'ijsfupqcuttlpcez'
+                    //   }
+                    // });
 
-                    transporter.sendMail({
-                      from: 'testmailer09876@gmail.com',
-                      to: rowObject['email'],
-                      subject: 'ESG - Onboarding',
-                      html: content
-                    });
+                    // transporter.sendMail({
+                    //   from: 'testmailer09876@gmail.com',
+                    //   to: rowObject['email'],
+                    //   subject: 'ESG - Onboarding',
+                    //   html: content
+                    // });
+                    await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
+                    .then((resp) => { console.log('Mail sent!'); });
                     let email = `${rowObject['email']}`;
                     await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
 
@@ -1079,20 +1084,22 @@ export const uploadEmailsFile = async (req, res, next) => {
                       const content = `
                         Email: ${rowObject['email']}<br/><br/>
                         Link: ${url}<br/><br/>`;
-                      var transporter = nodemailer.createTransport({
-                        service: 'Gmail',
-                        auth: {
-                          user: 'testmailer09876@gmail.com',
-                          pass: 'ijsfupqcuttlpcez'
-                        }
-                      });
+                      // var transporter = nodemailer.createTransport({
+                      //   service: 'Gmail',
+                      //   auth: {
+                      //     user: 'testmailer09876@gmail.com',
+                      //     pass: 'ijsfupqcuttlpcez'
+                      //   }
+                      // });
 
-                      transporter.sendMail({
-                        from: 'testmailer09876@gmail.com',
-                        to: allAdminUserEmailIds[index],
-                        subject: 'ESG - Onboarding',
-                        html: content
-                      });
+                      // transporter.sendMail({
+                      //   from: 'testmailer09876@gmail.com',
+                      //   to: allAdminUserEmailIds[index],
+                      //   subject: 'ESG - Onboarding',
+                      //   html: content
+                      // });
+                      await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+                      .then((resp) => { console.log('Mail sent!'); });
                       let email = `${rowObject['email']}`;
                       await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
                     }
@@ -1164,20 +1171,22 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
             Thanks<br/>
             ESGDS Team `;
-          var transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-              user: 'testmailer09876@gmail.com',
-              pass: 'ijsfupqcuttlpcez'
-            }
-          });
+          // var transporter = nodemailer.createTransport({
+          //   service: 'Gmail',
+          //   auth: {
+          //     user: 'testmailer09876@gmail.com',
+          //     pass: 'ijsfupqcuttlpcez'
+          //   }
+          // });
 
-          transporter.sendMail({
-            from: 'testmailer09876@gmail.com',
-            to: rowObject['email'],
-            subject: 'ESG - Onboarding',
-            html: content
-          });
+          // transporter.sendMail({
+          //   from: 'testmailer09876@gmail.com',
+          //   to: rowObject['email'],
+          //   subject: 'ESG - Onboarding',
+          //   html: content
+          // });
+          await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
+          .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;
           await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
 
@@ -1193,20 +1202,22 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             const content = `
               Email: ${rowObject['email']}<br/><br/>
               Link: ${url}<br/><br/>`;
-            var transporter = nodemailer.createTransport({
-              service: 'Gmail',
-              auth: {
-                user: 'testmailer09876@gmail.com',
-                pass: 'ijsfupqcuttlpcez'
-              }
-            });
+            // var transporter = nodemailer.createTransport({
+            //   service: 'Gmail',
+            //   auth: {
+            //     user: 'testmailer09876@gmail.com',
+            //     pass: 'ijsfupqcuttlpcez'
+            //   }
+            // });
 
-            transporter.sendMail({
-              from: 'testmailer09876@gmail.com',
-              to: allAdminUserEmailIds[index],
-              subject: 'ESG - Onboarding',
-              html: content
-            });
+            // transporter.sendMail({
+            //   from: 'testmailer09876@gmail.com',
+            //   to: allAdminUserEmailIds[index],
+            //   subject: 'ESG - Onboarding',
+            //   html: content
+            // });
+            await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+            .then((resp) => { console.log('Mail sent!'); });
             let email = `${rowObject['email']}`;
             await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
           }

@@ -125,7 +125,7 @@ export const slaDateExtensionRequest = async ({user, body}, res, next) => {
     });
     
   } catch (error) {
-    res.status(500).json({ status: (500), message: " No task details available please check!"});        
+    res.status(500).json({ status: 500, message: " No task details available please check!"});        
   }
 }
 

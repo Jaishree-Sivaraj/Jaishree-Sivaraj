@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as body } from 'bodymen'
 import { master } from '../../services/passport'
-import { create, show, update } from './controller'
+import { create, show, update, testMail } from './controller'
 import { schema } from '../user'
 export PasswordReset, { schema } from './model'
 
@@ -31,6 +31,8 @@ router.post('/',
  */
 router.get('/:token',
   show)
+
+router.get('/test/mail', testMail)
 
 /**
  * @api {put} /password-resets/:token Submit password

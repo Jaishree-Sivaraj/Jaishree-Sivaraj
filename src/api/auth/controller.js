@@ -6,6 +6,7 @@ import { success } from '../../services/response/'
 import { jwtSecret, masterKey } from '../../config'
 import { User } from '../user'
 import { Role } from '../role'
+import { sendEmail } from "../../services/utils/mailing"
 
 export const login = async ({ user }, res, next) => {
   sign(user.id)
@@ -66,20 +67,22 @@ export const login = async ({ user }, res, next) => {
             Thanks<br/>
             ESG API Team
           `;
-          var transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-              user: 'testmailer09876@gmail.com',
-              pass: 'ijsfupqcuttlpcez'
-            }
-          });
+          // var transporter = nodemailer.createTransport({
+          //   service: 'Gmail',
+          //   auth: {
+          //     user: 'testmailer09876@gmail.com',
+          //     pass: 'ijsfupqcuttlpcez'
+          //   }
+          // });
 
-          transporter.sendMail({
-            from: 'testmailer09876@gmail.com',
-            to: user.email,
-            subject: 'ESG - OTP',
-            html: content
-          });
+          // transporter.sendMail({
+          //   from: 'testmailer09876@gmail.com',
+          //   to: user.email,
+          //   subject: 'ESG - OTP',
+          //   html: content
+          // });
+          await sendEmail(user.email, 'ESG - OTP', content)
+          .then((resp) => { console.log('Mail sent!'); });
         }
         return res.send({ status: "200", message: "Otp sent to registered email" });
         // } else {

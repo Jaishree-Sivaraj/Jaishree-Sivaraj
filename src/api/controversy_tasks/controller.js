@@ -255,7 +255,7 @@ export const newControversyTask = async ({ user, bodymen: { body } }, res, next)
           })
           .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create group!' }) });
       }
-      res.status(200).json({ status: (200), message: 'controversy task created success', data: controversyTaskDetails });
+      res.status(200).json({ status: 200, message: 'controversy task created success', data: controversyTaskDetails });
     })
     .catch((error) => {
       return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to create group!' })
