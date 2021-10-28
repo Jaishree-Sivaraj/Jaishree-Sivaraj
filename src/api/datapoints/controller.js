@@ -4490,11 +4490,11 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
             obj["Category"] = dataPoints[index]["categoryId"]["categoryName"];
           }
           if (filteredFields[index1]["fieldName"] === 'themeName') {
-            obj["categoryName"] = dataPoints[index]["themeId"]["themeName"];
+            obj["Theme"] = dataPoints[index]["themeId"]["themeName"];
           }
           if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
             console.log('index', dataPoints[index])
-            obj["categoryName"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
+            obj["Key Issue"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
           }
         }
       }
