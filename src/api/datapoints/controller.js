@@ -4486,13 +4486,13 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
           obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
         } else {
           if (filteredFields[index1]["fieldName"] === 'categoryName') {
-            obj["Category"] = dataPoints[index]["categoryId"]["categoryName"];
+            obj["Category"] = dataPoints[index]["categoryId"] ? dataPoints[index]["categoryId"]["categoryName"] : "";
           }
           if (filteredFields[index1]["fieldName"] === 'themeName') {
-            obj["Theme"] = dataPoints[index]["themeId"]["themeName"];
+            obj["Theme"] = dataPoints[index]["themeId"] ? dataPoints[index]["themeId"]["themeName"] : "";
           }
           if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
-            obj["Key Issue"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
+            obj["Key Issue"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueName"] : "";
           }
         }
       }
