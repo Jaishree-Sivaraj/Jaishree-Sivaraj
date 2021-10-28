@@ -4476,13 +4476,12 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
   console.log('clienttaxonomies', clienttaxonomies);
   if (clienttaxonomies) {
     var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
-    console.log('filteredFields', filteredFields);
     var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId');
-    console.log('dataPoints', dataPoints.length)
     var response = [];
     for (var index = 0; index < dataPoints.length; index++) {
       var obj = {};
       for (var index1 = 0; index1 < filteredFields.length; index1++) {
+        console.log('filteredFields', dataPoints[index]);
         if (dataPoints[index][filteredFields[index1]["fieldName"]]) {
           obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
         } else {
@@ -4493,7 +4492,6 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
             obj["Theme"] = dataPoints[index]["themeId"]["themeName"];
           }
           if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
-            console.log('index', dataPoints[index])
             obj["Key Issue"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
           }
         }
