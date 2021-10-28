@@ -3,13 +3,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, repDatapointDetails,  uploadNewTaxonomyDatapoints } from './controller'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, repDatapointDetails, uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony } from './controller'
 import { schema } from './model'
 export Datapoints, { schema } from './model'
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status } = schema.tree
-const taskId = '',year = '', datapointId = '', memberType = '', memberName = '', role = '';
+const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '';
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -46,17 +46,17 @@ router.post('/',
   create)
 
 var storage = multer.diskStorage({ //multers disk storage settings
-  destination: function(req, file, cb) {
-      cb(null, __dirname.replace('routes', '') + '/uploads');
+  destination: function (req, file, cb) {
+    cb(null, __dirname.replace('routes', '') + '/uploads');
   },
-  filename: function(req, file, cb) {
-      var datetimestamp = Date.now();
-      cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+  filename: function (req, file, cb) {
+    var datetimestamp = Date.now();
+    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
   }
 });
 var uploadDatapoints = multer({ //multer settings
   storage: storage,
-  fileFilter: function(req, file, callback) { //file filter
+  fileFilter: function (req, file, callback) { //file filter
     if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
       return callback(new Error('Wrong extension type'));
     }
@@ -112,6 +112,22 @@ router.get('/',
 router.get('/addExtraKeys/:clientTaxonomyId',
   token({ required: true }),
   includeExtraKeysFromJson)
+
+/**
+* @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
+* @apiName AddExtraKeysForAllDatapoints
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} datapoints Datapoints's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Datapoints not found.
+* @apiError 401 user access only.
+*/
+
+router.get('/downloadSubsetTaxmonony/:clientTaxonomyId',
+  token({ required: true }),
+  downloadSubsetTaxmonony)
 
 /**
  * @api {get} /datapoints/:id Retrieve datapoints
@@ -173,45 +189,45 @@ router.get('/list/:taskId',
   token({ required: true }),
   getCategorywiseDatapoints)
 
-  /**
-  * @api {post} /datapoints/dpDetails Get datapoints details
-  * @apiName datapointDetails
-  * @apiGroup Datapoints
-  * @apiPermission user
- * @apiParam taskId .
- * @apiParam datapointId Datapoints's Id.
- * @apiParam memberName Member's name.
- * @apiParam memberType Member's type.
-  * @apiParam {String} access_token user access token.
-  * @apiSuccess {Object} datapoints Datapoints's data.
-  * @apiError {Object} 400 Some parameters may contain invalid values.
-  * @apiError 404 Datapoints not found.
-  * @apiError 401 user access only.
-  */
-  router.post('/dpDetails',
-    token({ required: true }),
-    body({ taskId, datapointId, memberType, memberName }),
-    datapointDetails);
-    
-  /**
-  * @api {post} /datapoints/repDpDetails Get datapoints details
-  * @apiName datapointDetails
-  * @apiGroup Datapoints
-  * @apiPermission user
- * @apiParam taskId .
- * @apiParam datapointId Datapoints's Id.
- * @apiParam memberName Member's name.
- * @apiParam memberType Member's type.
- * @apiParam year ErrorDatapoint's year
-  * @apiParam {String} access_token user access token.
-  * @apiSuccess {Object} datapoints Datapoints's data.g
-  * @apiError {Object} 400 Some parameters may contain invalid values.
-  * @apiError 404 Datapoints not found.
-  * @apiError 401 user access only.
-  */
-  router.post('/repDpDetails',
+/**
+* @api {post} /datapoints/dpDetails Get datapoints details
+* @apiName datapointDetails
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam taskId .
+* @apiParam datapointId Datapoints's Id.
+* @apiParam memberName Member's name.
+* @apiParam memberType Member's type.
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} datapoints Datapoints's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Datapoints not found.
+* @apiError 401 user access only.
+*/
+router.post('/dpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName, role}),
+  body({ taskId, datapointId, memberType, memberName }),
+  datapointDetails);
+
+/**
+* @api {post} /datapoints/repDpDetails Get datapoints details
+* @apiName datapointDetails
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam taskId .
+* @apiParam datapointId Datapoints's Id.
+* @apiParam memberName Member's name.
+* @apiParam memberType Member's type.
+* @apiParam year ErrorDatapoint's year
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} datapoints Datapoints's data.g
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Datapoints not found.
+* @apiError 401 user access only.
+*/
+router.post('/repDpDetails',
+  token({ required: true }),
+  body({ taskId, datapointId, memberType, memberName, role }),
   repDatapointDetails)
 
 /**
