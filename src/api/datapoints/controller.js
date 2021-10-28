@@ -4472,7 +4472,12 @@ export const destroy = ({ user, params }, res, next) =>
 
 export const downloadSubsetTaxmonony = async (req, res, next) => {
   var clientTaxonomyId = req.params.clientTaxonomyId;
-  var clienttaxonomies = await ClientTaxonomy.findById(clientTaxonomyId);
+  var clienttaxonomies = await ClientTaxonomy.findById(clientTaxonomyId).catch((e) => {
+    return res.status(400).json({
+      status: "400",
+      message: "Invalid Clienttaxonomy Name"
+    });
+  });
   console.log('clienttaxonomies', clienttaxonomies);
   if (clienttaxonomies) {
     var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
