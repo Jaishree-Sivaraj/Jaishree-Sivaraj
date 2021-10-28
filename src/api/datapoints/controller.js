@@ -4473,34 +4473,42 @@ export const destroy = ({ user, params }, res, next) =>
 export const downloadSubsetTaxmonony = async (req, res, next) => {
   var clientTaxonomyId = req.params.clientTaxonomyId;
   var clienttaxonomies = await ClientTaxonomy.findById(clientTaxonomyId);
-  var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
-  console.log('filteredFields', filteredFields);
-  var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId');
-  console.log('dataPoints', dataPoints.length)
-  var response = [];
-  for (var index = 0; index < dataPoints.length; index++) {
-    var obj = {};
-    for (var index1 = 0; index1 < filteredFields.length; index1++) {
-      if (dataPoints[index][filteredFields[index1]["fieldName"]]) {
-        obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
-      } else {
-        if (filteredFields[index1]["fieldName"] === 'categoryName') {
-          obj["Category"] = dataPoints[index]["categoryId"]["categoryName"];
-        }
-        if (filteredFields[index1]["fieldName"] === 'themeName') {
-          obj["categoryName"] = dataPoints[index]["themeId"]["themeName"];
-        }
-        if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
-          console.log('index', dataPoints[index])
-          obj["categoryName"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
+  console.log('clienttaxonomies', clienttaxonomies);
+  if (clienttaxonomies) {
+    var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
+    console.log('filteredFields', filteredFields);
+    var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId');
+    console.log('dataPoints', dataPoints.length)
+    var response = [];
+    for (var index = 0; index < dataPoints.length; index++) {
+      var obj = {};
+      for (var index1 = 0; index1 < filteredFields.length; index1++) {
+        if (dataPoints[index][filteredFields[index1]["fieldName"]]) {
+          obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
+        } else {
+          if (filteredFields[index1]["fieldName"] === 'categoryName') {
+            obj["Category"] = dataPoints[index]["categoryId"]["categoryName"];
+          }
+          if (filteredFields[index1]["fieldName"] === 'themeName') {
+            obj["categoryName"] = dataPoints[index]["themeId"]["themeName"];
+          }
+          if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
+            console.log('index', dataPoints[index])
+            obj["categoryName"] = dataPoints[index]["keyIssueId"]["keyIssueName"];
+          }
         }
       }
+      response.push(obj);
     }
-    response.push(obj);
+    return res.status(200).json({
+      status: "200",
+      message: "Subset taxonomy downloaded successfully!",
+      data: response
+    });
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "Invalid Clienttaxonomy Name"
+    });
   }
-  return res.status(200).json({
-    status: "200",
-    message: "Subset taxonomy downloaded successfully!",
-    data: response
-  });
 }
