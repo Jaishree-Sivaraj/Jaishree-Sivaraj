@@ -3,13 +3,14 @@ import { sendMail } from '../../services/sendgrid'
 import nodemailer from 'nodemailer'
 import { PasswordReset } from '.'
 import { User } from '../user'
+import { sendEmail } from "../../services/utils/mailing"
 
 export const create = async({ bodymen: { body: { email } } }, res, next) => {
   User.findOne({ email })
     .then(async (user) => {
       if (user) {
         PasswordReset.create({ user })
-        .then((reset) => {
+        .then(async(reset) => {
           if (!reset) return res.status(400).json({ status: "400", message: 'Failed to send password reset mail!' })
           const { user, token } = reset
           let Link = `${process.env.FRONTEND_URL}/password-resets`;
@@ -23,20 +24,22 @@ export const create = async({ bodymen: { body: { email } } }, res, next) => {
             Thanks<br>
             ESG API Team
           `
-          var transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-              user: 'testmailer09876@gmail.com',
-              pass: 'ijsfupqcuttlpcez'
-            }
-          });
+          // var transporter = nodemailer.createTransport({
+          //   service: 'Gmail',
+          //   auth: {
+          //     user: 'testmailer09876@gmail.com',
+          //     pass: 'ijsfupqcuttlpcez'
+          //   }
+          // });
           
-          transporter.sendMail({
-            from: 'testmailer09876@gmail.com',
-            to: email,
-            subject: 'ESGAPI - Password Reset',
-            html: content.toString()
-          });
+          // transporter.sendMail({
+          //   from: 'testmailer09876@gmail.com',
+          //   to: email,
+          //   subject: 'ESGAPI - Password Reset',
+          //   html: content.toString()
+          // });
+          await sendEmail(email, 'ESGAPI - Password Reset', content.toString())
+          .then((resp) => { console.log('Mail sent!'); });
           return res.status(200).json({ status: "200", message: "Email sent successfully!" })
         })
         .catch((error) => {
@@ -78,4 +81,17 @@ export const update = ({ params: { token }, bodymen: { body: { password } } }, r
     .catch((err) => {
       return res.status(400).json({ "status": "400", message: err.message ? err.message : 'Invalid password reset token!' })
     })
+}
+
+export const testMail = async(req, res, next) => {
+  if (req.query.mailId != '' && req.query.mailId, req.query.mailId.length > 0) {
+    await sendEmail(req.query.mailId, 'New Test Mail', '<b>Test generic zoho html mail</b>').then((resp) => { 
+      console.log('resp', resp);
+      if (resp) {
+        return res.json({ status: "200", message: "Mail sent successfully!" }) 
+      } else {
+        return res.json({ status: "400", message: "Failed to send mail!" }) 
+      }
+    });    
+  }
 }

@@ -47,3 +47,27 @@ export const destroy = ({ user, params }, res, next) =>
     .then((validationRules) => validationRules ? validationRules.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+export const test = async(req,res,next) => {
+ console.log("Test Function called..!", req.query);
+ for (let id = 0; id < 10000; id++) {
+   if(id == 0){
+     console.log(">>>For loop started ", req.query.from ? req.query.from : 'unknown', new Date());
+   }
+   await testAsyncMethod(10, req.query.from ? req.query.from : 'unknown');
+   if (id == 9999) {
+     console.log("<<<For loop completed ",req.query.from ? req.query.from : 'unknown', new Date());     
+   }   
+ }
+ return res.status(200).json({ status: "200", message: "Test case successfully executed..!"});
+}
+async function testAsyncMethod(count, triggeredBy){
+  for (let index = 0; index < count; index++) {
+    if (index == 0) {
+      console.log('***nested for loop started ',triggeredBy, new Date());
+    }
+    if(index == 9){
+      console.log('***nested for loop ended ',triggeredBy, new Date());
+    }
+  }
+}
