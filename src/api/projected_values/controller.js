@@ -281,15 +281,13 @@ export const getPercentileByPillar = async ({body}, res, next) => {
         }
         let currentYearValues = await ProjectedValues.findOne({ 
           clientTaxonomyId: body.taxonomy, 
-          datapointId: percentileDatapoints[index].id, 
-          year: body.currentYear, 
+          datapointId: percentileDatapoints[index].id,
+          year: years[4], 
           nic: body.nic
         }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
         if (currentYearValues) {
-          let currentActualAverageValue = Math.round( currentYearValues.actualAverage * 100 + Number.EPSILON ) / 100;
-          let currentActualStdDeviationValue = Math.round( currentYearValues.stdDeviation * 100 + Number.EPSILON ) / 100;
-          yearObj[ 'projectedAvg'] = currentActualAverageValue;
-          yearObj[ 'projectedSd'] = currentActualStdDeviationValue;
+          yearObj[ 'projectedAvg'] = Number(currentYearValues.projectedAverage).toFixed(2);
+          yearObj[ 'projectedSd'] = Number(currentYearValues.projectedStdDeviation).toFixed(2);
         } else{
           yearObj[ 'projectedAvg'] = '';
           yearObj[ 'projectedSd'] = '';
