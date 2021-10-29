@@ -701,7 +701,7 @@ export const getMyTasks = async (
     if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
         companyId: { $in: clientRepDetail.companiesList },
-        taskStatus: "Verification Completed",
+        taskStatus: {$in:["Completed", "Verification Completed"]},
         status: true
       })
         .sort({
@@ -764,7 +764,7 @@ export const getMyTasks = async (
         companyId: {
           $in: companyRepDetail.companiesList,
         },
-        taskStatus: "Verification Completed",
+        taskStatus: {$in:["Completed", "Verification Completed"]},
         status: true,
       })
         .sort({
