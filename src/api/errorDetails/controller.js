@@ -16,6 +16,7 @@ import { Errors } from '../error'
 import _ from 'lodash'
 import { TaskAssignment } from '../taskAssignment'
 import { StandaloneDatapoints } from '../standalone_datapoints'
+import { storeFileInS3 } from "../../services/utils/aws-s3"
 
 export const create = ({
     user,
@@ -202,13 +203,23 @@ export const saveErrorDetails = async({
           { $set: standaloneDatapoints }, { upsert: true });
         } else {         
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
+          let formattedScreenShots = [];
+          if (item['screenShot'] && item['screenShot'].length > 0) {
+            for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+              let screenshotItem = item['screenShot'][screenshotIndex];
+              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '.' + screenShotFileType;
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              formattedScreenShots.push(screenshotFileName);
+            }
+          }
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
             taskId: body.taskId,
             year: item['fiscalYear'],
             response: item['response'],
-            screenShot: item['screenShot'], //aws filename todo
+            screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
             publicationDate: item.source['publicationDate'],
@@ -284,13 +295,23 @@ export const saveErrorDetails = async({
       } else{
         await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
         { $set: {isActive: false}});
+        let formattedScreenShots = [];
+        if (item['screenShot'] && item['screenShot'].length > 0) {
+          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+            let screenshotItem = item['screenShot'][screenshotIndex];
+            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            formattedScreenShots.push(screenshotFileName);
+          }
+        }
         await BoardMembersMatrixDataPoints.create({
           datapointId: body.dpCodeId,
           companyId: body.companyId,
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'], //aws filename todo
+          screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
@@ -311,19 +332,29 @@ export const saveErrorDetails = async({
             message: error.message
           });
         })
-      }    
+      }
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
       await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
         { $set: {isActive: false} });
+      let formattedScreenShots = [];
+      if (item['screenShot'] && item['screenShot'].length > 0) {
+        for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+          let screenshotItem = item['screenShot'][screenshotIndex];
+          let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+          let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+          formattedScreenShots.push(screenshotFileName);
+        }
+      }
       await BoardMembersMatrixDataPoints.create({
         datapointId: body.dpCodeId,
         companyId: body.companyId,
         taskId: body.taskId,
         year: item['fiscalYear'],
         response: item['response'],
-        screenShot: item['screenShot'], //aws filename todo
+        screenShot: formattedScreenShots, //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
         publicationDate: item.source['publicationDate'],
@@ -373,14 +404,24 @@ export const saveErrorDetails = async({
         { $set: errorDp }, { upsert: true });
       } else{
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
-        { $set: {isActive: false}});        
+        { $set: {isActive: false}});
+        let formattedScreenShots = [];
+        if (item['screenShot'] && item['screenShot'].length > 0) {
+          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+            let screenshotItem = item['screenShot'][screenshotIndex];
+            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            formattedScreenShots.push(screenshotFileName);
+          }
+        }
         await KmpMatrixDataPoints.create({
           datapointId: body.dpCodeId,
           companyId: body.companyId,
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'], //aws filename todo
+          screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
@@ -407,13 +448,23 @@ export const saveErrorDetails = async({
       let item = dpHistoricalDpDetails[index];
       await KmpMatrixDataPoints.updateOne({ companyId: body.companyId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: {isActive: false}});
+        let formattedScreenShots = [];
+        if (item['screenShot'] && item['screenShot'].length > 0) {
+          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+            let screenshotItem = item['screenShot'][screenshotIndex];
+            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            formattedScreenShots.push(screenshotFileName);
+          }
+        }
         await KmpMatrixDataPoints.create({
           datapointId: body.dpCodeId,
           companyId: body.companyId,
           taskId: body.taskId,
           year: item['fiscalYear'],
           response: item['response'],
-          screenShot: item['screenShot'], //aws filename todo
+          screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
           publicationDate: item.source['publicationDate'],
@@ -449,21 +500,31 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             if(item.error.refData === '' || item.error.refData === ""){
               errorCaughtByRep == null
             } else {
-            errorCaughtByRep = {
-              description: item.error.refData.description,
-              response: item.error.refData.response,
-              screenShot: item.error.refData.screenShot,
-              dataType: item.error.refData.dataType,
-              fiscalYear: item.fiscalYear,
-              textSnippet: item.error.refData.textSnippet,
-              pageNo: item.error.refData.pageNo,
-              source:{
-                publicationDate: item.error.refData.source.publicationDate,
-                url: item.error.refData.source.url,
-                sourceName: item.error.refData.source.sourceName
-              },
-              additionalDetails: item.error.refData.additionalDetails
-            }
+              let formattedScreenShots = [];
+              if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
+                for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
+                  let screenshotItem = item.error.refData.screenShot[screenshotIndex];
+                  let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+                  formattedScreenShots.push(screenshotFileName);
+                }
+              }
+              errorCaughtByRep = {
+                description: item.error.refData.description,
+                response: item.error.refData.response,
+                screenShot: formattedScreenShots,
+                dataType: item.error.refData.dataType,
+                fiscalYear: item.fiscalYear,
+                textSnippet: item.error.refData.textSnippet,
+                pageNo: item.error.refData.pageNo,
+                source:{
+                  publicationDate: item.error.refData.source.publicationDate,
+                  url: item.error.refData.source.url,
+                  sourceName: item.error.refData.source.sourceName
+                },
+                additionalDetails: item.error.refData.additionalDetails
+              }
             }
             let standaloneDatapoints = {
               datapointId: body.dpCodeId,
@@ -505,10 +566,20 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
         if(item.error.refData == null || item.error.refData === '' || item.error.refData === ""){
           errorCaughtByRep == null
         } else {
+          let formattedScreenShots = [];
+          if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
+            for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
+              let screenshotItem = item.error.refData.screenShot[screenshotIndex];
+              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              formattedScreenShots.push(screenshotFileName);
+            }
+          }
           errorCaughtByRep = {
             description: item.error.refData.description,
             response: item.error.refData.response,
-            screenShot: item.error.refData.screenShot,
+            screenShot: formattedScreenShots,
             dataType: item.error.refData.dataType,
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
@@ -562,10 +633,20 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
         if(item.error.refData == null || item.error.refData === '' || item.error.refData === ""){
           errorCaughtByRep == null
         } else {
+          let formattedScreenShots = [];
+          if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
+            for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
+              let screenshotItem = item.error.refData.screenShot[screenshotIndex];
+              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              formattedScreenShots.push(screenshotFileName);
+            }
+          }
           errorCaughtByRep = {
             description: item.error.refData.description,
             response: item.error.refData.response,
-            screenShot: item.error.refData.screenShot,
+            screenShot: formattedScreenShots,
             dataType: item.error.refData.dataType,
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,

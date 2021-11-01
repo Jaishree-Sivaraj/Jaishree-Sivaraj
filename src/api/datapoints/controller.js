@@ -1244,16 +1244,19 @@ export const datapointDetails = async (req, res, next) => {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
             }
           }
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((error) => {
-              s3DataScreenshot = "No screenshot";
-            });
-            if (s3DataScreenshot == undefined) {
-              s3DataScreenshot = "";
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
-          console.log(object)
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
             if (sourceValues != null) {
@@ -1292,6 +1295,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1366,6 +1383,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: object.comments,
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1440,6 +1471,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1500,7 +1545,7 @@ export const datapointDetails = async (req, res, next) => {
             inputValues: inputValues,
             textSnippet: '',
             pageNo: '',
-            screenShot: '',
+            screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
             source: {
@@ -1570,13 +1615,17 @@ export const datapointDetails = async (req, res, next) => {
           publicationDate: ''
         };
         _.filter(historyAllStandaloneDetails, async function (object) {
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
-            if (s3DataScreenshot == undefined) {
-              s3DataScreenshot = "";
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
@@ -1733,13 +1782,17 @@ export const datapointDetails = async (req, res, next) => {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
             }
           }
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
-            if (s3DataScreenshot == undefined) {
-              s3DataScreenshot = "";
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
@@ -1780,6 +1833,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1854,6 +1921,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1928,6 +2009,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -1973,7 +2068,6 @@ export const datapointDetails = async (req, res, next) => {
                 })
               }
             }
-
           }
           boardDatapointsObject.status = 'Completed';
         };
@@ -1990,7 +2084,7 @@ export const datapointDetails = async (req, res, next) => {
             memberName: req.body.memberName,
             textSnippet: '',
             pageNo: '',
-            screenShot: '',
+            screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
             source: {
@@ -2049,13 +2143,17 @@ export const datapointDetails = async (req, res, next) => {
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
         let historicalDatapointsObject = {};
         _.filter(historyAllBoardMemberMatrixDetails, async function (object) {
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
-            if (s3DataScreenshot == undefined) {
-              s3DataScreenshot = "";
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
@@ -2212,13 +2310,17 @@ export const datapointDetails = async (req, res, next) => {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
             }
           }
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
-            if (s3DataScreenshot == undefined) {
-              s3DataScreenshot = "";
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
@@ -2259,6 +2361,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -2334,6 +2450,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -2408,6 +2538,20 @@ export const datapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             currentDatapointsObject.error.refData['additionalDetails'] = [];
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
@@ -2453,7 +2597,6 @@ export const datapointDetails = async (req, res, next) => {
                 })
               }
             }
-
           }
         }
         if (Object.keys(currentDatapointsObject).length == 0) {
@@ -2468,7 +2611,7 @@ export const datapointDetails = async (req, res, next) => {
             memberName: req.body.memberName,
             textSnippet: '',
             pageNo: '',
-            screenShot: '',
+            screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
             source: {
@@ -2527,16 +2670,19 @@ export const datapointDetails = async (req, res, next) => {
         let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
         let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
         for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
-
           let historicalDatapointsObject = {};
           _.filter(historyAllKmpMatrixDetails, async function (object) {
-            var s3DataScreenshot = "";
-            if (object.screenShot !== "" || object.screenShot !== " ") {
-              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-                s3DataScreenshot = "No screenshot";
-              });
-              if (s3DataScreenshot == undefined) {
-                s3DataScreenshot = "";
+            let s3DataScreenshot = [];
+            if (object.screenShot && object.screenShot.length > 0) {
+              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                let obj = object.screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             if (object.sourceFile !== "" || object.sourceFile !== " ") {
@@ -2611,7 +2757,6 @@ export const datapointDetails = async (req, res, next) => {
           });
           //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
         }
-
       }
       return res.status(200).send({
         status: "200",
@@ -2780,11 +2925,18 @@ export const repDatapointDetails = async (req, res, next) => {
         };
         for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
           var object = currentAllStandaloneDetails[currentIndex];
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+            }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -2826,7 +2978,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 refData: {
                   description: dpTypeValues.description,
                   response: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.response : '',
-                  screenShot: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : '',
+                  screenShot: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : [],
                   dataType: dpTypeValues.dataType,
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
@@ -2840,6 +2992,20 @@ export const repDatapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
                 let optionValues = [], optionVal = '', currentValue;
@@ -2920,13 +3086,21 @@ export const repDatapointDetails = async (req, res, next) => {
         }
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
-            const object = currentAllStandaloneDetails[currentIndex];
-            var s3DataScreenshot = "";
-            if (object.screenShot !== "" || object.screenShot !== " ") {
-              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-                s3DataScreenshot = "No screenshot";
-              });
-            } if (object.sourceFile !== "" || object.sourceFile !== " ") {
+            let object = currentAllStandaloneDetails[currentIndex];
+            let s3DataScreenshot = [];
+            if (object.screenShot && object.screenShot.length > 0) {
+              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                let obj = object.screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            if (object.sourceFile !== "" || object.sourceFile !== " ") {
               let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
@@ -3045,11 +3219,18 @@ export const repDatapointDetails = async (req, res, next) => {
           publicationDate: ''
         };
         _.filter(historyAllStandaloneDetails, async function (object) {
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+            }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3197,12 +3378,19 @@ export const repDatapointDetails = async (req, res, next) => {
           publicationDate: ''
         };
         for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
-          const object = currentAllBoardMemberMatrixDetails[currentIndex];
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
+          let object = currentAllBoardMemberMatrixDetails[currentIndex];
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+            }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3244,7 +3432,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 refData: {
                   description: dpTypeValues.description,
                   response: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.response : '',
-                  screenShot: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : '',
+                  screenShot: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.screenShot : [],
                   dataType: dpTypeValues.dataType,
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
@@ -3258,6 +3446,20 @@ export const repDatapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
                 let optionValues = [], optionVal = '', currentValue;
@@ -3338,13 +3540,21 @@ export const repDatapointDetails = async (req, res, next) => {
         };
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
-            const object = currentAllBoardMemberMatrixDetails[currentIndex];
-            var s3DataScreenshot = "";
-            if (object.screenShot !== "" || object.screenShot !== " ") {
-              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-                s3DataScreenshot = "No screenshot";
-              });
-            } if (object.sourceFile !== "" || object.sourceFile !== " ") {
+            let object = currentAllBoardMemberMatrixDetails[currentIndex];
+            let s3DataScreenshot = [];
+            if (object.screenShot && object.screenShot.length > 0) {
+              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                let obj = object.screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            if (object.sourceFile !== "" || object.sourceFile !== " ") {
               let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
@@ -3457,11 +3667,18 @@ export const repDatapointDetails = async (req, res, next) => {
           publicationDate: ''
         };
         _.filter(historyAllBoardMemberMatrixDetails, async function (object) {
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+            }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3608,12 +3825,19 @@ export const repDatapointDetails = async (req, res, next) => {
           publicationDate: ''
         };
         for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
-          const object = currentAllKmpMatrixDetails[currentIndex];
-          var s3DataScreenshot = "";
-          if (object.screenShot !== "" || object.screenShot !== " ") {
-            s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-              s3DataScreenshot = "No screenshot";
-            });
+          let object = currentAllKmpMatrixDetails[currentIndex];
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
+              }
+              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+            }
           }
           if (object.sourceFile !== "" || object.sourceFile !== " ") {
             let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3669,6 +3893,21 @@ export const repDatapointDetails = async (req, res, next) => {
               comments: [],
               additionalDetails: []
             }
+            let s3DataRefErrorScreenshot = [];
+            if (currentDatapointsObject.error.refData.screenShot && currentDatapointsObject.error.refData.screenShot.length > 0) {
+              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < currentDatapointsObject.error.refData.screenShot.length; refErrorScreenShotIndex++) {
+                let obj = object.screenShot[refErrorScreenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+              }
+            }
+            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+            //current additional details
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
                 let optionValues = [], optionVal = '', currentValue;
@@ -3706,6 +3945,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 });
               }
             }
+            //current ref additional details
             for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
               if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
                 let optionValues = [], optionVal = '', currentValue;
@@ -3749,12 +3989,19 @@ export const repDatapointDetails = async (req, res, next) => {
         };
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
-            const object = currentAllKmpMatrixDetails[currentIndex];
-            var s3DataScreenshot = "";
-            if (object.screenShot !== "" || object.screenShot !== " ") {
-              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-                s3DataScreenshot = "No screenshot";
-              });
+            let object = currentAllKmpMatrixDetails[currentIndex];
+            let s3DataScreenshot = [];
+            if (object.screenShot && object.screenShot.length > 0) {
+              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                let obj = object.screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              }
             }
             if (object.sourceFile !== "" || object.sourceFile !== " ") {
               let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3873,11 +4120,18 @@ export const repDatapointDetails = async (req, res, next) => {
 
           let historicalDatapointsObject = {};
           _.filter(historyAllKmpMatrixDetails, async function (object) {
-            var s3DataScreenshot = "";
-            if (object.screenShot !== "" || object.screenShot !== " ") {
-              s3DataScreenshot = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, object.screenShot).catch((e) => {
-                s3DataScreenshot = "No screenshot";
-              });
+            let s3DataScreenshot = [];
+            if (object.screenShot && object.screenShot.length > 0) {
+              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                let obj = object.screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                  screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                  screenShotFileName = "";
+                }
+                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              }
             }
             if (object.sourceFile !== "" || object.sourceFile !== " ") {
               let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
@@ -3950,7 +4204,6 @@ export const repDatapointDetails = async (req, res, next) => {
           });
           //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
         }
-
       }
       return res.status(200).send({
         status: "200",

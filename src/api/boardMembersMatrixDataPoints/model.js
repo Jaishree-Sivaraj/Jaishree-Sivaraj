@@ -53,7 +53,7 @@ const boardMembersMatrixDataPointsSchema = new Schema({
     type: String
   },
   screenShot: {
-    type: String
+    type: Array
   },
   sourceFileType: {
     type: String,
@@ -158,7 +158,7 @@ boardMembersMatrixDataPointsSchema.methods = {
       pageNumber: this.pageNumber,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
-      screenShot: this.screenShot,
+      screenShot: this.screenShot ? this.screenShot : [],
       sourceFileType: this.sourceFileType,
       filePathway: this.filePathway,
       commentCalculations: this.commentCalculations,
