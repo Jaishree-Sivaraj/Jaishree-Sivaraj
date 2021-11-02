@@ -58,7 +58,7 @@ const controversySchema = new Schema({
     type: String
   },
   screenShot: {
-    type: String
+    type: Array
   },
   sourcePublicationDate: {
     type: String
@@ -147,7 +147,7 @@ controversySchema.methods = {
       sourceURL: this.sourceURL ? this.sourceURL : '',
       sourceFile: this.sourceFile ? this.sourceFile : '',
       textSnippet: this.textSnippet ? this.textSnippet : '',
-      screenShot: this.screenShot ? this.screenShot : '',
+      screenShot: this.screenShot ? this.screenShot : [],
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
       comments: this.comments,
