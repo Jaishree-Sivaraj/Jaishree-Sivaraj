@@ -202,6 +202,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       .populate('taskId');
     if (taskDetails.taskStatus == 'Pending' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed' || taskDetails.taskStatus == 'Completed') {
       if (dpTypeValues.length > 0) {
+        let repFinalSubmit = false;
+        let mergedDatapoints = _.merge(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails)
         let datapointsCount = await Datapoints.distinct('_id', {
           dataCollection: 'Yes',
           functionId: {
@@ -220,12 +222,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           isActive: true,
           status: true
         });
+        let checkHasError = _.filter(mergedDatapoints, function(o) { return o.hasError == true; });
         let priorityCount = datapointsCount.length * currentYear.length;
         let isDpcodeValidForCollection = false;
         let message = "Please Complete Priority Dpcodes";
         if (priorityDpCodesCount.length == priorityCount) {
           isDpcodeValidForCollection = true
           message = '';
+        }
+        if(checkHasError.length > 0){
+          repFinalSubmit = true;
+        } else if(taskDetails.taskStatus == 'Verification Completed' || taskDetails.taskStatus == 'Completed'){
+          await TaskAssignment.updateOne({ _id:  req.params.taskId }, { $set: { taskStatus: "Completed"}});
         }
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
@@ -440,6 +448,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
+            repFinalSubmit : repFinalSubmit,
             keyIssuesList: keyIssuesList,
             standalone: {
               dpCodesData: dpCodesData
@@ -529,6 +538,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
+            repFinalSubmit : repFinalSubmit,
             keyIssuesList: keyIssuesList,
             standalone: {
               dpCodesData: dpCodesData

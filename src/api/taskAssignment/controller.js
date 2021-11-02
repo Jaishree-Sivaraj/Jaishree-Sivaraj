@@ -526,9 +526,16 @@ export const getMyTasks = async (
       .populate("batchId")
       .populate("analystId")
       .populate("qaId")
-      .then((taskAssignments) => {
+      .then(async (taskAssignments) => {
         for (let index = 0; index < taskAssignments.length; index++) {
           const object = taskAssignments[index];
+          let categoryValidationRules = await Validations.find({categoryId: object.categoryId.id})
+          .populate({
+            path: "datapointId",
+            populate: {
+              path: "keyIssueId"
+            }
+          });
           let taskObject = {
             taskId: object.id,
             taskNumber: object.taskNumber,
@@ -552,6 +559,9 @@ export const getMyTasks = async (
             createdBy: object.createdBy ? object.createdBy.name : null,
             createdById: object.createdBy ? object.createdBy.id : null,
           };
+          if (categoryValidationRules.length > 0) {
+            taskObject.isValidationRequired = true;
+          }
           qaTaskList.push(taskObject);
         }
       })
