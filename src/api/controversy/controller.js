@@ -9,6 +9,7 @@ import { Companies } from '../companies'
 import { ClientTaxonomy } from '../clientTaxonomy'
 import { Datapoints } from '../datapoints'
 import { ControversyTasks } from "../controversy_tasks"
+import { fetchFileFromS3, storeFileInS3 } from "../../services/utils/aws-s3"
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Controversy.create({ ...body, createdBy: user })
@@ -54,6 +55,17 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         status: true,
         createdBy: user
       };
+      let formattedScreenShots = [];
+      if (body.screenShot && body.screenShot.length > 0) {
+        for (let screenshotIndex = 0; screenshotIndex < body.screenShot.length; screenshotIndex++) {
+          let screenshotItem = body.screenShot[screenshotIndex];
+          let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+          let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + body.controversyFiscalYear + '_' + screenshotIndex + '.' + screenShotFileType;
+          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+          formattedScreenShots.push(screenshotFileName);
+        }
+      }
+      controversyObject.screenShot = formattedScreenShots;
       let controversyDetailsObject = {        
         sourceName: body.source.sourceName,
         sourceURL: body.source.url,
@@ -61,7 +73,7 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         response: body.response,
         textSnippet: body.textSnippet,
         pageNumber: body.pageNo,
-        screenShot: body.screenShot,
+        screenShot: formattedScreenShots,
         comments: body.comments
       };
       controversyObject.controversyDetails.push(controversyDetailsObject);
@@ -112,6 +124,17 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         status: true,
         createdBy: user
       };
+      let formattedScreenShots = [];
+      if (body.screenShot && body.screenShot.length > 0) {
+        for (let screenshotIndex = 0; screenshotIndex < body.screenShot.length; screenshotIndex++) {
+          let screenshotItem = body.screenShot[screenshotIndex];
+          let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+          let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + body.controversyFiscalYear + '_' + screenshotIndex + '.' + screenShotFileType;
+          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+          formattedScreenShots.push(screenshotFileName);
+        }
+      }
+      controversyObject.screenShot = formattedScreenShots;
       let controversyDetailsObject = {        
         sourceName: body.source.sourceName,
         sourceURL: body.source.url,
@@ -119,7 +142,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         response: body.response,
         textSnippet: body.textSnippet,
         pageNumber: body.pageNo,
-        screenShot: body.screenShot,
+        screenShot: formattedScreenShots,
         comments: body.comments,
       };
       controversyObject.controversyDetails.push(controversyDetailsObject)      
@@ -642,7 +665,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.dataType = datapointDetail.dataType;
                 controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : ''; 
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
-                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
+                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : [];
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
                 // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
@@ -653,7 +676,21 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.updatedAt = controversyList[cIndex].updatedAt ? controversyList[cIndex].updatedAt : '';
-                controversyObject.additionalDetails = [];                
+                controversyObject.additionalDetails = [];
+                let s3DataScreenshot = [];
+                if (controversyList[cIndex].screenShot && controversyList[cIndex].screenShot.length > 0) {
+                  for (let screenShotIndex = 0; screenShotIndex < controversyList[cIndex].screenShot.length; screenShotIndex++) {
+                    let obj = controversyList[cIndex].screenShot[screenShotIndex];
+                    let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                      screenShotFileName = "No screenshot";
+                    });
+                    if (screenShotFileName == undefined) {
+                      screenShotFileName = "";
+                    }
+                    s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});
+                  }
+                }
+                controversyObject.screenShot = s3DataScreenshot;
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
                     let optionValues = [], optionVal = '', currentValue;
@@ -779,7 +816,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.dataType = datapointDetail.dataType;
                 controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
-                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : '';
+                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : [];
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
                 // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
@@ -791,6 +828,20 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
+                let s3DataScreenshot = [];
+                if (controversyList[cIndex].screenShot && controversyList[cIndex].screenShot.length > 0) {
+                  for (let screenShotIndex = 0; screenShotIndex < controversyList[cIndex].screenShot.length; screenShotIndex++) {
+                    let obj = controversyList[cIndex].screenShot[screenShotIndex];
+                    let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                      screenShotFileName = "No screenshot";
+                    });
+                    if (screenShotFileName == undefined) {
+                      screenShotFileName = "";
+                    }
+                    s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});
+                  }
+                }
+                controversyObject.screenShot = s3DataScreenshot;
                 
                 for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
                   if(!requiredFields.includes(displayFields[dIndex].fieldName)){
