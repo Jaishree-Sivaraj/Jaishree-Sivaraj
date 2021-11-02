@@ -208,7 +208,7 @@ export const saveErrorDetails = async({
             for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '.' + screenShotFileType;
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
@@ -300,7 +300,7 @@ export const saveErrorDetails = async({
           for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
             let screenshotItem = item['screenShot'][screenshotIndex];
             let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
             await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
             formattedScreenShots.push(screenshotFileName);
           }
@@ -343,7 +343,7 @@ export const saveErrorDetails = async({
         for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
           let screenshotItem = item['screenShot'][screenshotIndex];
           let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-          let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+          let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
           await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
           formattedScreenShots.push(screenshotFileName);
         }
@@ -410,7 +410,7 @@ export const saveErrorDetails = async({
           for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
             let screenshotItem = item['screenShot'][screenshotIndex];
             let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
             await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
             formattedScreenShots.push(screenshotFileName);
           }
@@ -453,7 +453,7 @@ export const saveErrorDetails = async({
           for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
             let screenshotItem = item['screenShot'][screenshotIndex];
             let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
             await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
             formattedScreenShots.push(screenshotFileName);
           }
@@ -505,7 +505,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
                 for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
                   let screenshotItem = item.error.refData.screenShot[screenshotIndex];
                   let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '.' + screenShotFileType;
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
                   await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
                   formattedScreenShots.push(screenshotFileName);
                 }
@@ -571,7 +571,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
               let screenshotItem = item.error.refData.screenShot[screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
@@ -638,7 +638,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
               let screenshotItem = item.error.refData.screenShot[screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '.' + screenShotFileType;
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
