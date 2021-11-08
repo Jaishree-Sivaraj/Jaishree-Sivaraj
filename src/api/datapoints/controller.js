@@ -1246,7 +1246,8 @@ export const datapointDetails = async (req, res, next) => {
           }
         })
         for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
-          let object = currentAllStandaloneDetails[currentIndex]
+          let object = currentAllStandaloneDetails[currentIndex];
+          console.log('===> object', object);
           let errorTypeId = '';
           let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
           if (errorDetailsObject.length > 0) {
@@ -1267,14 +1268,17 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
-          if (object.sourceFile !== "" || object.sourceFile !== " ") {
-            let sourceValues = await CompanySources.findOne({ companyId: taskDetails.companyId.id, sourceFile: object.sourceFile, status: true });
-            if (sourceValues != null) {
-              sourceDetails.url = sourceValues.sourceUrl;
-              sourceDetails.publicationDate = sourceValues.publicationDate;
-              sourceDetails.sourceName = sourceValues.name;
-              sourceDetails.value = sourceValues._id;
-            }
+          if (object.source && object.source != null && object.source != "") {
+            console.log('====> before company sources find', object.source.value);
+            if (object.source.value) {
+              let sourceValues = await CompanySources.findOne({ _id: object.source.value });
+              if (sourceValues != null) {
+                sourceDetails.url = sourceValues.sourceUrl;
+                sourceDetails.publicationDate = sourceValues.publicationDate;
+                sourceDetails.sourceName = sourceValues.name;
+                sourceDetails.value = sourceValues._id;
+              }
+            }             
           }
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
             currentDatapointsObject = {
