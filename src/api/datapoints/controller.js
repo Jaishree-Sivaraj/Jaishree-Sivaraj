@@ -1306,16 +1306,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -1394,16 +1396,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -1482,16 +1486,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -1844,16 +1850,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -1932,16 +1940,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -2020,16 +2030,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -2372,16 +2384,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -2461,16 +2475,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -2549,16 +2565,18 @@ export const datapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -3003,16 +3021,18 @@ export const repDatapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -3457,16 +3477,18 @@ export const repDatapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
@@ -3904,16 +3926,18 @@ export const repDatapointDetails = async (req, res, next) => {
               additionalDetails: []
             }
             let s3DataRefErrorScreenshot = [];
-            if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
-              for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
-                let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+            if (errorDetailsObject.length > 0) {
+              if (errorDetailsObject[0].errorCaughtByRep.screenShot && errorDetailsObject[0].errorCaughtByRep.screenShot.length > 0) {
+                for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < errorDetailsObject[0].errorCaughtByRep.screenShot.length; refErrorScreenShotIndex++) {
+                  let obj = errorDetailsObject[0].errorCaughtByRep.screenShot[refErrorScreenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
                 }
-                s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
               }
             }
             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
