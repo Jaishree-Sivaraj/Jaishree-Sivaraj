@@ -1268,17 +1268,16 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
             }
           }
-          if (object.source && object.source != null && object.source != "") {
-            console.log('====> before company sources find', object.source.value);
-            if (object.source.value) {
-              let sourceValues = await CompanySources.findOne({ _id: object.source.value });
-              if (sourceValues != null) {
-                sourceDetails.url = sourceValues.sourceUrl;
-                sourceDetails.publicationDate = sourceValues.publicationDate;
-                sourceDetails.sourceName = sourceValues.name;
-                sourceDetails.value = sourceValues._id;
-              }
-            }             
+          if (object.sourceName !== "" || object.sourceName !== " ") {
+            console.log('====> before company sources find', object.sourceName);
+            let companySourceId = object.sourceName.split(';')[1];
+            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            if (sourceValues != null) {
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
           }
           if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == true) {
             currentDatapointsObject = {
