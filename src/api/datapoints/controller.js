@@ -222,7 +222,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           isActive: true,
           status: true
         });
-        let checkHasError = _.filter(mergedDatapoints, function(o) { return o.hasError == true; });
+        let checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
         let priorityCount = datapointsCount.length * currentYear.length;
         let isDpcodeValidForCollection = false;
         let message = "Please Complete Priority Dpcodes";
@@ -230,10 +230,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           isDpcodeValidForCollection = true
           message = '';
         }
-        if(checkHasError.length > 0){
+        if (checkHasError.length > 0) {
           repFinalSubmit = true;
-        } else if(taskDetails.taskStatus == 'Verification Completed' || taskDetails.taskStatus == 'Completed'){
-          await TaskAssignment.updateOne({ _id:  req.params.taskId }, { $set: { taskStatus: "Completed"}});
+        } else if (taskDetails.taskStatus == 'Verification Completed' || taskDetails.taskStatus == 'Completed') {
+          await TaskAssignment.updateOne({ _id: req.params.taskId }, { $set: { taskStatus: "Completed" } });
         }
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
@@ -448,7 +448,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
-            repFinalSubmit : repFinalSubmit,
+            repFinalSubmit: repFinalSubmit,
             keyIssuesList: keyIssuesList,
             standalone: {
               dpCodesData: dpCodesData
@@ -538,7 +538,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).send({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
-            repFinalSubmit : repFinalSubmit,
+            repFinalSubmit: repFinalSubmit,
             keyIssuesList: keyIssuesList,
             standalone: {
               dpCodesData: dpCodesData
@@ -1265,7 +1265,7 @@ export const datapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -1318,7 +1318,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -1408,7 +1408,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -1498,7 +1498,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -1643,7 +1643,7 @@ export const datapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -1811,7 +1811,7 @@ export const datapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -1864,7 +1864,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -1954,7 +1954,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -2044,7 +2044,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -2179,7 +2179,7 @@ export const datapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -2347,7 +2347,7 @@ export const datapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -2400,7 +2400,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -2491,7 +2491,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -2581,7 +2581,7 @@ export const datapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -2716,7 +2716,7 @@ export const datapointDetails = async (req, res, next) => {
                 if (screenShotFileName == undefined) {
                   screenShotFileName = "";
                 }
-                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -2970,7 +2970,7 @@ export const repDatapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3039,7 +3039,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -3135,7 +3135,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 if (screenShotFileName == undefined) {
                   screenShotFileName = "";
                 }
-                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3268,7 +3268,7 @@ export const repDatapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3429,7 +3429,7 @@ export const repDatapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3498,7 +3498,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -3594,7 +3594,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 if (screenShotFileName == undefined) {
                   screenShotFileName = "";
                 }
-                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3721,7 +3721,7 @@ export const repDatapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3881,7 +3881,7 @@ export const repDatapointDetails = async (req, res, next) => {
               if (screenShotFileName == undefined) {
                 screenShotFileName = "";
               }
-              s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -3950,7 +3950,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                   }
-                  s3DataRefErrorScreenshot.push({uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName});              
+                  s3DataRefErrorScreenshot.push({ uid: refErrorScreenShotIndex, name: obj, url: screenShotFileName });
                 }
               }
             }
@@ -4048,7 +4048,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 if (screenShotFileName == undefined) {
                   screenShotFileName = "";
                 }
-                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -4179,7 +4179,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 if (screenShotFileName == undefined) {
                   screenShotFileName = "";
                 }
-                s3DataScreenshot.push({uid: screenShotIndex, name: obj, url: screenShotFileName});              
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
@@ -4781,27 +4781,33 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
       message: "Invalid Clienttaxonomy Name"
     });
   });
-  console.log('clienttaxonomies', clienttaxonomies);
+  // console.log('clienttaxonomies', clienttaxonomies);
   if (clienttaxonomies) {
     var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
+    // console.log('filteredFields', filteredFields);
     var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId');
     var response = [];
     for (var index = 0; index < dataPoints.length; index++) {
       var obj = {};
       for (var index1 = 0; index1 < filteredFields.length; index1++) {
-        console.log('filteredFields', dataPoints[index]);
         if (dataPoints[index][filteredFields[index1]["fieldName"]]) {
           obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
         } else {
           if (filteredFields[index1]["fieldName"] === 'categoryName') {
             obj["Category"] = dataPoints[index]["categoryId"] ? dataPoints[index]["categoryId"]["categoryName"] : "";
+            obj["Category Code"] = dataPoints[index]["categoryId"] ? dataPoints[index]["categoryId"]["categoryCode"] : ""
           }
           if (filteredFields[index1]["fieldName"] === 'themeName') {
             obj["Theme"] = dataPoints[index]["themeId"] ? dataPoints[index]["themeId"]["themeName"] : "";
+            obj["Theme Code"] = dataPoints[index]["themeId"] ? dataPoints[index]["themeId"]["themeCode"] : "";
           }
           if (filteredFields[index1]["fieldName"] === 'keyIssueName') {
             obj["Key Issue"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueName"] : "";
+            obj["Key Issue Code"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueCode"] : ""
           }
+          obj["Is Priority"] = "";
+          obj["Relevant for India"] = "";
+          obj["Polarity"] = "";
         }
       }
       response.push(obj);
