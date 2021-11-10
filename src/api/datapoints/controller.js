@@ -680,7 +680,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let kmpDatapointsObject = {
                     dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
                     dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
-                    dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.name,
+                    dpName: errorkmpDatapoints[errorDpIndex].datapointId.name,
                     companyId: taskDetails.companyId.id,
                     companyName: taskDetails.companyId.companyName,
                     keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -724,7 +724,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let datapointsObject = {
                 dpCode: errorDatapoints[errorDpIndex].datapointId.code,
                 dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-                dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
+                dpName: errorDatapoints[errorDpIndex].datapointId.name,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -777,7 +777,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let datapointsObject = {
               dpCode: errorDatapoints[errorDpIndex].datapointId.code,
               dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-              dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
+              dpName: errorDatapoints[errorDpIndex].datapointId.name,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -867,7 +867,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     let boardDatapointsObject = {
                       dpCode: errorboardDatapoints[errorDpIndex].datapointId.code,
                       dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.id,
-                      dpCodeId: errorboardDatapoints[errorDpIndex].datapointId.name,
+                      dpName: errorboardDatapoints[errorDpIndex].datapointId.name,
                       companyId: taskDetails.companyId.id,
                       companyName: taskDetails.companyId.companyName,
                       keyIssueId: errorboardDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -943,7 +943,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     let kmpDatapointsObject = {
                       dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
                       dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
-                      dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.name,
+                      dpName: errorkmpDatapoints[errorDpIndex].datapointId.name,
                       companyId: taskDetails.companyId.id,
                       companyName: taskDetails.companyId.companyName,
                       keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -990,7 +990,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               let datapointsObject = {
                 dpCode: errorDatapoints[errorDpIndex].datapointId.code,
                 dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-                dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
+                dpName: errorDatapoints[errorDpIndex].datapointId.name,
                 companyId: taskDetails.companyId.id,
                 companyName: taskDetails.companyId.companyName,
                 keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
@@ -1045,7 +1045,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             let datapointsObject = {
               dpCode: errorDatapoints[errorDpIndex].datapointId.code,
               dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-              dpCodeId: errorDatapoints[errorDpIndex].datapointId.name,
+              dpName: errorDatapoints[errorDpIndex].datapointId.name,
               companyId: taskDetails.companyId.id,
               companyName: taskDetails.companyId.companyName,
               keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
