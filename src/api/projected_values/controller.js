@@ -270,8 +270,8 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoints value not found for the '+ years[yIndex] + ' year!' }) });
           console.log("Datapoint Response", dpResponse);
           if (dpResponse) {
-            let actualAverageValue = Math.round( dpResponse.actualAverage * 100 + Number.EPSILON ) / 100;
-            let actualStdDeviationValue = Math.round( dpResponse.actualStdDeviation * 100 + Number.EPSILON ) / 100;;
+            let actualAverageValue = Math.round( dpResponse.projectedAverage * 100 + Number.EPSILON ) / 100;
+            let actualStdDeviationValue = Math.round( dpResponse.projectedStdDeviation * 100 + Number.EPSILON ) / 100;;
             yearObj[avgYearNumber] = actualAverageValue;
             yearObj[sdYearNumber] = actualStdDeviationValue;
           } else {
@@ -282,7 +282,7 @@ export const getPercentileByPillar = async ({body}, res, next) => {
         let currentYearValues = await ProjectedValues.findOne({ 
           clientTaxonomyId: body.taxonomy, 
           datapointId: percentileDatapoints[index].id,
-          year: years[4], 
+          year: body.currentYear, 
           nic: body.nic
         }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
         if (currentYearValues) {
