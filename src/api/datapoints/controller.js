@@ -4801,10 +4801,12 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
             obj["Key Issue"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueName"] : "";
             obj["Key Issue Code"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueCode"] : ""
           }
-          if(dataPoints[index]["additionalDetails"].hasOwnProperty(filteredFields[index1]["fieldName"])){
-            //returns true;            
-            obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];            
-            }
+          if (dataPoints[index]["additionalDetails"] != null && dataPoints[index]["additionalDetails"] != {} ) {
+            if(dataPoints[index]["additionalDetails"].hasOwnProperty(filteredFields[index1]["fieldName"])){
+              //returns true;            
+              obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];            
+            }            
+          }
           obj["Is Priority"] = "";
           // obj["Relevant for India"] = dataPoints[index]["relevantForIndia"] ? dataPoints[index]["relevantForIndia"] : "";
           obj["Polarity"] = dataPoints[index]["polarity"] ? dataPoints[index]["polarity"] : "";
