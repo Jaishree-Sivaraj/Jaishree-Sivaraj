@@ -268,10 +268,9 @@ export const getPercentileByPillar = async ({body}, res, next) => {
             year: years[yIndex], 
             nic: body.nic 
           }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Datapoints value not found for the '+ years[yIndex] + ' year!' }) });
-          console.log("Datapoint Response", dpResponse);
           if (dpResponse) {
             let actualAverageValue = Math.round( dpResponse.projectedAverage * 100 + Number.EPSILON ) / 100;
-            let actualStdDeviationValue = Math.round( dpResponse.projectedStdDeviation * 100 + Number.EPSILON ) / 100;;
+            let actualStdDeviationValue = Math.round( dpResponse.projectedStdDeviation * 100 + Number.EPSILON ) / 100;
             yearObj[avgYearNumber] = actualAverageValue;
             yearObj[sdYearNumber] = actualStdDeviationValue;
           } else {
