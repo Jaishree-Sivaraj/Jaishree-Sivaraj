@@ -1,40 +1,10 @@
-import {
-  Router
-} from 'express'
-import {
-  middleware as query
-} from 'querymen'
-import {
-  middleware as body
-} from 'bodymen'
-import {
-  token
-} from '../../services/passport'
-import {
-  create,
-  index,
-  show,
-  update,
-  destroy,
-  getMyTasks,
-  getGroupAndBatches,
-  getUsers,
-  updateCompanyStatus,
-  createTask,
-  getQaAndAnalystFromGrp,
-  updateSlaDates,
-  reports,
-  getTaskList,
-  controversyReports,
-  getTaskListForControversy
-} from './controller'
-import {
-  schema
-} from './model'
-export TaskAssignment, {
-  schema
-}
-from './model'
+import { Router } from 'express'
+import { middleware as query } from 'querymen'
+import { middleware as body } from 'bodymen'
+import { token } from '../../services/passport'
+import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks } from './controller'
+import { schema } from './model'
+export TaskAssignment, { schema } from './model'
 
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
@@ -105,6 +75,44 @@ router.post('/getQaAndAnalyst',
   token({ required: true }),
   body({ groupId, batchId }),
   getQaAndAnalystFromGrp)
+
+/**
+* @api {get} /taskAssignments/controversies/:role Retrieve Controversy Task List
+* @apiName RetrieveControversyTaskList
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of task list.
+* @apiSuccess {Object[]} rows List of task assignments.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/controversies/:role',
+  token({
+    required: true
+  }),
+  query(),
+  retrieveFilteredControversyTasks)
+
+/**
+* @api {get} /taskAssignments/:role/:taskStatus Retrieve Task List
+* @apiName RetrieveTaskList
+* @apiGroup TaskAssignment
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of task list.
+* @apiSuccess {Object[]} rows List of task assignments.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/:role/:taskStatus',
+  token({
+    required: true
+  }),
+  query(),
+  retrieveFilteredDataTasks)
 
 /**
 * @api {get} /taskAssignments/task/reports/:role Retrieve my task assignments
