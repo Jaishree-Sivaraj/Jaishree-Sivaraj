@@ -464,8 +464,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
     qaTaskList = [],
     clientRepTaskList = [],
     companyRepTaskList = [],
-    controversyTaskList = [];
-  repControversyTaskList = [];
+    controversyTaskList = [],
+    repControversyTaskList = [];
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
