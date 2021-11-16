@@ -164,7 +164,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
                       status: "400",
                       message: error.message ? error.message : "Failed to create companies task!",
                     });
-                  });                  
+                  });
                 }
               } else {
                 await CompaniesTasks.create({
@@ -275,23 +275,23 @@ export const getQaAndAnalystFromGrp = async (
   });
 };
 
-export const index = async({ user, querymen: { query, select, cursor } }, res, next) => {
+export const index = async ({ user, querymen: { query, select, cursor } }, res, next) => {
   let completeUserDetail = await User.findOne({
     _id: user.id,
     isUserActive: true
-  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
-  .catch((error) => {
-    return res.status(500).json({
-      status: "500",
-      message: error.message,
+  }).populate({ path: "roleDetails.roles" }).populate({ path: "roleDetails.primaryRole" })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
     });
-  });
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
       userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
-      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
-        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
           if (completeUserDetail.roleDetails.roles[index]) {
             userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
           }
@@ -310,12 +310,12 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
     });
   }
   let finalResponseObject = {
-    groupAdminTaskList : {
+    groupAdminTaskList: {
       pendingList: [],
       completedList: [],
       controversyList: []
     },
-    adminTaskList : {
+    adminTaskList: {
       pendingList: [],
       completedList: [],
       controversyList: []
@@ -326,49 +326,49 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
     for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
       let findQuery = {};
       if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
-        findQuery = { status : true };
-      } else if (userRoles[roleIndex] == "GroupAdmin"){
+        findQuery = { status: true };
+      } else if (userRoles[roleIndex] == "GroupAdmin") {
         let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-        findQuery = { 
+        findQuery = {
           groupId: { $in: groupIds },
-          status : true 
+          status: true
         };
       }
       await ControversyTasks.find({ status: true })
-      .populate('companyId')
-      .populate('analystId')
-      .populate('createdBy')
-      .then(async (controversyTasks) => {
-        if (controversyTasks && controversyTasks.length > 0) {
-          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-            let yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
-            let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
-            let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
-            let object = {};
-            object.taskNumber = controversyTasks[cIndex].taskNumber;
-            object.taskId = controversyTasks[cIndex].id;
-            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-            object.status = controversyTasks[cIndex].status;
-            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-            object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-            object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-            object.totalNoOfControversy = totalNoOfControversy;
-            if (controversyTasks[cIndex] && object) {
-              finalResponseObject.adminTaskList.controversyList.push(object)
-              finalResponseObject.groupAdminTaskList.controversyList.push(object)
+        .populate('companyId')
+        .populate('analystId')
+        .populate('createdBy')
+        .then(async (controversyTasks) => {
+          if (controversyTasks && controversyTasks.length > 0) {
+            for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+              let yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+              let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+              let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+              let object = {};
+              object.taskNumber = controversyTasks[cIndex].taskNumber;
+              object.taskId = controversyTasks[cIndex].id;
+              object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+              object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+              object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+              object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+              object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+              object.status = controversyTasks[cIndex].status;
+              object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+              object.totalNoOfControversy = totalNoOfControversy;
+              if (controversyTasks[cIndex] && object) {
+                finalResponseObject.adminTaskList.controversyList.push(object)
+                finalResponseObject.groupAdminTaskList.controversyList.push(object)
+              }
             }
           }
-        }
-      })
-      .catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
-      })
+        })
+        .catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy pending tasks!" })
+        })
       await TaskAssignment.find(findQuery)
         .populate("createdBy")
         .populate("categoryId")
@@ -408,13 +408,13 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
             if (userRoles[roleIndex] == "Admin" || userRoles[roleIndex] == "SuperAdmin") {
               if (object.taskStatus != "Completed") {
                 finalResponseObject.adminTaskList.pendingList.push(taskObject);
-              } else if (object.taskStatus == "Completed"){
+              } else if (object.taskStatus == "Completed") {
                 finalResponseObject.adminTaskList.completedList.push(taskObject)
               }
-            } else if (userRoles[roleIndex] == "GroupAdmin"){
+            } else if (userRoles[roleIndex] == "GroupAdmin") {
               if (object.taskStatus != "Completed") {
                 finalResponseObject.groupAdminTaskList.pendingList.push(taskObject)
-              } else if (object.taskStatus == "Completed"){
+              } else if (object.taskStatus == "Completed") {
                 finalResponseObject.groupAdminTaskList.completedList.push(taskObject)
               }
             }
@@ -425,7 +425,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
             status: "400",
             message: error.message ? error.message : "Failed to retrieve tasks!",
           });
-        });     
+        });
     }
     finalResponseObject.groupAdminTaskList.controversyList = _.sortBy(finalResponseObject.groupAdminTaskList.controversyList, 'company')
     finalResponseObject.adminTaskList.controversyList = _.sortBy(finalResponseObject.adminTaskList.controversyList, 'company')
@@ -433,7 +433,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
     finalResponseObject.groupAdminTaskList.pendingList = _.sortBy(finalResponseObject.groupAdminTaskList.pendingList, 'company')
     finalResponseObject.adminTaskList.pendingList = _.sortBy(finalResponseObject.adminTaskList.pendingList, 'company');
     finalResponseObject.adminTaskList.completedList = _.sortBy(finalResponseObject.adminTaskList.completedList, 'company');
-    
+
     return res.status(200).json({
       status: "200",
       message: "Tasks retrieved successfully!",
@@ -442,11 +442,7 @@ export const index = async({ user, querymen: { query, select, cursor } }, res, n
   }
 };
 
-export const getMyTasks = async (
-  { user, querymen: { query, select, cursor } },
-  res,
-  next
-) => {
+export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, res, next) => {
   let completeUserDetail = await User.findOne({
     _id: user.id,
     isUserActive: true
@@ -469,19 +465,13 @@ export const getMyTasks = async (
     clientRepTaskList = [],
     companyRepTaskList = [],
     controversyTaskList = [];
+  repControversyTaskList = [];
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
       userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
-      if (
-        completeUserDetail.roleDetails.roles &&
-        completeUserDetail.roleDetails.roles.length > 0
-      ) {
-        for (
-          let index = 0;
-          index < completeUserDetail.roleDetails.roles.length;
-          index++
-        ) {
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
           if (completeUserDetail.roleDetails.roles[index]) {
             userRoles.push(
               completeUserDetail.roleDetails.roles[index].roleName
@@ -529,13 +519,13 @@ export const getMyTasks = async (
       .then(async (taskAssignments) => {
         for (let index = 0; index < taskAssignments.length; index++) {
           const object = taskAssignments[index];
-          let categoryValidationRules = await Validations.find({categoryId: object.categoryId.id})
-          .populate({
-            path: "datapointId",
-            populate: {
-              path: "keyIssueId"
-            }
-          });
+          let categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+            .populate({
+              path: "datapointId",
+              populate: {
+                path: "keyIssueId"
+              }
+            });
           let taskObject = {
             taskId: object.id,
             taskNumber: object.taskNumber,
@@ -605,13 +595,13 @@ export const getMyTasks = async (
       .then(async (taskAssignments) => {
         for (let index = 0; index < taskAssignments.length; index++) {
           const object = taskAssignments[index];
-          let categoryValidationRules = await Validations.find({categoryId: object.categoryId.id})
-          .populate({
-            path: "datapointId",
-            populate: {
-              path: "keyIssueId"
-            }
-          });
+          let categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+            .populate({
+              path: "datapointId",
+              populate: {
+                path: "keyIssueId"
+              }
+            });
           let taskObject = {
             taskId: object.id,
             taskNumber: object.taskNumber,
@@ -667,9 +657,9 @@ export const getMyTasks = async (
           for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
             let yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            let lastModifiedDate = await Controversy.find({taskId: controversyTasks[cIndex].id, status:true, isActive: true}).limit(1).sort({updatedAt: -1});
-            let reviewDate = await Controversy.find({taskId: controversyTasks[cIndex].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
-            let totalNoOfControversy = await Controversy.count({taskId: controversyTasks[cIndex].id, status:true, isActive: true});
+            let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+            let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+            let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
             let object = {};
             object.taskNumber = controversyTasks[cIndex].taskNumber;
             object.taskId = controversyTasks[cIndex].id;
@@ -711,13 +701,11 @@ export const getMyTasks = async (
     if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
         companyId: { $in: clientRepDetail.companiesList },
-        taskStatus: {$in:["Completed", "Verification Completed"]},
+        taskStatus: { $in: ["Completed", "Verification Completed"] },
         status: true
-      })
-        .sort({
-          createdAt: -1,
-        })
-        .populate("createdBy")
+      }).sort({
+        createdAt: -1,
+      }).populate("createdBy")
         .populate("companyId")
         .populate("categoryId")
         .populate("groupId")
@@ -761,6 +749,52 @@ export const getMyTasks = async (
               : "Failed to retrieve tasks!",
           });
         });
+      await ControversyTasks.find({
+        companyId: { $in: clientRepDetail.companiesList },
+        status: true,
+      })
+        .populate("companyId")
+        .populate("analystId")
+        .populate("createdBy")
+        .then(async (controversyTasks) => {
+          if (controversyTasks && controversyTasks.length > 0) {
+            for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+              let yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+              let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+              let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+              let object = {};
+              object.taskNumber = controversyTasks[cIndex].taskNumber;
+              object.taskId = controversyTasks[cIndex].id;
+              object.companyId = controversyTasks[cIndex].companyId
+                ? controversyTasks[cIndex].companyId.id
+                : "";
+              object.company = controversyTasks[cIndex].companyId
+                ? controversyTasks[cIndex].companyId.companyName
+                : "";
+              object.analystId = controversyTasks[cIndex].analystId
+                ? controversyTasks[cIndex].analystId.id
+                : "";
+              object.analyst = controversyTasks[cIndex].analystId
+                ? controversyTasks[cIndex].analystId.name
+                : "";
+              object.taskStatus = controversyTasks[cIndex].taskStatus
+                ? controversyTasks[cIndex].taskStatus
+                : "";
+              object.status = controversyTasks[cIndex].status;
+              object.createdBy = controversyTasks[cIndex].createdBy
+                ? controversyTasks[cIndex].createdBy
+                : null;
+              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+              object.totalNoOfControversy = totalNoOfControversy;
+              if (controversyTasks[cIndex] && object) {
+                repControversyTaskList.push(object);
+              }
+            }
+          }
+        });
     }
   }
 
@@ -774,7 +808,7 @@ export const getMyTasks = async (
         companyId: {
           $in: companyRepDetail.companiesList,
         },
-        taskStatus: {$in:["Completed", "Verification Completed"]},
+        taskStatus: { $in: ["Completed", "Verification Completed"] },
         status: true,
       })
         .sort({
@@ -824,6 +858,52 @@ export const getMyTasks = async (
               : "Failed to retrieve tasks!",
           });
         });
+      await ControversyTasks.find({
+        companyId: { $in: clientRepDetail.companiesList },
+        status: true,
+      })
+        .populate("companyId")
+        .populate("analystId")
+        .populate("createdBy")
+        .then(async (controversyTasks) => {
+          if (controversyTasks && controversyTasks.length > 0) {
+            for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+              let yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+              let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+              let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+              let object = {};
+              object.taskNumber = controversyTasks[cIndex].taskNumber;
+              object.taskId = controversyTasks[cIndex].id;
+              object.companyId = controversyTasks[cIndex].companyId
+                ? controversyTasks[cIndex].companyId.id
+                : "";
+              object.company = controversyTasks[cIndex].companyId
+                ? controversyTasks[cIndex].companyId.companyName
+                : "";
+              object.analystId = controversyTasks[cIndex].analystId
+                ? controversyTasks[cIndex].analystId.id
+                : "";
+              object.analyst = controversyTasks[cIndex].analystId
+                ? controversyTasks[cIndex].analystId.name
+                : "";
+              object.taskStatus = controversyTasks[cIndex].taskStatus
+                ? controversyTasks[cIndex].taskStatus
+                : "";
+              object.status = controversyTasks[cIndex].status;
+              object.createdBy = controversyTasks[cIndex].createdBy
+                ? controversyTasks[cIndex].createdBy
+                : null;
+              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+              object.totalNoOfControversy = totalNoOfControversy;
+              if (controversyTasks[cIndex] && object) {
+                repControversyTaskList.push(object);
+              }
+            }
+          }
+        });
     }
   }
   let data = {
@@ -837,6 +917,7 @@ export const getMyTasks = async (
     clientRepTaskList: clientRepTaskList ? clientRepTaskList : [],
     companyRepTaskList: companyRepTaskList ? companyRepTaskList : [],
     controversyTaskList: controversyTaskList ? controversyTaskList : [],
+    repControversyTaskList: repControversyTaskList ? repControversyTaskList : []
   };
   return res.status(200).json({
     status: "200",
@@ -927,139 +1008,139 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .catch(next);
 
 
-export const updateSlaDates = async({ user, bodymen: { body }, params }, res, next) => {
+export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, next) => {
   await TaskAssignment.findById(body.taskId).populate('companyId').populate('categoryId').populate('groupId')
-  .then(async(result) => {
-    if(result.taskStatus == "Reassignment Pending"){
-      body.taskDetails['taskStatus'] = "Correction Pending";
-    }
-    if(body.taskDetails.analystRequestedDate == body.taskDetails.analystSLADate){
-      await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'Analyst', status: true},
-      { $set: { isAccepted: true, isReviewed: true }});      
-      await Notifications.create({
-        notifyToUser: result.analystId, 
-        notificationType: "/pendingtasks",
-        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "SLA request accepted",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      }); 
-    } 
-    if(body.taskDetails.qaRequestedDate == body.taskDetails.qaSLADate){
-      await TaskSlaLog.updateMany({taskId: body.taskId, requestedBy: 'QA', status: true},
-      { $set: { isAccepted: true, isReviewed: true }});
-      await Notifications.create({
-        notifyToUser: result.qaId, 
-        notificationType: "/pendingtasks",
-        content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "SLA request accepted",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      }); 
-    }
-    if(result.analystSLADate != body.taskDetails.analystSLADate){
-      await Notifications.create({
-        notifyToUser: result.analystId, 
-        notificationType: "/pendingtasks",
-        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "SLA Date Extended",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      });     
-    } 
-    if(result.qaSLADate != body.taskDetails.qaSLADate){
-      await Notifications.create({
-        notifyToUser: result.qaId, 
-        notificationType: "/pendingtasks",
-        content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "SLA Date Extended",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      }); 
-    }
-    if(result.analystId != body.taskDetails.analystId){
-      await Notifications.create({
-        notifyToUser: result.analystId, 
-        notificationType: "/pendingtasks",
-        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "New Task Assigned",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      }); 
-    }
-    if(result.qaId != body.taskDetails.qaId){
-      await Notifications.create({
-        notifyToUser: result.qaId, 
-        notificationType: "/pendingtasks",
-        content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - `+ result.taskNumber, 
-        notificationTitle: "New Task Assigned",
-        status: true,
-        isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
-      }); 
-    }
-    await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then( async(updatedRecord) => {
-      if(result.taskStatus == "Reassignment Pending"){
+    .then(async (result) => {
+      if (result.taskStatus == "Reassignment Pending") {
         body.taskDetails['taskStatus'] = "Correction Pending";
-        await TaskHistories.create({
-          taskId: body.taskId,
-          companyId: result.companyId.id,
-          categoryId: result.categoryId.id,
-          submittedByName: user.name,
-          stage: "Correction Pending",
-          comment: '',
-          status: true,
-          createdBy: user
-        }).catch((error) =>{
-          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
-        });
+      }
+      if (body.taskDetails.analystRequestedDate == body.taskDetails.analystSLADate) {
+        await TaskSlaLog.updateMany({ taskId: body.taskId, requestedBy: 'Analyst', status: true },
+          { $set: { isAccepted: true, isReviewed: true } });
         await Notifications.create({
-          notifyToUser: result.groupId.groupAdmin, 
-          notificationType: "/tasklist",
-          content: "Reassign the task for Analyst as it has some errors TaskID - "+ result.taskNumber, 
-          notificationTitle: "Reassignment Pending",
+          notifyToUser: result.analystId,
+          notificationType: "/pendingtasks",
+          content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "SLA request accepted",
           status: true,
           isRead: false
-        }).catch((error) =>{
-          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
         });
-        let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
-        let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
-        for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
+      }
+      if (body.taskDetails.qaRequestedDate == body.taskDetails.qaSLADate) {
+        await TaskSlaLog.updateMany({ taskId: body.taskId, requestedBy: 'QA', status: true },
+          { $set: { isAccepted: true, isReviewed: true } });
+        await Notifications.create({
+          notifyToUser: result.qaId,
+          notificationType: "/pendingtasks",
+          content: `SLA request accepted by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "SLA request accepted",
+          status: true,
+          isRead: false
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
+      }
+      if (result.analystSLADate != body.taskDetails.analystSLADate) {
+        await Notifications.create({
+          notifyToUser: result.analystId,
+          notificationType: "/pendingtasks",
+          content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "SLA Date Extended",
+          status: true,
+          isRead: false
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
+      }
+      if (result.qaSLADate != body.taskDetails.qaSLADate) {
+        await Notifications.create({
+          notifyToUser: result.qaId,
+          notificationType: "/pendingtasks",
+          content: `SLA date extended by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "SLA Date Extended",
+          status: true,
+          isRead: false
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
+      }
+      if (result.analystId != body.taskDetails.analystId) {
+        await Notifications.create({
+          notifyToUser: result.analystId,
+          notificationType: "/pendingtasks",
+          content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "New Task Assigned",
+          status: true,
+          isRead: false
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
+      }
+      if (result.qaId != body.taskDetails.qaId) {
+        await Notifications.create({
+          notifyToUser: result.qaId,
+          notificationType: "/pendingtasks",
+          content: `New task assigned by ${user.name ? user.name : 'GroupAdmin'} for TaskID - ` + result.taskNumber,
+          notificationTitle: "New Task Assigned",
+          status: true,
+          isRead: false
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
+      }
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: body.taskDetails }).then(async (updatedRecord) => {
+        if (result.taskStatus == "Reassignment Pending") {
+          body.taskDetails['taskStatus'] = "Correction Pending";
+          await TaskHistories.create({
+            taskId: body.taskId,
+            companyId: result.companyId.id,
+            categoryId: result.categoryId.id,
+            submittedByName: user.name,
+            stage: "Correction Pending",
+            comment: '',
+            status: true,
+            createdBy: user
+          }).catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create task history!" });
+          });
           await Notifications.create({
-            notifyToUser: allAdminUserIds[admIndex], 
+            notifyToUser: result.groupId.groupAdmin,
             notificationType: "/tasklist",
-            content: "Reassign the task for Analyst as it has some errors TaskID - "+ result.taskNumber, 
+            content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
             notificationTitle: "Reassignment Pending",
             status: true,
             isRead: false
-          }).catch((error) =>{
-            return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+          }).catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
           });
+          let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
+          let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
+          for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
+            await Notifications.create({
+              notifyToUser: allAdminUserIds[admIndex],
+              notificationType: "/tasklist",
+              content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+              notificationTitle: "Reassignment Pending",
+              status: true,
+              isRead: false
+            }).catch((error) => {
+              return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+            });
+          }
         }
-      }
-      res.send({
-        status: 200,
-        message: 'Task updated successfully'
-      })
-    }).catch((err) => {
-      return res.status(500).json({
-        status: "500",
-        message: err.message
+        res.send({
+          status: 200,
+          message: 'Task updated successfully'
+        })
+      }).catch((err) => {
+        return res.status(500).json({
+          status: "500",
+          message: err.message
+        });
       });
     });
-  });
 }
 
 export const destroy = ({ user, params }, res, next) =>
@@ -1074,19 +1155,19 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
   let completeUserDetail = await User.findOne({
     _id: user.id,
     isUserActive: true
-  }) .populate({ path: "roleDetails.roles" }) .populate({ path: "roleDetails.primaryRole" })
-  .catch((error) => {
-    return res.status(500).json({
-      status: "500",
-      message: error.message,
+  }).populate({ path: "roleDetails.roles" }).populate({ path: "roleDetails.primaryRole" })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
     });
-  });
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
       userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
-      if ( completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0 ) {
-        for ( let index = 0; index < completeUserDetail.roleDetails.roles.length; index++ ) {
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
           if (completeUserDetail.roleDetails.roles[index]) {
             userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
           }
@@ -1105,20 +1186,20 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
     });
   }
   let finalResponseObject = {
-    groupAdminList : [],
-    adminList : []
+    groupAdminList: [],
+    adminList: []
   };
   userRoles = _.uniq(userRoles);
   if (userRoles.length > 0) {
     let categories = await Categories.find({
       status: true
     })
-    .populate('clientTaxonomyId').catch((err) => {
-      return res.status(500).json({
-        status: "500",
-        message: err.message
+      .populate('clientTaxonomyId').catch((err) => {
+        return res.status(500).json({
+          status: "500",
+          message: err.message
+        });
       });
-    });
     console.log('userRoles', userRoles);
     for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
       let findQuery = {};
@@ -1129,60 +1210,60 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
       }
       if (findQuery != {}) {
         await Group.find(findQuery)
-        .populate("assignedMembers")
-        .populate("batchList")
-        .populate("batchList.clientTaxonomy")
-        .then(async (group) => {
-          for (let index = 0; index < group.length; index++) {
-            var resObject = {};
-            resObject.groupName = group[index].groupName;
-            resObject.groupID = group[index].id;
-            resObject.assignedBatches = [];
-            for ( let index1 = 0; index1 < group[index].batchList.length; index1++ ) {
+          .populate("assignedMembers")
+          .populate("batchList")
+          .populate("batchList.clientTaxonomy")
+          .then(async (group) => {
+            for (let index = 0; index < group.length; index++) {
+              var resObject = {};
+              resObject.groupName = group[index].groupName;
+              resObject.groupID = group[index].id;
+              resObject.assignedBatches = [];
+              for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
 
-              let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy );
-              var batchDetailsObject = group[index].batchList[index1];
-              var batchDetails = {                
-                batchName: batchDetailsObject.batchName,
-                batchID: batchDetailsObject._id,
-                pillars: foundCategories.map((rec) => {
-                  return {
-                    value: rec.id,
-                    label: rec.categoryName
-                  };
-                }),
-                batchYear: batchDetailsObject.years
-               }
-              // console.log( bactch)
-              // arrayYe.push(bactch)
-              // var assignedBatches = group[index].batchList.map((rec) => {
-              //   return {
-              //     batchName: rec.batchName,
-              //     batchID: rec._id,
-              //     pillars: foundCategories.map((rec) => {
-              //       return {
-              //         value: rec.id,
-              //         label: rec.categoryName
-              //       };
-              //     }),
-              //     batchYear: rec.years
-              //   };
-              // });
-              resObject.assignedBatches.push(batchDetails);
+                let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy);
+                var batchDetailsObject = group[index].batchList[index1];
+                var batchDetails = {
+                  batchName: batchDetailsObject.batchName,
+                  batchID: batchDetailsObject._id,
+                  pillars: foundCategories.map((rec) => {
+                    return {
+                      value: rec.id,
+                      label: rec.categoryName
+                    };
+                  }),
+                  batchYear: batchDetailsObject.years
+                }
+                // console.log( bactch)
+                // arrayYe.push(bactch)
+                // var assignedBatches = group[index].batchList.map((rec) => {
+                //   return {
+                //     batchName: rec.batchName,
+                //     batchID: rec._id,
+                //     pillars: foundCategories.map((rec) => {
+                //       return {
+                //         value: rec.id,
+                //         label: rec.categoryName
+                //       };
+                //     }),
+                //     batchYear: rec.years
+                //   };
+                // });
+                resObject.assignedBatches.push(batchDetails);
+              }
+              if (userRoles[roleIndex] == "GroupAdmin") {
+                finalResponseObject.groupAdminList.push(resObject);
+              } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin") {
+                finalResponseObject.adminList.push(resObject);
+              }
             }
-            if (userRoles[roleIndex] == "GroupAdmin") {
-              finalResponseObject.groupAdminList.push(resObject);
-            } else if (userRoles[roleIndex] == "SuperAdmin" || userRoles[roleIndex] == "Admin"){
-              finalResponseObject.adminList.push(resObject);
-            }
-          }
-        })
-        .catch((err) => {
-          return res.status(500).json({
-            status: "500",
-            message: err.message
+          })
+          .catch((err) => {
+            return res.status(500).json({
+              status: "500",
+              message: err.message
+            });
           });
-        });
       }
     }
   }
@@ -1269,7 +1350,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             taskStatus: { $ne: "Verification Completed" },
           });
           qaObject.id = group.assignedMembers[index].id;
-          qaObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email ;
+          qaObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           qaObject.primaryRole = false;
           qaObject.activeTaskCount = activeTaskCount.length;
           console.log('qa object', qaObject);
@@ -1314,117 +1395,117 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   }
 };
 
-export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, next ) => {
+export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next) => {
   let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
   let distinctYears = taskDetails.year.split(',');
   let datapointsCount = 0;
-  try {    
-    let functionId = await Functions.findOne({ functionType: "Negative News", status: true});
+  try {
+    let functionId = await Functions.findOne({ functionType: "Negative News", status: true });
     let allStandaloneDetails = await StandaloneDatapoints.find({
-    taskId: body.taskId,
-    companyId: taskDetails.companyId.id,
-    year: {
-      "$in": distinctYears
-    },
-    isActive: true,
-    status: true
-  })
-  .populate('createdBy')
-  .populate('datapointId')
-  .populate('companyId')
-  datapointsCount = datapointsCount + allStandaloneDetails.length;
-  let allBoardMemberMatrixDetails1 =  await BoardMembersMatrixDataPoints.find({
-    taskId: body.taskId,
-    companyId: taskDetails.companyId.id,
-    year: {
-      "$in": distinctYears
-    },
-    isActive: true,
-    status: true
-  });
-  let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
-    taskId: body.taskId,
-    companyId: taskDetails.companyId.id,
-    year:  {
-      "$in": distinctYears
-    },
-    isActive: true,
-    status: true
-  });
-  for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-    let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.distinct('datapointId',{
+      taskId: body.taskId,
+      companyId: taskDetails.companyId.id,
+      year: {
+        "$in": distinctYears
+      },
+      isActive: true,
+      status: true
+    })
+      .populate('createdBy')
+      .populate('datapointId')
+      .populate('companyId')
+    datapointsCount = datapointsCount + allStandaloneDetails.length;
+    let allBoardMemberMatrixDetails1 = await BoardMembersMatrixDataPoints.find({
+      taskId: body.taskId,
+      companyId: taskDetails.companyId.id,
+      year: {
+        "$in": distinctYears
+      },
+      isActive: true,
+      status: true
+    });
+    let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
+      taskId: body.taskId,
+      companyId: taskDetails.companyId.id,
+      year: {
+        "$in": distinctYears
+      },
+      isActive: true,
+      status: true
+    });
+    for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', {
         taskId: body.taskId,
         companyId: taskDetails.companyId.id,
         year: distinctYears[yearIndex],
         isActive: true,
         status: true
       });
-    datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length;    
-    let allKmpMatrixDetails = await KmpMatrixDataPoints.distinct('datapointId',{
+      datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length;
+      let allKmpMatrixDetails = await KmpMatrixDataPoints.distinct('datapointId', {
         taskId: body.taskId,
         companyId: taskDetails.companyId.id,
-        year:  distinctYears[yearIndex],
+        year: distinctYears[yearIndex],
         isActive: true,
         status: true
       });
-    datapointsCount = datapointsCount + allKmpMatrixDetails.length;
-  }
+      datapointsCount = datapointsCount + allKmpMatrixDetails.length;
+    }
     let taskStatusValue = "";
-    let mergedDetails = _.concat(allKmpMatrixDetails1,allBoardMemberMatrixDetails1,allStandaloneDetails);
-    let datapointsLength = await Datapoints.find({clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes" ,functionId: {"$ne": functionId.id}});
+    let mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
+    let datapointsLength = await Datapoints.find({ clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes", functionId: { "$ne": functionId.id } });
     let hasError = mergedDetails.find(object => object.hasError == true);
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
-    console.log(hasError, multipliedValue,mergedDetails,datapointsCount )
-    if(datapointsCount == multipliedValue && hasError){
-      if(body.role == 'QA'){
+    console.log(hasError, multipliedValue, mergedDetails, datapointsCount)
+    if (datapointsCount == multipliedValue && hasError) {
+      if (body.role == 'QA') {
         taskStatusValue = "Correction Pending";
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-      } else{
-        taskStatusValue = "Reassignment Pending"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true, status: true, hasError: true},{$set: {dpStatus: 'Error', correctionStatus:'Incomplete'}})    
-        
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true, hasError: false, dpStatus: 'Correction' },{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
+      } else {
+        taskStatusValue = "Reassignment Pending";
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
       }
-    } else if(datapointsCount == multipliedValue && hasCorrection){      
-      taskStatusValue = "Correction Completed"; 
-      await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-      await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-      await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true,status: true, hasCorrection: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-    } else if(datapointsCount == multipliedValue && hasError == undefined && hasCorrection == undefined){      
-      if(body.role == 'QA'){
+    } else if (datapointsCount == multipliedValue && hasCorrection) {
+      taskStatusValue = "Correction Completed";
+      await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+      await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+      await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
+    } else if (datapointsCount == multipliedValue && hasError == undefined && hasCorrection == undefined) {
+      if (body.role == 'QA') {
         taskStatusValue = "Verification Completed";
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true},{$set: {dpStatus: 'Correction', correctionStatus:'Incomplete'}}) 
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-      } else if(body.role == 'Analyst'){
-        taskStatusValue = "Collection Completed"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId, isActive: true, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
-      } else{
-        taskStatusValue = "Completed"; 
-        await KmpMatrixDataPoints.updateMany({taskId: body.taskId,isActive: true, status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await BoardMembersMatrixDataPoints.updateMany({taskId: body.taskId, isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}})
-        await StandaloneDatapoints.updateMany({taskId: body.taskId,  isActive: true,status: true},{$set: {dpStatus: 'Collection', correctionStatus:'Incomplete'}}) 
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue}});
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
+      } else if (body.role == 'Analyst') {
+        taskStatusValue = "Collection Completed";
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
+      } else {
+        taskStatusValue = "Completed";
+        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
+        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
       }
-    } else{      
+    } else {
       return res.status(402).json({
         message: "Task Status not updated. Check all DPcodes completed",
       });
@@ -1438,33 +1519,33 @@ export const updateCompanyStatus = async ( { user, bodymen: { body } }, res, nex
       comment: '',
       status: true,
       createdBy: user
-    }).catch((error) =>{
-      return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to create task history!"});    
+    }).catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create task history!" });
     });
-    if(taskStatusValue == 'Reassignment Pending'){
+    if (taskStatusValue == 'Reassignment Pending') {
       await Notifications.create({
-        notifyToUser: taskDetails.groupId.groupAdmin, 
+        notifyToUser: taskDetails.groupId.groupAdmin,
         notificationType: "/tasklist",
-        content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
+        content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
         notificationTitle: "Reassignment Pending",
         status: true,
         isRead: false
-      }).catch((error) =>{
-        return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+      }).catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
       });
-      
+
       let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
       let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
       for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
         await Notifications.create({
-          notifyToUser: allAdminUserIds[admIndex], 
+          notifyToUser: allAdminUserIds[admIndex],
           notificationType: "/tasklist",
-          content: "Reassign the task for Analyst as it has some errors TaskID - "+ taskDetails.taskNumber, 
+          content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
           notificationTitle: "Reassignment Pending",
           status: true,
           isRead: false
-        }).catch((error) =>{
-          return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to sent notification!"});
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
         });
       }
     }
@@ -1507,18 +1588,18 @@ export const reports = async ({ user, params }, res, next) => {
     _id: user.id,
     isUserActive: true
   })
-  .populate({
-    path: "roleDetails.roles",
-  })
-  .populate({
-    path: "roleDetails.primaryRole",
-  })
-  .catch((error) => {
-    return res.status(500).json({
-      status: "500",
-      message: error.message,
+    .populate({
+      path: "roleDetails.roles",
+    })
+    .populate({
+      path: "roleDetails.primaryRole",
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
     });
-  });
   let userRoles = [];
   if (completeUserDetail && completeUserDetail.roleDetails) {
     if (completeUserDetail.roleDetails.primaryRole) {
@@ -1545,23 +1626,23 @@ export const reports = async ({ user, params }, res, next) => {
   userRoles = _.uniq(userRoles);
   let findQuery = {};
   if (userRoles.includes("SuperAdmin") || userRoles.includes("Admin")) {
-    findQuery = { status : true };
+    findQuery = { status: true };
     if (params.role == "GroupAdmin") {
       let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-      findQuery = { groupId: { $in: groupIds }, status : true };
-    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
-      findQuery = { status : true };
+      findQuery = { groupId: { $in: groupIds }, status: true };
+    } else if (params.role == "SuperAdmin" || params.role == "Admin") {
+      findQuery = { status: true };
     } else {
       return res.status(400).json({ completed: [], pending: [], controversy: [] });
     }
-  } else if (userRoles.includes("GroupAdmin")){
+  } else if (userRoles.includes("GroupAdmin")) {
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-    findQuery = { groupId: { $in: groupIds }, status : true };
+    findQuery = { groupId: { $in: groupIds }, status: true };
     if (params.role == "GroupAdmin") {
       let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-      findQuery = { groupId: { $in: groupIds }, status : true };
-    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
-      findQuery = { status : true };
+      findQuery = { groupId: { $in: groupIds }, status: true };
+    } else if (params.role == "SuperAdmin" || params.role == "Admin") {
+      findQuery = { status: true };
     } else {
       return res.status(200).json({ status: "200", completed: [], pending: [], controversy: [] });
     }
@@ -1594,7 +1675,7 @@ export const reports = async ({ user, params }, res, next) => {
         clientRepNames = clientRepNamesList.join();
       }
       var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
-    } 
+    }
     if (allTasks[i].categoryId) {
       var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
     }
@@ -1642,7 +1723,7 @@ export const reports = async ({ user, params }, res, next) => {
   })
   completedTask = _.sortBy(completedTask, 'companyName');
   pendingTask = _.sortBy(pendingTask, 'companyName');
-  controversy = _.sortBy(controversy, 'companyName');  
+  controversy = _.sortBy(controversy, 'companyName');
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
@@ -1677,7 +1758,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
       }
       let currentDate = new Date();
       let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
-      if(allTasks[i].taskStatus == 'Completed' || allTasks[i].taskStatus == 'Verification Completed'){
+      if (allTasks[i].taskStatus == 'Completed' || allTasks[i].taskStatus == 'Verification Completed') {
         let completedDate = allTasks[i].updatedAt;
         if (currentDate <= qaSLADate) {
           obj.status = "Met";
@@ -1686,7 +1767,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
         }
       } else if (allTasks[i].taskStatus != 'Completed' && allTasks[i].taskStatus != 'Verification Completed' && qaSLADate && (currentDate <= qaSLADate)) {
         obj.status = "OnTrack";
-      } else if(allTasks[i].taskStatus != 'Completed' && allTasks[i].taskStatus != 'Verification Completed' && qaSLADate && (currentDate > qaSLADate)){
+      } else if (allTasks[i].taskStatus != 'Completed' && allTasks[i].taskStatus != 'Verification Completed' && qaSLADate && (currentDate > qaSLADate)) {
         obj.status = "Not Met";
       } else {
         obj.status = "NA";
