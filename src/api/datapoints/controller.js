@@ -4643,16 +4643,18 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 });
                 for (let newThemeIndex = 0; newThemeIndex < uniqThemes.length; newThemeIndex++) {
                   let themeDetail = await Themes.findOne({ categoryId: newlyCreatedCategories[newCatIndex].id, themeName: uniqThemes[newThemeIndex].themeName, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Theme not found!' }) });
-                  uniqKeyIssues.find(obj => {
-                    if (newlyCreatedCategories[newCatIndex].id === uniqThemes[newThemeIndex].categoryId && obj.themeId === uniqThemes[newThemeIndex].themeName) {
-                      obj.themeId = themeDetail ? themeDetail.id : null;
-                    }
-                  });
-                  newDatapoints.find(obj => {
-                    if (obj.themeId === uniqThemes[newThemeIndex].themeName) {
-                      obj.themeId = themeDetail ? themeDetail.id : null;
-                    }
-                  });
+                  if (themeDetail) {
+                    uniqKeyIssues.find(obj => {
+                      if (newlyCreatedCategories[newCatIndex].id === uniqThemes[newThemeIndex].categoryId && obj.themeId === uniqThemes[newThemeIndex].themeName) {
+                        obj.themeId = themeDetail ? themeDetail.id : null;
+                      }
+                    });
+                    newDatapoints.find(obj => {
+                      if (obj.themeId === uniqThemes[newThemeIndex].themeName) {
+                        obj.themeId = themeDetail ? themeDetail.id : null;
+                      }
+                    });
+                  }
                 }
               }
 
