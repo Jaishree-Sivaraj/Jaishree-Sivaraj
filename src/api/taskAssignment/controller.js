@@ -880,6 +880,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       userId: completeUserDetail.id,
       status: true
     });
+    console.log('clientRepDetail', JSON.stringify(clientRepDetail, null, 3));
     if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
         companyId: { $in: clientRepDetail.companiesList },
