@@ -1855,6 +1855,175 @@ export const reports = async ({ user, params }, res, next) => {
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
+export const taskReports = async ({ user, params, querymen: {query, select, cursor} }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  })
+  .populate({
+    path: "roleDetails.roles",
+  })
+  .populate({
+    path: "roleDetails.primaryRole",
+  })
+  .catch((error) => {
+    return res.status(500).json({
+      status: "500",
+      message: error.message,
+    });
+  });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  let findQuery = {};
+  if (userRoles.includes("SuperAdmin") || userRoles.includes("Admin")) {
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      let groupTaskCompanyIds = await TaskAssignment.find({ groupId: {$in: groupIds} }).distinct('companyId');
+      if (params.taskStatus == 'Pending') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: false, status : true }; 
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: true, status : true }; 
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status : true }; 
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+      if (params.taskStatus == 'Pending') {
+        findQuery = { overAllCompanyTaskStatus: false, status : true }; 
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { overAllCompanyTaskStatus: true, status : true }; 
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status : true }; 
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else {
+      return res.status(200).json({ status: "200", count: 0, rows: [] });
+    }
+  } else if (userRoles.includes("GroupAdmin")){
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      let groupTaskCompanyIds = await TaskAssignment.find({ groupId: {$in: groupIds} }).distinct('companyId');
+      if (params.taskStatus == 'Pending') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: false, status : true }; 
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: true, status : true }; 
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status : true }; 
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else if (params.role == "SuperAdmin" || params.role == "Admin"){
+      if (params.taskStatus == 'Pending') {
+        findQuery = { overAllCompanyTaskStatus: false, status : true }; 
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { overAllCompanyTaskStatus: true, status : true }; 
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status : true }; 
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else {
+      return res.status(200).json({ status: "200", count: 0, rows: [] });
+    }
+  } else {
+    return res.status(200).json({ status: "200", count: 0, rows: [] });
+  }
+  if (params.taskStatus == "Pending" || params.taskStatus == "Completed") {
+    let companiesTasks = await CompaniesTasks.aggregate([ 
+      {"$match": findQuery},
+      {"$group": { _id: "$companyId", count:{ $sum: 1 } }},
+      {"$sort": { _id: 1 } },
+      {"$skip": cursor.skip},
+      {"$limit": cursor.limit} 
+    ]);
+    let completedTask = await CompaniesTasks.find({overAllCompanyTaskStatus : true}).distinct('companyId');
+    let taskList = [];
+    for (let dtIndex = 0; dtIndex < companiesTasks.length; dtIndex++) {
+      let clientRepNamesList = [], companyRepNamesList = [];
+      let clientRepNames = "", companyRepNames = "";
+      if (companiesTasks[dtIndex]._id) {
+        var companyRep = await CompanyRepresentatives.find({ companiesList: { $in: [companiesTasks[dtIndex]._id] } }).populate('userId');
+        if (companyRep && companyRep.length > 0) {
+          for (let cmpIndex = 0; cmpIndex < companyRep.length; cmpIndex++) {
+            if (companyRep[cmpIndex] && companyRep[cmpIndex].userId && companyRep[cmpIndex].userId.name) {
+              companyRepNamesList.push(companyRep[cmpIndex].userId.name);
+            }
+          }
+          companyRepNames = companyRepNamesList.join();
+        }
+        var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [companiesTasks[dtIndex]._id] } }).populate('userId');
+        if (clientRep && clientRep.length > 0) {
+          for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
+            if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
+              clientRepNamesList.push(clientRep[clnIndex].userId.name);
+            }
+          }
+          clientRepNames = clientRepNamesList.join();
+        }
+        var companyTask = await CompaniesTasks.findOne({ companyId: companiesTasks[dtIndex]._id }).populate({ path: 'companyId', populate: { path: 'clientTaxonomyId' } });
+      } 
+      var obj = {
+        taxonomy: companyTask.companyId && companyTask.companyId.clientTaxonomyId ? companyTask.companyId.clientTaxonomyId.taxonomyName : null,
+        companyName: companyTask.companyId ? companyTask.companyId.companyName : null,
+        companyRepresentative: companyRepNames,
+        clientRrepresentative: clientRepNames,
+        isChecked: false,
+        companyId: companyTask.companyId ? companyTask.companyId.id : null,
+      }
+      if (companyTask && companyTask.overAllCompanyTaskStatus) {
+        obj.completedDate = companyTask ? companyTask.completedDate : null;
+      } else {
+        obj.allocatedDate = companyTask ? companyTask.createdAt : null;
+      }
+      taskList.push(obj);
+    }
+    return res.json({ count: completedTask.length, rows: taskList });    
+  } else if (params.taskStatus == "Controversy") {
+    let controversyTasks = await ControversyTasks.find({status: true}).distinct('companyId');
+    var controversyTask = await ControversyTasks.find({ status: true }, select, cursor).populate({ path: 'companyId', populate: { path: 'clientTaxonomyId' } }).populate('analystId');
+    var controversy = [];
+    for (var i = 0; i < controversyTask.length; i++) {
+      var obj = {
+        taxonomy: controversyTask[i].companyId && controversyTask[i].companyId.clientTaxonomyId ? controversyTask[i].companyId.clientTaxonomyId.taxonomyName : null,
+        companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
+        companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
+        allocatedDate: controversyTask[i].createdAt,
+        taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
+        isChecked: false,
+        id: controversyTask[i].id
+      }
+      controversy.push(obj);
+    }
+    return res.json({ status: "200", count: controversyTasks.length, rows: controversy });    
+  } else {
+    return res.status(200).json({ status: "200", count: 0, rows: [] });
+  }
+}
+
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
   for (var index = 0; index < body.companyTaskReports.length; index++) {

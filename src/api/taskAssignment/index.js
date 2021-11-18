@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks } from './controller'
+import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks, taskReports } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
@@ -115,8 +115,8 @@ router.get('/:role/:taskStatus',
   retrieveFilteredDataTasks)
 
 /**
-* @api {get} /taskAssignments/task/reports/:role Retrieve my task assignments
-* @apiName RetrieveTaskAssignments
+* @api {get} /taskAssignments/task/reports/:role/:taskStatus Retrieve Task Reports
+* @apiName RetrieveTaskReports
 * @apiGroup TaskAssignment
 * @apiPermission user
 * @apiParam {String} access_token user access token.
@@ -126,11 +126,12 @@ router.get('/:role/:taskStatus',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/task/reports/:role',
+router.get('/task/reports/:role/:taskStatus',
   token({
     required: true
   }),
-  reports)
+  query(),
+  taskReports)
 
 /**
 * @api {get} /taskAssignments/task/controversyReports Retrieve my task assignments
