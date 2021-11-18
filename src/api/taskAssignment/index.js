@@ -96,7 +96,7 @@ router.get('/controversies/:role',
   retrieveFilteredControversyTasks)
 
 /**
-* @api {get} /taskAssignments/:role/:taskStatus Retrieve Task List
+* @api {get} /taskAssignments/:taskStatus/:role Retrieve Task List
 * @apiName RetrieveTaskList
 * @apiGroup TaskAssignment
 * @apiPermission user
@@ -107,7 +107,7 @@ router.get('/controversies/:role',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/:role/:taskStatus',
+router.get('/:taskStatus/:role',
   token({
     required: true
   }),
@@ -115,7 +115,7 @@ router.get('/:role/:taskStatus',
   retrieveFilteredDataTasks)
 
 /**
-* @api {get} /taskAssignments/task/reports/:role/:taskStatus Retrieve Task Reports
+* @api {get} /taskAssignments/task/reports/:taskStatus/:role Retrieve Task Reports
 * @apiName RetrieveTaskReports
 * @apiGroup TaskAssignment
 * @apiPermission user
@@ -126,7 +126,7 @@ router.get('/:role/:taskStatus',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/task/reports/:role/:taskStatus',
+router.get('/task/reports/:taskStatus/:role',
   token({
     required: true
   }),
