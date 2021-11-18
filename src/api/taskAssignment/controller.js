@@ -202,11 +202,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
   });
 };
 
-export const getQaAndAnalystFromGrp = async (
-  { user, bodymen: { body } },
-  res,
-  next
-) => {
+export const getQaAndAnalystFromGrp = async ({ user, bodymen: { body } }, res, next ) => {
   var { batchId, groupId } = body;
   var qaRoleDetails = await Role.findOne({ roleName: "QA" }).catch((error) => {
     return res.status(500).json({ status: "500", message: error.message });
@@ -225,40 +221,21 @@ export const getQaAndAnalystFromGrp = async (
     .catch((error) => {
       return res.status(500).json({ status: "500", message: error.message });
     });
-  var qa = [],
-    analyst = [];
-  for (
-    let index = 0;
-    index < allGrpsWithAssignedQAMembers.assignedMembers.length;
-    index++
-  ) {
-    if (
-      (allGrpsWithAssignedQAMembers.assignedMembers[
-        index
-      ].roleDetails.hasOwnProperty("primaryRole") &&
-        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-          .primaryRole === qaRoleDetails._id) ||
-      (allGrpsWithAssignedQAMembers.assignedMembers[
-        index
-      ].roleDetails.hasOwnProperty("roles") &&
-        allGrpsWithAssignedQAMembers.assignedMembers[
-          index
-        ].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)
-    ) {
-      qa.push({
-        value: allGrpsWithAssignedQAMembers.assignedMembers[index].id,
-        label: allGrpsWithAssignedQAMembers.assignedMembers[index].name,
-      });
+  var qa = [], analyst = [];
+  for (let index = 0;index < allGrpsWithAssignedQAMembers.assignedMembers.length;index++) {
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("primaryRole") &&
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === qaRoleDetails._id) ||
+      (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("roles") &&
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)) {
+          qa.push({
+            value: allGrpsWithAssignedQAMembers.assignedMembers[index].id,
+            label: allGrpsWithAssignedQAMembers.assignedMembers[index].name
+          });
     }
-    if (
-      (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-        .primaryRole &&
-        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-          .primaryRole === analystRoleDetails._id) ||
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole &&
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === analystRoleDetails._id) ||
       (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles &&
-        allGrpsWithAssignedQAMembers.assignedMembers[
-          index
-        ].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)
     ) {
       analyst.push({
         value: allGrpsWithAssignedQAMembers.assignedMembers[index].id,
