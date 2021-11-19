@@ -4643,16 +4643,18 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 });
                 for (let newThemeIndex = 0; newThemeIndex < uniqThemes.length; newThemeIndex++) {
                   let themeDetail = await Themes.findOne({ categoryId: newlyCreatedCategories[newCatIndex].id, themeName: uniqThemes[newThemeIndex].themeName, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Theme not found!' }) });
-                  uniqKeyIssues.find(obj => {
-                    if (newlyCreatedCategories[newCatIndex].id === uniqThemes[newThemeIndex].categoryId && obj.themeId === uniqThemes[newThemeIndex].themeName) {
-                      obj.themeId = themeDetail ? themeDetail.id : null;
-                    }
-                  });
-                  newDatapoints.find(obj => {
-                    if (obj.themeId === uniqThemes[newThemeIndex].themeName) {
-                      obj.themeId = themeDetail ? themeDetail.id : null;
-                    }
-                  });
+                  if (themeDetail) {
+                    uniqKeyIssues.find(obj => {
+                      if (newlyCreatedCategories[newCatIndex].id === uniqThemes[newThemeIndex].categoryId && obj.themeId === uniqThemes[newThemeIndex].themeName) {
+                        obj.themeId = themeDetail ? themeDetail.id : null;
+                      }
+                    });
+                    newDatapoints.find(obj => {
+                      if (obj.themeId === uniqThemes[newThemeIndex].themeName) {
+                        obj.themeId = themeDetail ? themeDetail.id : null;
+                      }
+                    });
+                  }
                 }
               }
 
@@ -4708,10 +4710,6 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
               for (let unqCatIndex = 0; unqCatIndex < newDatapoints.length; unqCatIndex++) {
                 await Datapoints.updateOne({
                   clientTaxonomyId: req.body.clientTaxonomyId,
-                  categoryId: newDatapoints[unqCatIndex].categoryId,
-                  themeId: newDatapoints[unqCatIndex].themeId,
-                  keyIssueId: newDatapoints[unqCatIndex].keyIssueId,
-                  functionId: newDatapoints[unqCatIndex].functionId,
                   code: newDatapoints[unqCatIndex].code ? newDatapoints[unqCatIndex].code : '',
                   status: true
                 }, { $set: newDatapoints[unqCatIndex] }, { upsert: true })
@@ -4805,9 +4803,15 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
             obj["Key Issue"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueName"] : "";
             obj["Key Issue Code"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueCode"] : ""
           }
+          if (dataPoints[index]["additionalDetails"] != null && dataPoints[index]["additionalDetails"] != {} ) {
+            if(dataPoints[index]["additionalDetails"].hasOwnProperty(filteredFields[index1]["fieldName"])){
+              //returns true;            
+              obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];            
+            }            
+          }
           obj["Is Priority"] = "";
-          obj["Relevant for India"] = "";
-          obj["Polarity"] = "";
+          // obj["Relevant for India"] = dataPoints[index]["relevantForIndia"] ? dataPoints[index]["relevantForIndia"] : "";
+          obj["Polarity"] = dataPoints[index]["polarity"] ? dataPoints[index]["polarity"] : "";
         }
       }
       response.push(obj);
