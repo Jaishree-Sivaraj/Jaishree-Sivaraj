@@ -98,7 +98,9 @@ export const calculateForACompany = async ({
   const companyId = params.companyId ? params.companyId : null;
 
   await StandaloneDatapoints.find({
-      companyId: companyId
+      companyId: companyId,
+      isActive: true,
+      status: true
     })
     .populate('createdBy')
     .populate('datapointId')

@@ -1632,7 +1632,8 @@ export const datapointDetails = async (req, res, next) => {
           value: "",
           publicationDate: ''
         };
-        _.filter(historyAllStandaloneDetails, async function (object) {
+        for(let historicalDataIndex = 0; historicalDataIndex < historyAllStandaloneDetails.length; historicalDataIndex++){
+          let object = historyAllStandaloneDetails[historicalDataIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -1717,8 +1718,9 @@ export const datapointDetails = async (req, res, next) => {
             }
             datapointsObject.historicalData.push(historicalDatapointsObject);
           }
-        });
+        }
       }
+      console.log(datapointsObject)
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
@@ -1744,6 +1746,9 @@ export const datapointDetails = async (req, res, next) => {
         taskId: req.body.taskId,
         datapointId: req.body.datapointId,
         memberName: req.body.memberName,
+        year: {
+          $in: currentYear
+        },
         isActive: true,
         status: true
       }).populate('createdBy')
@@ -2166,9 +2171,10 @@ export const datapointDetails = async (req, res, next) => {
         boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
         boardDatapointsObject.currentData.push(currentDatapointsObject);
       }
-      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
+      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
         let historicalDatapointsObject = {};
-        _.filter(historyAllBoardMemberMatrixDetails, async function (object) {
+        for (let historyBoardMemberIndex = 0; historyBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyBoardMemberIndex++) {
+          let object = historyAllBoardMemberMatrixDetails[historyBoardMemberIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -2251,9 +2257,10 @@ export const datapointDetails = async (req, res, next) => {
               }
             }
             boardDatapointsObject.historicalData.push(historicalDatapointsObject);
-          }
-        });
+          }          
+        }
       }
+      console.log(boardDatapointsObject)
       return res.status(200).send({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
@@ -2262,6 +2269,7 @@ export const datapointDetails = async (req, res, next) => {
     } else if (req.body.memberType == 'KMP Matrix') {
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
         companyId: taskDetails.companyId.id,
+        datapointId: req.body.datapointId,
         memberName: req.body.memberName,
         year: {
           "$nin": currentYear
@@ -2279,6 +2287,9 @@ export const datapointDetails = async (req, res, next) => {
         taskId: req.body.taskId,
         datapointId: req.body.datapointId,
         memberName: req.body.memberName,
+        year: {
+          $in: currentYear
+        },
         isActive: true,
         status: true
       }).populate('createdBy')
@@ -2700,98 +2711,96 @@ export const datapointDetails = async (req, res, next) => {
         kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
         kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
-      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
-        let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
-        let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
-        for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
+      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
           let historicalDatapointsObject = {};
-          _.filter(historyAllKmpMatrixDetails, async function (object) {
-            let s3DataScreenshot = [];
-            if (object.screenShot && object.screenShot.length > 0) {
-              for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
-                let obj = object.screenShot[screenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                  screenShotFileName = "No screenshot";
-                });
-                if (screenShotFileName == undefined) {
-                  screenShotFileName = "";
+          for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
+            let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
+              let s3DataScreenshot = [];
+              if (object.screenShot && object.screenShot.length > 0) {
+                for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+                  let obj = object.screenShot[screenShotIndex];
+                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                  });
+                  if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                  }
+                  s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
                 }
-                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
-            }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
-              let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
-              if (sourceValues != null) {
-                sourceDetails.url = sourceValues.sourceUrl;
-                sourceDetails.publicationDate = sourceValues.publicationDate;
-                sourceDetails.sourceName = sourceValues.name;
-                sourceDetails.value = sourceValues._id;
+              if (object.sourceName !== "" || object.sourceName !== " ") {
+                let companySourceId = object.sourceName.split(';')[1];
+                let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+                if (sourceValues != null) {
+                  sourceDetails.url = sourceValues.sourceUrl;
+                  sourceDetails.publicationDate = sourceValues.publicationDate;
+                  sourceDetails.sourceName = sourceValues.name;
+                  sourceDetails.value = sourceValues._id;
+                }
               }
-            }
-            if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
-              historicalDatapointsObject = {
-                status: 'Completed',
-                dpCode: dpTypeValues.code,
-                dpCodeId: dpTypeValues.id,
-                dpName: dpTypeValues.name,
-                taskId: object.taskId,
-                fiscalYear: historyYear[hitoryYearIndex].year,
-                description: dpTypeValues.description,
-                dataType: dpTypeValues.dataType,
-                textSnippet: object.textSnippet,
-                pageNo: object.pageNumber,
-                screenShot: s3DataScreenshot,
-                memberName: object.memberName,
-                response: object.response,
-                sourceList: sourceTypeDetails,
-                source: sourceDetails,
-                error: {},
-                comments: [],
-                additionalDetails: []
-              }
-              for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
-                  let optionValues = [], optionVal = '', currentValue;
-                  if (displayFields[dIndex].inputType == 'Select') {
-                    let options = displayFields[dIndex].inputValues.split(',');
-                    if (options.length > 0) {
-                      for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                        optionValues.push({
-                          value: options[optIndex],
-                          label: options[optIndex]
-                        });
+              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
+                historicalDatapointsObject = {
+                  status: 'Completed',
+                  dpCode: dpTypeValues.code,
+                  dpCodeId: dpTypeValues.id,
+                  dpName: dpTypeValues.name,
+                  taskId: object.taskId,
+                  fiscalYear: historyYear[hitoryYearIndex].year,
+                  description: dpTypeValues.description,
+                  dataType: dpTypeValues.dataType,
+                  textSnippet: object.textSnippet,
+                  pageNo: object.pageNumber,
+                  screenShot: s3DataScreenshot,
+                  memberName: object.memberName,
+                  response: object.response,
+                  sourceList: sourceTypeDetails,
+                  source: sourceDetails,
+                  error: {},
+                  comments: [],
+                  additionalDetails: []
+                }
+                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+                  if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
+                    let optionValues = [], optionVal = '', currentValue;
+                    if (displayFields[dIndex].inputType == 'Select') {
+                      let options = displayFields[dIndex].inputValues.split(',');
+                      if (options.length > 0) {
+                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                          optionValues.push({
+                            value: options[optIndex],
+                            label: options[optIndex]
+                          });
+                        }
+                      } else {
+                        optionValues = [];
                       }
                     } else {
-                      optionValues = [];
+                      optionVal = displayFields[dIndex].inputValues;
                     }
-                  } else {
-                    optionVal = displayFields[dIndex].inputValues;
-                  }
-                  if (displayFields[dIndex].inputType == 'Static') {
-                    currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
-                  } else {
-                    let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
-                    if (displayFields[dIndex].inputType == 'Select') {
-                      currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                    if (displayFields[dIndex].inputType == 'Static') {
+                      currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
                     } else {
-                      currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
+                      if (displayFields[dIndex].inputType == 'Select') {
+                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                      } else {
+                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                      }
                     }
+                    historicalDatapointsObject.additionalDetails.push({
+                      fieldName: displayFields[dIndex].fieldName,
+                      name: displayFields[dIndex].name,
+                      value: currentValue ? currentValue : '',
+                      inputType: displayFields[dIndex].inputType,
+                      inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    })
                   }
-                  historicalDatapointsObject.additionalDetails.push({
-                    fieldName: displayFields[dIndex].fieldName,
-                    name: displayFields[dIndex].name,
-                    value: currentValue ? currentValue : '',
-                    inputType: displayFields[dIndex].inputType,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                  })
                 }
-              }
-              kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
-            }
-          });
+                kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
+              }            
+          }
           //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
-        }
+        //}
       }
       return res.status(200).send({
         status: "200",
@@ -3257,7 +3266,8 @@ export const repDatapointDetails = async (req, res, next) => {
           value: "",
           publicationDate: ''
         };
-        _.filter(historyAllStandaloneDetails, async function (object) {
+        for (let historyStandaloneIndex = 0; historyStandaloneIndex < historyAllStandaloneDetails.length; historyStandaloneIndex++) {
+          let object = historyAllStandaloneDetails[historyStandaloneIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -3340,8 +3350,8 @@ export const repDatapointDetails = async (req, res, next) => {
               }
             }
             datapointsObject.historicalData.push(historicalDatapointsObject);
-          }
-        });
+          }          
+        }
       }
       console.log(datapointsObject);
       return res.status(200).send({
@@ -3369,6 +3379,9 @@ export const repDatapointDetails = async (req, res, next) => {
         taskId: req.body.taskId,
         datapointId: req.body.datapointId,
         memberName: req.body.memberName,
+        year: {
+          $in: currentYear
+        },
         isActive: true,
         status: true
       }).populate('createdBy')
@@ -3702,7 +3715,7 @@ export const repDatapointDetails = async (req, res, next) => {
         }
         boardDatapointsObject.comments = boardDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
       }
-      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
+      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
         let historicalDatapointsObject = {};
         var sourceDetails = {
           url: '',
@@ -3710,7 +3723,8 @@ export const repDatapointDetails = async (req, res, next) => {
           value: "",
           publicationDate: ''
         };
-        _.filter(historyAllBoardMemberMatrixDetails, async function (object) {
+        for (let historyAllBoardMemberIndex = 0; historyAllBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyAllBoardMemberIndex++) {
+          let object = historyAllBoardMemberMatrixDetails[historyAllBoardMemberIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -3795,7 +3809,8 @@ export const repDatapointDetails = async (req, res, next) => {
             }
             boardDatapointsObject.historicalData.push(historicalDatapointsObject);
           }
-        });
+          
+        }
       }
       return res.status(200).send({
         status: "200",
@@ -3805,6 +3820,7 @@ export const repDatapointDetails = async (req, res, next) => {
     } else if (req.body.memberType == 'KMP Matrix') {
       let historyAllKmpMatrixDetails = await KmpMatrixDataPoints.find({
         companyId: taskDetails.companyId.id,
+        datapointId: req.body.datapointId,
         memberName: req.body.memberName,
         year: {
           "$nin": currentYear
@@ -3822,6 +3838,9 @@ export const repDatapointDetails = async (req, res, next) => {
         taskId: req.body.taskId,
         datapointId: req.body.datapointId,
         memberName: req.body.memberName,
+        year: {
+          $in: currentYear
+        },
         isActive: true,
         status: true
       }).populate('createdBy')
@@ -4156,19 +4175,16 @@ export const repDatapointDetails = async (req, res, next) => {
         }
         kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
       }
-      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories.length; hitoryYearIndex++) {
-        let boardMembersList = historyAllKmpMatrixDetails.filter(obj => obj.year == historyYear[hitoryYearIndex].year);
-        let boardMemberNameList = _.uniqBy(boardMembersList, 'memberName');
+      for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
         var sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
           publicationDate: ''
         };
-        for (let boarMemberListIndex = 0; boarMemberListIndex < boardMemberNameList.length; boarMemberListIndex++) {
-
           let historicalDatapointsObject = {};
-          _.filter(historyAllKmpMatrixDetails, async function (object) {
+          for (let historyAllKMPMemberIndex = 0; historyAllKMPMemberIndex < historyAllKmpMatrixDetails.length; historyAllKMPMemberIndex++) {
+            const object = historyAllKmpMatrixDetails[historyAllKMPMemberIndex];
             let s3DataScreenshot = [];
             if (object.screenShot && object.screenShot.length > 0) {
               for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -4192,7 +4208,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceDetails.value = sourceValues._id;
               }
             }
-            if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == boardMemberNameList[boarMemberListIndex].memberName) {
+            if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
               historicalDatapointsObject = {
                 status: 'Completed',
                 dpCode: dpTypeValues.code,
@@ -4250,10 +4266,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 }
               }
               kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
-            }
-          });
-          //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
-        }
+            }            
+          }
       }
       return res.status(200).send({
         status: "200",
