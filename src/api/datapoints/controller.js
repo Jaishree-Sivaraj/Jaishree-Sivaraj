@@ -203,7 +203,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     if (taskDetails.taskStatus == 'Pending' || taskDetails.taskStatus == 'Collection Completed' || taskDetails.taskStatus == 'Verification Completed' || taskDetails.taskStatus == 'Completed') {
       if (dpTypeValues.length > 0) {
         let repFinalSubmit = false;
-        let mergedDatapoints = _.merge(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails)
+        let mergedDatapoints =_.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails)
         let datapointsCount = await Datapoints.distinct('_id', {
           dataCollection: 'Yes',
           functionId: {
@@ -1249,7 +1249,7 @@ export const datapointDetails = async (req, res, next) => {
           let object = currentAllStandaloneDetails[currentIndex];
           console.log('===> object', object);
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId)
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.isErrorAccepted == null)
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
@@ -1795,7 +1795,7 @@ export const datapointDetails = async (req, res, next) => {
         for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
           const object = currentAllBoardMemberMatrixDetails[currentIndex];
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName);
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
@@ -2331,7 +2331,7 @@ export const datapointDetails = async (req, res, next) => {
         for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
           const object = currentAllKmpMatrixDetails[currentIndex];
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName);
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
