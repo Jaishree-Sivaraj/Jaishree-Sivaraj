@@ -4797,13 +4797,19 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
   if (clienttaxonomies) {
     var filteredFields = clienttaxonomies.fields.filter(rec => rec.inputType === "Static");
     // console.log('filteredFields', filteredFields);
-    var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId');
+    var dataPoints = await Datapoints.find({ clientTaxonomyId: clientTaxonomyId }).populate('categoryId').populate('themeId').populate('keyIssueId').populate('functionId');
+    // console.log('data', dataPoints);
     var response = [];
     for (var index = 0; index < dataPoints.length; index++) {
       var obj = {};
       for (var index1 = 0; index1 < filteredFields.length; index1++) {
         if (dataPoints[index][filteredFields[index1]["fieldName"]]) {
-          obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
+          if (filteredFields[index1]["fieldName"] === 'functionId') {
+            console.log('in', dataPoints[index], dataPoints[index]["functionId"]["functionType"])
+            obj["Function"] = dataPoints[index]["functionId"] ? dataPoints[index]["functionId"]["functionType"] : ""
+          } else {
+            obj[filteredFields[index1]["name"]] = dataPoints[index][filteredFields[index1]["fieldName"]]
+          }
         } else {
           if (filteredFields[index1]["fieldName"] === 'categoryName') {
             obj["Category"] = dataPoints[index]["categoryId"] ? dataPoints[index]["categoryId"]["categoryName"] : "";
@@ -4817,11 +4823,12 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
             obj["Key Issue"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueName"] : "";
             obj["Key Issue Code"] = dataPoints[index]["keyIssueId"] ? dataPoints[index]["keyIssueId"]["keyIssueCode"] : ""
           }
-          if (dataPoints[index]["additionalDetails"] != null && dataPoints[index]["additionalDetails"] != {} ) {
-            if(dataPoints[index]["additionalDetails"].hasOwnProperty(filteredFields[index1]["fieldName"])){
+
+          if (dataPoints[index]["additionalDetails"] != null && dataPoints[index]["additionalDetails"] != {}) {
+            if (dataPoints[index]["additionalDetails"].hasOwnProperty(filteredFields[index1]["fieldName"])) {
               //returns true;            
-              obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];            
-            }            
+              obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];
+            }
           }
           obj["Is Priority"] = "";
           // obj["Relevant for India"] = dataPoints[index]["relevantForIndia"] ? dataPoints[index]["relevantForIndia"] : "";
