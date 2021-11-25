@@ -1043,7 +1043,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
           });
         });
       await ControversyTasks.find({
-        companyId: { $in: clientRepDetail.companiesList },
+        companyId: { $in: companyRepDetail.companiesList },
         status: true,
       })
         .populate("companyId")
