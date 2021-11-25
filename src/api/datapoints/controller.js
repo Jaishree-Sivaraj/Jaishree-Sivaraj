@@ -1653,7 +1653,7 @@ export const datapointDetails = async (req, res, next) => {
           value: "",
           publicationDate: ''
         };
-        for(let historicalDataIndex = 0; historicalDataIndex < historyAllStandaloneDetails.length; historicalDataIndex++){
+        for (let historicalDataIndex = 0; historicalDataIndex < historyAllStandaloneDetails.length; historicalDataIndex++) {
           let object = historyAllStandaloneDetails[historicalDataIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
@@ -2302,7 +2302,7 @@ export const datapointDetails = async (req, res, next) => {
               }
             }
             boardDatapointsObject.historicalData.push(historicalDatapointsObject);
-          }          
+          }
         }
       }
       console.log(boardDatapointsObject)
@@ -2773,107 +2773,107 @@ export const datapointDetails = async (req, res, next) => {
         kmpDatapointsObject.currentData.push(currentDatapointsObject);
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
-          let historicalDatapointsObject = {};
-          for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
-            let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
-              let s3DataScreenshot = [];
-              if (object.screenShot && object.screenShot.length > 0) {
-                for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
-                  let obj = object.screenShot[screenShotIndex];
-                  let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                    screenShotFileName = "No screenshot";
-                  });
-                  if (screenShotFileName == undefined) {
-                    screenShotFileName = "";
-                  }
-                  s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
-                }
+        let historicalDatapointsObject = {};
+        for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
+          let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
+          let s3DataScreenshot = [];
+          if (object.screenShot && object.screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
+              let obj = object.screenShot[screenShotIndex];
+              let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                screenShotFileName = "No screenshot";
+              });
+              if (screenShotFileName == undefined) {
+                screenShotFileName = "";
               }
+              s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
-              let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
-              if (sourceValues != null) {
-                sourceDetails.url = sourceValues.sourceUrl;
-                sourceDetails.publicationDate = sourceValues.publicationDate;
-                sourceDetails.sourceName = sourceValues.name;
-                sourceDetails.value = sourceValues._id;
-              }
-            }
-              if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
-                historicalDatapointsObject = {
-                  status: 'Completed',
-                  dpCode: dpTypeValues.code,
-                  dpCodeId: dpTypeValues.id,
-                  dpName: dpTypeValues.name,
-                  taskId: object.taskId,
-                  fiscalYear: historyYear[hitoryYearIndex].year,
-                  description: dpTypeValues.description,
-                  dataType: dpTypeValues.dataType,
-                  textSnippet: object.textSnippet,
-                  pageNo: object.pageNumber,
-                  isRestated: object.isRestated,
-                  restatedForYear: object.restatedForYear,
-                  restatedInYear: object.restatedInYear,
-                  restatedValue: object.restatedValue,
-                  screenShot: s3DataScreenshot,
-                  memberName: object.memberName,
-                  response: object.response,
-                  sourceList: sourceTypeDetails,
-                  source: sourceDetails,
-                  error: {},
-                  comments: [],
-                  additionalDetails: []
-                }
-                for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
-                  if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
-                    let optionValues = [], optionVal = '', currentValue;
-                    if (displayFields[dIndex].inputType == 'Select') {
-                      let options = displayFields[dIndex].inputValues.split(',');
-                      if (options.length > 0) {
-                        for (let optIndex = 0; optIndex < options.length; optIndex++) {
-                          optionValues.push({
-                            value: options[optIndex],
-                            label: options[optIndex]
-                          });
-                        }
-                      } else {
-                        optionValues = [];
-                      }
-                    } else {
-                      optionVal = displayFields[dIndex].inputValues;
-                    }
-                    if (displayFields[dIndex].inputType == 'Static') {
-                      currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
-                    } else {
-                      let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
-                      if (displayFields[dIndex].inputType == 'Select') {
-                        currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
-                      } else {
-                        currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
-                      }
-                    }
-                    historicalDatapointsObject.additionalDetails.push({
-                      fieldName: displayFields[dIndex].fieldName,
-                      name: displayFields[dIndex].name,
-                      value: currentValue ? currentValue : '',
-                      inputType: displayFields[dIndex].inputType,
-                      inputValues: optionValues.length > 0 ? optionValues : optionVal
-                    })
-                  }
-                }
-                kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
-              }            
           }
-          //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
-        //}
+        }
+        if (object.sourceName !== "" || object.sourceName !== " ") {
+          let companySourceId = object.sourceName.split(';')[1];
+          let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+          if (sourceValues != null) {
+            sourceDetails.url = sourceValues.sourceUrl;
+            sourceDetails.publicationDate = sourceValues.publicationDate;
+            sourceDetails.sourceName = sourceValues.name;
+            sourceDetails.value = sourceValues._id;
+          }
+        }
+        if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == req.body.memberName) {
+          historicalDatapointsObject = {
+            status: 'Completed',
+            dpCode: dpTypeValues.code,
+            dpCodeId: dpTypeValues.id,
+            dpName: dpTypeValues.name,
+            taskId: object.taskId,
+            fiscalYear: historyYear[hitoryYearIndex].year,
+            description: dpTypeValues.description,
+            dataType: dpTypeValues.dataType,
+            textSnippet: object.textSnippet,
+            pageNo: object.pageNumber,
+            isRestated: object.isRestated,
+            restatedForYear: object.restatedForYear,
+            restatedInYear: object.restatedInYear,
+            restatedValue: object.restatedValue,
+            screenShot: s3DataScreenshot,
+            memberName: object.memberName,
+            response: object.response,
+            sourceList: sourceTypeDetails,
+            source: sourceDetails,
+            error: {},
+            comments: [],
+            additionalDetails: []
+          }
+          for (let dIndex = 0; dIndex < displayFields.length; dIndex++) {
+            if (!requiredFields.includes(displayFields[dIndex].fieldName)) {
+              let optionValues = [], optionVal = '', currentValue;
+              if (displayFields[dIndex].inputType == 'Select') {
+                let options = displayFields[dIndex].inputValues.split(',');
+                if (options.length > 0) {
+                  for (let optIndex = 0; optIndex < options.length; optIndex++) {
+                    optionValues.push({
+                      value: options[optIndex],
+                      label: options[optIndex]
+                    });
+                  }
+                } else {
+                  optionValues = [];
+                }
+              } else {
+                optionVal = displayFields[dIndex].inputValues;
+              }
+              if (displayFields[dIndex].inputType == 'Static') {
+                currentValue = dpTypeValues.additionalDetails[displayFields[dIndex].fieldName];
+              } else {
+                let responseDetails = historyAllKmpMatrixDetails.find((obj) => obj.year == historyYear[hitoryYearIndex].year);
+                if (displayFields[dIndex].inputType == 'Select') {
+                  currentValue = { value: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '', label: responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '' };
+                } else {
+                  currentValue = responseDetails.additionalDetails ? responseDetails.additionalDetails[displayFields[dIndex].fieldName] : '';
+                }
+              }
+              historicalDatapointsObject.additionalDetails.push({
+                fieldName: displayFields[dIndex].fieldName,
+                name: displayFields[dIndex].name,
+                value: currentValue ? currentValue : '',
+                inputType: displayFields[dIndex].inputType,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+              })
+            }
+          }
+          kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
+        }
+
       }
-      return res.status(200).send({
-        status: "200",
-        message: "Data collection dp codes retrieved successfully!",
-        dpCodeData: kmpDatapointsObject
-      });
+      //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
+      //}
     }
+    return res.status(200).send({
+      status: "200",
+      message: "Data collection dp codes retrieved successfully!",
+      dpCodeData: kmpDatapointsObject
+    });
   } catch (error) {
     return res.status(500).json({
       message: error.message
