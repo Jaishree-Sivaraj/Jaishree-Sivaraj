@@ -28,7 +28,6 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
     .sort({ createdAt: -1 })
     .limit(1)
     .then(async (taskObject) => {
-      console.log("taskObject", taskObject);
       let newTaskNumber = "";
       if (taskObject) {
         if (taskObject.taskNumber) {
@@ -110,7 +109,6 @@ export const create = async ({ user, bodymen: { body } }, res, next) => {
 };
 
 export const createTask = async ({ user, bodymen: { body } }, res, next) => {
-  console.log("in create task", typeof body.year);
   var years = "";
   body.year.forEach((rec, forIndex) => {
     if (forIndex == body.year.length - 1) {
@@ -204,11 +202,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
   });
 };
 
-export const getQaAndAnalystFromGrp = async (
-  { user, bodymen: { body } },
-  res,
-  next
-) => {
+export const getQaAndAnalystFromGrp = async ({ user, bodymen: { body } }, res, next) => {
   var { batchId, groupId } = body;
   var qaRoleDetails = await Role.findOne({ roleName: "QA" }).catch((error) => {
     return res.status(500).json({ status: "500", message: error.message });
@@ -227,40 +221,21 @@ export const getQaAndAnalystFromGrp = async (
     .catch((error) => {
       return res.status(500).json({ status: "500", message: error.message });
     });
-  var qa = [],
-    analyst = [];
-  for (
-    let index = 0;
-    index < allGrpsWithAssignedQAMembers.assignedMembers.length;
-    index++
-  ) {
-    if (
-      (allGrpsWithAssignedQAMembers.assignedMembers[
-        index
-      ].roleDetails.hasOwnProperty("primaryRole") &&
-        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-          .primaryRole === qaRoleDetails._id) ||
-      (allGrpsWithAssignedQAMembers.assignedMembers[
-        index
-      ].roleDetails.hasOwnProperty("roles") &&
-        allGrpsWithAssignedQAMembers.assignedMembers[
-          index
-        ].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)
-    ) {
+  var qa = [], analyst = [];
+  for (let index = 0; index < allGrpsWithAssignedQAMembers.assignedMembers.length; index++) {
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("primaryRole") &&
+      allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === qaRoleDetails._id) ||
+      (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.hasOwnProperty("roles") &&
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(qaRoleDetails._id) > -1)) {
       qa.push({
         value: allGrpsWithAssignedQAMembers.assignedMembers[index].id,
-        label: allGrpsWithAssignedQAMembers.assignedMembers[index].name,
+        label: allGrpsWithAssignedQAMembers.assignedMembers[index].name
       });
     }
-    if (
-      (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-        .primaryRole &&
-        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails
-          .primaryRole === analystRoleDetails._id) ||
+    if ((allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole &&
+      allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.primaryRole === analystRoleDetails._id) ||
       (allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles &&
-        allGrpsWithAssignedQAMembers.assignedMembers[
-          index
-        ].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)
+        allGrpsWithAssignedQAMembers.assignedMembers[index].roleDetails.roles.indexOf(analystRoleDetails._id) > -1)
     ) {
       analyst.push({
         value: allGrpsWithAssignedQAMembers.assignedMembers[index].id,
@@ -439,6 +414,213 @@ export const index = async ({ user, querymen: { query, select, cursor } }, res, 
       message: "Tasks retrieved successfully!",
       data: finalResponseObject,
     });
+  }
+};
+
+export const retrieveFilteredDataTasks = async ({ user, params, querymen: { query, select, cursor } }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }).populate({ path: "roleDetails.roles" }).populate({ path: "roleDetails.primaryRole" })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
+    });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  let findQuery = {};
+  if (params.taskStatus && params.role == "GroupAdmin") {
+    let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+    findQuery = {
+      taskStatus: params.taskStatus ? params.taskStatus : '',
+      groupId: { $in: groupIds },
+      status: true
+    };
+  } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
+    findQuery = { taskStatus: params.taskStatus ? params.taskStatus : '', status: true };
+  } else {
+    findQuery = { taskStatus: '', status: true };
+  }
+  if (userRoles.includes(params.role)) {
+    await TaskAssignment.count(findQuery)
+      .then(async (count) => {
+        await TaskAssignment.find(findQuery, select, cursor)
+          .populate("createdBy")
+          .populate("categoryId")
+          .populate("groupId")
+          .populate("batchId")
+          .populate("analystId")
+          .populate("qaId")
+          .populate("companyId")
+          .then(async (taskAssignments) => {
+            let responseToReturn = {
+              status: "200",
+              message: "Tasks retrieved successfully!",
+              count: count,
+              rows: []
+            };
+            if (taskAssignments.length > 0) {
+              for (let index = 0; index < taskAssignments.length; index++) {
+                const object = taskAssignments[index];
+                let taskObject = {
+                  taskId: object.id,
+                  taskNumber: object.taskNumber,
+                  pillar: object.categoryId ? object.categoryId.categoryName : null,
+                  pillarId: object.categoryId ? object.categoryId.id : null,
+                  group: object.groupId ? object.groupId.groupName : null,
+                  groupId: object.groupId ? object.groupId.id : null,
+                  batch: object.batchId ? object.batchId.batchName : null,
+                  batchId: object.batchId ? object.batchId.id : null,
+                  company: object.companyId ? object.companyId.companyName : null,
+                  companyId: object.companyId ? object.companyId.id : null,
+                  analyst: object.analystId ? object.analystId.name : null,
+                  analystId: object.analystId ? object.analystId.id : null,
+                  qa: object.qaId ? object.qaId.name : null,
+                  analystSLA: object.analystSLADate ? object.analystSLADate : null,
+                  qaSLA: object.qaSLADate ? object.qaSLADate : null,
+                  qaId: object.qaId ? object.qaId.id : null,
+                  fiscalYear: object.year,
+                  taskStatus: object.taskStatus,
+                  overAllCompletedDate: object.overAllCompletedDate,
+                  overAllCompanyTaskStatus: object.overAllCompanyTaskStatus,
+                  createdBy: object.createdBy ? object.createdBy.name : null,
+                  createdById: object.createdBy ? object.createdBy.id : null,
+                };
+                responseToReturn.rows.push(taskObject);
+              }
+            }
+            return res.json(responseToReturn);
+          })
+          .catch((error) => {
+            return res.status(400).json({
+              status: "400",
+              message: error.message ? error.message : "Failed to retrieve tasks!",
+            });
+          });
+      });
+  } else {
+    return res.json({ status: "200", message: "Tasks retrieved successfully!", count: 0, rows: [] });
+  }
+};
+
+export const retrieveFilteredControversyTasks = async ({ user, params, querymen: { query, select, cursor } }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  }).populate({ path: "roleDetails.roles" }).populate({ path: "roleDetails.primaryRole" })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
+    });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  if (userRoles.includes(params.role)) {
+    let findQuery = {};
+    if (params.role == "Client Representative") {
+      let repDetails = await ClientRepresentatives.findOne({ userId: user.id });
+      findQuery = { companyId: { $in: repDetails.companiesList }, status: true };
+    } else if (params.role == "Company Representative") {
+      let repDetails = await CompanyRepresentatives.findOne({ userId: user.id });
+      findQuery = { companyId: { $in: repDetails.companiesList }, status: true };
+    } else if (params.role == "GroupAdmin" || params.role == "Admin" || params.role == "SuperAdmin") {
+      findQuery = { status: true };
+    } else {
+      return res.json({ status: "200", message: "Tasks retrieved successfully!", count: 0, rows: [] });
+    }
+    await ControversyTasks.count({ status: true })
+      .then(async (count) => {
+        await ControversyTasks.find({ status: true }, select, cursor)
+          .populate('companyId')
+          .populate('analystId')
+          .populate('createdBy')
+          .then(async (controversyTasks) => {
+            let responseToReturn = {
+              status: "200",
+              message: "Tasks retrieved successfully!",
+              count: count,
+              rows: []
+            };
+            if (controversyTasks && controversyTasks.length > 0) {
+              for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+                let yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+                let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+                let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+                let object = {};
+                object.taskNumber = controversyTasks[cIndex].taskNumber;
+                object.taskId = controversyTasks[cIndex].id;
+                object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+                object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+                object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+                object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+                object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+                object.status = controversyTasks[cIndex].status;
+                object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+                object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+                object.totalNoOfControversy = totalNoOfControversy;
+                if (controversyTasks[cIndex] && object) {
+                  responseToReturn.rows.push(object)
+                }
+              }
+            }
+            return res.json(responseToReturn);
+          })
+          .catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy tasks!" })
+          })
+      });
+  } else {
+    return res.json({ status: "200", message: "Tasks retrieved successfully!", count: 0, rows: [] });
   }
 };
 
@@ -692,12 +874,13 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         }
       });
   }
-  console.log('userRoles', userRoles);
   if (userRoles.includes("Client Representative")) {
+    console.log('in client');
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
       status: true
     });
+    console.log('clientRepDetail', JSON.stringify(clientRepDetail, null, 3));
     if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
         companyId: { $in: clientRepDetail.companiesList },
@@ -757,6 +940,7 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         .populate("analystId")
         .populate("createdBy")
         .then(async (controversyTasks) => {
+          console.log('controversyTasks', controversyTasks);
           if (controversyTasks && controversyTasks.length > 0) {
             for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
               let yesterday = new Date();
@@ -907,12 +1091,8 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
     }
   }
   let data = {
-    analystCollectionTaskList: analystCollectionTaskList
-      ? analystCollectionTaskList
-      : [],
-    analystCorrectionTaskList: analystCorrectionTaskList
-      ? analystCorrectionTaskList
-      : [],
+    analystCollectionTaskList: analystCollectionTaskList ? analystCollectionTaskList : [],
+    analystCorrectionTaskList: analystCorrectionTaskList ? analystCorrectionTaskList : [],
     qaTaskList: qaTaskList ? qaTaskList : [],
     clientRepTaskList: clientRepTaskList ? clientRepTaskList : [],
     companyRepTaskList: companyRepTaskList ? companyRepTaskList : [],
@@ -924,53 +1104,6 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
     message: "Task retrieved succesfully!",
     data: data,
   });
-
-  // if (user.roleDetails) {
-  //   findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
-  // }
-  // let findQuery = { status: true, $or: [{ analystId: user.id }, { qaId: user.id }] };
-  // TaskAssignment.find(findQuery)
-  //   .sort({ createdAt: -1 })
-  //   .populate('createdBy')
-  //   .populate('companyId')
-  //   .populate('categoryId')
-  //   .populate('batchId')
-  //   .populate('analystId')
-  //   .populate('qaId')
-  //   .then((taskAssignments) => {
-  //     let taskList = [];
-  //     for (let index = 0; index < taskAssignments.length; index++) {
-  //       const object = taskAssignments[index];
-  //       let taskObject = {
-  //         taskId: object.id,
-  //         taskNumber: object.taskNumber,
-  //         pillar: object.categoryId ? object.categoryId.categoryName : null,
-  //         pillarId: object.categoryId ? object.categoryId.id : null,
-  //         batch: object.batchId ? object.batchId.batchName : null,
-  //         batchId: object.batchId ? object.batchId.id : null,
-  //         company: object.companyId ? object.companyId.companyName : null,
-  //         companyId: object.companyId ? object.companyId.id : null,
-  //         analyst: object.analystId ? object.analystId.name : null,
-  //         analystId: object.analystId ? object.analystId.id : null,
-  //         qa: object.qaId ? object.qaId.name : null,
-  //         qaId: object.qaId ? object.qaId.id : null,
-  //         fiscalYear: object.year,
-  //         taskStatus: object.taskStatus,
-  //         createdBy: object.createdBy ? object.createdBy.name : null,
-  //         createdById: object.createdBy ? object.createdBy.id : null,
-  //       };
-  //       taskList.push(taskObject);
-  //     }
-  //     return res.status(200).json({
-  //       status: "200", message: "Tasks retrieved successfully!", data: {
-  //         count: taskList.length,
-  //         rows: taskList
-  //       }
-  //     })
-  //   })
-  //   .catch((error) => {
-  //     return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to retrieve tasks!' });
-  //   })
 };
 
 export const show = ({ params }, res, next) =>
@@ -1200,7 +1333,6 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
           message: err.message
         });
       });
-    console.log('userRoles', userRoles);
     for (let roleIndex = 0; roleIndex < userRoles.length; roleIndex++) {
       let findQuery = {};
       if (userRoles[roleIndex] == "GroupAdmin") {
@@ -1234,7 +1366,6 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                   }),
                   batchYear: batchDetailsObject.years
                 }
-                // console.log( bactch)
                 // arrayYe.push(bactch)
                 // var assignedBatches = group[index].batchList.map((rec) => {
                 //   return {
@@ -1271,7 +1402,6 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
 };
 
 export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
-  console.log("bodymen", body);
   var resObj = {};
   var batch = await Batches.findById(body.batchId).populate("companiesList").catch();
   if (batch && batch.companiesList.length > 0) {
@@ -1327,10 +1457,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.primaryPillar = false;
           analystObject.primaryPillar = false;
         }
-        console.log('primary', group.assignedMembers[index].roleDetails.primaryRole, qaId.id);
-        console.log('primary', typeof group.assignedMembers[index].roleDetails.primaryRole, typeof qaId.id);
         if (qaId && (group.assignedMembers[index].roleDetails.primaryRole == qaId.id)) {
-          console.log('in if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
@@ -1340,10 +1467,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.name = group.assignedMembers[index].name;
           qaObject.primaryRole = true;
           qaObject.activeTaskCount = activeTaskCount.length;
-          console.log('qa object', qaObject);
           qa.push(qaObject);
         } else if (qaId && (group.assignedMembers[index].roleDetails.roles.indexOf(qaId.id) > -1)) {
-          console.log('in else if for qa', qaId.id)
           var activeTaskCount = await TaskAssignment.find({
             qaId: group.assignedMembers[index].id,
             status: true,
@@ -1353,11 +1478,9 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           qaObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           qaObject.primaryRole = false;
           qaObject.activeTaskCount = activeTaskCount.length;
-          console.log('qa object', qaObject);
           qa.push(qaObject);
         }
         if (analystId && (group.assignedMembers[index].roleDetails.primaryRole == analystId.id)) {
-          console.log('in if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1369,10 +1492,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = true;
           analystObject.activeTaskCount = activeTaskCount.length;
-          console.log('analystObject object', analystObject);
           analyst.push(analystObject);
         } else if (analystId && (group.assignedMembers[index].roleDetails.roles.indexOf(analystId._id) > -1)) {
-          console.log('in else if analyst', analystId.id)
           var activeTaskCount = await TaskAssignment.find({
             analystId: group.assignedMembers[index].id,
             status: true,
@@ -1384,7 +1505,6 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           analystObject.name = group.assignedMembers[index].name + "-" + group.assignedMembers[index].email;
           analystObject.primaryRole = false;
           analystObject.activeTaskCount = activeTaskCount.length;
-          console.log('analystObject object', analystObject);
           analyst.push(analystObject);
         }
       }
@@ -1456,7 +1576,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     let hasError = mergedDetails.find(object => object.hasError == true);
     let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
     let multipliedValue = datapointsLength.length * distinctYears.length;
-    console.log(hasError, multipliedValue, mergedDetails, datapointsCount)
     if (datapointsCount == multipliedValue && hasError) {
       if (body.role == 'QA') {
         taskStatusValue = "Correction Pending";
@@ -1727,6 +1846,175 @@ export const reports = async ({ user, params }, res, next) => {
   return res.status(200).json({ completed: completedTask, pending: pendingTask, controversy });
 }
 
+export const taskReports = async ({ user, params, querymen: { query, select, cursor } }, res, next) => {
+  let completeUserDetail = await User.findOne({
+    _id: user.id,
+    isUserActive: true
+  })
+    .populate({
+      path: "roleDetails.roles",
+    })
+    .populate({
+      path: "roleDetails.primaryRole",
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
+    });
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(completeUserDetail.roleDetails.roles[index].roleName);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  let findQuery = {};
+  if (userRoles.includes("SuperAdmin") || userRoles.includes("Admin")) {
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      let groupTaskCompanyIds = await TaskAssignment.find({ groupId: { $in: groupIds } }).distinct('companyId');
+      if (params.taskStatus == 'Pending') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: false, status: true };
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: true, status: true };
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status: true };
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else if (params.role == "SuperAdmin" || params.role == "Admin") {
+      if (params.taskStatus == 'Pending') {
+        findQuery = { overAllCompanyTaskStatus: false, status: true };
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { overAllCompanyTaskStatus: true, status: true };
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status: true };
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else {
+      return res.status(200).json({ status: "200", count: 0, rows: [] });
+    }
+  } else if (userRoles.includes("GroupAdmin")) {
+    if (params.role == "GroupAdmin") {
+      let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
+      let groupTaskCompanyIds = await TaskAssignment.find({ groupId: { $in: groupIds } }).distinct('companyId');
+      if (params.taskStatus == 'Pending') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: false, status: true };
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { companyId: { $in: groupTaskCompanyIds }, overAllCompanyTaskStatus: true, status: true };
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status: true };
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else if (params.role == "SuperAdmin" || params.role == "Admin") {
+      if (params.taskStatus == 'Pending') {
+        findQuery = { overAllCompanyTaskStatus: false, status: true };
+      } else if (params.taskStatus == 'Completed') {
+        findQuery = { overAllCompanyTaskStatus: true, status: true };
+      } else if (params.taskStatus == 'Controversy') {
+        findQuery = { status: true };
+      } else {
+        return res.status(200).json({ status: "200", count: 0, rows: [] });
+      }
+    } else {
+      return res.status(200).json({ status: "200", count: 0, rows: [] });
+    }
+  } else {
+    return res.status(200).json({ status: "200", count: 0, rows: [] });
+  }
+  if (params.taskStatus == "Pending" || params.taskStatus == "Completed") {
+    let companiesTasks = await CompaniesTasks.aggregate([
+      { "$match": findQuery },
+      { "$group": { _id: "$companyId", count: { $sum: 1 } } },
+      { "$sort": { _id: 1 } },
+      { "$skip": cursor.skip },
+      { "$limit": cursor.limit }
+    ]);
+    let completedTask = await CompaniesTasks.find({ overAllCompanyTaskStatus: true }).distinct('companyId');
+    let taskList = [];
+    for (let dtIndex = 0; dtIndex < companiesTasks.length; dtIndex++) {
+      let clientRepNamesList = [], companyRepNamesList = [];
+      let clientRepNames = "", companyRepNames = "";
+      if (companiesTasks[dtIndex]._id) {
+        var companyRep = await CompanyRepresentatives.find({ companiesList: { $in: [companiesTasks[dtIndex]._id] } }).populate('userId');
+        if (companyRep && companyRep.length > 0) {
+          for (let cmpIndex = 0; cmpIndex < companyRep.length; cmpIndex++) {
+            if (companyRep[cmpIndex] && companyRep[cmpIndex].userId && companyRep[cmpIndex].userId.name) {
+              companyRepNamesList.push(companyRep[cmpIndex].userId.name);
+            }
+          }
+          companyRepNames = companyRepNamesList.join();
+        }
+        var clientRep = await ClientRepresentatives.find({ companiesList: { $in: [companiesTasks[dtIndex]._id] } }).populate('userId');
+        if (clientRep && clientRep.length > 0) {
+          for (let clnIndex = 0; clnIndex < clientRep.length; clnIndex++) {
+            if (clientRep[clnIndex] && clientRep[clnIndex].userId && clientRep[clnIndex].userId.name) {
+              clientRepNamesList.push(clientRep[clnIndex].userId.name);
+            }
+          }
+          clientRepNames = clientRepNamesList.join();
+        }
+        var companyTask = await CompaniesTasks.findOne({ companyId: companiesTasks[dtIndex]._id }).populate({ path: 'companyId', populate: { path: 'clientTaxonomyId' } });
+      }
+      var obj = {
+        taxonomy: companyTask.companyId && companyTask.companyId.clientTaxonomyId ? companyTask.companyId.clientTaxonomyId.taxonomyName : null,
+        companyName: companyTask.companyId ? companyTask.companyId.companyName : null,
+        companyRepresentative: companyRepNames,
+        clientRrepresentative: clientRepNames,
+        isChecked: false,
+        companyId: companyTask.companyId ? companyTask.companyId.id : null,
+      }
+      if (companyTask && companyTask.overAllCompanyTaskStatus) {
+        obj.completedDate = companyTask ? companyTask.completedDate : null;
+      } else {
+        obj.allocatedDate = companyTask ? companyTask.createdAt : null;
+      }
+      taskList.push(obj);
+    }
+    return res.json({ count: completedTask.length, rows: taskList });
+  } else if (params.taskStatus == "Controversy") {
+    let controversyTasks = await ControversyTasks.find({ status: true }).distinct('companyId');
+    var controversyTask = await ControversyTasks.find({ status: true }, select, cursor).populate({ path: 'companyId', populate: { path: 'clientTaxonomyId' } }).populate('analystId');
+    var controversy = [];
+    for (var i = 0; i < controversyTask.length; i++) {
+      var obj = {
+        taxonomy: controversyTask[i].companyId && controversyTask[i].companyId.clientTaxonomyId ? controversyTask[i].companyId.clientTaxonomyId.taxonomyName : null,
+        companyId: controversyTask[i].companyId ? controversyTask[i].companyId.id : null,
+        companyName: controversyTask[i].companyId ? controversyTask[i].companyId.companyName : null,
+        allocatedDate: controversyTask[i].createdAt,
+        taskId: controversyTask[i].taskNumber ? controversyTask[i].taskNumber : null,
+        isChecked: false,
+        id: controversyTask[i].id
+      }
+      controversy.push(obj);
+    }
+    return res.json({ status: "200", count: controversyTasks.length, rows: controversy });
+  } else {
+    return res.status(200).json({ status: "200", count: 0, rows: [] });
+  }
+}
+
 export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   var result = [];
   for (var index = 0; index < body.companyTaskReports.length; index++) {
@@ -1791,7 +2079,6 @@ export const controversyReports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
   for (var i = 0; i < controversyTask.length; i++) {
-    console.log(JSON.stringify(controversyTask[i], null, 3))
     if (controversyTask[i].companyId) {
       var taxonomy = Companies.findById(controversyTask[i].companyId).populate('clientTaxonomyId');
     }
@@ -1818,7 +2105,6 @@ export const getTaskListForControversy = async ({ user, bodymen: { body } }, res
         path: "analystId"
       }
     });
-  console.log('controversyTask', JSON.stringify(controversyTask, null, 3))
   if (controversyTask && Object.keys(controversyTask).length > 0) {
     for (let index = 0; index < controversyTask.length; index++) {
       var obj = {
