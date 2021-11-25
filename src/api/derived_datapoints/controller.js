@@ -93,12 +93,14 @@ export const calculateForACompany = async ({
   params
 }, res, next) => {
   let timingDetails = [];
-  let overAll1 = performance.now();
+  let overAll1 = Date.now();
   const userDetail = user;
   const companyId = params.companyId ? params.companyId : null;
 
   await StandaloneDatapoints.find({
-      companyId: companyId
+      companyId: companyId,
+      status: true,
+      isActive: true
     })
     .populate('createdBy')
     .populate('datapointId')
@@ -170,6 +172,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     console.log('result');
                   }
+                  if (result.timingDetails) {
+                    timingDetails.push(result.timingDetails);
+                  }
                 })
               break;
             case "As":
@@ -179,6 +184,9 @@ export const calculateForACompany = async ({
                     // if(result.allDerivedDatapoints){
                     //   allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     // }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -187,6 +195,9 @@ export const calculateForACompany = async ({
                 .then((result) => {
                   if (result) {
                     console.log('result');
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -195,6 +206,9 @@ export const calculateForACompany = async ({
                 .then((result) => {
                   if (result) {
                     console.log('AsRatio result');
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -205,6 +219,9 @@ export const calculateForACompany = async ({
                     // if(result.allDerivedDatapoints){
                     //   allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     // }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -214,7 +231,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
-
+                    }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
                     }
                   }
                 })
@@ -225,6 +244,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
                     }
                   } else if (result.error) {
                     return res.status(500).json({
@@ -240,6 +262,9 @@ export const calculateForACompany = async ({
                     // if(result.allDerivedDatapoints){
                     //   allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     // }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -249,6 +274,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
                     }
                   }
                 })
@@ -260,6 +288,9 @@ export const calculateForACompany = async ({
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -269,6 +300,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
                     }
                   }
                 })
@@ -280,6 +314,9 @@ export const calculateForACompany = async ({
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -290,6 +327,9 @@ export const calculateForACompany = async ({
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
                     }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
+                    }
                   }
                 })
               break;
@@ -299,6 +339,9 @@ export const calculateForACompany = async ({
                   if (result) {
                     if (result.allDerivedDatapoints) {
                       allDerivedDatapoints = _.concat(allDerivedDatapoints, result.allDerivedDatapoints);
+                    }
+                    if (result.timingDetails) {
+                      timingDetails.push(result.timingDetails);
                     }
                   }
                 })
@@ -337,7 +380,7 @@ export const calculateForACompany = async ({
           .populate('companyId')
           .populate('taskId')
         for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-          let polarityTime1 = performance.now();
+          let polarityTime1 = Date.now();
           const year = distinctYears[yearIndex];
           // for (let companyIndex = 0; companyIndex < nicCompaniesList.length; companyIndex++) {
           let dataPointsIdList = await Datapoints.find({
@@ -352,6 +395,7 @@ export const calculateForACompany = async ({
           let polarityRulesList = await PolarityRules.find({}).populate('datapointId')
 
           for (let polarityRulesIndex = 0; polarityRulesIndex < polarityRulesList.length; polarityRulesIndex++) {
+            let numericPolarityTime1 = Date.now();
             let datapointDetail = polarityRulesList[polarityRulesIndex].datapointId;
             let polarityRuleDetails = polarityRulesList[polarityRulesIndex];
             if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
@@ -477,9 +521,16 @@ export const calculateForACompany = async ({
                 }
               }
             }
+            if (polarityRulesList.length - 1 == polarityRulesIndex) {
+              let numericPolarityTime2 = Date.now();
+              timingDetails.push({
+                action: "numeric polarity",
+                timeTaken: numericPolarityTime2 - numericPolarityTime1
+              })
+            }
           }
           for (let dataPointIndex = 0; dataPointIndex < dataPointsIdList.length; dataPointIndex++) {
-
+            let flipflopPolarityTime1 = Date.now();
             let isDpExistInPolarityRule = polarityRulesList.findIndex((object, index) => object.datapointId.id == dataPointsIdList[dataPointIndex].id);
             if (isDpExistInPolarityRule <= -1) {
               let datapointDetail = dataPointsIdList[dataPointIndex];
@@ -629,11 +680,18 @@ export const calculateForACompany = async ({
                 }
               }
             }
+            if (dataPointsIdList.length - 1 == dataPointIndex) {
+              let flipflopPolarityTime2 = Date.now();
+              timingDetails.push({
+                action: "flipflop polarity",
+                timeTaken: flipflopPolarityTime2 - flipflopPolarityTime1
+              })
+            }
           }
           if (distinctYears.length - 1 == yearIndex) {
-            let polarityTime2 = performance.now();
+            let polarityTime2 = Date.now();
             timingDetails.push({
-              action: "polarity",
+              action: "over all polarity",
               timeTaken: polarityTime2 - polarityTime1
             })
             await DerivedDatapoints.updateMany({
@@ -650,15 +708,9 @@ export const calculateForACompany = async ({
             await DerivedDatapoints.insertMany(allDerivedDatapoints)
               .then((err, result) => {
                 if (err) {
-                  console.log('error', err);
+                  console.log('error');
                 } else {
                   //  console.log('result', result);
-                  let overAll2 = performance.now();
-                  console.log('overall time taken=', overAll2 - overAll1);
-                  timingDetails.push({
-                    action: "overall",
-                    timeTaken: overAll2 - overAll1
-                  })
                   return res.status(200).json({
                     message: "Calculation completed successfuly!",
                     timingDetails: timingDetails,
@@ -675,6 +727,15 @@ export const calculateForACompany = async ({
             }
           }
         }
+        console.log('overall time test1');
+        let overAll2 = Date.now();
+        console.log('overall time taken=', overAll2 - overAll1);
+        console.log('overall time test');
+        timingDetails.push({
+          action: "overall",
+          timeTaken: overAll2 - overAll1
+        })
+        console.log('timingDetails', timingDetails);
         return res.status(200).json({
           message: "Retrieved successfully!",
           timingDetails: timingDetails,
@@ -805,7 +866,7 @@ export const destroy = ({
   .catch(next)
 
 async function matrixPercentageCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let matrixPercentageT1 = performance.now();
+  let matrixPercentageT1 = Date.now();
   let allDerivedDatapoints = [];
   let matrixPercentageRules = await Rules.find({
     methodName: "MatrixPercentage"
@@ -944,17 +1005,18 @@ async function matrixPercentageCalculation(companyId, mergedDetails, distinctYea
     }
     if (i == matrixPercentageRules.length - 1) {
       mergedDetails = _.concat(mergedDetails, allDerivedDatapoints)
-      let matrixPercentageT2 = performance.now();
+      let matrixPercentageT2 = Date.now();
       console.log("MatrixPercentage", matrixPercentageT2 - matrixPercentageT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "MatrixPercentage", timeTaken: matrixPercentageT2 - matrixPercentageT1 }
       };
     }
   }
 }
 
 async function addCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let addT1 = performance.now();
+  let addT1 = Date.now();
   let addRules = await Rules.find({
     methodName: "ADD"
   }).populate('datapointId');
@@ -1021,15 +1083,15 @@ async function addCalculation(companyId, mergedDetails, distinctYears, allDatapo
     }
     if (i == addRules.length - 1) {
       console.log('before add rule');
-      let addT2 = performance.now();
+      let addT2 = Date.now();
       console.log("Add", addT2 - addT1);
-      return true;
+      return { status: true, timingDetails: { action: "Add", timeTaken: addT2 - addT1 } };
     }
   }
 }
 
 async function asCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let asT1 = performance.now();
+  let asT1 = Date.now();
   let asRules = await Rules.find({
     methodName: "As"
   }).populate('datapointId');
@@ -1081,15 +1143,15 @@ async function asCalculation(companyId, mergedDetails, distinctYears, allDatapoi
     }
     if (i == asRules.length - 1) {
       console.log('before As calculation');
-      let asT2 = performance.now();
+      let asT2 = Date.now();
       console.log("As", asT2 - asT1);
-      return true;
+      return { status: true, timingDetails: { action: "As", timeTaken: asT2 - asT1 } };
     }
   }
 }
 
 async function asPercentageCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let asPercentageT1 = performance.now();
+  let asPercentageT1 = Date.now();
   let asPercentageRules = await Rules.find({
     methodName: "AsPercentage"
   }).populate('datapointId');
@@ -1155,15 +1217,15 @@ async function asPercentageCalculation(companyId, mergedDetails, distinctYears, 
     }
     if (i == asPercentageRules.length - 1) {
       console.log('before asPercentageRules');
-      let asPercentageT2 = performance.now();
+      let asPercentageT2 = Date.now();
       console.log("AsPercentage", asPercentageT2 - asPercentageT1);
-      return true;
+      return { status: true, timingDetails: { action: "AsPercentage", timeTaken: asPercentageT2 - asPercentageT1 } };
     }
   }
 }
 
 async function asRatioCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let asRatioT1 = performance.now();
+  let asRatioT1 = Date.now();
   let asRatioRules = await Rules.find({
     methodName: "AsRatio"
   }).populate('datapointId');
@@ -1228,15 +1290,15 @@ async function asRatioCalculation(companyId, mergedDetails, distinctYears, allDa
     }
     if (i == asRatioRules.length - 1) {
       console.log('before asRatioRules');
-      let asRatioT2 = performance.now();
+      let asRatioT2 = Date.now();
       console.log("AsRatio", asRatioT2 - asRatioT1);
-      return true;
+      return { status: true, timingDetails: { action: "AsRatio", timeTaken: asRatioT2 - asRatioT1 } };
     }
   }
 }
 
 async function conditionCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let conditionT1 = performance.now();
+  let conditionT1 = Date.now();
   let asConditionRules = await Rules.find({
     methodName: "Condition"
   }).populate('datapointId');
@@ -1306,15 +1368,15 @@ async function conditionCalculation(companyId, mergedDetails, distinctYears, all
     }
     if (i == asConditionRules.length - 1) {
       console.log('before asConditionRules');
-      let conditionT2 = performance.now();
+      let conditionT2 = Date.now();
       console.log("Condition", conditionT2 - conditionT1);
-      return true;
+      return { status: true, timingDetails: { action: "Condition", timeTaken: conditionT2 - conditionT1 } };
     }
   }
 }
 
 async function minusCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let minusT1 = performance.now();
+  let minusT1 = Date.now();
   let allDerivedDatapoints = [];
   console.log('minus Calculation');
   let minusRules = await Rules.find({
@@ -1384,17 +1446,18 @@ async function minusCalculation(companyId, mergedDetails, distinctYears, allData
     }
     if (i == minusRules.length - 1) {
       mergedDetails = _.concat(mergedDetails, allDerivedDatapoints)
-      let minusT2 = performance.now();
+      let minusT2 = Date.now();
       console.log("Minus", minusT2 - minusT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "Minus", timeTaken: minusT2 - minusT1 }
       };
     }
   }
 }
 
 async function multiplyCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let multiplyT1 = performance.now();
+  let multiplyT1 = Date.now();
   let asMultiplyRules = await Rules.find({
     methodName: "Multiply"
   }).populate('datapointId');
@@ -1502,15 +1565,15 @@ async function multiplyCalculation(companyId, mergedDetails, distinctYears, allD
     }
     if (i == asMultiplyRules.length - 1) {
       console.log('before asMultiplyRules');
-      let multiplyT2 = performance.now();
+      let multiplyT2 = Date.now();
       console.log("Multiply", multiplyT2 - multiplyT1);
-      return true;
+      return { status: true, timingDetails: { action: "Multiply", timeTaken: multiplyT2 - multiplyT1 } };
     }
   }
 }
 
 async function percentageCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, allDerivedDatapointsList, userDetail) {
-  let percentageT1 = performance.now();
+  let percentageT1 = Date.now();
   console.log('percentage Calculation');
   let allDerivedDatapoints = [];
   let percentageRules = await Rules.find({
@@ -1672,17 +1735,18 @@ async function percentageCalculation(companyId, mergedDetails, distinctYears, al
     }
 
     if (i == percentageRules.length - 1) {
-      let percentageT2 = performance.now();
+      let percentageT2 = Date.now();
       console.log("Percentage", percentageT2 - percentageT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "Percentage", timeTaken: percentageT2 - percentageT1 }
       };
     }
   }
 }
 
 async function ratioAddCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let ratioAddT1 = performance.now();
+  let ratioAddT1 = Date.now();
   let allDerivedDatapoints = [];
   let ratioAddRules = await Rules.find({
     methodName: "RatioADD"
@@ -1762,17 +1826,18 @@ async function ratioAddCalculation(companyId, mergedDetails, distinctYears, allD
     }
     if (i == ratioAddRules.length - 1) {
       console.log('before ratioAddRules');
-      let ratioAddT2 = performance.now();
+      let ratioAddT2 = Date.now();
       console.log("RatioAdd", ratioAddT2 - ratioAddT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "RatioADD", timeTaken: ratioAddT2 - ratioAddT1 }
       };
     }
   }
 }
 
 async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let sumT1 = performance.now();
+  let sumT1 = Date.now();
   let allDerivedDatapoints = [];
   let sumRules = await Rules.find({
     methodName: "Sum"
@@ -1847,17 +1912,18 @@ async function sumCalculation(companyId, mergedDetails, distinctYears, allDatapo
     }
     if (i == sumRules.length - 1) {
       mergedDetails = _.concat(mergedDetails, allDerivedDatapoints)
-      let sumT2 = performance.now();
+      let sumT2 = Date.now();
       console.log("Sum", sumT2 - sumT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "Sum", timeTaken: sumT2 - sumT1 }
       };
     }
   }
 }
 
 async function yesNoCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, userDetail) {
-  let yesNoT1 = performance.now();
+  let yesNoT1 = Date.now();
   let allDerivedDatapoints = [];
   let yesNoRules = await Rules.find({
     methodName: "YesNo"
@@ -1925,17 +1991,18 @@ async function yesNoCalculation(companyId, mergedDetails, distinctYears, allData
     }
     if (i == yesNoRules.length - 1) {
       console.log('before yesNoRules');
-      let yesNoT2 = performance.now();
+      let yesNoT2 = Date.now();
       console.log("YesNo", yesNoT2 - yesNoT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "YesNo", timeTaken: yesNoT2 - yesNoT1 }
       };
     }
   }
 }
 
 async function countOfCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, derivedDatapointsList, userDetail) {
-  let countOfT1 = performance.now();
+  let countOfT1 = Date.now();
   let allDerivedDatapoints = [];
   let countOfRules = await Rules.find({
     methodName: "count of"
@@ -2132,17 +2199,18 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
       }
     }
     if (i == countOfRules.length - 1) {
-      let countOfT2 = performance.now();
+      let countOfT2 = Date.now();
       console.log("CountOf", countOfT2 - countOfT1);
       return {
-        allDerivedDatapoints: allDerivedDatapoints
+        allDerivedDatapoints: allDerivedDatapoints,
+        timingDetails: { action: "CountOf", timeTaken: countOfT2 - countOfT1 }
       };
     }
   }
 }
 
 async function ratioCalculation(companyId, mergedDetails, distinctYears, allDatapointsList, derivedDatapointsList, userDetail) {
-  let ratioT1 = performance.now();
+  let ratioT1 = Date.now();
   let allDerivedDatapoints = [];
   let priorityDatapoints = ['MACR002', 'MACR007', 'MACR010'];
   let priorityDatapointObjects = await Datapoints.find({
@@ -2371,10 +2439,11 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
       }
       if (i == ratioRules.length - 1) {
         console.log('before ratioRules');
-        let ratioT2 = performance.now();
-        console.log("MatrixPercentage", ratioT2 - ratioT1);
+        let ratioT2 = Date.now();
+        console.log("Ratio", ratioT2 - ratioT1);
         return {
-          allDerivedDatapoints: allDerivedDatapoints
+          allDerivedDatapoints: allDerivedDatapoints,
+          timingDetails: { action: "Ratio", timeTaken: ratioT2 - ratioT1 }
         };
       }
     }
