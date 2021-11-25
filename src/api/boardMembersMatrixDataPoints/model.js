@@ -46,6 +46,18 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   pageNumber: {
     type: String
   },
+  isRestated: {
+    type: String
+  },
+  restatedForYear: {
+    type: String
+  },
+  restatedInYear: {
+    type: String
+  },
+  restatedValue: {
+    type: String
+  },
   publicationDate: {
     type: String
   },
@@ -156,6 +168,10 @@ boardMembersMatrixDataPointsSchema.methods = {
       url: this.url,
       sourceFile: this.sourceFile ? this.sourceFile : '',
       pageNumber: this.pageNumber,
+      isRestated: this.isRestated,
+      restatedForYear: this.restatedForYear,
+      restatedInYear: this.restatedInYear,
+      restatedValue: this.restatedValue,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
       screenShot: this.screenShot ? this.screenShot : [],

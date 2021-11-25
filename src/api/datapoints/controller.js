@@ -1127,6 +1127,10 @@ export const datapointDetails = async (req, res, next) => {
       "name",
       "normalizedBy",
       "pageNumber",
+      "IsRestated",
+      "restatedForYear",
+      "restatedInYear",
+      "restatedValues",
       "percentile",
       "polarity",
       "publicationDate",
@@ -1290,6 +1294,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -1380,6 +1388,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -1470,6 +1482,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -1562,7 +1578,11 @@ export const datapointDetails = async (req, res, next) => {
             dataType: dpTypeValues.dataType,
             inputValues: inputValues,
             textSnippet: '',
-            pageNo: '',
+            pageNo: '', //Restated TODO
+            isRestated: '',
+            restatedForYear: '',
+            restatedInYear: '',
+            restatedValue: '',
             screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
@@ -1668,6 +1688,10 @@ export const datapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               standaradDeviation: object.standaradDeviation,
@@ -1836,6 +1860,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -1926,6 +1954,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -2016,6 +2048,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -2109,7 +2145,11 @@ export const datapointDetails = async (req, res, next) => {
             inputValues: inputValues,
             memberName: req.body.memberName,
             textSnippet: '',
-            pageNo: '',
+            pageNo: '', // Restated TODO
+            isRestated: '',
+            restatedForYear: '',
+            restatedInYear: '',
+            restatedValue: '',
             screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
@@ -2204,6 +2244,10 @@ export const datapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               memberName: object.memberName,
               response: object.response,
@@ -2372,6 +2416,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -2462,6 +2510,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -2553,6 +2605,10 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -2644,7 +2700,11 @@ export const datapointDetails = async (req, res, next) => {
             inputValues: inputValues,
             memberName: req.body.memberName,
             textSnippet: '',
-            pageNo: '',
+            pageNo: '', // Restated TODO
+            isRestated: '',
+            restatedForYear: '',
+            restatedInYear: '',
+            restatedValue: '',
             screenShot: [],
             response: '',
             sourceList: sourceTypeDetails,
@@ -2741,6 +2801,10 @@ export const datapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                isRestated: object.isRestated,
+                restatedForYear: object.restatedForYear,
+                restatedInYear: object.restatedInYear,
+                restatedValue: object.restatedValue,
                 screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
@@ -2846,6 +2910,10 @@ export const repDatapointDetails = async (req, res, next) => {
       "name",
       "normalizedBy",
       "pageNumber",
+      "isRestated",
+      "restatedForYear",
+      "restatedInYear",
+      "restatedValue",
       "percentile",
       "polarity",
       "publicationDate",
@@ -3004,6 +3072,10 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -3019,6 +3091,10 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
+                  restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
+                  restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
+                  restatedValue: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedValue : '',
                   source: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.source : '',
                   additionalDetails: []
                 },
@@ -3169,6 +3245,10 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                isRestated: object.isRestated,
+                restatedForYear: object.restatedForYear,
+                restatedInYear: object.restatedInYear,
+                restatedValue: object.restatedValue,
                 screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
@@ -3180,7 +3260,11 @@ export const repDatapointDetails = async (req, res, next) => {
                     description: dpTypeValues.description,
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
-                    pageNo: '',
+                    pageNo: '', // Restated TODO
+                    isRestated: '',
+                    restatedForYear: '',
+                    restatedInYear: '',
+                    restatedValue: '',                    
                     screenShot: null,
                     response: '',
                     source: null,
@@ -3292,6 +3376,10 @@ export const repDatapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               standaradDeviation: object.standaradDeviation,
@@ -3463,6 +3551,10 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -3478,6 +3570,10 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
+                  restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
+                  restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
+                  restatedValue: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedValue : '',
                   source: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.source : '',
                   additionalDetails: []
                 },
@@ -3628,6 +3724,10 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                isRestated: object.isRestated,
+                restatedForYear: object.restatedForYear,
+                restatedInYear: object.restatedInYear,
+                restatedValue: object.restatedValue,
                 screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
@@ -3639,7 +3739,11 @@ export const repDatapointDetails = async (req, res, next) => {
                     description: dpTypeValues.description,
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
-                    pageNo: '',
+                    pageNo: '', // Restated TODO
+                    isRestated: '',
+                    restatedForYear: '',
+                    restatedInYear: '',
+                    restatedValue: '',
                     screenShot: null,
                     response: '',
                     source: null,
@@ -3747,6 +3851,10 @@ export const repDatapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               memberName: object.memberName,
               response: object.response,
@@ -3915,6 +4023,10 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              isRestated: object.isRestated,
+              restatedForYear: object.restatedForYear,
+              restatedInYear: object.restatedInYear,
+              restatedValue: object.restatedValue,
               screenShot: s3DataScreenshot,
               response: object.response,
               memberName: object.memberName,
@@ -3930,6 +4042,10 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
+                  restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
+                  restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
+                  restatedValue: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedValue : '',
                   source: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.source : '',
                   additionalDetails: []
                 },
@@ -4082,6 +4198,10 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                isRestated: object.isRestated,
+                restatedForYear: object.restatedForYear,
+                restatedInYear: object.restatedInYear,
+                restatedValue: object.restatedValue,
                 screenShot: s3DataScreenshot,
                 response: object.response,
                 memberName: object.memberName,
@@ -4093,7 +4213,11 @@ export const repDatapointDetails = async (req, res, next) => {
                     description: dpTypeValues.description,
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
-                    pageNo: '',
+                    pageNo: '', // Restated TODO
+                    isRestated: '',
+                    restatedForYear: '',
+                    restatedInYear: '',
+                    restatedValue: '',
                     screenShot: null,
                     response: '',
                     source: null,
@@ -4203,6 +4327,10 @@ export const repDatapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                isRestated: object.isRestated,
+                restatedForYear: object.restatedForYear,
+                restatedInYear: object.restatedInYear,
+                restatedValue: object.restatedValue,
                 screenShot: s3DataScreenshot,
                 memberName: object.memberName,
                 response: object.response,
@@ -4545,8 +4673,18 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 status: true
               };
               const rowObject = rowObjects[rindex];
+              // let missingFields = []
               for (let shIndex = 0; shIndex < staticHeaders.length; shIndex++) {
                 if (!rowObject[staticHeaders[shIndex]] || rowObject[staticHeaders[shIndex]] == '' || rowObject[staticHeaders[shIndex]] == ' ' || rowObject[staticHeaders[shIndex]] == null) {
+                  // Here i have added another IF condition for validating the IsPriority Values TRUE or FALSE Ref: ECS - 502
+                  // Commenting for the Code Review @Shiva
+                  // if (rowObject[staticHeaders[shIndex]] == false || rowObject[staticHeaders[shIndex]] == true) {
+                  //   console.log("Success");
+                  // }else{
+                  //   // return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
+                  //   missingFields.push(staticHeaders[shIndex])
+                  // }
+                  // missingFields.push(staticHeaders[shIndex])
                   return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
                 }
               }
@@ -4593,6 +4731,10 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
               newKeyIssuesList.push(newKeyIssueObject);
               newFunctionsList.push(newFunctionObject);
             }
+            // if (missingFields.length > 0) {
+            //   let uniqFields = _.uniq(missingFields);
+            //   return res.status(400).json({ status: "400", message: "Found empty value for " + uniqFields +" please check "});
+            // }
             let uniqCategories = _.uniqBy(newCategoriesList, 'categoryName');
             let uniqThemes = _.uniqBy(newThemesList, 'themeName');
             let uniqKeyIssues = _.uniqBy(newKeyIssuesList, 'keyIssueName');
@@ -4675,11 +4817,13 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 for (let newThemeIndex = 0; newThemeIndex < uniqThemes.length; newThemeIndex++) {
                   for (let newKeyIssueIndex = 0; newKeyIssueIndex < uniqKeyIssues.length; newKeyIssueIndex++) {
                     let keyIssueDetail = await KeyIssues.findOne({ themeId: uniqKeyIssues[newKeyIssueIndex].themeId, keyIssueName: uniqKeyIssues[newKeyIssueIndex].keyIssueName, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Key Issue not found!' }) });
-                    newDatapoints.find(obj => {
-                      if (obj.keyIssueId === uniqKeyIssues[newKeyIssueIndex].keyIssueName) {
-                        obj.keyIssueId = keyIssueDetail ? keyIssueDetail.id : null;
-                      }
-                    });
+                    // if (keyIssueDetail) {
+                      newDatapoints.find(obj => {
+                        if (obj.keyIssueId === uniqKeyIssues[newKeyIssueIndex].keyIssueName) {
+                          obj.keyIssueId = keyIssueDetail ? keyIssueDetail.id : null;
+                        }
+                      });
+                    // }
                   }
                 }
               }
@@ -4697,11 +4841,13 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
               for (let newCatIndex = 0; newCatIndex < newlyCreatedCategories.length; newCatIndex++) {
                 for (let newFunctionIndex = 0; newFunctionIndex < uniqFunctions.length; newFunctionIndex++) {
                   let functionDetail = await Functions.findOne({ functionType: uniqFunctions[newFunctionIndex].functionType, status: true }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Function not found!' }) });
-                  newDatapoints.find(obj => {
-                    if (obj.functionId === uniqFunctions[newFunctionIndex].functionType) {
-                      obj.functionId = functionDetail ? functionDetail.id : null;
-                    }
-                  });
+                  // if (functionDetail) {
+                    newDatapoints.find(obj => {
+                      if (obj.functionId === uniqFunctions[newFunctionIndex].functionType) {
+                        obj.functionId = functionDetail ? functionDetail.id : null;
+                      }
+                    });
+                  // }
                 }
               }
             }
