@@ -11,12 +11,14 @@ fi
 
 #zipping the folder after successfull deployment and build
 
-cd /app
-rm -rf esgapi-$(date +"%Y-%m-%d")_old.zip
-mv esgapi-$(date +"%Y-%m-%d").zip esgapi-$(date +"%Y-%m-%d")_old.zip
-#rm -rf esgapi.zip
-zip -r -X esgapi-$(date +"%Y-%m-%d").zip esgapi
+if [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
+   cd /app
+   rm -rf esgapi-$(date +"%Y-%m-%d")_old.zip
+   mv esgapi-$(date +"%Y-%m-%d").zip esgapi-$(date +"%Y-%m-%d")_old.zip
+   #rm -rf esgapi.zip
+   zip -r -X esgapi-$(date +"%Y-%m-%d").zip esgapi
 
-##upload to s3. AWS CLI must be installed
+   ##upload to s3. AWS CLI must be installed
 
-sudo aws s3 cp esgapi-$(date +"%Y-%m-%d").zip s3://esg-codedeploy-revisions/esgapi-$(date +"%Y-%m-%d").zip
+   sudo aws s3 cp esgapi-$(date +"%Y-%m-%d").zip s3://esg-codedeploy-revisions/esgapi-$(date +"%Y-%m-%d").zip
+fi
