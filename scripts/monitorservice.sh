@@ -1,11 +1,23 @@
 #!/bin/bash
+
+#Starting the services ( Node service )
+
 cd /app/esgapi
-STATUS="$(systemctl is-active web.service)"
-if [ "${STATUS}" = "active" ]; then
-   echo " Success! Node is running ....."
-else
-   echo " Node Service is not running.... so exiting "
-   exit 1
+
+if [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
+   pm2 start src/esgapi.js
+   pm2 restart
+   pm2 list
+fi
+
+
+if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
+   STATUS="$(systemctl is-active web.service)"
+   if [ "${STATUS}" = "active" ]; then
+      echo " Success! Node is running ....."
+   else
+      echo " Node Service is not running.... so exiting "
+      exit 1
 fi
 
 
