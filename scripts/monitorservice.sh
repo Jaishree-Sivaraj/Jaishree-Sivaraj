@@ -4,13 +4,6 @@
 
 cd /app/esgapi
 
-if [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
-   pm2 start src/esgapi.js
-   pm2 restart
-   pm2 list
-fi
-
-
 if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
    STATUS="$(systemctl is-active web.service)"
    if [ "${STATUS}" = "active" ]; then
