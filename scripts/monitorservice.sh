@@ -11,7 +11,7 @@ fi
 
 #zipping the folder after successfull deployment and build
 
-if [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
+if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
    cd /app
    rm -rf esgapi-$(date +"%Y-%m-%d")_old.zip
    mv esgapi-$(date +"%Y-%m-%d").zip esgapi-$(date +"%Y-%m-%d")_old.zip
