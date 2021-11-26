@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, allocateTasksFromJson, taskIdMappingCorrection } from './controller'
+import { create, index, show, update, destroy, allocateTasksFromJson, taskIdMappingCorrection, bulkTaskCreation } from './controller'
 import { schema } from './model'
 export CompaniesTasks, { schema } from './model'
 
@@ -77,6 +77,23 @@ router.get('/import/tasks',
   token({ required: true }),
   query(),
   taskIdMappingCorrection)
+
+/**
+ * @api {get} /companies_tasks/bulk/tasks/create/:taskStatus/:number Bulk Tasks creation for testing
+ * @apiName BulkTasksCreationForTesting
+ * @apiGroup CompaniesTasks
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of companies tasks.
+ * @apiSuccess {Object[]} rows List of companies tasks.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/bulk/tasks/create/:taskStatus/:number',
+  token({ required: true }),
+  query(),
+  bulkTaskCreation)
 
 /**
  * @api {put} /companies_tasks/:id Update companies tasks
