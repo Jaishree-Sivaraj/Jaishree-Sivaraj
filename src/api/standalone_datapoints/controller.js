@@ -733,6 +733,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 sourceName: item['Source name'],
                 url: item['URL'] ? item['URL'].toString() : '',
                 pageNumber: item['Page number'],
+                isRestated: item['isRestated'],
+                restatedForYear: item['restatedForYear'],
+                restatedInYear: item['restatedInYear'],
+                restatedValue: item['restatedValue'],
                 publicationDate: item['Publication date'],
                 textSnippet: item['Text snippet'],
                 screenShot: item['Screenshot (in png)'],
@@ -804,7 +808,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
                   trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
                   trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
-                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&
+                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&  //TODO
                   trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
                   trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
                   trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
@@ -856,6 +860,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
+                  isRestated: item['isRestated'],
+                  restatedForYear: item['restatedForYear'],
+                  restatedInYear: item['restatedInYear'],
+                  restatedValue: item['restatedValue'],
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
@@ -874,6 +882,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   createdBy: userDetail
                 };
                 boardMembersList.push(memberDetail);
+                console.log("memberDetail", memberDetail);
+                console.log("Value", item[value]);
                 if (item['DP Code'] == 'BOIR018') {
                   if ((item[value].toString().toLowerCase() != 'n' || item[value].toString().toLowerCase() != 'no') && item[value].toString() != '' && item[value] != undefined && item[value] != null) {
 
@@ -934,7 +944,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
                   trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
                   trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
-                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&
+                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" && //TODO
                   trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
                   trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
                   trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
@@ -988,6 +998,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
+                  isRestated: item['isRestated'],
+                  restatedForYear: item['restatedForYear'],
+                  restatedInYear: item['restatedInYear'],
+                  restatedValue: item['restatedValue'],
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
@@ -1377,6 +1391,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1410,6 +1428,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1458,6 +1480,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1492,6 +1518,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1541,6 +1571,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1575,6 +1609,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1645,6 +1683,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1684,6 +1726,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1741,6 +1787,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1781,6 +1831,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1835,6 +1889,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1875,6 +1933,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
