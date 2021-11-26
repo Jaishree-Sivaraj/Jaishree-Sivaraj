@@ -2888,15 +2888,13 @@ export const datapointDetails = async (req, res, next) => {
           kmpDatapointsObject.historicalData.push(historicalDatapointsObject);
         }
 
-      }
-      //mergedKMPHistoryDetails = _.concat(historicalDatapointsObject, historicalDatapointsObject)
-      //}
-    }
+      }    
     return res.status(200).send({
       status: "200",
       message: "Data collection dp codes retrieved successfully!",
       dpCodeData: kmpDatapointsObject
     });
+    }
   } catch (error) {
     return res.status(500).json({
       message: error.message
