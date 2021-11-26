@@ -794,9 +794,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         const content = `
           Hi,<br/><br/>
           Sorry, we could not process your onboarding request.<br/>
-          Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>
-          Click below to resubmit your details.<br/><br/>
-          <a href="${link}">click here</a><br><br>       
+          Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>    
           Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
           Thanks<br/>
           ESGDS Team `;
@@ -820,11 +818,26 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       return res.status(200).json({
         message: 'User details updated successfully',
       });
-    } else {
-      return res.status(200).json({
-        message: 'User details updated successfully',
-      });
+    }else {
+      User.findById(body.userId).then(async function (userDetails) {
+        userDetails = userDetails.toObject();
+        const content = `
+            Hi,<br/><br/>
+            You now have access to the ESGDS data portal.<br/>
+            Kindly use your email id & the password set by you at the time of filing the form to login into the system.<br/><br/><br/>
+            Link - <a href="${process.env.FRONTEND_URL}">click here</a><br><br>       
+            Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+            Thanks<br/>
+            ESGDS Team `;
+
+
+        await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+          .then((response) => { console.log('Mail sent!'); });
+      })
     }
+    return res.status(200).json({
+      message: 'User details updated successfully',
+    });
   }).catch(err => {
     return res.status(500).json({
       message: err.message ? err.message : 'Failed to update userDetails',
