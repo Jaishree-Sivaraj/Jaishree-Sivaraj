@@ -356,7 +356,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               }
               for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
                 for (let kmpMemberListIndex = 0; kmpMemberListIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberListIndex++) {
-
                   let kmpDatapointsObject = {
                     dpCode: dpTypeDatapoints[datapointsIndex].code,
                     dpCodeId: dpTypeDatapoints[datapointsIndex].id,
@@ -1798,6 +1797,12 @@ export const datapointDetails = async (req, res, next) => {
           }
         });
         for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''
+          };
           const object = currentAllBoardMemberMatrixDetails[currentIndex];
           let errorTypeId = '';
           let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
@@ -2175,6 +2180,12 @@ export const datapointDetails = async (req, res, next) => {
         let historicalDatapointsObject = {};
         for (let historyBoardMemberIndex = 0; historyBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyBoardMemberIndex++) {
           let object = historyAllBoardMemberMatrixDetails[historyBoardMemberIndex];
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''
+          };
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -2341,6 +2352,12 @@ export const datapointDetails = async (req, res, next) => {
         });
         for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
           const object = currentAllKmpMatrixDetails[currentIndex];
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''
+          };
           let errorTypeId = '';
           let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
           if (errorDetailsObject.length > 0) {
@@ -2715,6 +2732,12 @@ export const datapointDetails = async (req, res, next) => {
           let historicalDatapointsObject = {};
           for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
             let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
+            var sourceDetails = {
+              url: '',
+              sourceName: "",
+              value: "",
+              publicationDate: ''
+            };
               let s3DataScreenshot = [];
               if (object.screenShot && object.screenShot.length > 0) {
                 for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
