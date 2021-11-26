@@ -2793,6 +2793,12 @@ export const datapointDetails = async (req, res, next) => {
         let historicalDatapointsObject = {};
         for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
           let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
+          var sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''
+          };
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
