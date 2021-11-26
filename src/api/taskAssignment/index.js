@@ -115,7 +115,7 @@ router.get('/:taskStatus/:role',
   retrieveFilteredDataTasks)
 
 /**
-* @api {get} /taskAssignments/task/reports/:role Retrieve Task Reports
+* @api {get} /taskAssignments/task/reports/:taskStatus/:role Retrieve Task Reports
 * @apiName RetrieveTaskReports
 * @apiGroup TaskAssignment
 * @apiPermission user
@@ -126,12 +126,12 @@ router.get('/:taskStatus/:role',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/task/reports/:role',
+router.get('/task/reports/:taskStatus/:role',
   token({
     required: true
   }),
   query(),
-  reports)
+  taskReports)
 
 /**
 * @api {get} /taskAssignments/task/controversyReports Retrieve my task assignments
