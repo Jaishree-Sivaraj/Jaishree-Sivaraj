@@ -3,14 +3,12 @@
 #Starting the services ( Node service )
 
 cd /app/esgapi
-
-if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
-   STATUS="$(systemctl is-active web.service)"
-   if [ "${STATUS}" = "active" ]; then
-      echo " Success! Node is running ....."
-   else
-      echo " Node Service is not running.... so exiting "
-      exit 1
+STATUS="$(systemctl is-active web.service)"
+if [ "${STATUS}" = "active" ]; then
+   echo " Success! Node is running ....."
+else
+   echo " Node Service is not running.... so exiting "
+   exit 1
 fi
 
 
