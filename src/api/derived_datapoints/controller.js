@@ -2010,6 +2010,12 @@ async function countOfCalculation(companyId, mergedDetails, distinctYears, allDa
   console.log('count of Calculation', countOfRules.length);
   mergedDetails = _.concat(mergedDetails, derivedDatapointsList)
   for (let i = 0; i < countOfRules.length; i++) {
+    if (mergedDetails[i].datapointId['code'] == 'BODR001') {
+      console.log("");
+    }
+    if (mergedDetails[i].datapointId['code'] == 'BODR005') {
+      console.log("");
+    }
     let parameters = countOfRules[i].parameter.split(",");
     let numerator = parameters[0] ? parameters[0] : '';
     let denominator = parameters[1] ? parameters[1] : '';
