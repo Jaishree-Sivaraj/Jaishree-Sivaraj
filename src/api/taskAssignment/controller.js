@@ -592,9 +592,18 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
               for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
-                let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
-                let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
-                let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+                // let lastModifiedDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 });
+                // let reviewDate = await Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 });
+                // let totalNoOfControversy = await Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true });
+                const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
+                  Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
+                  Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                ])
+                // let totalNoOfControversy;
+                // let controCount = _.countBy(allControversyTasks, obj => obj.taskId ? obj.taskId._id < controversyTasks[cIndex].id : null).true;
+                // totalNoOfControversy = controCount;
+                // console.log('totalNoOfControversy', totalNoOfControversy);
                 let object = {};
                 object.taskNumber = controversyTasks[cIndex].taskNumber;
                 object.taskId = controversyTasks[cIndex].id;
