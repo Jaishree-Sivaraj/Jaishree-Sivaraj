@@ -2723,6 +2723,7 @@ export const datapointDetails = async (req, res, next) => {
             status: 'Yet to Start',
             dpCode: dpTypeValues.code,
             dpCodeId: dpTypeValues.id,
+            dpName: dpTypeValues.name,
             fiscalYear: currentYear[currentYearIndex],
             description: dpTypeValues.description,
             dataType: dpTypeValues.dataType,
