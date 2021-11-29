@@ -8,7 +8,7 @@ export BoardMembers, { schema } from './model'
 
 const router = new Router()
 const { companyId, clientTaxonomyId, BOSP004, startDate, endDate, endDateTimeStamp, dob, BODR005, BODP001, BOSP005, BOSP006, memberStatus, status } = schema.tree
-let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[], isExecutiveType = '';
+let memberName = "", nationality = "", gender = "", industrialExp = "", financialExp = "", boardMembersToTerminate =[], isExecutiveType = '', year = '';
 /**
  * @api {post} /boardMembers Create board members
  * @apiName CreateBoardMembers
@@ -99,7 +99,7 @@ router.get('/:id',
   show)
 
 /**
- * @api {get} /boardMembers/all/board-members/allyears Retrieve All board members
+ * @api {get} /boardMembers/all/board-members/allyears/:year Retrieve All board members
  * @apiName RetrieveAllBoardMembers
  * @apiGroup BoardMembers
  * @apiPermission user
@@ -109,12 +109,12 @@ router.get('/:id',
  * @apiError 404 Board members not found.
  * @apiError 401 user access only.
  */
-  router.get('/all/board-members/allyears',
+  router.get('/all/board-members/allyears/:year',
   token({ required: true }),
   getDistinctBoardMembersCompanywise)
 
 /**
- * @api {get} /boardMembers/all/kmp-members/allyears Retrieve All kmp members
+ * @api {get} /boardMembers/all/kmp-members/allyears/:year Retrieve All kmp members
  * @apiName RetrieveAllKmpMembers
  * @apiGroup BoardMembers
  * @apiPermission user
@@ -124,7 +124,7 @@ router.get('/:id',
  * @apiError 404 Board members not found.
  * @apiError 401 user access only.
  */
-  router.get('/all/kmp-members/allyears',
+  router.get('/all/kmp-members/allyears/:year',
   token({ required: true }),
   getDistinctKmpMembersCompanywise)
 
