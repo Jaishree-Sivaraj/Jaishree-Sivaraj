@@ -733,10 +733,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 sourceName: item['Source name'],
                 url: item['URL'] ? item['URL'].toString() : '',
                 pageNumber: item['Page number'],
-                // isRestated: item['isRestated'],
-                // restatedForYear: item['restatedForYear'],
-                // restatedInYear: item['restatedInYear'],
-                // restatedValue: item['restatedValue'],
+                isRestated: item['isRestated'],
+                restatedForYear: item['restatedForYear'],
+                restatedInYear: item['restatedInYear'],
+                restatedValue: item['restatedValue'],
                 publicationDate: item['Publication date'],
                 textSnippet: item['Text snippet'],
                 screenShot: item['Screenshot (in png)'],
@@ -860,10 +860,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
-                  // isRestated: item['isRestated'],
-                  // restatedForYear: item['restatedForYear'],
-                  // restatedInYear: item['restatedInYear'],
-                  // restatedValue: item['restatedValue'],
+                  isRestated: item['isRestated'],
+                  restatedForYear: item['restatedForYear'],
+                  restatedInYear: item['restatedInYear'],
+                  restatedValue: item['restatedValue'],
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
@@ -998,10 +998,10 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
-                  // isRestated: item['isRestated'],
-                  // restatedForYear: item['restatedForYear'],
-                  // restatedInYear: item['restatedInYear'],
-                  // restatedValue: item['restatedValue'],
+                  isRestated: item['isRestated'],
+                  restatedForYear: item['restatedForYear'],
+                  restatedInYear: item['restatedInYear'],
+                  restatedValue: item['restatedValue'],
                   publicationDate: item['Publication date'],
                   textSnippet: item['Text snippet'],
                   screenShot: item['Screenshot (in png)'],
@@ -1391,10 +1391,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1428,10 +1428,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1480,10 +1480,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1518,10 +1518,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1571,10 +1571,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1609,10 +1609,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1644,9 +1644,7 @@ export const dataCollection = async ({
       let currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];      
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
-      if (body.memberType == 'Standalone') {  
-        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
-          { $set: {isActive: false} });  
+      if (body.memberType == 'Standalone') {   
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex]
           let hasCorrectionValue = false;
@@ -1673,7 +1671,9 @@ export const dataCollection = async ({
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
-          }
+          }           
+          await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+          { $set: {isActive: false} }); 
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1683,10 +1683,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1717,6 +1717,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+            { $set: {isActive: false} }); 
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1726,10 +1728,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1747,15 +1749,12 @@ export const dataCollection = async ({
         res.status('200').json({
           message: "Data inserted Successfully"
         });
-      } else if (body.memberType == 'Board Matrix') {   
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive: true, status: true },
-          { $set: {isActive: false} });    
+      } else if (body.memberType == 'Board Matrix') {    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex];
           let hasCorrectionValue = false;
           if(item.isAccepted == true) {
             hasCorrectionValue = true;
-
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
             { $set: { isErrorAccepted: true, isErrorRejected: false} });
           } else{
@@ -1778,6 +1777,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+            { $set: {isActive: false} });   
           await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1787,10 +1788,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1822,6 +1823,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+            { $set: {isActive: false} });   
           await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1831,10 +1834,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1850,9 +1853,7 @@ export const dataCollection = async ({
             });
           });
         }
-      } else if (body.memberType == 'KMP Matrix') {  
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear},isActive:true, status: true },
-          { $set: {isActive : false} });    
+      } else if (body.memberType == 'KMP Matrix') {    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex];
           let hasCorrectionValue = false;
@@ -1880,6 +1881,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive:true, status: true },
+            { $set: {isActive : false} });  
           await KmpMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1889,10 +1892,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -1924,6 +1927,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive:true, status: true },
+            { $set: {isActive : false} });  
           await KmpMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1933,10 +1938,10 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],

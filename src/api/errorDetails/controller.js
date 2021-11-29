@@ -201,7 +201,7 @@ export const saveErrorDetails = async({
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed'}});
           await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
           { $set: standaloneDatapoints }, { upsert: true });
-        } else {         
+        } else if(item.error.isUnfreezed == true){         
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -222,10 +222,10 @@ export const saveErrorDetails = async({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
-            // isRestated: item['isRestated'],
-            // restatedForYear: item['restatedForYear'],
-            // restatedInYear: item['restatedInYear'],
-            // restatedValue: item['restatedValue'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
             publicationDate: item.source['publicationDate'],
             url: item.source['url'],
             sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -238,6 +238,8 @@ export const saveErrorDetails = async({
             correctionStatus: 'Completed',
             createdBy: user
           });
+        } else{          
+          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: false, hasCorrection: false, correctionStatus: 'Completed'}});
         }
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -253,10 +255,10 @@ export const saveErrorDetails = async({
         screenShot: item['screenShot'],
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
-        // isRestated: item['isRestated'],
-        // restatedForYear: item['restatedForYear'],
-        // restatedInYear: item['restatedInYear'],
-        // restatedValue: item['restatedValue'],
+        isRestated: item['isRestated'],
+        restatedForYear: item['restatedForYear'],
+        restatedInYear: item['restatedInYear'],
+        restatedValue: item['restatedValue'],
         publicationDate: item.source['publicationDate'],
         url: item.source['url'],
         sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -300,7 +302,7 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false,correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else{
+      } else if(item.error.isUnfreezed == true){
         await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
         { $set: {isActive: false}});
         let formattedScreenShots = [];
@@ -322,10 +324,10 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
-          // isRestated: item['isRestated'],
-          // restatedForYear: item['restatedForYear'],
-          // restatedInYear: item['restatedInYear'],
-          // restatedValue: item['restatedValue'],
+          isRestated: item['isRestated'],
+          restatedForYear: item['restatedForYear'],
+          restatedInYear: item['restatedInYear'],
+          restatedValue: item['restatedValue'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
           sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -344,7 +346,9 @@ export const saveErrorDetails = async({
             message: error.message
           });
         })
-      }
+      }else {
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+        { $set: {hasError: false ,hasCorrection: false,correctionStatus: 'Completed'}});}
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
@@ -369,10 +373,10 @@ export const saveErrorDetails = async({
         screenShot: formattedScreenShots, //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
-        // isRestated: item['isRestated'],
-        // restatedForYear: item['restatedForYear'],
-        // restatedInYear: item['restatedInYear'],
-        // restatedValue: item['restatedValue'],
+        isRestated: item['isRestated'],
+        restatedForYear: item['restatedForYear'],
+        restatedInYear: item['restatedInYear'],
+        restatedValue: item['restatedValue'],
         publicationDate: item.source['publicationDate'],
         url: item.source['url'],
         sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -418,7 +422,7 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false, correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else{
+      } else if(item.error.isUnfreezed == true){
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
         { $set: {isActive: false}});
         let formattedScreenShots = [];
@@ -440,10 +444,10 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
-          // isRestated: item['isRestated'],
-          // restatedForYear: item['restatedForYear'],
-          // restatedInYear: item['restatedInYear'],
-          // restatedValue: item['restatedValue'],
+          isRestated: item['isRestated'],
+          restatedForYear: item['restatedForYear'],
+          restatedInYear: item['restatedInYear'],
+          restatedValue: item['restatedValue'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
           sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -462,7 +466,9 @@ export const saveErrorDetails = async({
             message: error.message
           });
         })
-      }
+      } else{
+        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
+        { $set: {hasError: false ,hasCorrection: false, correctionStatus: 'Completed'}});}
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
@@ -487,10 +493,10 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
-          // isRestated: item['isRestated'],
-          // restatedForYear: item['restatedForYear'],
-          // restatedInYear: item['restatedInYear'],
-          // restatedValue: item['restatedValue'],
+          isRestated: item['isRestated'],
+          restatedForYear: item['restatedForYear'],
+          restatedInYear: item['restatedInYear'],
+          restatedValue: item['restatedValue'],
           publicationDate: item.source['publicationDate'],
           url: item.source['url'],
           sourceName: item.source['sourceName'] + ";" + item.source['value'],
@@ -542,10 +548,10 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
                 fiscalYear: item.fiscalYear,
                 textSnippet: item.error.refData.textSnippet,
                 pageNo: item.error.refData.pageNo,
-                // isRestated: item.error.refData.isRestated,
-                // restatedForYear: item.error.refData.restatedForYear,
-                // restatedInYear: item.error.refData.restatedInYear,
-                // restatedValue: item.error.refData.restatedValue,
+                isRestated: item.error.refData.isRestated,
+                restatedForYear: item.error.refData.restatedForYear,
+                restatedInYear: item.error.refData.restatedInYear,
+                restatedValue: item.error.refData.restatedValue,
                 source:{
                   publicationDate: item.error.refData.source.publicationDate,
                   url: item.error.refData.source.url,
@@ -612,10 +618,10 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
-            // isRestated: item.error.refData.isRestated,
-            // restatedForYear: item.error.refData.restatedForYear,
-            // restatedInYear: item.error.refData.restatedInYear,
-            // restatedValue: item.error.refData.restatedValue,
+            isRestated: item.error.refData.isRestated,
+            restatedForYear: item.error.refData.restatedForYear,
+            restatedInYear: item.error.refData.restatedInYear,
+            restatedValue: item.error.refData.restatedValue,
             source:{
               publicationDate: item.error.refData.source.publicationDate,
               url: item.error.refData.source.url,
@@ -683,10 +689,10 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
-            // isRestated: item.error.refData.isRestated,
-            // restatedForYear: item.error.refData.restatedForYear,
-            // restatedInYear: item.error.refData.restatedInYear,
-            // restatedValue: item.error.refData.restatedValue,
+            isRestated: item.error.refData.isRestated,
+            restatedForYear: item.error.refData.restatedForYear,
+            restatedInYear: item.error.refData.restatedInYear,
+            restatedValue: item.error.refData.restatedValue,
             source:{
               publicationDate: item.error.refData.source.publicationDate,
               url: item.error.refData.source.url,
