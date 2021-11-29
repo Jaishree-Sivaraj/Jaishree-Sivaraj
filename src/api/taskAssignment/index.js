@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getMyTasks, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks, taskReports } from './controller'
+import { create, index, show, update, destroy, getMyTasks, getTaskListPageData, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks, taskReports } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
@@ -356,7 +356,7 @@ router.post('/getAllAssignedUsers',
   getUsers)
 
 /**
-* @api {post} /taskAssignments Create task assignment
+* @api {post} /taskAssignments/taskListWithStatus Create task assignment
 * @apiName CreateTaskAssignment
 * @apiGroup TaskAssignment
 * @apiPermission user
@@ -371,7 +371,8 @@ router.post('/getAllAssignedUsers',
 router.post('/taskListWithStatus',
   token({ required: true }),
   body({ companyTaskReports }),
-  getTaskList)
+  query(),
+  getTaskListPageData)
 
 
 /**

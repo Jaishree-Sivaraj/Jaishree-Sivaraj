@@ -2075,6 +2075,56 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
   return res.status(200).json({ data: result });
 }
 
+export const getTaskListPageData = async ({ user, querymen: { query, select, cursor }, bodymen: { body } }, res, next) => {
+  var result = [];
+  var count = await TaskAssignment.count({companyId: { $in: body.companyTaskReports }, status: true});
+  var allTasks = await TaskAssignment.find({
+    companyId: { $in: body.companyTaskReports },
+    status: true
+  }, select, cursor).populate('companyId').populate('categoryId').populate('groupId').populate('analystId').populate('qaId').populate('batchId');
+  for (var i = 0; i < allTasks.length; i++) {
+    if (allTasks[i].companyId) {
+      var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
+    }
+    var analystTaskLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'Analyst' });
+    var qaLog = TaskSlaLog.find({ taskId: allTasks[i].id, requestedBy: 'QA' });
+    var obj = {
+      companyName: allTasks[i].companyId ? allTasks[i].companyId.companyName : null,
+      taskid: allTasks[i].taskNumber,
+      group: allTasks[i].groupId ? allTasks[i].groupId.groupName : null,
+      batch: allTasks[i].batchId ? allTasks[i].batchId.batchName : null,
+      pillar: allTasks[i].categoryId ? allTasks[i].categoryId.categoryName : null,
+      analyst: allTasks[i].analystId ? allTasks[i].analystId.name : null,
+      analystSla: allTasks[i].analystSLADate ? allTasks[i].analystSLADate : null,
+      qa: allTasks[i].qaId ? allTasks[i].qaId.name : null,
+      qaSla: allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null,
+      analystStatus: analystTaskLog && analystTaskLog.length > 0 ? "Breached" : "OnTrack",
+      qaStatus: qaLog && qaLog.length > 0 ? "Breached" : "OnTrack",
+      stage: allTasks[i].taskStatus ? allTasks[i].taskStatus : null
+    }
+    if (companyTask && !companyTask.overAllCompanyTaskStatus) {
+      obj.stage = allTasks[i].taskStatus ? allTasks[i].taskStatus : null;
+    }
+    let currentDate = new Date();
+    let qaSLADate = allTasks[i].qaSLADate ? allTasks[i].qaSLADate : null;
+    if (allTasks[i].taskStatus == 'Completed' || allTasks[i].taskStatus == 'Verification Completed') {
+      if (currentDate <= qaSLADate) {
+        obj.status = "Met";
+      } else {
+        obj.status = "Not Met";
+      }
+    } else if (allTasks[i].taskStatus != 'Completed' && allTasks[i].taskStatus != 'Verification Completed' && qaSLADate && (currentDate <= qaSLADate)) {
+      obj.status = "OnTrack";
+    } else if (allTasks[i].taskStatus != 'Completed' && allTasks[i].taskStatus != 'Verification Completed' && qaSLADate && (currentDate > qaSLADate)) {
+      obj.status = "Not Met";
+    } else {
+      obj.status = "NA";
+    }
+    result.push(obj);
+  }
+  return res.status(200).json({ data: result, count: count });
+}
+
 export const controversyReports = async ({ user, params }, res, next) => {
   var controversyTask = await ControversyTasks.find({ status: true }).populate('companyId').populate('analystId');
   var controversy = [];
