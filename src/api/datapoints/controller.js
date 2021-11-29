@@ -1309,7 +1309,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment: errorDetailsObject[0] ? errorDetailsObject[0].comments.content : '',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -1403,7 +1403,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: object.comments,
@@ -1497,7 +1497,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -1886,7 +1886,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -1980,7 +1980,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
               },
               comments: [],
@@ -2074,7 +2074,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -2460,7 +2460,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -2554,7 +2554,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: errorTypeId,
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: errorDetailsObject[0] ? errorDetailsObject[0].errorStatus : ''
 
               },
@@ -2649,7 +2649,7 @@ export const datapointDetails = async (req, res, next) => {
                 raisedBy: errorDetailsObject[0] ? errorDetailsObject[0].raisedBy : '',
                 type: '',
                 refData: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep : {},
-                comment: '',
+                comment:  errorDetailsObject[0] ? errorDetailsObject[0].comments.content :'',
                 errorStatus: object.correctionStatus
               },
               comments: [],
@@ -2723,6 +2723,7 @@ export const datapointDetails = async (req, res, next) => {
             status: 'Yet to Start',
             dpCode: dpTypeValues.code,
             dpCodeId: dpTypeValues.id,
+            dpName: dpTypeValues.name,
             fiscalYear: currentYear[currentYearIndex],
             description: dpTypeValues.description,
             dataType: dpTypeValues.dataType,

@@ -22,7 +22,7 @@ export const create = async({ user, bodymen: { body } }, res, next) =>{
     if(body.endDate != ""){      
       yearTimeStamp = Math.floor(new Date(body.endDate).getTime()/1000);    
     }
-    if(body.isExecutiveType = true){
+    if(body.isExecutiveType == true){
       await Kmp.create({
         companyId: body.companyId,
         MASP003: body.memberName, 

@@ -201,7 +201,7 @@ export const saveErrorDetails = async({
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed'}});
           await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
           { $set: standaloneDatapoints }, { upsert: true });
-        } else {         
+        } else if(item.error.isUnfreezed == true){         
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -238,6 +238,8 @@ export const saveErrorDetails = async({
             correctionStatus: 'Completed',
             createdBy: user
           });
+        } else{          
+          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: false, hasCorrection: false, correctionStatus: 'Completed'}});
         }
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
@@ -300,7 +302,7 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false,correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else{
+      } else if(item.error.isUnfreezed == true){
         await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
         { $set: {isActive: false}});
         let formattedScreenShots = [];
@@ -344,7 +346,9 @@ export const saveErrorDetails = async({
             message: error.message
           });
         })
-      }
+      }else {
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+        { $set: {hasError: false ,hasCorrection: false,correctionStatus: 'Completed'}});}
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
@@ -418,7 +422,7 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false, correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else{
+      } else if(item.error.isUnfreezed == true){
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
         { $set: {isActive: false}});
         let formattedScreenShots = [];
@@ -462,7 +466,9 @@ export const saveErrorDetails = async({
             message: error.message
           });
         })
-      }
+      } else{
+        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
+        { $set: {hasError: false ,hasCorrection: false, correctionStatus: 'Completed'}});}
     }
     for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
       let item = dpHistoricalDpDetails[index];
