@@ -15,6 +15,7 @@ import { BoardMembersMatrixDataPoints  } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { DerivedDatapoints } from '../derived_datapoints'
 import { Datapoints } from '../datapoints'
+import { ControversyTasks } from '../controversy_tasks'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   CompaniesTasks.create({ ...body, createdBy: user })
@@ -328,35 +329,66 @@ export const taskIdMappingCorrection = async({ user, params }, res, next) => {
 }
 
 export const bulkTaskCreation = async ({ user, params }, res, next) => {
-  let lastTaskDetail = await TaskAssignment.findOne({status: true}).sort({"taskNumber": -1}).collation( { locale: "en_US", numericOrdering: true });
-  if (lastTaskDetail) {
-    let lastTaskNumber = lastTaskDetail.taskNumber.split('DT')[1];
-    console.log('lastTaskNumber', lastTaskNumber);
-    let newBulkTasksList = [];
-    for (let index = 0; index < params.number; index++) {
-      let newTaskNumber = Number(lastTaskNumber)+(index+1);
-      newBulkTasksList.push({
-          "taskNumber" : 'DT'+newTaskNumber,
-          "taskStatus" : params.taskStatus ? params.taskStatus : 'Pending',
-          "status" : true,
-          "categoryId" : "609bbbe91d64cd01eeda08cf",
-          "groupId" : "6131e9be8b4b7ab7d8ad49b1",
-          "batchId" : "617954116a832c59fb45c583",
-          "year" : "2020-2021, 2018-2019, 2019-2020",
-          "analystSLADate" : "2021-11-01T00:00:00.000Z",
-          "qaSLADate" : "2021-11-01T00:00:00.000Z",
-          "analystId" : "61601181ff377944e3ff327d",
-          "qaId" : "612df1a8a63122337242b0d9",
-          "createdBy" : "615abdd5a81a86be14a4788f",
-          "companyId" : "61795343aabef5bcb6652bd4",
-          "createdAt" : Date.now(),
-          "updatedAt" : Date.now(),
-          "__v" : 0
-      })      
+  if (params.taskStatus == "Controversy") {
+    let lastTaskDetail = await ControversyTasks.findOne({status: true}).sort({"taskNumber": -1}).collation( { locale: "en_US", numericOrdering: true });
+    if (lastTaskDetail) {
+      let lastTaskNumber = lastTaskDetail.taskNumber.split('CT')[1];
+      console.log('lastTaskNumber', lastTaskNumber);
+      let newBulkTasksList = [];
+      for (let index = 0; index < params.number; index++) {
+        let newTaskNumber = Number(lastTaskNumber)+(index+1);
+        newBulkTasksList.push({
+            "taskNumber" : 'CT'+newTaskNumber,
+            "taskStatus" : "Pending",
+            "completedDate" : "2021-11-01T10:49:22.415Z",
+            "status" : true,
+            "companyId" : "61795343aabef5bcb6652bd4",
+            "analystId" : "6142d7abb37c5a90b9208046",
+            "canGenerateJson" : true,
+            "isJsonGenerated" : false,
+            "createdBy" : "615abdd5a81a86be14a4788f",
+            "companyId" : "61795343aabef5bcb6652bd4",
+            "createdAt" : Date.now(),
+            "updatedAt" : Date.now(),
+            "__v" : 0
+        })
+      }
+      console.log('newBulkTasksList', newBulkTasksList.length);
+      await ControversyTasks.insertMany(newBulkTasksList).then(() => {
+        return res.status(200).json({status: "200", message: "Data inserted successfully!"});
+      })
     }
-    console.log('newBulkTasksList', newBulkTasksList.length);
-    await TaskAssignment.insertMany(newBulkTasksList).then(() => {
-      return res.status(200).json({status: "200", message: "Data inserted successfully!"});
-    })
+  } else {
+    let lastTaskDetail = await TaskAssignment.findOne({status: true}).sort({"taskNumber": -1}).collation( { locale: "en_US", numericOrdering: true });
+    if (lastTaskDetail) {
+      let lastTaskNumber = lastTaskDetail.taskNumber.split('DT')[1];
+      console.log('lastTaskNumber', lastTaskNumber);
+      let newBulkTasksList = [];
+      for (let index = 0; index < params.number; index++) {
+        let newTaskNumber = Number(lastTaskNumber)+(index+1);
+        newBulkTasksList.push({
+            "taskNumber" : 'DT'+newTaskNumber,
+            "taskStatus" : params.taskStatus ? params.taskStatus : 'Pending',
+            "status" : true,
+            "categoryId" : "609bbbe91d64cd01eeda08cf",
+            "groupId" : "6131e9be8b4b7ab7d8ad49b1",
+            "batchId" : "617954116a832c59fb45c583",
+            "year" : "2020-2021, 2018-2019, 2019-2020",
+            "analystSLADate" : "2021-11-01T00:00:00.000Z",
+            "qaSLADate" : "2021-11-01T00:00:00.000Z",
+            "analystId" : "61601181ff377944e3ff327d",
+            "qaId" : "612df1a8a63122337242b0d9",
+            "createdBy" : "615abdd5a81a86be14a4788f",
+            "companyId" : "61795343aabef5bcb6652bd4",
+            "createdAt" : Date.now(),
+            "updatedAt" : Date.now(),
+            "__v" : 0
+        })      
+      }
+      console.log('newBulkTasksList', newBulkTasksList.length);
+      await TaskAssignment.insertMany(newBulkTasksList).then(() => {
+        return res.status(200).json({status: "200", message: "Data inserted successfully!"});
+      })
+    }
   }
 }
