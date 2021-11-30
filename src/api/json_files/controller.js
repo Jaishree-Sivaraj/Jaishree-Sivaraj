@@ -150,7 +150,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   if (body.type && body.type === 'data') {
     let companyID = body.companyId ? body.companyId : '';
     let companyDetails = await Companies.findById(companyID).populate('clientTaxonomyId');
-    let requiredDataPoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, standaloneOrMatrix: { "$ne": "Matrix" }, functionId: { "$ne": '609bcceb1d64cd01eeda092c' }, status: true }).distinct('_id');
+    let requiredDataPoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, isRequiredForJson: true, functionId: { "$ne": '609bcceb1d64cd01eeda092c' }, status: true }).distinct('_id');
     let jsonResponseObject = {
       companyName: companyDetails.companyName ? companyDetails.companyName : '',
       companyID: companyDetails.cin ? companyDetails.cin : '',
