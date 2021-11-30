@@ -1153,7 +1153,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
     let rows = [], count = 0, findQuery = {};
     if (params.role == "Analyst") {
         if (userRoles.includes("Analyst")) {
-            if (params.type == "Collection") {
+            if (params.type == "DataCollection") {
                 findQuery = {
                     analystId: completeUserDetail.id,
                     $or: [
@@ -1166,7 +1166,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     ],
                     status: true,
                 }
-            } else if (params.type == "Correction") {
+            } else if (params.type == "DataCorrection") {
                 findQuery = {
                     analystId: completeUserDetail.id,
                     $or: [
@@ -1179,7 +1179,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     ],
                     status: true,
                 }
-            } else if (params.type == "Controversy") {
+            } else if (params.type == "Controversy Collection") {
                 findQuery = {
                     analystId: completeUserDetail.id,
                     taskStatus: {
@@ -1195,7 +1195,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         }
     } else if (params.role == "QA") {
         if (userRoles.includes("QA")) {
-            if (params.type == "Verification") {
+            if (params.type == "DataVerification") {
                 findQuery = {
                     qaId: completeUserDetail.id,
                     $or: [
@@ -1221,13 +1221,13 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 status: true
             });
             if (clientRepDetail && clientRepDetail.companiesList) {
-                if (params.type == "Data") {
+                if (params.type == "DataReview") {
                     findQuery = {
                         companyId: { $in: clientRepDetail.companiesList },
                         taskStatus: { $in: ["Completed", "Verification Completed"] },
                         status: true
                     }
-                } else if (params.type == "Controversy") {
+                } else if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
                     findQuery = {
                       companyId: { $in: clientRepDetail.companiesList },
                       status: true
@@ -1248,7 +1248,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 status: true
             });
             if (companyRepDetail && companyRepDetail.companiesList) {
-                if (params.type == "Data") {
+                if (params.type == "DataReview") {
                     findQuery = {
                         companyId: {
                             $in: companyRepDetail.companiesList
@@ -1256,7 +1256,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                         taskStatus: { $in: ["Completed", "Verification Completed"] },
                         status: true
                     }
-                } else if (params.type == "Controversy") {
+                } else if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
                     findQuery = {
                         companyId: { $in: companyRepDetail.companiesList },
                         status: true
@@ -1274,7 +1274,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         return res.status(400).json({ status: "400", message: "User role not found!" });   
     }
     console.log('params.role', params.role);
-    if (params.type == "Controversy") {
+    if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
         count = await ControversyTasks.count(findQuery);
         await ControversyTasks.find(findQuery, select, cursor)
         .populate("companyId")
@@ -1316,7 +1316,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 message: error.message ? error.message : "Failed to retrieve tasks!"
             });
         });
-    } else if (params.type == "Collection" || params.type == "Correction" || params.type == "Verification" || params.type == "Data") {
+    } else if (params.type == "DataCollection" || params.type == "DataCorrection" || params.type == "DataVerification" || params.type == "DataReview") {
         count = await TaskAssignment.count(findQuery);
         await TaskAssignment.find(findQuery, select, cursor)
         .sort({ createdAt: -1 })
