@@ -171,7 +171,7 @@ router.get('/',
   index)
 
 /**
- * @api {get} /taskAssignments/my-tasks Retrieve my task assignments
+ * @api {get} /taskAssignments/my-tasks/:type/:role Retrieve my task assignments
  * @apiName RetrieveTaskAssignments
  * @apiGroup TaskAssignment
  * @apiPermission user
@@ -182,12 +182,12 @@ router.get('/',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 user access only.
  */
-router.get('/my-tasks',
+router.get('/my-tasks/:type/:role',
   token({
     required: true
   }),
   query(),
-  getMyTasks)
+  getMyTasksPageData)
 
 /**
  * @api {get} /taskAssignments/getGroupAndBatches Retrieve my task assignments
