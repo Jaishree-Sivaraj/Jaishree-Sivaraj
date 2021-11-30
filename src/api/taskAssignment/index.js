@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getMyTasks, getTaskListPageData, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks, taskReports } from './controller'
+import { create, index, show, update, destroy, getMyTasks, getMyTasksPageData, getTaskListPageData, getGroupAndBatches, getUsers, updateCompanyStatus, createTask, getQaAndAnalystFromGrp, updateSlaDates, reports, getTaskList, controversyReports, getTaskListForControversy, retrieveFilteredDataTasks, retrieveFilteredControversyTasks, taskReports } from './controller'
 import { schema } from './model'
 export TaskAssignment, { schema } from './model'
 
@@ -171,7 +171,7 @@ router.get('/',
   index)
 
 /**
- * @api {get} /taskAssignments/my-tasks Retrieve my task assignments
+ * @api {get} /taskAssignments/my-tasks/:type/:role Retrieve my task assignments
  * @apiName RetrieveTaskAssignments
  * @apiGroup TaskAssignment
  * @apiPermission user
@@ -182,12 +182,12 @@ router.get('/',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 user access only.
  */
-router.get('/my-tasks',
+router.get('/my-tasks/:type/:role',
   token({
     required: true
   }),
   query(),
-  getMyTasks)
+  getMyTasksPageData)
 
 /**
  * @api {get} /taskAssignments/getGroupAndBatches Retrieve my task assignments

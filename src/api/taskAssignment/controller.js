@@ -1115,6 +1115,269 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
   });
 };
 
+export const getMyTasksPageData = async ({ user, querymen: { query, select, cursor }, params }, res, next) => {
+    let completeUserDetail = await User.findOne({ _id: user.id, isUserActive: true })
+    .populate({path: "roleDetails.roles"}).populate({path: "roleDetails.primaryRole"})
+    .catch((error) => {
+        return res.status(500).json({
+            status: "500",
+            message: error.message,
+        });
+    });
+    let userRoles = [];
+    if (completeUserDetail && completeUserDetail.roleDetails) {
+      if (completeUserDetail.roleDetails.primaryRole) {
+        userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+        if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+          for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+            if (completeUserDetail.roleDetails.roles[index]) {
+              userRoles.push(
+                completeUserDetail.roleDetails.roles[index].roleName
+              );
+            }
+          }
+        }
+      } else {
+        return res.status(400).json({
+          status: "400",
+          message: "User role not found!",
+        });
+      }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: "User role not found!",
+      });
+    }
+    userRoles = _.uniq(userRoles);
+    let rows = [], count = 0, findQuery = {};
+    if (params.role == "Analyst") {
+        if (userRoles.includes("Analyst")) {
+            if (params.type == "Collection") {
+                findQuery = {
+                    analystId: completeUserDetail.id,
+                    $or: [
+                        {
+                            taskStatus: "Pending"
+                        },
+                        {
+                            taskStatus: "In Progress"
+                        }
+                    ],
+                    status: true,
+                }
+            } else if (params.type == "Correction") {
+                findQuery = {
+                    analystId: completeUserDetail.id,
+                    $or: [
+                        {
+                            taskStatus: "Verification Pending"
+                        },
+                        {
+                            taskStatus: "Correction Pending"
+                        }
+                    ],
+                    status: true,
+                }
+            } else if (params.type == "Controversy") {
+                findQuery = {
+                    analystId: completeUserDetail.id,
+                    taskStatus: {
+                        $ne: "Completed"
+                    },
+                    status: true
+                }
+            } else {
+                return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+            }
+        } else {
+            return res.status(400).json({ status: "400", message: "User role not found!" });   
+        }
+    } else if (params.role == "QA") {
+        if (userRoles.includes("QA")) {
+            if (params.type == "Verification") {
+                findQuery = {
+                    qaId: completeUserDetail.id,
+                    $or: [
+                        {
+                            taskStatus: "Collection Completed"
+                        },
+                        {
+                            taskStatus: "Correction Completed"
+                        }
+                    ],
+                    status: true
+                }
+            } else {
+                return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+            }
+        } else {
+            return res.status(400).json({ status: "400", message: "User role not found!" });   
+        }
+    } else if (params.role == "Client Representative") {
+        if (userRoles.includes("Client Representative")) {
+            let clientRepDetail = await ClientRepresentatives.findOne({
+                userId: completeUserDetail.id,
+                status: true
+            });
+            if (clientRepDetail && clientRepDetail.companiesList) {
+                if (params.type == "Data") {
+                    findQuery = {
+                        companyId: { $in: clientRepDetail.companiesList },
+                        taskStatus: { $in: ["Completed", "Verification Completed"] },
+                        status: true
+                    }
+                } else if (params.type == "Controversy") {
+                    findQuery = {
+                      companyId: { $in: clientRepDetail.companiesList },
+                      status: true
+                    }
+                } else {
+                    return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                }
+            } else {
+                return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
+            }
+        } else {
+            return res.status(400).json({ status: "400", message: "User role not found!" });   
+        }
+    } else if (params.role == "Company Representative") {
+        if (userRoles.includes("Company Representative")) {
+            let companyRepDetail = await CompanyRepresentatives.findOne({
+                userId: completeUserDetail.id,
+                status: true
+            });
+            if (companyRepDetail && companyRepDetail.companiesList) {
+                if (params.type == "Data") {
+                    findQuery = {
+                        companyId: {
+                            $in: companyRepDetail.companiesList
+                        },
+                        taskStatus: { $in: ["Completed", "Verification Completed"] },
+                        status: true
+                    }
+                } else if (params.type == "Controversy") {
+                    findQuery = {
+                        companyId: { $in: companyRepDetail.companiesList },
+                        status: true
+                    }
+                } else {
+                    return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                }
+            } else {
+                return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
+            }
+        } else {
+            return res.status(400).json({ status: "400", message: "User role not found!" });   
+        }
+    } else {
+        return res.status(400).json({ status: "400", message: "User role not found!" });   
+    }
+    console.log('params.role', params.role);
+    if (params.type == "Controversy") {
+        count = await ControversyTasks.count(findQuery);
+        await ControversyTasks.find(findQuery, select, cursor)
+        .populate("companyId")
+        .populate("analystId")
+        .populate("createdBy")
+        .then(async (controversyTasks) => {
+            if (controversyTasks && controversyTasks.length > 0) {
+                for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+                    let yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
+                        Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
+                        Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
+                        Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                    ]);
+                    let object = {};
+                    object.taskNumber = controversyTasks[cIndex].taskNumber;
+                    object.taskId = controversyTasks[cIndex].id;
+                    object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : "";
+                    object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : "";
+                    object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : "";
+                    object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : "";
+                    object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : "";
+                    object.status = controversyTasks[cIndex].status;
+                    object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+                    object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                    object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+                    object.totalNoOfControversy = totalNoOfControversy;
+                    if (controversyTasks[cIndex] && object) {
+                        rows.push(object);
+                    }
+                }
+            }
+            return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to retrieve tasks!"
+            });
+        });
+    } else if (params.type == "Collection" || params.type == "Correction" || params.type == "Verification" || params.type == "Data") {
+        count = await TaskAssignment.count(findQuery);
+        await TaskAssignment.find(findQuery, select, cursor)
+        .sort({ createdAt: -1 })
+        .populate("createdBy")
+        .populate("companyId")
+        .populate("categoryId")
+        .populate("groupId")
+        .populate("batchId")
+        .populate("analystId")
+        .populate("qaId")
+        .then(async (taskAssignments) => {
+            for (let index = 0; index < taskAssignments.length; index++) {
+                const object = taskAssignments[index];
+                let categoryValidationRules = [];
+                if (params.role == "Analyst") {
+                    categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+                    .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+                }
+                let taskObject = {
+                    taskId: object.id,
+                    taskNumber: object.taskNumber,
+                    pillar: object.categoryId ? object.categoryId.categoryName : null,
+                    pillarId: object.categoryId ? object.categoryId.id : null,
+                    group: object.groupId ? object.groupId.groupName : null,
+                    groupId: object.groupId ? object.groupId.id : null,
+                    batch: object.batchId ? object.batchId.batchName : null,
+                    batchId: object.batchId ? object.batchId.id : null,
+                    company: object.companyId ? object.companyId.companyName : null,
+                    clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
+                    companyId: object.companyId ? object.companyId.id : null,
+                    analyst: object.analystId ? object.analystId.name : null,
+                    analystId: object.analystId ? object.analystId.id : null,
+                    analystSLADate: object.analystSLADate ? object.analystSLADate : null,
+                    qa: object.qaId ? object.qaId.name : null,
+                    qaId: object.qaId ? object.qaId.id : null,
+                    qaSLADate: object.qaSLADate ? object.qaSLADate : null,
+                    fiscalYear: object.year,
+                    taskStatus: object.taskStatus,
+                    createdBy: object.createdBy ? object.createdBy.name : null,
+                    createdById: object.createdBy ? object.createdBy.id : null
+                };
+                if (params.role == "Analyst") {
+                    if (categoryValidationRules.length > 0) {
+                        taskObject.isValidationRequired = true;
+                    } else {
+                        taskObject.isValidationRequired = false;
+                    }
+                }
+                rows.push(taskObject);
+            }
+            return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "400",
+                message: error.message ? error.message : "Failed to retrieve tasks!"
+            });
+        });
+    }
+}
+
 export const show = ({ params }, res, next) =>
   TaskAssignment.findById(params.id)
     .populate("createdBy")
