@@ -10,5 +10,5 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	fi
 else 
   cd /app/esgapi
-	pm2 stop src/esgapi.js
+	pm2 stop 0
 fi
