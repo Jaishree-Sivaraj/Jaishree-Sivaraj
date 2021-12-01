@@ -1,4 +1,3 @@
-
 #!/bin/bash
 STATUS="$(systemctl is-active web.service)"
 if [ "${STATUS}" = "active" ]; then
