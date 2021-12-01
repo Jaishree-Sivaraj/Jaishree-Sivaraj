@@ -9,6 +9,6 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	   echo " Service failed to stop"
 	fi
 else 
-    cd /app/esgapi
+  cd /app/esgapi
 	pm2 stop src/esgapi.js
 fi
