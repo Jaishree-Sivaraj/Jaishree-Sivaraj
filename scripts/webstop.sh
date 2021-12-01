@@ -9,8 +9,8 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	   echo " Service failed to stop"
 	fi
 elif [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
-  cd /app/esgapi
-  pm2 stop 0
+  /home/ubuntu/.nvm/versions/node/v14.17.6/bin/pm2 list
+  /home/ubuntu/.nvm/versions/node/v14.17.6/bin/pm2 stop 0
 else 
   #cd /app/esgapi
 	#pm2 stop 0
