@@ -39,18 +39,18 @@ const standaloneDatapointsSchema = new Schema({
   pageNumber: {
     type: String
   },
-  // isRestated: {
-  //   type: String
-  // },
-  // restatedForYear: {
-  //   type: String
-  // },
-  // restatedInYear: {
-  //   type: String
-  // },
-  // restatedValue: {
-  //   type: String
-  // },
+  isRestated: {
+    type: String
+  },
+  restatedForYear: {
+    type: String
+  },
+  restatedInYear: {
+    type: String
+  },
+  restatedValue: {
+    type: String
+  },
   publicationDate: {
     type: String
   },
@@ -202,10 +202,10 @@ standaloneDatapointsSchema.methods = {
       sourceFile: this.sourceFile ? this.sourceFile : '',
       isActive: this.isActive,
       pageNumber: this.pageNumber,
-      // isRestated: this.isRestated,
-      // restatedForYear: this.restatedForYear,
-      // restatedInYear: this.restatedInYear,
-      // restatedValue: this.restatedValue,
+      isRestated: this.isRestated,
+      restatedForYear: this.restatedForYear,
+      restatedInYear: this.restatedInYear,
+      restatedValue: this.restatedValue,
       correctionStatus: this.correctionStatus,
       publicationDate: this.publicationDate,
       textSnippet: this.textSnippet,
