@@ -889,7 +889,6 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       userId: completeUserDetail.id,
       status: true
     });
-    console.log('clientRepDetail', JSON.stringify(clientRepDetail, null, 3));
     if (clientRepDetail && clientRepDetail.companiesList) {
       await TaskAssignment.find({
         companyId: { $in: clientRepDetail.companiesList },
@@ -949,7 +948,6 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
         .populate("analystId")
         .populate("createdBy")
         .then(async (controversyTasks) => {
-          console.log('controversyTasks', controversyTasks);
           if (controversyTasks && controversyTasks.length > 0) {
             for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
               let yesterday = new Date();
