@@ -1367,8 +1367,6 @@ export const dataCollection = async ({
       let historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];
       let mergedYear = _.concat(currentYearValues, historicalDataYear);
       if (body.memberType == 'Standalone') {  
-        await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
-          { $set: {isActive: false} });
         let currentYearData = [];
         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
           let item = dpCodesDetails[dpIndex];
@@ -1381,7 +1379,9 @@ export const dataCollection = async ({
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
-          }
+          }        
+          await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            { $set: {isActive: false} });       
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1419,6 +1419,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            { $set: {isActive: false} });   
           dpHistoricalDpDetails.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1442,7 +1444,7 @@ export const dataCollection = async ({
             updatedAt: Date.now()
           });
         }
-        let structuredStandaloneDetails = _.concat(currentYearData, historyYearData);        
+        let structuredStandaloneDetails = _.concat(currentYearData, historyYearData);  
         await StandaloneDatapoints.insertMany(structuredStandaloneDetails)
         .then((result,err) => {
           if (err) {
@@ -1534,6 +1536,8 @@ export const dataCollection = async ({
           })
         }
         let boardMemberDetails = _.concat(currentYearData, historyYearData);   
+        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
+          { $set: {isActive: false} });
         await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails)
         .then((result,err) => {
           if (err) {
@@ -1547,8 +1551,6 @@ export const dataCollection = async ({
           }
         });
       } else if (body.memberType == 'KMP Matrix') {     
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true,status: true },
-          { $set: {isActive: false} });   
         let currentYearData = [];
         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
           let item = dpCodesDetails[dpIndex];
@@ -1624,7 +1626,9 @@ export const dataCollection = async ({
             updatedAt: Date.now()
           });
         }
-        let kmpMemberDetails = _.concat(currentYearData, historyYearData);        
+        let kmpMemberDetails = _.concat(currentYearData, historyYearData);  
+        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true,status: true },
+          { $set: {isActive: false} });         
         await KmpMatrixDataPoints.insertMany(kmpMemberDetails)
         .then((result,err) => {
           if (err) {
