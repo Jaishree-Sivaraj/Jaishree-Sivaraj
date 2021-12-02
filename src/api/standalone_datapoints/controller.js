@@ -882,8 +882,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   createdBy: userDetail
                 };
                 boardMembersList.push(memberDetail);
-                console.log("memberDetail", memberDetail);
-                console.log("Value", item[value]);
                 if (item['DP Code'] == 'BOIR018') {
                   if ((item[value].toString().toLowerCase() != 'n' || item[value].toString().toLowerCase() != 'no') && item[value].toString() != '' && item[value] != undefined && item[value] != null) {
 
