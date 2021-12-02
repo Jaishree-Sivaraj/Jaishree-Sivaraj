@@ -131,7 +131,7 @@ router.get('/task/reports/:role',
     required: true
   }),
   query(),
-  taskReports)
+  reports)
 
 /**
 * @api {get} /taskAssignments/task/controversyReports Retrieve my task assignments
