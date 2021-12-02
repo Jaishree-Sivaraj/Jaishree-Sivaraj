@@ -751,9 +751,7 @@ export const calculateForACompany = async ({
 
 export const jsonGeneration = async ({ user, params }, res, next) => {
   let requiredDataPoints = await Datapoints.find({
-    standaloneOrMatrix: {
-      "$ne": "Matrix"
-    },
+    isRequiredForJson: true,
     functionId: {
       "$ne": '609bcceb1d64cd01eeda092c'
     }

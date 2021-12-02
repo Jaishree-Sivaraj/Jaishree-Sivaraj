@@ -125,6 +125,9 @@ const datapointsSchema = new Schema({
   },
   additionalDetails: {
     type: Object
+  },
+  isRequiredForJson: {
+    type: Boolean
   }
 }, {
   timestamps: true,
@@ -170,6 +173,7 @@ datapointsSchema.methods = {
       dpStatus: this.dpStatus,
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
+      isRequiredForJson: this.isRequiredForJson,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

@@ -165,12 +165,12 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
 }
 
 export const getDistinctBoardMembersCompanywise = async({ user, params }, res, next) => {
-  let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true, status: true}).distinct('year');
-  if (distinctYears.length > 0) {
+  // let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true, status: true}).distinct('year');
+  // if (distinctYears.length > 0) {
     let distinctBoardMembers = [], distinctKmpMembers = [];
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-      let year = distinctYears[1];
-      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: year, isActive: true, status: true })
+      // let year = distinctYears[1];
+      let allBoardMembersofYear = await BoardMembersMatrixDataPoints.find({ year: params.year, isActive: true, status: true })
       .populate('companyId');
       console.log('allBoardMembersofYear.length', allBoardMembersofYear.length);
       let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
@@ -183,9 +183,9 @@ export const getDistinctBoardMembersCompanywise = async({ user, params }, res, n
           companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
           memberName: memberDetail.memberName,
           expectedName: memberDetail.memberName,
-          year: year
+          year: params.year
         };
-        console.log('memberObject', memberObject);
+        // console.log('memberObject', memberObject);
         let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
         if (foundBoardMemberIndex == -1) {
           distinctBoardMembers.push(memberObject);
@@ -196,17 +196,17 @@ export const getDistinctBoardMembersCompanywise = async({ user, params }, res, n
       // }
     // }
     return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
-  }
+  // }
 }
 
 
 export const getDistinctKmpMembersCompanywise = async({ user, params }, res, next) => {
-  let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true,status: true}).distinct('year');
-  if (distinctYears.length > 0) {
-    let distinctBoardMembers = [], distinctKmpMembers = [];
+  // let distinctYears = await BoardMembersMatrixDataPoints.find({isActive: true,status: true}).distinct('year');
+  // if (distinctYears.length > 0) {
+    let distinctKmpMembers = [];
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-      let year = distinctYears[1];
-      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: year, isActive: true, status: true })
+      // let year = distinctYears[1];
+      let allKmpMembersofYear = await KmpMatrixDataPoints.find({ year: params.year, isActive: true, status: true })
       .populate('companyId');
       console.log('allKmpMembersofYear.length', allKmpMembersofYear.length);
       let uniqKmpMembers = _.uniqBy(allKmpMembersofYear, 'memberName');
@@ -220,7 +220,7 @@ export const getDistinctKmpMembersCompanywise = async({ user, params }, res, nex
           companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
           memberName: memberDetail.memberName,
           expectedName: memberDetail.memberName,
-          year: year
+          year: params.year
         };
         let foundKmpMemberIndex = distinctKmpMembers.indexOf(memberObject);
         console.log('foundKmpMemberIndex', foundKmpMemberIndex);
@@ -232,6 +232,6 @@ export const getDistinctKmpMembersCompanywise = async({ user, params }, res, nex
     //     return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
     //   }
     // }
-    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { boardMembers: distinctBoardMembers, kmpMmbers: distinctKmpMembers } });
-  }
+    return res.status(200).json({ status: "200", message: "Retrieved member details successfully!", data: { kmpMmbers: distinctKmpMembers } });
+  // }
 }
