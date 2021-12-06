@@ -488,9 +488,10 @@ export const uploadControversies = async (req, res, next) => {
 }
 
 export const generateJson = async ({ params, user }, res, next) => {
-  let companyDetails = await Companies.findOne({ _id: params.companyId, status: true });
+  let companyDetails = await Companies.findOne({ _id: params.companyId, status: true }).populate('clientTaxonomyId');
   if (companyDetails) {
-    let companyControversyYears = await Controversy.find({ companyId: params.companyId, isActive: true, status: true }).distinct('year');
+    let controversyJsonDatapoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id');
+    let companyControversyYears = await Controversy.find({ companyId: params.companyId, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true }).distinct('year');
     let responseObject = {
       companyName: companyDetails.companyName,
       CIN: companyDetails.cin,

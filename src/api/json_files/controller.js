@@ -220,7 +220,8 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   } else if (body.type && body.type === 'controversy') {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
     if (companyDetails) {
-      let companyControversyYears = await Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year');
+      let controversyJsonDatapoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id');
+      let companyControversyYears = await Controversy.find({ companyId: body.companyId, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true }).distinct('year');
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
