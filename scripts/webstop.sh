@@ -10,7 +10,7 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	fi
 else 
   cd /app/esgapi/scripts
-  chmod u+x *
+  chown ubuntu:ubuntu *.sh
 	bash nodeconfigure.sh
 	bash webconfigure.sh
 	cd ../ 
