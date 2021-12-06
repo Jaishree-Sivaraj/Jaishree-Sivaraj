@@ -782,66 +782,74 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
   if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
     body.userDetails.isUserRejected = true;
   }
-  User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
-    if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
-      User.findById(body.userId).then(async function (userDetails) {
-        var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
-        if (userDetails && userDetails.userType) {
-          userDetails.userType = userDetails.userType.split(" ").join("");
+  User.findById({ _id: body.userId}).then(async function(userDetail){
+    if (userDetail && userDetail.isUserApproved == false) {
+      User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
+        if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
+          User.findById(body.userId).then(async function (userDetails) {
+            var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
+            if (userDetails && userDetails.userType) {
+              userDetails.userType = userDetails.userType.split(" ").join("");
+            }
+            link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
+            userDetails = userDetails.toObject();
+            const content = `
+              Hi,<br/><br/>
+              Sorry, we could not process your onboarding request.<br/>
+              Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>    
+              Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+              Thanks<br/>
+              ESGDS Team `;
+            // var transporter = nodemailer.createTransport({
+            //   service: 'Gmail',
+            //   auth: {
+            //     user: 'testmailer09876@gmail.com',
+            //     pass: 'ijsfupqcuttlpcez'
+            //   }
+            // });
+            // transporter.sendMail({
+            //   from: 'testmailer09876@gmail.com',
+            //   to: userDetails['email'],
+            //   subject: 'ESG - Onboarding',
+            //   html: content
+            // });
+            await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+            .then((resp) => { console.log('Mail sent!'); });
+          })
+          // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
+          return res.status(200).json({
+            message: 'User details updated successfully',
+          });
+        }else {
+          User.findById(body.userId).then(async function (userDetails) {
+            userDetails = userDetails.toObject();
+            const content = `
+                Hi,<br/><br/>
+                You now have access to the ESGDS data portal.<br/>
+                Kindly use your email id & the password set by you at the time of filing the form to login into the system.<br/><br/><br/>
+                Link - <a href="${process.env.FRONTEND_URL}">click here</a><br><br>       
+                Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+                Thanks<br/>
+                ESGDS Team `;
+    
+    
+            await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+              .then((response) => { console.log('Mail sent!'); });
+          })
         }
-        link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
-        userDetails = userDetails.toObject();
-        const content = `
-          Hi,<br/><br/>
-          Sorry, we could not process your onboarding request.<br/>
-          Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>    
-          Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-          Thanks<br/>
-          ESGDS Team `;
-        // var transporter = nodemailer.createTransport({
-        //   service: 'Gmail',
-        //   auth: {
-        //     user: 'testmailer09876@gmail.com',
-        //     pass: 'ijsfupqcuttlpcez'
-        //   }
-        // });
-        // transporter.sendMail({
-        //   from: 'testmailer09876@gmail.com',
-        //   to: userDetails['email'],
-        //   subject: 'ESG - Onboarding',
-        //   html: content
-        // });
-        await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
-        .then((resp) => { console.log('Mail sent!'); });
+        return res.status(200).json({
+          message: 'User details updated successfully',
+        });
+      }).catch(err => {
+        return res.status(500).json({
+          message: err.message ? err.message : 'Failed to update userDetails',
+        });
       })
-      // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
+    } else {
       return res.status(200).json({
         message: 'User details updated successfully',
       });
-    }else {
-      User.findById(body.userId).then(async function (userDetails) {
-        userDetails = userDetails.toObject();
-        const content = `
-            Hi,<br/><br/>
-            You now have access to the ESGDS data portal.<br/>
-            Kindly use your email id & the password set by you at the time of filing the form to login into the system.<br/><br/><br/>
-            Link - <a href="${process.env.FRONTEND_URL}">click here</a><br><br>       
-            Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-            Thanks<br/>
-            ESGDS Team `;
-
-
-        await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
-          .then((response) => { console.log('Mail sent!'); });
-      })
     }
-    return res.status(200).json({
-      message: 'User details updated successfully',
-    });
-  }).catch(err => {
-    return res.status(500).json({
-      message: err.message ? err.message : 'Failed to update userDetails',
-    });
   })
 }
 
