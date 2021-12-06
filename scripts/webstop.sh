@@ -12,6 +12,6 @@ else
   cd /app/esgapi/scripts
 	bash nodeconfigure.sh
 	bash webconfigure.sh
-	cd ../
-	pm2 stop src/esgapi.js
+	cd ../ 
+  echo " service runninc successfully.."
 fi
