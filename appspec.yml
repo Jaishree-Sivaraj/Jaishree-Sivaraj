@@ -12,10 +12,7 @@ permissions:
     group: ubuntu
     
 hooks:
-  ApplicationStop:
-    - location: scripts/webstop.sh
-      timeout: 180
-      runas: ubuntu
+  
   # Execute BeforeInstall only for the first time if node is not configured in system 
   #BeforeInstall:
     #- location: scripts/nodeconfigure.sh
@@ -26,6 +23,10 @@ hooks:
   AfterInstall:
     - location: scripts/appbuild.sh
       timeout: 600
+      runas: ubuntu
+  ApplicationStop:
+    - location: scripts/webstop.sh
+      timeout: 180
       runas: ubuntu
   ApplicationStart:
     - location: scripts/webstartservice.sh
