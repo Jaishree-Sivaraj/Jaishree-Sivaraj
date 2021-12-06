@@ -1455,9 +1455,7 @@ export const dataCollection = async ({
             });
           }
         });     
-      } else if (body.memberType == 'Board Matrix') {    
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
-          { $set: {isActive: false} });
+      } else if (body.memberType == 'Board Matrix') {   
         let currentYearData = [];
         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
           let item = dpCodesDetails[dpIndex];
@@ -1470,7 +1468,9 @@ export const dataCollection = async ({
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
-          }
+          } 
+          await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            { $set: {isActive: false} });
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1508,7 +1508,9 @@ export const dataCollection = async ({
               await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
               formattedScreenShots.push(screenshotFileName);
             }
-          }
+          } 
+          await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            { $set: {isActive: false} });
           historyYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1533,9 +1535,7 @@ export const dataCollection = async ({
             updatedAt: Date.now()
           })
         }
-        let boardMemberDetails = _.concat(currentYearData, historyYearData);   
-        await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true, status: true },
-          { $set: {isActive: false} });
+        let boardMemberDetails = _.concat(currentYearData, historyYearData);  
         await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails)
         .then((result,err) => {
           if (err) {
@@ -1562,6 +1562,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
+            { $set: {isActive: false} });  
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1600,6 +1602,8 @@ export const dataCollection = async ({
               formattedScreenShots.push(screenshotFileName);
             }
           }
+          await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
+            { $set: {isActive: false} });  
           historyYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1624,9 +1628,7 @@ export const dataCollection = async ({
             updatedAt: Date.now()
           });
         }
-        let kmpMemberDetails = _.concat(currentYearData, historyYearData);  
-        await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: {$in : mergedYear}, isActive: true,status: true },
-          { $set: {isActive: false} });         
+        let kmpMemberDetails = _.concat(currentYearData, historyYearData);         
         await KmpMatrixDataPoints.insertMany(kmpMemberDetails)
         .then((result,err) => {
           if (err) {
@@ -1649,9 +1651,9 @@ export const dataCollection = async ({
       if (body.memberType == 'Standalone') {   
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex]
-          let hasCorrectionValue = false;
+          let hasCorrectionValue = true;
           if(item.isAccepted == true) {
-            hasCorrectionValue = true;            
+                     
             await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
             { $set: { isErrorAccepted: true, isErrorRejected: false} });
           } else{
@@ -1754,9 +1756,9 @@ export const dataCollection = async ({
       } else if (body.memberType == 'Board Matrix') {    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex];
-          let hasCorrectionValue = false;
+          let hasCorrectionValue = true;
           if(item.isAccepted == true) {
-            hasCorrectionValue = true;
+         
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
             { $set: { isErrorAccepted: true, isErrorRejected: false} });
           } else{
@@ -1858,9 +1860,9 @@ export const dataCollection = async ({
       } else if (body.memberType == 'KMP Matrix') {    
         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
           let item = dpCodesDetails[dpDetailsIndex];
-          let hasCorrectionValue = false;
+          let hasCorrectionValue = true;
           if(item.isAccepted == true) {
-            hasCorrectionValue = true;
+         
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
             { $set: { isErrorAccepted: true, isErrorRejected: false} });
           } else{
