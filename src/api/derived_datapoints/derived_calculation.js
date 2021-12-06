@@ -986,6 +986,7 @@ export const countOfCalculation = async function (taskId, companyId, mergedDetai
                 denominatorList.push(object)
               }
             });
+            // intersection formula
             if (numeratorList.length > 0 && denominatorList.length > 0) {
               let count = 0;
               numeratorList = numeratorList.filter(e => String(e.response).trim());
@@ -1088,6 +1089,7 @@ export const countOfCalculation = async function (taskId, companyId, mergedDetai
                 finalResponse = 'NA';
               }
             } else if (countOfRules[i].criteria.toLowerCase() == 'd') {
+              // count of only active members
               if (values.length > 0) {
                 finalResponse = values.length;
               } else {
