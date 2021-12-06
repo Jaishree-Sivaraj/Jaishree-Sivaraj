@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
+if [ "$DEPLOYMENT_GROUP_NAME" == "ESG-Backend-Deploy-Instances-Dev" ]; then
 	STATUS="$(systemctl is-active web.service)"
 	if [ "${STATUS}" = "active" ]; then
 	   sudo systemctl stop web
@@ -10,9 +10,5 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	fi
 else 
   cd /app/esgapi/scripts
-  chown ubuntu:ubuntu *.sh
-	bash nodeconfigure.sh
-	bash webconfigure.sh
-	cd ../ 
-  echo " service runninc successfully.."
+  pm2 stop src/esgapi.js
 fi
