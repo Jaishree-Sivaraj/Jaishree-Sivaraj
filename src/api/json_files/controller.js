@@ -221,7 +221,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
     if (companyDetails) {
       let controversyJsonDatapoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id');
-      let companyControversyYears = await Controversy.find({ companyId: body.companyId, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true }).distinct('year');
+      let companyControversyYears = await Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year');
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
@@ -236,7 +236,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
             companyName: companyDetails.companyName,
             Data: []
           };
-          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, isActive: true, status: true })
+          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true })
             .populate('createdBy')
             .populate('companyId')
             .populate('datapointId');
