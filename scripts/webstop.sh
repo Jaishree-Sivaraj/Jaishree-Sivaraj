@@ -9,9 +9,7 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 	   echo " Service failed to stop"
 	fi
 else 
-  cd /app/esgapi/scripts
-	bash nodeconfigure.sh
-	bash webconfigure.sh
-	cd ../
-	pm2 stop src/esgapi.js
+  cd /app/esgapi
+	#pm2 stop src/esgapi.js
+	/home/ubuntu/.nvm/versions/node/v14.17.6/bin/pm2 stop src/esgapi.js
 fi
