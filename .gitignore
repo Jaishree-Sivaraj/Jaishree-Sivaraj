@@ -6,6 +6,7 @@ public
 .log
 dist
 docs
+scripts
 .env
 npm-debug.log
 .nyc_output
