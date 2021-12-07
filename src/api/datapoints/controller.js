@@ -1254,7 +1254,7 @@ export const datapointDetails = async (req, res, next) => {
           let object = currentAllStandaloneDetails[currentIndex];
           console.log('===> object', object);
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.isErrorAccepted == null)
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId )
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
@@ -1831,7 +1831,7 @@ export const datapointDetails = async (req, res, next) => {
           };
           const object = currentAllBoardMemberMatrixDetails[currentIndex];
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId );
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
@@ -2405,7 +2405,7 @@ export const datapointDetails = async (req, res, next) => {
             publicationDate: ''
           };
           let errorTypeId = '';
-          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId && obj.isErrorAccepted == null);
+          let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.memberName == req.body.memberName && obj.taskId == req.body.taskId );
           if (errorDetailsObject.length > 0) {
             if (errorDetailsObject[0].raisedBy == 'QA') {
               errorTypeId = errorDetailsObject[0].errorTypeId ? errorDetailsObject[0].errorTypeId.errorType : '';
