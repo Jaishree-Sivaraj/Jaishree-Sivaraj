@@ -1177,7 +1177,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     ],
                     status: true,
                 }
-            } else if (params.type == "Controversy Collection") {
+            } else if (params.type == "ControversyCollection") {
                 findQuery = {
                     analystId: completeUserDetail.id,
                     taskStatus: {
@@ -1186,7 +1186,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     status: true
                 }
             } else {
-                return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
             }
         } else {
             return res.status(400).json({ status: "400", message: "User role not found!" });   
@@ -1207,7 +1207,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     status: true
                 }
             } else {
-                return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
             }
         } else {
             return res.status(400).json({ status: "400", message: "User role not found!" });   
@@ -1225,13 +1225,13 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                         taskStatus: { $in: ["Completed", "Verification Completed"] },
                         status: true
                     }
-                } else if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
+                } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
                     findQuery = {
                       companyId: { $in: clientRepDetail.companiesList },
                       status: true
                     }
                 } else {
-                    return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                    return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
                 }
             } else {
                 return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
@@ -1254,13 +1254,13 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                         taskStatus: { $in: ["Completed", "Verification Completed"] },
                         status: true
                     }
-                } else if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
+                } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
                     findQuery = {
                         companyId: { $in: companyRepDetail.companiesList },
                         status: true
                     }
                 } else {
-                    return res.status(400).json({ status: "400", message: "Invalid type to fetch the records!" });
+                    return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
                 }
             } else {
                 return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
@@ -1272,7 +1272,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         return res.status(400).json({ status: "400", message: "User role not found!" });   
     }
     console.log('params.role', params.role);
-    if (params.type == "Controversy Collection" || params.type == "ControversyReview") {
+    if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
         count = await ControversyTasks.count(findQuery);
         await ControversyTasks.find(findQuery, select, cursor)
         .populate("companyId")
