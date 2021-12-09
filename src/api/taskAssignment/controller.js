@@ -1281,6 +1281,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         .then(async (controversyTasks) => {
             if (controversyTasks && controversyTasks.length > 0) {
                 for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+                  let object = {};
+                  if (params.type == "ControversyReview") {
                     let yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
                     const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
@@ -1288,7 +1290,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                         Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                         Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
                     ]);
-                    let object = {};
+                    object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                    object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+                    object.totalNoOfControversy = totalNoOfControversy;            
+                  }
                     object.taskNumber = controversyTasks[cIndex].taskNumber;
                     object.taskId = controversyTasks[cIndex].id;
                     object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : "";
@@ -1298,9 +1303,6 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                     object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : "";
                     object.status = controversyTasks[cIndex].status;
                     object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-                    object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-                    object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-                    object.totalNoOfControversy = totalNoOfControversy;
                     if (controversyTasks[cIndex] && object) {
                         rows.push(object);
                     }
