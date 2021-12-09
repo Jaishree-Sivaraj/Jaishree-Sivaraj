@@ -1282,7 +1282,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
             if (controversyTasks && controversyTasks.length > 0) {
                 for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
                   let object = {};
-                  if (params.type == "ControversyReview") {
+                  if (params.type != "ControversyReview") {
                     let yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
                     const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
