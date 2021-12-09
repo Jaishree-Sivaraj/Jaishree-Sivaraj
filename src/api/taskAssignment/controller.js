@@ -455,13 +455,26 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
   let findQuery = {};
   if (params.taskStatus && params.role == "GroupAdmin") {
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-    findQuery = {
-      taskStatus: params.taskStatus ? params.taskStatus : '',
-      groupId: { $in: groupIds },
-      status: true
-    };
+    if (params.taskStatus == "Completed") {
+      findQuery = {
+        taskStatus: { $in: [ "Completed", "Verification Completed" ] },
+        groupId: { $in: groupIds },
+        status: true
+      };
+    } else {
+      findQuery = {
+        taskStatus: params.taskStatus ? params.taskStatus : '',
+        groupId: { $in: groupIds },
+        status: true
+      };
+    }
   } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
-    findQuery = { taskStatus: params.taskStatus ? params.taskStatus : '', status: true };
+    if (params.taskStatus == "Completed") {
+      findQuery = { taskStatus: { $in: [ "Completed", "Verification Completed" ] }, status: true };
+    } else {
+      findQuery = { taskStatus: params.taskStatus ? params.taskStatus : '', status: true };
+    }
+    
   } else {
     findQuery = { taskStatus: '', status: true };
   }
