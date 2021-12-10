@@ -482,6 +482,9 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     await TaskAssignment.count(findQuery)
       .then(async (count) => {
         await TaskAssignment.find(findQuery, select, cursor)
+        // .skip(query ? Number((query.page*query.limit)-query.limit) : 0)
+        // .limit(query ? Number(query.limit) : 10)
+        // .sort({createdAt: -1})
           .populate("createdBy")
           .populate("categoryId")
           .populate("groupId")

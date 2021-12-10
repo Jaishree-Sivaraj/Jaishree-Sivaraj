@@ -92,7 +92,14 @@ router.get('/controversies/:role',
   token({
     required: true
   }),
-  query(),
+  query({
+    page: {
+      max: Infinity
+    },
+    limit: {
+      max: Infinity
+    }
+  }),
   retrieveFilteredControversyTasks)
 
 /**
@@ -111,7 +118,14 @@ router.get('/:taskStatus/:role',
   token({
     required: true
   }),
-  query(),
+  query({
+    page: {
+      max: Infinity
+    },
+    limit: {
+      max: Infinity
+    }
+  }),
   retrieveFilteredDataTasks)
 
 /**
@@ -186,7 +200,14 @@ router.get('/my-tasks/:type/:role',
   token({
     required: true
   }),
-  query(),
+  query({
+    page: {
+      max: Infinity
+    },
+    limit: {
+      max: Infinity
+    }
+  }),
   getMyTasksPageData)
 
 /**
