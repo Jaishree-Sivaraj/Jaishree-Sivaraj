@@ -63,9 +63,9 @@ export const destroy = ({ params }, res, next) =>
     .then(success(res, 204))
     .catch(next)
 
-export const updateSourceUrls = async ({ params }, res, next) => {
-  if (params.id == 'Standalone') {
-    var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(2000);
+export const updateSourceUrls = async ( req, res, next) => {
+  if (req.params.id == 'Standalone') {
+    var standAlonepoints = await StandaloneDatapoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(req.query.records ? Number(req.query.records) : 2000);
     let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
     console.log('uniq urls length ==>', standAlonepointsList.length);
     //launch
@@ -799,8 +799,8 @@ export const updateSourceUrls = async ({ params }, res, next) => {
     }
     await browser.close();
     return res.status(200).json({ status: "200", message: "Completed successfully!" });
-  } else if(params.id == 'Board') {
-    var standAlonepoints = await BoardMembersMatrixDataPoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(2000);
+  } else if(req.params.id == 'Board') {
+    var standAlonepoints = await BoardMembersMatrixDataPoints.find({ isCounted: false, isActive : true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(req.query.records ? Number(req.query.records) : 2000);
     let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
     console.log('uniq urls length ==>', standAlonepointsList.length);
     //launch
@@ -1534,8 +1534,8 @@ export const updateSourceUrls = async ({ params }, res, next) => {
     }
     await browser.close();
     return res.status(200).json({ status: "200", message: "Completed successfully!" });
-  } else if (params.id == 'KMP') {
-    var standAlonepoints = await KmpMatrixDataPoints.find({ isCounted: false, isActive: true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(20000);
+  } else if (req.params.id == 'KMP') {
+    var standAlonepoints = await KmpMatrixDataPoints.find({ isCounted: false, isActive: true, status: true, url: { $exists: true, $nin: ["", " ", "`", "NA"] } }).limit(req.query.records ? Number(req.query.records) : 2000);
     let standAlonepointsList = _.uniqBy(standAlonepoints, 'url');
     console.log('uniq urls length ==>', standAlonepointsList.length);
     //launch
