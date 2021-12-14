@@ -22,7 +22,16 @@ import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
 import { Functions } from '../functions'
 import _ from 'lodash'
-import { QA, Analyst } from '../../constants/roles'
+import { QA, Analyst, adminRoles } from '../../constants/roles';
+import {
+  VerificationCompleted,
+  CorrectionPending,
+  ReassignmentPending,
+  CorrectionCompleted,
+  Completed,
+  CollectionCompleted,
+} from '../../constants/task-status'
+
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1831,7 +1840,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     }).populate('categoryId')
       .populate('companyId')
       .populate('groupId')
-console.log(taskDetails)
     // Get distinct years
     const distinctYears = taskDetails.year.split(',');
     let datapointsCount = 0;
@@ -1886,7 +1894,7 @@ console.log(taskDetails)
 
     let taskStatusValue = "";
     if (datapointsCount == multipliedValue && hasError) {
-      taskStatusValue = body.role == QA ? "Correction Pending" : "Reassignment Pending"
+      taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
 
       const [query, update, query1, update1] = [
         { taskId: body.taskId, isActive: true, status: true, hasError: true },
@@ -1905,7 +1913,7 @@ console.log(taskDetails)
     } else if (
       datapointsCount == multipliedValue &&
       hasCorrection) {
-      taskStatusValue = "Correction Completed";
+      taskStatusValue = CorrectionCompleted;
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
         { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
@@ -1922,11 +1930,11 @@ console.log(taskDetails)
       hasError == undefined &&
       hasCorrection == undefined
     ) {
-      taskStatusValue = body.role == QA ? "Verification Completed" : "Completed"
-      taskStatusValue = body.role == Analyst ? "Collection Completed" : "Completed"
+      taskStatusValue = body.role == QA ? VerificationCompleted : Completed
+      taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true },
-        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } } // This condition doubtful.
+        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
       ]
       await Promise.all([
         KmpMatrixDataPoints.updateMany(query, update),
@@ -1960,11 +1968,11 @@ console.log(taskDetails)
 
     //  check if the body.role is QA and taskHistory has Reassignment Pending then email to all company and client rep of this particular task.
 
-    const getTaskHistory = await TaskHistories.findOne({ taskId: body.taskId, status: true, stage: 'Reassignment Pending' });
+    const getTaskHistory = await TaskHistories.findOne({ taskId: body.taskId, status: true, stage: ReassignmentPending });
 
     if (getTaskHistory && body.role == QA) {
       // Send Email to Client or Company Rep.
-      const companyDetails = getCompanyDetails(body.companyId);
+      const companyDetails = await getCompanyDetails(body.companyId);
       const content = `
       Hi,
         Please login into the data portal and check ${companyDetails?.companyName},
@@ -1996,7 +2004,7 @@ console.log(taskDetails)
       });
 
       const adminRoleIds = await Role.find({
-        roleName: { $in: ["SuperAdmin", "Admin"] },
+        roleName: { $in: adminRoles },
         status: true
       }).distinct('_id');
 
@@ -2026,7 +2034,7 @@ console.log(taskDetails)
     const taskDetailsObject = await TaskAssignment.count({
       companyId: body.companyId,
       year: body.year,
-      taskStatus: { $in: ["Verification Completed", "Completed"] }
+      taskStatus: { $in: [VerificationCompleted, Completed] }
     });
 
     if (categoriesLength == taskDetailsObject) {
@@ -2043,7 +2051,7 @@ console.log(taskDetails)
         }
       );
       // Send Email to Client or Company Rep.
-      const companyDetails = getCompanyDetails(body.companyId)
+      const companyDetails = await getCompanyDetails(body.companyId)
       const content = `
                         Hi,
                         We have updated data for ${companyDetails?.companyName} for the years ${body?.year}
