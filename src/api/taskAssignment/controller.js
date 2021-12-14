@@ -1164,7 +1164,12 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       });
     }
     userRoles = _.uniq(userRoles);
-    let rows = [], count = 0, findQuery = {};
+    let rows = [], count = 0, findQuery = {}, companyIds = [];
+    if (query.company) {
+      let companyDetail = await Companies.find({companyName: { $regex: new RegExp( query.company, "i") } }).distinct('_id');
+
+      companyIds = companyDetail ? companyDetail : [];
+    }
     if (params.role == "Analyst") {
         if (userRoles.includes("Analyst")) {
             if (params.type == "DataCollection") {
@@ -1178,7 +1183,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                             taskStatus: "In Progress"
                         }
                     ],
-                    status: true,
+                    status: true
                 }
             } else if (params.type == "DataCorrection") {
                 findQuery = {
@@ -1287,7 +1292,9 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
     } else {
         return res.status(400).json({ status: "400", message: "User role not found!" });   
     }
-    console.log('params.role', params.role);
+    if (query.company) {
+      findQuery['companyId'] = { $in: companyIds };
+    }
     if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
         count = await ControversyTasks.count(findQuery);
         await ControversyTasks.find(findQuery, select, cursor)

@@ -199,7 +199,8 @@ router.get('/my-tasks/:type/:role',
     },
     limit: {
       max: Infinity
-    }
+    },
+    company
   }),
   getMyTasksPageData)
 
