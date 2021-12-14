@@ -22,6 +22,7 @@ import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
 import { Functions } from '../functions'
 import _ from 'lodash'
+import { QA, Analyst } from '../../constants/roles'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -457,7 +458,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
     if (params.taskStatus == "Completed") {
       findQuery = {
-        taskStatus: { $in: [ "Completed", "Verification Completed" ] },
+        taskStatus: { $in: ["Completed", "Verification Completed"] },
         groupId: { $in: groupIds },
         status: true
       };
@@ -470,11 +471,11 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     }
   } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
     if (params.taskStatus == "Completed") {
-      findQuery = { taskStatus: { $in: [ "Completed", "Verification Completed" ] }, status: true };
+      findQuery = { taskStatus: { $in: ["Completed", "Verification Completed"] }, status: true };
     } else {
-      findQuery = { taskStatus: { $in: [ "Pending", "Reassignment Pending" ] }, status: true };
+      findQuery = { taskStatus: { $in: ["Pending", "Reassignment Pending"] }, status: true };
     }
-    
+
   } else {
     findQuery = { taskStatus: '', status: true };
   }
@@ -482,9 +483,9 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     await TaskAssignment.count(findQuery)
       .then(async (count) => {
         await TaskAssignment.find(findQuery, select, cursor)
-        // .skip(query ? Number((query.page*query.limit)-query.limit) : 0)
-        // .limit(query ? Number(query.limit) : 10)
-        // .sort({createdAt: -1})
+          // .skip(query ? Number((query.page*query.limit)-query.limit) : 0)
+          // .limit(query ? Number(query.limit) : 10)
+          // .sort({createdAt: -1})
           .populate("createdBy")
           .populate("categoryId")
           .populate("groupId")
@@ -1130,32 +1131,26 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
 };
 
 export const getMyTasksPageData = async ({ user, querymen: { query, select, cursor }, params }, res, next) => {
-    let completeUserDetail = await User.findOne({ _id: user.id, isUserActive: true })
-    .populate({path: "roleDetails.roles"}).populate({path: "roleDetails.primaryRole"})
+  let completeUserDetail = await User.findOne({ _id: user.id, isUserActive: true })
+    .populate({ path: "roleDetails.roles" }).populate({ path: "roleDetails.primaryRole" })
     .catch((error) => {
-        return res.status(500).json({
-            status: "500",
-            message: error.message,
-        });
+      return res.status(500).json({
+        status: "500",
+        message: error.message,
+      });
     });
-    let userRoles = [];
-    if (completeUserDetail && completeUserDetail.roleDetails) {
-      if (completeUserDetail.roleDetails.primaryRole) {
-        userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
-        if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
-          for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
-            if (completeUserDetail.roleDetails.roles[index]) {
-              userRoles.push(
-                completeUserDetail.roleDetails.roles[index].roleName
-              );
-            }
+  let userRoles = [];
+  if (completeUserDetail && completeUserDetail.roleDetails) {
+    if (completeUserDetail.roleDetails.primaryRole) {
+      userRoles.push(completeUserDetail.roleDetails.primaryRole.roleName);
+      if (completeUserDetail.roleDetails.roles && completeUserDetail.roleDetails.roles.length > 0) {
+        for (let index = 0; index < completeUserDetail.roleDetails.roles.length; index++) {
+          if (completeUserDetail.roleDetails.roles[index]) {
+            userRoles.push(
+              completeUserDetail.roleDetails.roles[index].roleName
+            );
           }
         }
-      } else {
-        return res.status(400).json({
-          status: "400",
-          message: "User role not found!",
-        });
       }
     } else {
       return res.status(400).json({
@@ -1163,235 +1158,241 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         message: "User role not found!",
       });
     }
-    userRoles = _.uniq(userRoles);
-    let rows = [], count = 0, findQuery = {};
-    if (params.role == "Analyst") {
-        if (userRoles.includes("Analyst")) {
-            if (params.type == "DataCollection") {
-                findQuery = {
-                    analystId: completeUserDetail.id,
-                    $or: [
-                        {
-                            taskStatus: "Pending"
-                        },
-                        {
-                            taskStatus: "In Progress"
-                        }
-                    ],
-                    status: true,
-                }
-            } else if (params.type == "DataCorrection") {
-                findQuery = {
-                    analystId: completeUserDetail.id,
-                    $or: [
-                        {
-                            taskStatus: "Verification Pending"
-                        },
-                        {
-                            taskStatus: "Correction Pending"
-                        }
-                    ],
-                    status: true,
-                }
-            } else if (params.type == "ControversyCollection") {
-                findQuery = {
-                    analystId: completeUserDetail.id,
-                    taskStatus: {
-                        $ne: "Completed"
-                    },
-                    status: true
-                }
-            } else {
-                return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+  } else {
+    return res.status(400).json({
+      status: "400",
+      message: "User role not found!",
+    });
+  }
+  userRoles = _.uniq(userRoles);
+  let rows = [], count = 0, findQuery = {};
+  if (params.role == "Analyst") {
+    if (userRoles.includes("Analyst")) {
+      if (params.type == "DataCollection") {
+        findQuery = {
+          analystId: completeUserDetail.id,
+          $or: [
+            {
+              taskStatus: "Pending"
+            },
+            {
+              taskStatus: "In Progress"
             }
-        } else {
-            return res.status(400).json({ status: "400", message: "User role not found!" });   
+          ],
+          status: true,
         }
-    } else if (params.role == "QA") {
-        if (userRoles.includes("QA")) {
-            if (params.type == "DataVerification") {
-                findQuery = {
-                    qaId: completeUserDetail.id,
-                    $or: [
-                        {
-                            taskStatus: "Collection Completed"
-                        },
-                        {
-                            taskStatus: "Correction Completed"
-                        }
-                    ],
-                    status: true
-                }
-            } else {
-                return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+      } else if (params.type == "DataCorrection") {
+        findQuery = {
+          analystId: completeUserDetail.id,
+          $or: [
+            {
+              taskStatus: "Verification Pending"
+            },
+            {
+              taskStatus: "Correction Pending"
             }
-        } else {
-            return res.status(400).json({ status: "400", message: "User role not found!" });   
+          ],
+          status: true,
         }
-    } else if (params.role == "Client Representative") {
-        if (userRoles.includes("Client Representative")) {
-            let clientRepDetail = await ClientRepresentatives.findOne({
-                userId: completeUserDetail.id,
-                status: true
-            });
-            if (clientRepDetail && clientRepDetail.companiesList) {
-                if (params.type == "DataReview") {
-                    findQuery = {
-                        companyId: { $in: clientRepDetail.companiesList },
-                        taskStatus: { $in: ["Completed", "Verification Completed"] },
-                        status: true
-                    }
-                } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
-                    findQuery = {
-                      companyId: { $in: clientRepDetail.companiesList },
-                      status: true
-                    }
-                } else {
-                    return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
-                }
-            } else {
-                return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
-            }
-        } else {
-            return res.status(400).json({ status: "400", message: "User role not found!" });   
+      } else if (params.type == "ControversyCollection") {
+        findQuery = {
+          analystId: completeUserDetail.id,
+          taskStatus: {
+            $ne: "Completed"
+          },
+          status: true
         }
-    } else if (params.role == "Company Representative") {
-        if (userRoles.includes("Company Representative")) {
-            let companyRepDetail = await CompanyRepresentatives.findOne({
-                userId: completeUserDetail.id,
-                status: true
-            });
-            if (companyRepDetail && companyRepDetail.companiesList) {
-                if (params.type == "DataReview") {
-                    findQuery = {
-                        companyId: {
-                            $in: companyRepDetail.companiesList
-                        },
-                        taskStatus: { $in: ["Completed", "Verification Completed"] },
-                        status: true
-                    }
-                } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
-                    findQuery = {
-                        companyId: { $in: companyRepDetail.companiesList },
-                        status: true
-                    }
-                } else {
-                    return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
-                }
-            } else {
-                return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
-            }
-        } else {
-            return res.status(400).json({ status: "400", message: "User role not found!" });   
-        }
+      } else {
+        return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+      }
     } else {
-        return res.status(400).json({ status: "400", message: "User role not found!" });   
+      return res.status(400).json({ status: "400", message: "User role not found!" });
     }
-    console.log('params.role', params.role);
-    if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
-        count = await ControversyTasks.count(findQuery);
-        await ControversyTasks.find(findQuery, select, cursor)
-        .populate("companyId")
-        .populate("analystId")
-        .populate("createdBy")
-        .then(async (controversyTasks) => {
-            if (controversyTasks && controversyTasks.length > 0) {
-                for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-                  let object = {};
-                  if (params.type != "ControversyReview") {
-                    let yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                        Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
-                        Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                        Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
-                    ]);
-                    object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-                    object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-                    object.totalNoOfControversy = totalNoOfControversy;            
-                  }
-                    object.taskNumber = controversyTasks[cIndex].taskNumber;
-                    object.taskId = controversyTasks[cIndex].id;
-                    object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : "";
-                    object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : "";
-                    object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : "";
-                    object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : "";
-                    object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : "";
-                    object.status = controversyTasks[cIndex].status;
-                    object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-                    if (controversyTasks[cIndex] && object) {
-                        rows.push(object);
-                    }
-                }
+  } else if (params.role == "QA") {
+    if (userRoles.includes("QA")) {
+      if (params.type == "DataVerification") {
+        findQuery = {
+          qaId: completeUserDetail.id,
+          $or: [
+            {
+              taskStatus: "Collection Completed"
+            },
+            {
+              taskStatus: "Correction Completed"
             }
-            return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
-        })
-        .catch((error) => {
-            return res.status(400).json({
-                status: "400",
-                message: error.message ? error.message : "Failed to retrieve tasks!"
-            });
-        });
-    } else if (params.type == "DataCollection" || params.type == "DataCorrection" || params.type == "DataVerification" || params.type == "DataReview") {
-        count = await TaskAssignment.count(findQuery);
-        await TaskAssignment.find(findQuery, select, cursor)
-        .sort({ createdAt: -1 })
-        .populate("createdBy")
-        .populate("companyId")
-        .populate("categoryId")
-        .populate("groupId")
-        .populate("batchId")
-        .populate("analystId")
-        .populate("qaId")
-        .then(async (taskAssignments) => {
-            for (let index = 0; index < taskAssignments.length; index++) {
-                const object = taskAssignments[index];
-                let categoryValidationRules = [];
-                if (params.role == "Analyst") {
-                    categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
-                    .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
-                }
-                let taskObject = {
-                    taskId: object.id,
-                    taskNumber: object.taskNumber,
-                    pillar: object.categoryId ? object.categoryId.categoryName : null,
-                    pillarId: object.categoryId ? object.categoryId.id : null,
-                    group: object.groupId ? object.groupId.groupName : null,
-                    groupId: object.groupId ? object.groupId.id : null,
-                    batch: object.batchId ? object.batchId.batchName : null,
-                    batchId: object.batchId ? object.batchId.id : null,
-                    company: object.companyId ? object.companyId.companyName : null,
-                    clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
-                    companyId: object.companyId ? object.companyId.id : null,
-                    analyst: object.analystId ? object.analystId.name : null,
-                    analystId: object.analystId ? object.analystId.id : null,
-                    analystSLADate: object.analystSLADate ? object.analystSLADate : null,
-                    qa: object.qaId ? object.qaId.name : null,
-                    qaId: object.qaId ? object.qaId.id : null,
-                    qaSLADate: object.qaSLADate ? object.qaSLADate : null,
-                    fiscalYear: object.year,
-                    taskStatus: object.taskStatus,
-                    createdBy: object.createdBy ? object.createdBy.name : null,
-                    createdById: object.createdBy ? object.createdBy.id : null
-                };
-                if (params.role == "Analyst") {
-                    if (categoryValidationRules.length > 0) {
-                        taskObject.isValidationRequired = true;
-                    } else {
-                        taskObject.isValidationRequired = false;
-                    }
-                }
-                rows.push(taskObject);
-            }
-            return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
-        })
-        .catch((error) => {
-            return res.status(400).json({
-                status: "400",
-                message: error.message ? error.message : "Failed to retrieve tasks!"
-            });
-        });
+          ],
+          status: true
+        }
+      } else {
+        return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "User role not found!" });
     }
+  } else if (params.role == "Client Representative") {
+    if (userRoles.includes("Client Representative")) {
+      let clientRepDetail = await ClientRepresentatives.findOne({
+        userId: completeUserDetail.id,
+        status: true
+      });
+      if (clientRepDetail && clientRepDetail.companiesList) {
+        if (params.type == "DataReview") {
+          findQuery = {
+            companyId: { $in: clientRepDetail.companiesList },
+            taskStatus: { $in: ["Completed", "Verification Completed"] },
+            status: true
+          }
+        } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
+          findQuery = {
+            companyId: { $in: clientRepDetail.companiesList },
+            status: true
+          }
+        } else {
+          return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+        }
+      } else {
+        return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "User role not found!" });
+    }
+  } else if (params.role == "Company Representative") {
+    if (userRoles.includes("Company Representative")) {
+      let companyRepDetail = await CompanyRepresentatives.findOne({
+        userId: completeUserDetail.id,
+        status: true
+      });
+      if (companyRepDetail && companyRepDetail.companiesList) {
+        if (params.type == "DataReview") {
+          findQuery = {
+            companyId: {
+              $in: companyRepDetail.companiesList
+            },
+            taskStatus: { $in: ["Completed", "Verification Completed"] },
+            status: true
+          }
+        } else if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
+          findQuery = {
+            companyId: { $in: companyRepDetail.companiesList },
+            status: true
+          }
+        } else {
+          return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+        }
+      } else {
+        return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "User role not found!" });
+    }
+  } else {
+    return res.status(400).json({ status: "400", message: "User role not found!" });
+  }
+  console.log('params.role', params.role);
+  if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
+    count = await ControversyTasks.count(findQuery);
+    await ControversyTasks.find(findQuery, select, cursor)
+      .populate("companyId")
+      .populate("analystId")
+      .populate("createdBy")
+      .then(async (controversyTasks) => {
+        if (controversyTasks && controversyTasks.length > 0) {
+          for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+            let object = {};
+            if (params.type != "ControversyReview") {
+              let yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
+                Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
+                Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
+                Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+              ]);
+              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+              object.totalNoOfControversy = totalNoOfControversy;
+            }
+            object.taskNumber = controversyTasks[cIndex].taskNumber;
+            object.taskId = controversyTasks[cIndex].id;
+            object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : "";
+            object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : "";
+            object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : "";
+            object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : "";
+            object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : "";
+            object.status = controversyTasks[cIndex].status;
+            object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+            if (controversyTasks[cIndex] && object) {
+              rows.push(object);
+            }
+          }
+        }
+        return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : "Failed to retrieve tasks!"
+        });
+      });
+  } else if (params.type == "DataCollection" || params.type == "DataCorrection" || params.type == "DataVerification" || params.type == "DataReview") {
+    count = await TaskAssignment.count(findQuery);
+    await TaskAssignment.find(findQuery, select, cursor)
+      .sort({ createdAt: -1 })
+      .populate("createdBy")
+      .populate("companyId")
+      .populate("categoryId")
+      .populate("groupId")
+      .populate("batchId")
+      .populate("analystId")
+      .populate("qaId")
+      .then(async (taskAssignments) => {
+        for (let index = 0; index < taskAssignments.length; index++) {
+          const object = taskAssignments[index];
+          let categoryValidationRules = [];
+          if (params.role == "Analyst") {
+            categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+              .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+          }
+          let taskObject = {
+            taskId: object.id,
+            taskNumber: object.taskNumber,
+            pillar: object.categoryId ? object.categoryId.categoryName : null,
+            pillarId: object.categoryId ? object.categoryId.id : null,
+            group: object.groupId ? object.groupId.groupName : null,
+            groupId: object.groupId ? object.groupId.id : null,
+            batch: object.batchId ? object.batchId.batchName : null,
+            batchId: object.batchId ? object.batchId.id : null,
+            company: object.companyId ? object.companyId.companyName : null,
+            clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
+            companyId: object.companyId ? object.companyId.id : null,
+            analyst: object.analystId ? object.analystId.name : null,
+            analystId: object.analystId ? object.analystId.id : null,
+            analystSLADate: object.analystSLADate ? object.analystSLADate : null,
+            qa: object.qaId ? object.qaId.name : null,
+            qaId: object.qaId ? object.qaId.id : null,
+            qaSLADate: object.qaSLADate ? object.qaSLADate : null,
+            fiscalYear: object.year,
+            taskStatus: object.taskStatus,
+            createdBy: object.createdBy ? object.createdBy.name : null,
+            createdById: object.createdBy ? object.createdBy.id : null
+          };
+          if (params.role == "Analyst") {
+            if (categoryValidationRules.length > 0) {
+              taskObject.isValidationRequired = true;
+            } else {
+              taskObject.isValidationRequired = false;
+            }
+          }
+          rows.push(taskObject);
+        }
+        return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : "Failed to retrieve tasks!"
+        });
+      });
+  }
 }
 
 export const show = ({ params }, res, next) =>
@@ -1803,26 +1804,39 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
   }
 };
 
+
 export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next) => {
-  let taskDetails = await TaskAssignment.findOne({ _id: body.taskId }).populate('categoryId').populate('companyId').populate('groupId');
-  let distinctYears = taskDetails.year.split(',');
-  let datapointsCount = 0;
+
+  /*
+  1520-1580: Search for Task and check if the total Dp points in all dptypes and datapoints in collection are equal multipied by year
+ ! When there is error in any Dp Code is there the status is updated
+  * if role is QA dpStatus: 'Error', correctionStatus: 'Incomplete' 
+  * If another Role { dpStatus: 'Collection', correctionStatus: 'Incomplete' }
+  * Task Status in case of QA: "Correction Pending" , for others "Reassignment Pending"
+  ! When correction is done
+  * taskStatusValue = "Correction Completed";
+  * dpStatus: 'Correction', correctionStatus: 'Incomplete' 
+  ! when there is no error and no correction is made then
+  * taskStatusValue , incase of QA= "Verification Completed",incase of Analyst= "Collection Completed" for rest ="Completed"
+  * dpStatus: 'Correction', correctionStatus: 'Incomplete' 
+
+  ? When Reassignment is the dpStatus Notification is sent to admins.. 
+  TODO: email is send when dpStatus="Verification Completed"or  "Completed"
+  */
+
   try {
-    let functionId = await Functions.findOne({ functionType: "Negative News", status: true });
-    let allStandaloneDetails = await StandaloneDatapoints.find({
-      taskId: body.taskId,
-      companyId: taskDetails.companyId.id,
-      year: {
-        "$in": distinctYears
-      },
-      isActive: true,
-      status: true
-    })
-      .populate('createdBy')
-      .populate('datapointId')
+    // get all task details.
+    const taskDetails = await TaskAssignment.findOne({
+      _id: body.taskId
+    }).populate('categoryId')
       .populate('companyId')
-    datapointsCount = datapointsCount + allStandaloneDetails.length;
-    let allBoardMemberMatrixDetails1 = await BoardMembersMatrixDataPoints.find({
+      .populate('groupId')
+console.log(taskDetails)
+    // Get distinct years
+    const distinctYears = taskDetails.year.split(',');
+    let datapointsCount = 0;
+    const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
+    const query = {
       taskId: body.taskId,
       companyId: taskDetails.companyId.id,
       year: {
@@ -1830,141 +1844,191 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       },
       isActive: true,
       status: true
-    });
-    let allKmpMatrixDetails1 = await KmpMatrixDataPoints.find({
-      taskId: body.taskId,
-      companyId: taskDetails.companyId.id,
-      year: {
-        "$in": distinctYears
-      },
-      isActive: true,
-      status: true
-    });
-    for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-      let allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', {
-        taskId: body.taskId,
-        companyId: taskDetails.companyId.id,
-        year: distinctYears[yearIndex],
-        isActive: true,
-        status: true
-      });
-      datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length;
-      let allKmpMatrixDetails = await KmpMatrixDataPoints.distinct('datapointId', {
-        taskId: body.taskId,
-        companyId: taskDetails.companyId.id,
-        year: distinctYears[yearIndex],
-        isActive: true,
-        status: true
-      });
-      datapointsCount = datapointsCount + allKmpMatrixDetails.length;
     }
+    // StandAlone, BoardMatrix and KMP are DpTypes.
+    const [allStandaloneDetails, allBoardMemberMatrixDetails1, allKmpMatrixDetails1] = await Promise.all([
+      StandaloneDatapoints.find(query)
+        .populate('createdBy')
+        .populate('datapointId')
+        .populate('companyId'),
+      BoardMembersMatrixDataPoints.find(query),
+      KmpMatrixDataPoints.find(query)
+    ])
+    const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
+
+    for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+      const query = {
+        taskId: body.taskId,
+        companyId: taskDetails.companyId.id,
+        year: distinctYears[yearIndex],
+        isActive: true,
+        status: true
+      }
+      const [allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
+        BoardMembersMatrixDataPoints.distinct('datapointId', query),
+        KmpMatrixDataPoints.distinct('datapointId', query)
+      ])
+      datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
+    }
+
+    let datapoints = await Datapoints.find({
+      clientTaxonomyId: taskDetails.categoryId.clientTaxonomyId,
+      categoryId: taskDetails.categoryId.id,
+      dataCollection: "Yes",
+      functionId: { "$ne": negativeNews.id }
+    });
+
+    // mergedDetails is the Dp codes of all Dp Types.
+    const [hasError, hasCorrection, multipliedValue] = [
+      mergedDetails.find(object => object.hasError == true),
+      mergedDetails.find(object => object.hasCorrection == true),
+      datapoints.length * distinctYears.length];
+
     let taskStatusValue = "";
-    let mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
-    let datapointsLength = await Datapoints.find({ clientTaxonomyId: body.clientTaxonomyId, categoryId: taskDetails.categoryId.id, dataCollection: "Yes", functionId: { "$ne": functionId.id } });
-    let hasError = mergedDetails.find(object => object.hasError == true);
-    let hasCorrection = mergedDetails.find(object => object.hasCorrection == true);
-    let multipliedValue = datapointsLength.length * distinctYears.length;
     if (datapointsCount == multipliedValue && hasError) {
-      if (body.role == 'QA') {
-        taskStatusValue = "Correction Pending";
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
+      taskStatusValue = body.role == QA ? "Correction Pending" : "Reassignment Pending"
 
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-      } else {
-        taskStatusValue = "Reassignment Pending";
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: true }, { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } })
-
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-      }
-    } else if (datapointsCount == multipliedValue && hasCorrection) {
+      const [query, update, query1, update1] = [
+        { taskId: body.taskId, isActive: true, status: true, hasError: true },
+        { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } },
+        { taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' },
+        { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } }
+      ]
+      await Promise.all([
+        KmpMatrixDataPoints.updateMany(query, update),
+        BoardMembersMatrixDataPoints.updateMany(query, update),
+        StandaloneDatapoints.updateMany(query, update),
+        KmpMatrixDataPoints.updateMany(query1, update1),
+        BoardMembersMatrixDataPoints.updateMany(query1, update),
+        StandaloneDatapoints.updateMany(query1, update1),
+        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
+    } else if (
+      datapointsCount == multipliedValue &&
+      hasCorrection) {
       taskStatusValue = "Correction Completed";
-      await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-      await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-      await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true, hasCorrection: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-      await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-    } else if (datapointsCount == multipliedValue && hasError == undefined && hasCorrection == undefined) {
-      if (body.role == 'QA') {
-        taskStatusValue = "Verification Completed";
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } })
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-      } else if (body.role == 'Analyst') {
-        taskStatusValue = "Collection Completed";
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-      } else {
-        taskStatusValue = "Completed";
-        await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await StandaloneDatapoints.updateMany({ taskId: body.taskId, isActive: true, status: true }, { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } })
-        await TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } });
-      }
+      const [query, update,] = [
+        { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
+        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
+      ]
+      await Promise.all([
+        KmpMatrixDataPoints.updateMany(query, update),
+        BoardMembersMatrixDataPoints.updateMany(query, update),
+        StandaloneDatapoints.updateMany(query, update),
+        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
+      ])
+    }
+    else if (
+      datapointsCount == multipliedValue &&
+      hasError == undefined &&
+      hasCorrection == undefined
+    ) {
+      taskStatusValue = body.role == QA ? "Verification Completed" : "Completed"
+      taskStatusValue = body.role == Analyst ? "Collection Completed" : "Completed"
+      const [query, update,] = [
+        { taskId: body.taskId, isActive: true, status: true },
+        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } } // This condition doubtful.
+      ]
+      await Promise.all([
+        KmpMatrixDataPoints.updateMany(query, update),
+        BoardMembersMatrixDataPoints.updateMany(query, update),
+        StandaloneDatapoints.updateMany(query, update),
+        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
+      ])
     } else {
       return res.status(402).json({
         message: "Task Status not updated. Check all DPcodes completed",
       });
     }
+
+    // Creating Record for Task History
     await TaskHistories.create({
       taskId: body.taskId,
       companyId: taskDetails.companyId.id,
       categoryId: taskDetails.categoryId.id,
       submittedByName: user.name,
+      submittedById: user?.id,
       stage: taskStatusValue,
       comment: '',
       status: true,
       createdBy: user
-    }).catch((error) => {
-      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create task history!" });
-    });
+    }).then((user) => console.log('done'))
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to create task history!" });
+      });
+
+    // * Code to send email to CompanyRep/ClientRep who raised error, about the action taken by QA. -Ticket ECS-600
+
+    //  check if the body.role is QA and taskHistory has Reassignment Pending then email to all company and client rep of this particular task.
+
+    const getTaskHistory = await TaskHistories.findOne({ taskId: body.taskId, status: true, stage: 'Reassignment Pending' });
+
+    if (getTaskHistory && body.role == QA) {
+      // Send Email to Client or Company Rep.
+      const companyDetails = getCompanyDetails(body.companyId);
+      const content = `
+      Hi,
+        Please login into the data portal and check ${companyDetails?.companyName},
+        ${taskDetails?.categoryId.categoryName} for our comments .
+        Please check the notifications within the system for additional details.
+        Thanks
+
+        ESGDS Team`
+      companyDetails?.email.map(async (e) => {
+        await sendEmail(e, 'ESG - Onboarding', content)
+          .then((resp) => { console.log('Mail sent!') })
+      })
+    }
+    // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
     if (taskStatusValue == 'Reassignment Pending') {
-      await Notifications.create({
-        notifyToUser: taskDetails.groupId.groupAdmin,
+      const query = {
         notificationType: "/tasklist",
         content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
         notificationTitle: "Reassignment Pending",
         status: true,
         isRead: false
+      }
+      // creating notiification for groupAdmin
+      await Notifications.create({
+        notifyToUser: taskDetails.groupId.groupAdmin,
+        ...query
       }).catch((error) => {
         return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
       });
 
-      let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
-      let allAdminUserIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('_id');
+      const adminRoleIds = await Role.find({
+        roleName: { $in: ["SuperAdmin", "Admin"] },
+        status: true
+      }).distinct('_id');
+
+      const allAdminUserIds = await User.find({
+        $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, {
+          "roleDetails.primaryRole": { $in: adminRoleIds }
+        }],
+        status: true
+      })
+        .distinct('_id');
+      // creating notiification for Admin and SuperAdmin
       for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
         await Notifications.create({
           notifyToUser: allAdminUserIds[admIndex],
-          notificationType: "/tasklist",
-          content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
-          notificationTitle: "Reassignment Pending",
-          status: true,
-          isRead: false
+          ...query
         }).catch((error) => {
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
         });
       }
     }
-    let categoriesLength = await Categories.count({
+
+    const categoriesLength = await Categories.count({
       clientTaxonomyId: body.clientTaxonomyId,
       status: true,
     });
-    let taskDetailsObject = await TaskAssignment.count({
+
+    const taskDetailsObject = await TaskAssignment.count({
       companyId: body.companyId,
       year: body.year,
-      taskStatus: "Completed"
+      taskStatus: { $in: ["Verification Completed", "Completed"] }
     });
+
     if (categoriesLength == taskDetailsObject) {
       await CompaniesTasks.updateMany(
         {
@@ -1978,10 +2042,26 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
           },
         }
       );
+      // Send Email to Client or Company Rep.
+      const companyDetails = getCompanyDetails(body.companyId)
+      const content = `
+                        Hi,
+                        We have updated data for ${companyDetails?.companyName} for the years ${body?.year}
+                        which you have access. Kindly login into the portal 
+                        to review the data.Please contact your system administrator/company 
+                        representative incase of any issues.
+
+                        ThanksESGDS Team `
+      companyDetails?.email.map(async (e) => {
+        await sendEmail(e, 'ESG - Onboarding', content)
+          .then((resp) => { console.log('Mail sent!') })
+      })
+
     }
     return res.status(200).json({
       message: "Company Status update succesfully!",
     });
+
   } catch (error) {
     return res.status(500).json({
       status: "500",
@@ -1989,6 +2069,28 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     });
   }
 };
+
+// function for updateCompanyStatus.
+async function getCompanyDetails(companyId) {
+  const cmpDetail = await Companies.findOne({ _id: companyId })
+  const [clientRep, companyRep] = await Promise.all([
+    ClientRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId'),
+    CompanyRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId')
+  ])
+  let companyRepEmail = [], clientRepEmail = []
+
+  clientRep.map(async (client) => {
+    clientRepEmail.push(client.userId.email)
+  })
+
+  companyRep.map(async (company) => {
+    companyRepEmail.push(company.userId.email)
+  })
+
+  const email = _.concat(companyRepEmail, clientRepEmail)
+  return { email, companyName: cmpDetail?.companyName }
+}
+
 
 export const reports = async ({ user, params }, res, next) => {
   let completeUserDetail = await User.findOne({
@@ -2365,7 +2467,7 @@ export const getTaskList = async ({ user, bodymen: { body } }, res, next) => {
 
 export const getTaskListPageData = async ({ user, querymen: { query, select, cursor }, bodymen: { body } }, res, next) => {
   var result = [];
-  var count = await TaskAssignment.count({companyId: { $in: body.companyTaskReports }, status: true});
+  var count = await TaskAssignment.count({ companyId: { $in: body.companyTaskReports }, status: true });
   var allTasks = await TaskAssignment.find({
     companyId: { $in: body.companyTaskReports },
     status: true
@@ -2456,3 +2558,27 @@ export const getTaskListForControversy = async ({ user, bodymen: { body } }, res
   }
   return res.status(200).json({ controversyTaskList: result });
 }
+
+
+
+
+    // if (taskDetails.isReassigned && body.role == QA) { // as QA is making an update hence, checking if it was reassigned before.
+    //   const taskhistoryDetails = await TaskHistories.findOne({ taskId: body.taskId, status: true }); //companyName
+    //   if (taskhistoryDetails) {
+    //     const [cmpDetail, errorSubmittedBy] = await Promise.all([
+    //       Companies.findOne({ _id: body.companyId }),
+    //       User.findOne({ _id: taskhistoryDetails?.submittedById }) // remove field submittedById
+    //     ])
+
+    //     const content = `Hi,
+    //   There has been an update for the error you had raised for company ${cmpDetail?.companyName}
+    //   with comment ${taskhistoryDetails.comment}
+    //   ThanksESGDS Team`
+
+    //     // send email to all the reps.
+    //     await sendEmail(errorSubmittedBy?.email, 'ESG - Onboarding', content)
+    //       .then((resp) => { console.log('Mail sent!') });
+    //   }
+    // }
+
+    // ----//
