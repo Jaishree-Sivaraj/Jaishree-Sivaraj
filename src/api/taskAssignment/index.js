@@ -118,7 +118,14 @@ router.get('/:taskStatus/:role',
   token({
     required: true
   }),
-  query(),
+  query({
+    page: {
+      max: Infinity
+    },
+    limit: {
+      max: Infinity
+    }
+  }),
   retrieveFilteredDataTasks)
 
 /**
