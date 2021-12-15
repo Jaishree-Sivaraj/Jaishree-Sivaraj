@@ -1,7 +1,5 @@
-import multer from 'multer'
 import XLSX from 'xlsx'
 import _ from 'lodash'
-import nodemailer from 'nodemailer'
 import { success, notFound } from '../../services/response/'
 import { User } from '.'
 import { sign } from '../../services/jwt'
@@ -12,10 +10,10 @@ import { CompanyRepresentatives } from '../company-representatives'
 import fileType from 'file-type'
 import * as fs from 'fs'
 import path from 'path'
-import { compareSync } from 'bcrypt'
 import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
-import { sendEmail } from "../../services/utils/mailing"
+import { sendEmail } from '../../services/utils/mailing'
+import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles } from '../../constants/roles'
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -771,18 +769,11 @@ export const updateUserRoles = ({ bodymen: { body }, user }, res, next) => {
     })
 }
 
-// export const getApprovedAndAssignedRoleUser = (req, res, next => {
-//   User.find({ isUserApproved: true, isRoleAssigned: true }).then((approvedUsers) => {
-//     res.send(approvedUsers);
-//   })
-// })
-
-
 export const update = ({ bodymen: { body }, params, user }, res, next) => {
   if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
     body.userDetails.isUserRejected = true;
   }
-  User.findById({ _id: body.userId}).then(async function(userDetail){
+  User.findById({ _id: body.userId }).then(async function (userDetail) {
     if (userDetail && userDetail.isUserApproved == false) {
       User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
         if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
@@ -814,13 +805,13 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             //   html: content
             // });
             await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
-            .then((resp) => { console.log('Mail sent!'); });
+              .then((resp) => { console.log('Mail sent!'); });
           })
           // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
           return res.status(200).json({
             message: 'User details updated successfully',
           });
-        }else {
+        } else {
           User.findById(body.userId).then(async function (userDetails) {
             userDetails = userDetails.toObject();
             const content = `
@@ -831,8 +822,8 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
                 Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
                 Thanks<br/>
                 ESGDS Team `;
-    
-    
+
+
             await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
               .then((response) => { console.log('Mail sent!'); });
           })
@@ -852,29 +843,6 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
     }
   })
 }
-
-
-// export const update = ({ bodymen: { body }, params, user }, res, next) =>
-//   User.findById(params.id === 'me' ? user.id : params.id)
-//     .populate('roleId')
-//     .then(notFound(res))
-//     .then((result) => {
-//       if (!result) return null
-//       const isAdmin = user.role === 'admin'
-//       const isSelfUpdate = user.id === result.id
-//       if (!isSelfUpdate && !isAdmin) {
-//         res.status(401).json({
-//           valid: false,
-//           message: 'You can\'t change other user\'s data'
-//         })
-//         return null
-//       }
-//       return result
-//     })
-//     .then((user) => user ? Object.assign(user, body).save() : null)
-//     .then((user) => user ? user.view(true) : null)
-//     .then(success(res))
-//     .catch(next)
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
   User.findById(params.id === 'me' ? user.id : params.id)
@@ -1020,30 +988,34 @@ export const onBoardingCompanyRep = async ({ bodymen: { body }, params, user }, 
   }
 }
 
-export const uploadEmailsFile = async (req, res, next) => {
-
+// Upload Email 
+export const uploadEmailsFile = async ({ body, user }, res, next) => {
   try {
     let convertedWorkbook;
-    convertedWorkbook = XLSX.read(req.body.emailFile.replace(/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    convertedWorkbook = XLSX.read(body.emailFile.replace(/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
     if (convertedWorkbook.SheetNames.length > 0) {
-      var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
+      const worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
       try {
-        var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+        const sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
         //code for sending onboarding links to emails
-        let existingUserEmailsList = await User.find({ "status": true });
-        let rolesList = await Role.find({ "status": true });
+        const [existingUserEmailsList, rolesList] = await Promise.all([
+          User.find({ "status": true }),
+          Role.find({ "status": true })
+        ]);
         if (sheetAsJson.length > 0) {
           let existingEmails = [], hasInvalidData = false;
           for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
             const rowObject = sheetAsJson[index1];
-            let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+            let checkEmail = existingUserEmailsList.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
             if (checkEmail) {
               existingEmails.push(rowObject['email']);
             }
             if (rowObject['email'] == ' ' || !rowObject['email']) {
               hasInvalidData = true;
               return res.status(400).json({ status: "400", message: "Email Id is not Present in the Column Please check input file" });
-            } else if (rowObject['onboardingtype'] != 'Employee' && rowObject['onboardingtype'] != 'Company Representative' && rowObject['onboardingtype'] != 'Client Representative') {
+            } else if (rowObject['onboardingtype'] != Employee
+              && rowObject['onboardingtype'] != CompanyRepresentative
+              && rowObject['onboardingtype'] != ClientRepresentative) {
               hasInvalidData = true;
               return res.status(400).json({ status: "400", message: "Invalid input for onboardingtype, Please check!" });
             }
@@ -1051,20 +1023,24 @@ export const uploadEmailsFile = async (req, res, next) => {
           if (!hasInvalidData) {
             for (let index = 0; index < sheetAsJson.length; index++) {
               const rowObject = sheetAsJson[index];
-              let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-              let rolesDetails = rolesList.find(object => (object.roleName == rowObject['onboardingtype']));
+              const [emailAlreadyExists, rolesDetails] = [
+                existingUserEmailsList.find(object => rowObject['email'] == object.email
+                  && object.isUserApproved == true),
+                rolesList.find(object => (object.roleName == rowObject['onboardingtype']))
+              ]
+
               let link;
               if (rolesDetails) {
-                if (rolesDetails.roleName == "Employee") {
+                if (rolesDetails.roleName == Employee) {
                   link = `/onboard/new-user?role=Employee&email=${rowObject['email']}`
-                } else if ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative")) {
+                } else if ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative")) {
                   link = `/onboard/new-user?role=CompanyRepresentative&email=${rowObject['email']}`
                 } else {
                   link = `/onboard/new-user?role=ClientRepresentative&email=${rowObject['email']}`
                 }
-                //nodemail code will come here to send OTP  
-                if (!isEmailExisting) {
-                  if (rolesDetails && rolesDetails.roleName == "Employee") {
+
+                if (!emailAlreadyExists) {
+                  if (rolesDetails && rolesDetails.roleName == Employee) {
                     let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
                     //nodemail code will come here to send OTP
                     const content = `
@@ -1074,29 +1050,31 @@ export const uploadEmailsFile = async (req, res, next) => {
                       Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
                       Thanks<br/>
                       ESGDS Team `;
-                    // var transporter = nodemailer.createTransport({
-                    //   service: 'Gmail',
-                    //   auth: {
-                    //     user: 'testmailer09876@gmail.com',
-                    //     pass: 'ijsfupqcuttlpcez'
-                    //   }
-                    // });
-
-                    // transporter.sendMail({
-                    //   from: 'testmailer09876@gmail.com',
-                    //   to: rowObject['email'],
-                    //   subject: 'ESG - Onboarding',
-                    //   html: content
-                    // });
                     await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
-                    .then((resp) => { console.log('Mail sent!'); });
+                      .then((resp) => { console.log('Mail sent!'); });
                     let email = `${rowObject['email']}`;
-                    await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+                    await OnboardingEmails.updateOne({
+                      emailId: email
+                    }, {
+                      $set: {
+                        emailId: email, isOnboarded: false, createdBy: user.id
+                      }
+                    }, { upsert: true })
 
-                  } else if (rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
-                    let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
-                    let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
-                    console.log("allAdminUserEmailIds", allAdminUserEmailIds);
+                  } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
+                    || rolesDetails.roleName == "ClientRepresentative"
+                    || rolesDetails.roleName == CompanyRepresentative
+                    || rolesDetails.roleName == "CompanyRepresentative")) {
+                    const adminRoleIds = await Role.find({ roleName: { $in: adminRoles }, status: true }).distinct('_id');
+                    const allAdminUserEmailIds = await User.find({
+                      $or: [{
+                        "roleDetails.roles": {
+                          $in: adminRoleIds
+                        }
+                      }, {
+                        "roleDetails.primaryRole": { $in: adminRoleIds }
+                      }], status: true
+                    }).distinct('email');
                     for (let index = 0; index < allAdminUserEmailIds.length; index++) {
                       console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
                       let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
@@ -1105,24 +1083,18 @@ export const uploadEmailsFile = async (req, res, next) => {
                       const content = `
                         Email: ${rowObject['email']}<br/><br/>
                         Link: ${url}<br/><br/>`;
-                      // var transporter = nodemailer.createTransport({
-                      //   service: 'Gmail',
-                      //   auth: {
-                      //     user: 'testmailer09876@gmail.com',
-                      //     pass: 'ijsfupqcuttlpcez'
-                      //   }
-                      // });
 
-                      // transporter.sendMail({
-                      //   from: 'testmailer09876@gmail.com',
-                      //   to: allAdminUserEmailIds[index],
-                      //   subject: 'ESG - Onboarding',
-                      //   html: content
-                      // });
                       await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
-                      .then((resp) => { console.log('Mail sent!'); });
+                        .then((resp) => { console.log('Mail sent!'); });
                       let email = `${rowObject['email']}`;
-                      await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+
+                      await OnboardingEmails.updateOne({
+                        emailId: email
+                      }, {
+                        $set: {
+                          emailId: email, isOnboarded: false, createdBy: user.id
+                        }
+                      }, { upsert: true })
                     }
                   }
                 } else {
@@ -1157,32 +1129,34 @@ export const uploadEmailsFile = async (req, res, next) => {
 
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, res, next) => {
   const emailList = body.emailList;
-  let existingUserEmailsList = await User.find({ "status": true });
-  let rolesList = await Role.find({ "status": true });
+  let [activeUsers, rolesList] = await Promise.all([
+    User.find({ "status": true }),
+    Role.find({ "status": true })
+  ]);
   if (emailList.length > 0) {
     let existingEmails = [];
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
-      if (isEmailExisting) {
-        existingEmails.push(isEmailExisting.email);
+      const emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
+      if (emailAlreadyExists) {
+        existingEmails.push(emailAlreadyExists.email);
       }
     }
 
     for (let index = 0; index < emailList.length; index++) {
       const rowObject = emailList[index];
-      let isEmailExisting = existingUserEmailsList.find(object => rowObject['email'] == object.email);
+      let emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
       let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
       let link;
-      if (rolesDetails && rolesDetails.roleName == "Employee") {
+      if (rolesDetails && rolesDetails.roleName == Employee) {
         link = `/onboard/new-user?role=Employee`
-      } else if (rolesDetails && ((rolesDetails.roleName == "Company Representative") || (rolesDetails.roleName == "CompanyRepresentative"))) {
+      } else if (rolesDetails && ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative"))) {
         link = `/onboard/new-user?role=CompanyRepresentative`
       } else {
         link = `/onboard/new-user?role=ClientRepresentative`
       }
-      if (!isEmailExisting) {
-        if (rolesDetails && rolesDetails.roleName == "Employee") {
+      if (!emailAlreadyExists) {
+        if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
           const content = `
@@ -1192,56 +1166,52 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
             Thanks<br/>
             ESGDS Team `;
-          // var transporter = nodemailer.createTransport({
-          //   service: 'Gmail',
-          //   auth: {
-          //     user: 'testmailer09876@gmail.com',
-          //     pass: 'ijsfupqcuttlpcez'
-          //   }
-          // });
-
-          // transporter.sendMail({
-          //   from: 'testmailer09876@gmail.com',
-          //   to: rowObject['email'],
-          //   subject: 'ESG - Onboarding',
-          //   html: content
-          // });
           await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
-          .then((resp) => { console.log('Mail sent!'); });
+            .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;
-          await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+          await OnboardingEmails.updateOne({
+            emailId: email
+          }, {
+            $set: {
+              emailId: email, isOnboarded: false, createdBy: user.id
+            }
+          }, { upsert: true })
 
-        } else if (rolesDetails && (rolesDetails.roleName == "Client Representative" || rolesDetails.roleName == "ClientRepresentative" || rolesDetails.roleName == "Company Representative" || rolesDetails.roleName == "CompanyRepresentative")) {
-          let adminRoleIds = await Role.find({ roleName: { $in: ["SuperAdmin", "Admin"] }, status: true }).distinct('_id');
-          let allAdminUserEmailIds = await User.find({ $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, { "roleDetails.primaryRole": { $in: adminRoleIds } }], status: true }).distinct('email');
-          console.log("allAdminUserEmailIds", allAdminUserEmailIds);
+        }  else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
+          || rolesDetails.roleName == "ClientRepresentative"
+          || rolesDetails.roleName == CompanyRepresentative
+          || rolesDetails.roleName == "CompanyRepresentative")) {
+          const adminRoleIds = await Role.find({ roleName: { $in: adminRoles }, status: true }).distinct('_id');
+          const allAdminUserEmailIds = await User.find({
+            $or: [{
+              "roleDetails.roles": { $in: adminRoleIds }
+            }, {
+              "roleDetails.primaryRole":
+                { $in: adminRoleIds }
+            }], status: true
+          }).distinct('email');
+
           for (let index = 0; index < allAdminUserEmailIds.length; index++) {
             console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
             let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
-            console.log("");
-            //nodemail code will come here to send OTP
+
             const content = `
               Email: ${rowObject['email']}<br/><br/>
               Link: ${url}<br/><br/>`;
-            // var transporter = nodemailer.createTransport({
-            //   service: 'Gmail',
-            //   auth: {
-            //     user: 'testmailer09876@gmail.com',
-            //     pass: 'ijsfupqcuttlpcez'
-            //   }
-            // });
 
-            // transporter.sendMail({
-            //   from: 'testmailer09876@gmail.com',
-            //   to: allAdminUserEmailIds[index],
-            //   subject: 'ESG - Onboarding',
-            //   html: content
-            // });
             await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
-            .then((resp) => { console.log('Mail sent!'); });
+              .then((resp) => { console.log('Mail sent!'); });
             let email = `${rowObject['email']}`;
-            await OnboardingEmails.updateOne({ emailId: email }, { $set: { emailId: email, isOnboarded: false, createdBy: user.id } }, { upsert: true })
+            await OnboardingEmails.updateOne({
+              emailId: email
+            }, {
+              $set: {
+                emailId: email, isOnboarded: false, createdBy: user.id
+              }
+            }, { upsert: true })
           }
+        }else{
+          return res.status(400).json({ status: "400", message: "Invalid Role" })
         }
       }
     }
@@ -1256,6 +1226,26 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
   }
 }
 
+
+
+export const updateUserName = async (req, res, next) => {
+  let allEmployees = await Employees.find({ status: true });
+  for (let eIndex = 0; eIndex < allEmployees.length; eIndex++) {
+    await User.updateOne({ _id: allEmployees[eIndex].userId }, {
+      $set: {
+        name: allEmployees[eIndex].firstName + " " + allEmployees[eIndex].middleName + " " + allEmployees[eIndex].lastName
+      }
+    })
+  }
+}
+
+
+// export const getApprovedAndAssignedRoleUser = (req, res, next => {
+
+//   User.find({ isUserApproved: true, isRoleAssigned: true }).then((approvedUsers) => {
+//     res.send(approvedUsers);
+//   })
+// })
 // export const getRoleUser = async ({ req, res, next }) => {
 //   let userRoles = ['Analyst', 'QA', 'GroupAdmin'];
 //   let roleIds = [];
@@ -1268,14 +1258,88 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
 //   return res.json({ status: 200, message: "User Details retrieved successfully ", UserDetails: userDetails });
 
 // }
+// export const update = ({ bodymen: { body }, params, user }, res, next) =>
+//   User.findById(params.id === 'me' ? user.id : params.id)
+//     .populate('roleId')
+//     .then(notFound(res))
+//     .then((result) => {
+//       if (!result) return null
+//       const isAdmin = user.role === 'admin'
+//       const isSelfUpdate = user.id === result.id
+//       if (!isSelfUpdate && !isAdmin) {
+//         res.status(401).json({
+//           valid: false,
+//           message: 'You can\'t change other user\'s data'
+//         })
+//         return null
+//       }
+//       return result
+//     })
+//     .then((user) => user ? Object.assign(user, body).save() : null)
+//     .then((user) => user ? user.view(true) : null)
+//     .then(success(res))
+//     .catch(next)
 
-export const updateUserName = async (req, res, next) => {
-  let allEmployees = await Employees.find({ status: true });
-  for (let eIndex = 0; eIndex < allEmployees.length; eIndex++) {
-    await User.updateOne({ _id: allEmployees[eIndex].userId }, {
-      $set: {
-        name: allEmployees[eIndex].firstName + " " + allEmployees[eIndex].middleName + " " + allEmployees[eIndex].lastName
-      }
-    })
-  }
-}
+
+                    // var transporter = nodemailer.createTransport({
+                    //   service: 'Gmail',
+                    //   auth: {
+                    //     user: 'testmailer09876@gmail.com',
+                    //     pass: 'ijsfupqcuttlpcez'
+                    //   }
+                    // });
+
+                    // transporter.sendMail({
+                    //   from: 'testmailer09876@gmail.com',
+                    //   to: rowObject['email'],
+                    //   subject: 'ESG - Onboarding',
+                    //   html: content
+                    // });
+
+
+// var transporter = nodemailer.createTransport({
+                      //   service: 'Gmail',
+                      //   auth: {
+                      //     user: 'testmailer09876@gmail.com',
+                      //     pass: 'ijsfupqcuttlpcez'
+                      //   }
+                      // });
+
+                      // transporter.sendMail({
+                      //   from: 'testmailer09876@gmail.com',
+                      //   to: allAdminUserEmailIds[index],
+                      //   subject: 'ESG - Onboarding',
+                      //   html: content
+                      // });
+
+
+          // var transporter = nodemailer.createTransport({
+          //   service: 'Gmail',
+          //   auth: {
+          //     user: 'testmailer09876@gmail.com',
+          //     pass: 'ijsfupqcuttlpcez'
+          //   }
+          // });
+
+          // transporter.sendMail({
+          //   from: 'testmailer09876@gmail.com',
+          //   to: rowObject['email'],
+          //   subject: 'ESG - Onboarding',
+          //   html: content
+          // });
+
+
+            // var transporter = nodemailer.createTransport({
+            //   service: 'Gmail',
+            //   auth: {
+            //     user: 'testmailer09876@gmail.com',
+            //     pass: 'ijsfupqcuttlpcez'
+            //   }
+            // });
+
+            // transporter.sendMail({
+            //   from: 'testmailer09876@gmail.com',
+            //   to: allAdminUserEmailIds[index],
+            //   subject: 'ESG - Onboarding',
+            //   html: content
+            // });
