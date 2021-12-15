@@ -48,10 +48,10 @@ router.post('/',
  * @apiError 404 Controversy not found.
  * @apiError 401 user access only.
  */
-router.post('/upload',
-  token({ required: true }),
-  query(),
-  uploadControversies)
+// router.post('/upload',
+//   token({ required: true }),
+//   query(),
+//   uploadControversies)
 
 /**
  * @api {post} /controversies/add/new-controversy Add New controversy
@@ -129,9 +129,9 @@ router.get('/:id',
  * @apiError 404 Controversy not found.
  * @apiError 401 user access only.
  */
-router.get('/json/:companyId',
-  token({ required: true }),
-  generateJson)
+// router.get('/json/:companyId',
+//   token({ required: true }),
+//   generateJson)
 
 /**
  * @api {get} /controversies/fetch/:companyId/:datapointId Fetch Controversy for a datapoint

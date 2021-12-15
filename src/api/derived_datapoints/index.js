@@ -76,9 +76,9 @@ router.get('/',
  * @apiError 404 Derived datapoints not found.
  * @apiError 401 user access only.
  */
-router.get('/generate-json/:companyId',
-  token({ required: true }),
-  jsonGeneration )
+// router.get('/generate-json/:companyId',
+//   token({ required: true }),
+//   jsonGeneration )
 
 /**
  * @api {get} /derived_datapoints/calculate/:companyId Calculate derived datapoints for a company
@@ -91,9 +91,9 @@ router.get('/generate-json/:companyId',
  * @apiError 404 Derived datapoints not found.
  * @apiError 401 user access only.
  */
-router.get('/calculate/:companyId',
-  token({ required: true }),
-  calculateForACompany)
+// router.get('/calculate/:companyId',
+//   token({ required: true }),
+//   calculateForACompany)
 
 /**
  * @api {get} /derived_datapoints/update/audr002/:nic Update derived datapoints of AUDR002 for a NIC

@@ -112,9 +112,9 @@ router.get('/:id',
  * @apiError 404 Polarity rules not found.
  * @apiError 401 user access only.
  */
-router.get('/calculate_percentile/:nic',
-  token({ required: true }),
-  percentileCalculation)
+// router.get('/calculate_percentile/:nic',
+//   token({ required: true }),
+//   percentileCalculation)
 
 /**
  * @api {put} /polarity_rules/:id Update polarity rules
