@@ -167,16 +167,19 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
   }
 }
 
-export const boardMemberNamingCorrections = async({ user, params }, res, next) => {
+export const boardMemberNamingCorrections = async( req, res, next) => {
   console.log('boardMemberNamingCorrections called!');
-  fs.readFile(__dirname + '/bm-consolidated.json', async (err, data) => {
+  fs.readFile(__dirname + '/Consolidated_Board.json', async (err, data) => {
     if (err) throw err;
     let membersList = JSON.parse(data);
     console.log('membersList length', membersList.length);
-    let yearMembersList = _.filter(membersList, { year: "2019-2020" });
+    let yearMembersList = _.filter(membersList, {year: req.query.year});
     console.log('yearMembersList length', yearMembersList.length);
     for (let index = 0; index < yearMembersList.length; index++) {
       let memberDetail = yearMembersList[index];
+      let memberCorrectedName = memberDetail['memberName'].replace(/^\s+/g, '');
+      memberDetail.memberName = memberCorrectedName;
+      // console.log("memberDetail", memberDetail);
       let memberFound;
       if (memberDetail.memberName != memberDetail.expectedName) {
         await BoardMembersMatrixDataPoints.updateMany({ 
@@ -201,7 +204,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           status: true
         });
       }
-      console.log('memberFound', memberFound);
+      // console.log('memberFound', memberFound);
       if(memberFound){
         let memberGenderDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
@@ -210,7 +213,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c1fbe8b9d1b577cecb3",//BODR005-board member gender id
           status: true 
         });
-        console.log('memberGenderDetail', memberGenderDetail);
+        // console.log('memberGenderDetail', memberGenderDetail);
         let memberNationalityDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -218,7 +221,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c1dbe8b9d1b577cecae",//BODR005-board member nationality id
           status: true 
         });
-        console.log('memberNationalityDetail', memberNationalityDetail);
+        // console.log('memberNationalityDetail', memberNationalityDetail);
         let memberIndustryExpDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -226,7 +229,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c32be8b9d1b577cece1",//BODR005-board member industry experience id
           status: true 
         });
-        console.log('memberIndustryExpDetail', memberIndustryExpDetail);
+        // console.log('memberIndustryExpDetail', memberIndustryExpDetail);
         let memberFinancialExpDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -234,7 +237,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c32be8b9d1b577cece2",//BODR005-board member financial experience id
           status: true 
         });
-        console.log('memberFinancialExpDetail', memberFinancialExpDetail);
+        // console.log('memberFinancialExpDetail', memberFinancialExpDetail);
         let memberAppointmentDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -242,7 +245,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c2abe8b9d1b577ceccf",//BODR005-board member appointment date id
           status: true 
         });
-        console.log('memberAppointmentDetail', memberAppointmentDetail);
+        // console.log('memberAppointmentDetail', memberAppointmentDetail);
         let memberExecutiveDetail = await BoardMembersMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -250,7 +253,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c23be8b9d1b577cecbd",//BODR005-board member Is Executive?
           status: true 
         });
-        console.log('memberExecutiveDetail', memberExecutiveDetail);
+        // console.log('memberExecutiveDetail', memberExecutiveDetail);
         let appointedDate = '', endDate = '', endDateTimeStamp = '';
         let memberStatus = true;
         if (memberAppointmentDetail && memberAppointmentDetail.response != '') {
@@ -263,23 +266,23 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           datapointId: "609d2c2bbe8b9d1b577cecd0",//BODR005-board member cessation date id
           status: true 
         });
-        console.log('memberCessationDetail', memberCessationDetail);
+        // console.log('memberCessationDetail', memberCessationDetail);
         if (memberCessationDetail && memberCessationDetail.response != '') {
           endDate = getJsDateFromExcel(memberCessationDetail.response);
-          endDateTimeStamp = Math.floor(new Date(endDate).getTime()/1000);
+          endDateTimeStamp = endDate ? Math.floor(new Date(endDate).getTime()/1000) : 0;
           let currentTimeStamp = Math.floor(new Date().getTime()/1000);
           if (currentTimeStamp > endDateTimeStamp) {
             memberStatus = false;
           }
         }
         let newBoardMemberObject = {
-          createdBy: user,
+          createdBy: req.user,
           clientTaxonomyId: '60c76f299def09f5ef0dca5c',
           companyId: memberDetail.companyId,
           BOSP004: memberDetail.expectedName,
           startDate: appointedDate,
           endDate: endDate,
-          endDateTimeStamp: endDateTimeStamp,
+          endDateTimeStamp: endDateTimeStamp ? endDateTimeStamp : 0,
           dob: '',
           BODR005: memberGenderDetail ? memberGenderDetail.response : '',
           BODP001: memberNationalityDetail ? memberNationalityDetail.response : '',
@@ -290,7 +293,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log('newBoardMemberObject', newBoardMemberObject);
+        // console.log('newBoardMemberObject', newBoardMemberObject);
         await BoardMembers.updateOne({ 
           companyId: memberDetail.companyId,
           BOSP004: memberDetail.expectedName,
@@ -303,7 +306,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
         
         if (memberExecutiveDetail && memberExecutiveDetail.response == 'Yes') {
           let newKMPMemberObject = {
-            createdBy: user,
+            createdBy: req.user,
             companyId: memberDetail.companyId,
             MASP003: memberDetail.expectedName,
             startDate: '',
@@ -315,7 +318,7 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
             createdAt: new Date(),
             updatedAt: new Date()
           }
-          console.log('newKMPMemberObject', newKMPMemberObject);
+          // console.log('newKMPMemberObject', newKMPMemberObject);
           await Kmp.updateOne({ 
             companyId: memberDetail.companyId,
             MASP003: memberDetail.expectedName,
@@ -332,15 +335,15 @@ export const boardMemberNamingCorrections = async({ user, params }, res, next) =
   })
 }
 
-export const kmpMemberNamingCorrections = async({ user, params }, res, next) => {
+export const kmpMemberNamingCorrections = async( req, res, next) => {
   console.log('kmpMemberNamingCorrections called!');
-  fs.readFile(__dirname + '/kmp-consolidated.json', async (err, data) => {
+  fs.readFile(__dirname + '/Consolidated_Board.json', async (err, data) => {
     if (err) throw err;
     let membersList = JSON.parse(data);
-    console.log('membersList length', membersList.length);
-    let yearMembersList = _.filter(membersList, { year: "2018-2019" });
-    console.log('yearMembersList length', yearMembersList.length);
-    for (let index = 0; index < 5; index++) {
+    // console.log('membersList length', membersList.length);
+    let yearMembersList = _.filter(membersList, { year: req.query.year});
+    // console.log('yearMembersList length', yearMembersList.length);
+    for (let index = 0; index < yearMembersList.length; index++) {
       let memberDetail = yearMembersList[index];
       let memberFound;
       if (memberDetail.memberName != memberDetail.expectedName) {
@@ -351,7 +354,8 @@ export const kmpMemberNamingCorrections = async({ user, params }, res, next) => 
         }, { 
           $set: { memberName: memberDetail.expectedName } 
         });
-        console.log(memberDetail);
+        // console.log("count", index);
+        // console.log(memberDetail);
         memberFound = await KmpMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
           companyId: memberDetail.companyId,
@@ -364,7 +368,7 @@ export const kmpMemberNamingCorrections = async({ user, params }, res, next) => 
           status: true
         });
       }
-      console.log('memberFound', memberFound);
+      // console.log('memberFound', memberFound);
       if(memberFound){
         let memberGenderDetail = await KmpMatrixDataPoints.findOne({ 
           memberName: memberDetail.expectedName,
@@ -373,9 +377,9 @@ export const kmpMemberNamingCorrections = async({ user, params }, res, next) => 
           datapointId: "609d2c65be8b9d1b577ced55",//MASR008-kmp member gender id
           status: true 
         });
-        console.log('memberGenderDetail', memberGenderDetail);
+        // console.log('memberGenderDetail', memberGenderDetail);
         let newKmpMemberObject = {
-          createdBy: user,
+          createdBy: req.user,
           clientTaxonomyId: '60c76f299def09f5ef0dca5c',
           companyId: memberDetail.companyId,
           MASP003: memberDetail.expectedName,
@@ -389,7 +393,7 @@ export const kmpMemberNamingCorrections = async({ user, params }, res, next) => 
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log('newKmpMemberObject', newKmpMemberObject);
+        // console.log('newKmpMemberObject', newKmpMemberObject);
         await Kmp.updateOne({ 
           companyId: memberDetail.companyId,
           MASP003: memberDetail.expectedName,
