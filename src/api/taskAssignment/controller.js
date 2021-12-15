@@ -1173,7 +1173,6 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       message: "User role not found!",
     });
   }
-  let rows = [], count = 0, findQuery = {};
   userRoles = _.uniq(userRoles);
   let rows = [], count = 0, findQuery = {}, companyIds = [];
   if (query.company) {
