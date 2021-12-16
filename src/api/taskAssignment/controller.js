@@ -1868,6 +1868,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
 
+
     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       const query = {
         taskId: body.taskId,
@@ -1880,11 +1881,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         BoardMembersMatrixDataPoints.distinct('datapointId', query),
         KmpMatrixDataPoints.distinct('datapointId', query)
       ])
-      datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
+      datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
     }
+    datapointsCount += allStandaloneDetails.length;
 
     let datapoints = await Datapoints.find({
-      clientTaxonomyId: taskDetails.categoryId.clientTaxonomyId,
+      clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
@@ -1895,7 +1897,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasError == true),
       mergedDetails.find(object => object.hasCorrection == true),
       datapoints.length * distinctYears.length];
-
     let taskStatusValue = "";
     if (datapointsCount == multipliedValue && hasError) {
       taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending

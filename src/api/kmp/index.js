@@ -73,7 +73,7 @@ updateEndDate)
  activeMemberlist)
 
 /**
-* @api {get} /kmp/correct-naming Correct kmps namings
+* @api {get} /kmp/correct-naming/board Correct kmps namings
 * @apiName CorrectKmpsNamings
 * @apiGroup Kmp
 * @apiPermission user
@@ -84,10 +84,27 @@ updateEndDate)
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/correct-naming',
+router.get('/correct-naming/board',
 token({ required: true }),
 query(),
 boardMemberNamingCorrections)
+
+/**
+* @api {get} /kmp/correct-naming/kmp Correct kmps namings
+* @apiName CorrectKmpsNamings
+* @apiGroup Kmp
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of kmps.
+* @apiSuccess {Object[]} rows List of kmps.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/correct-naming/kmp',
+token({ required: true }),
+query(),
+kmpMemberNamingCorrections)
 
 /**
  * @api {get} /kmp Retrieve kmps
