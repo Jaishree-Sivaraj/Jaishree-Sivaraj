@@ -489,6 +489,12 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     findQuery = { taskStatus: '', status: true };
   }
   if (userRoles.includes(params.role)) {
+    let companyIds = [];
+    if (query.company) {
+      let companyDetail = await Companies.find({companyName: { $regex: new RegExp( query.company, "i") } }).distinct('_id');
+      companyIds = companyDetail ? companyDetail : [];
+      findQuery['companyId'] = { $in: companyIds };
+    }
     await TaskAssignment.count(findQuery)
       .then(async (count) => {
         await TaskAssignment.find(findQuery, select, cursor)
@@ -601,9 +607,15 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
     } else {
       return res.json({ status: "200", message: "Tasks retrieved successfully!", count: 0, rows: [] });
     }
-    await ControversyTasks.count({ status: true })
+    let companyIds = [];
+    if (query.company) {
+      let companyDetail = await Companies.find({companyName: { $regex: new RegExp( query.company, "i") } }).distinct('_id');
+      companyIds = companyDetail ? companyDetail : [];
+      findQuery['companyId'] = { $in: companyIds };
+    }
+    await ControversyTasks.count(findQuery)
       .then(async (count) => {
-        await ControversyTasks.find({ status: true }, select, cursor)
+        await ControversyTasks.find(findQuery, select, cursor)
           .populate('companyId')
           .populate('analystId')
           .populate('createdBy')

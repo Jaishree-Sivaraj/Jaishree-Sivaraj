@@ -98,7 +98,8 @@ router.get('/controversies/:role',
     },
     limit: {
       max: Infinity
-    }
+    },
+    company
   }),
   retrieveFilteredControversyTasks)
 
@@ -124,7 +125,8 @@ router.get('/:taskStatus/:role',
     },
     limit: {
       max: Infinity
-    }
+    },
+    company
   }),
   retrieveFilteredDataTasks)
 
