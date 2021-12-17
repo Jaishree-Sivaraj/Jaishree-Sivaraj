@@ -13,7 +13,7 @@ import path from 'path'
 import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 import { sendEmail } from '../../services/utils/mailing'
-import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles } from '../../constants/roles'
+import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles, GroupRoles } from '../../constants/roles'
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -161,408 +161,290 @@ export const create = ({ bodymen: { body } }, res, next) =>
     })
 
 export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, next) => {
-  let bodyData = Buffer.from(body.onBoardingDetails, 'base64');
-  let onBoardingDetails = JSON.parse(bodyData);
-  let roleDetails = await Role.find({ roleName: { $in: ["Employee", "Client Representative", "Company Representative"] } });
-  let userObject;
-  if (onBoardingDetails.email) {
-    await User.findOne({ email: onBoardingDetails.email }).then(async (userFound) => {
+  try {
+    const bodyData = Buffer.from(body.onBoardingDetails, 'base64');
+    console.log('Body Data',bodyData)
+    const onBoardingDetails = JSON.parse(bodyData);
+    console.log('Data',onBoardingDetails)
+    let userObject, userUpdate;
+    const [oboardingEmailDetails, roleDetails] = await Promise.all
+      ([OnboardingEmails.findOne({ emailId: onBoardingDetails.email }),
+      Role.find({ roleName: { $in: GroupRoles } })])
+
+    if (oboardingEmailDetails) {
+      const userFound = await User.findOne({ email: oboardingEmailDetails.emailId });
+      console.log('This is is ', userFound)
+      const roleObject = roleDetails.find((rec) => rec.roleName === onBoardingDetails.roleName)
       if (userFound) {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({ emailId: onBoardingDetails.email })
-        if (oboardingEmailDetails) {
-          if (userFound.isUserRejected && !userFound.isUserApproved) {
-            if (onBoardingDetails.roleName == "Employee") {
-              var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-              userObject = {
-                name: onBoardingDetails.firstName ? onBoardingDetails.firstName + ' ' + onBoardingDetails.middleName + ' ' + onBoardingDetails.lastName : '',
-                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-                isUserApproved: false,
-                status: true,
-                isUserRejected: false
-              };
-              await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async () => {
-                const pancardUrlFileType = onBoardingDetails.pancardUrl.split(';')[0].split('/')[1];
-                var pancardUrl = userFound.id + '_' + Date.now() + '.' + pancardUrlFileType;
-                var pancards3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, pancardUrl, onBoardingDetails.pancardUrl);
-                const aadhaarUrlFileType = onBoardingDetails.aadhaarUrl.split(';')[0].split('/')[1];
-                var aadhaarUrl = userFound.id + '_' + Date.now() + '.' + aadhaarUrlFileType;
-                var aadhars3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, aadhaarUrl, onBoardingDetails.aadhaarUrl);
-                const cancelledChequeUrllFileType = onBoardingDetails.cancelledChequeUrl.split(';')[0].split('/')[1];
-                var cancelledChequeUrl = userFound.id + '_' + Date.now() + '.' + cancelledChequeUrllFileType;
-                var cancelledChequeUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, cancelledChequeUrl, onBoardingDetails.cancelledChequeUrl);
-                await Employees.updateOne({ userId: userFound.id }, {
+        if (userFound.isUserRejected && !userFound.isUserApproved) {
+          switch (roleObject.roleName) {
+            case Employee:
+              userObject = getUserDetail(oboardingEmailDetails, roleObject);
+              userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
+              if (userUpdate) {
+                const empDetails = await getEmployee(onBoardingDetails);
+                const empUpdate = await Employees.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
-                    firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                    middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                    lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                    panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                    aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                    bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                    bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                    accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                    pancardUrl: pancardUrl, //onBoardingDetails.pancardUrl, //pancards3Insert
-                    aadhaarUrl: aadhaarUrl, //onBoardingDetails.aadhaarUrl,//aadhars3Insert
-                    cancelledChequeUrl: cancelledChequeUrl, //onBoardingDetails.cancelledChequeUrl,//cancelledChequeUrls3Insert
-                    status: true
+                    ...empDetails
                   }
-                }).then(async () => {
-                  var userDetails = await Employees.findOne({ userId: userFound.id }).populate('userId');
-                  return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
                 });
-              }).catch((err) => {
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  if (err.keyPattern.phoneNumber) {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'phoneNumber',
-                      message: 'phoneNumber already registered'
-                    })
-                  } else {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'email',
-                      message: 'email already registered'
-                    })
-                  }
+                if (empUpdate) {
+                  const userDetails = await Employees.findOne({ userId: userFound.id }).populate('userId');
+                  return res.status(200).json({
+                    status: '200',
+                    message: "Your details has been updated successfully", data: userDetails ? userDetails : {}
+                  });
                 } else {
-                  next(err)
+                  return res.status(409).json({
+                    status: 409,
+                    message: 'Failed Employee Update'
+                  });
                 }
-              })
-            } else if (onBoardingDetails.roleName == "Client Representative") {
-              var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
-              userObject = {
-                name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-                isUserApproved: false,
-                status: true,
-                isUserRejected: false
               }
-              await User.updateOne({ _id: userFound.id }, { $set: userObject }).then(async (response) => {
-
-                const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
-                var authenticationLetterForClientUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
-                var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
-                const companyIdForClientFileType = onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1];
-                var companyIdForClient = userId + '_' + Date.now() + '.' + companyIdForClientFileType;
-                var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForClient, onBoardingDetails.companyIdForClient);
-                await ClientRepresentatives.updateOne({ userId: userFound.id }, {
-                  $set: {
-                    userId: userFound.id,
-                    authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                    companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
-                    status: true
-                  }
-                }).then(async () => {
-                  var userDetails = await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId');
-                  return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
-                })
-              }).catch((err) => {
-                /* istanbul ignore else */
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  if (err.keyPattern.phoneNumber) {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'phoneNumber',
-                      message: 'phoneNumber already registered'
-                    })
-                  } else {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'email',
-                      message: 'email already registered'
-                    })
-                  }
-                } else {
-                  next(err)
+              break;
+            case ClientRepresentative || CompanyRepresentative:
+              userObject = getUserDetail(oboardingEmailDetails, roleObject);
+              userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
+              const getRepDetails = await getRepDetails(onBoardingDetails.roleName);
+              const updateRep = onBoardingDetails.roleName == ClientRepresentative ? await ClientRepresentatives.updateOne({ userId: userFound.id }, {
+                $set: {
+                  userId: userFound.id,
+                  ...getRepDetails
                 }
-              })
-            } else if (onBoardingDetails.roleName == "Company Representative") {
-              var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
-              userObject = {
-                name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-                isUserApproved: false,
-                status: true,
-                isUserRejected: false
-              }
-              var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-              await User.updateOne({ _id: userFound.id }, { $set: userObject })
-                .then(async () => {
-                  const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
-                  var authenticationLetterForCompanyUrlUrl = userFound.id + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
-                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
-                  const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
-                  var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
-                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForClient);
-                  await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
-                    $set: {
-                      userId: userFound.id,
-                      authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
-                      companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
-                      status: true
-                    }
-                  }).then(async () => {
-                    var userDetails = await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
-                    return res.status(200).json({ status: '200', message: "Your details has been updated successfully", data: userDetails ? userDetails : {} });
-                  })
-                })
-                .catch((err) => {
-                  if (err.name === 'MongoError' && err.code === 11000) {
-                    if (err.keyPattern.phoneNumber) {
-                      res.status(409).json({
-                        valid: false,
-                        param: 'phoneNumber',
-                        message: 'phoneNumber already registered'
-                      })
-                    } else {
-                      res.status(409).json({
-                        valid: false,
-                        param: 'email',
-                        message: 'email already registered'
-                      })
-                    }
-                  } else {
-                    next(err)
-                  }
-                })
+              }) : await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
+                $set: {
+                  userId: userFound.id,
+                  ...getRepDetails
+                }
+              });
+              if (updateRep) {
+                const repDetails = onBoardingDetails.roleName == ClientRepresentative ?
+                  await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId')
+                  : await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
 
-            } else if (onBoardingDetails.roleName == "Analyst") {
-              //TODO
-            } else if (onBoardingDetails.roleName == "QA") {
-              //TODO
-            } else {
-              return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
-            }
-          } else {
-            res.status(409).json({
-              valid: false,
-              param: 'email',
-              message: 'email already registered'
-            })
+                return res.status(200).json({
+                  status: '200',
+                  message: "Your details has been updated successfully", data: userDetails ? userDetails : {}
+                });
+              }
+              break;
+            default:
+              break;
           }
-
         } else {
-          return res.status(400).json({ status: "400", message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!` })
+          return res.status(409).json({
+            valid: false,
+            param: 'email',
+            message: 'email already registered'
+          })
         }
       } else {
-        let oboardingEmailDetails = await OnboardingEmails.findOne({ emailId: onBoardingDetails.email })
-        if (oboardingEmailDetails) {
-          if (onBoardingDetails.roleName == "Employee") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Employee')
-            userObject = {
+        console.log(onBoardingDetails)
+        switch (roleObject.roleName) {
+          case Employee:
+            userObject = getUserDetail(onBoardingDetails, roleObject);
+            const userCreate = await User.create({
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.firstName ? onBoardingDetails.firstName + ' ' + onBoardingDetails.middleName + ' ' + onBoardingDetails.lastName : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true
-            }
-            User.create(userObject)
-              .then(async (response) => {
-                if (response) {
-                  let userId = response.id;
-                  const pancardUrlFileType = onBoardingDetails.pancardUrl.split(';')[0].split('/')[1];
-                  var pancardUrl = userId + '_' + Date.now() + '.' + pancardUrlFileType;
-                  var pancards3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, pancardUrl, onBoardingDetails.pancardUrl);
-                  console.log('pancards3Insert', pancards3Insert);
-                  const aadhaarUrlFileType = onBoardingDetails.aadhaarUrl.split(';')[0].split('/')[1];
-                  var aadhaarUrl = userId + '_' + Date.now() + '.' + aadhaarUrlFileType;
-                  var aadhars3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, aadhaarUrl, onBoardingDetails.aadhaarUrl);
-                  console.log('aadhars3Insert', aadhars3Insert);
-                  const cancelledChequeUrllFileType = onBoardingDetails.cancelledChequeUrl.split(';')[0].split('/')[1];
-                  var cancelledChequeUrl = userId + '_' + Date.now() + '.' + cancelledChequeUrllFileType;
-                  var cancelledChequeUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, cancelledChequeUrl, onBoardingDetails.cancelledChequeUrl);
-                  console.log('cancelledChequeUrls3Insert', cancelledChequeUrls3Insert);
-                  Employees.create({
-                    userId: userId,
-                    firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
-                    middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
-                    lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
-                    panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
-                    aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
-                    bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
-                    bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
-                    accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
-                    pancardUrl: pancardUrl,
-                    aadhaarUrl: aadhaarUrl,
-                    cancelledChequeUrl: cancelledChequeUrl,
-                    status: true
-                  }).then((resp) => {
-                    if (resp) {
-                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
-                    } else {
-                      return res.status(500).json({ message: "Failed to onboard employee" });
-                    }
+              ...userObject
+            });
+            if (userCreate) {
+              const empDetails = await getEmployee(onBoardingDetails, userCreate.id);
+              const empCreate = await Employees.create({
+                userId: userCreate.id,
+                ...empDetails
+              });
+              if (empCreate) {
+                const userDetails = await Employees.findOne({ userId: userCreate.id }).populate('userId');
+                if (userDetails) {
+                  return res.status(200).json({
+                    status: '200',
+                    message: 'Your details has been updated successfully', data: userDetails ? userDetails : {}
                   });
                 } else {
-                  return res.status(500).json({ message: "Failed to onboard employee" });
-                }
-              })
-              .catch((err) => {
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  if (err.keyPattern.phoneNumber) {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'phoneNumber',
-                      message: 'phoneNumber already registered'
-                    })
-                  } else {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'email',
-                      message: 'email already registered'
-                    })
-                  }
-                } else {
-                  next(err)
-                }
-              })
-          } else if (onBoardingDetails.roleName == "Client Representative") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Client Representative');
-            userObject = {
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.name ? onBoardingDetails.name : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              roleDetails: { primaryRole: roleObject.id, roles: [] },
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true
-            }
-            // var companiesList = onBoardingDetails.companyName.map((rec) => { return rec.value });
-            User.create(userObject)
-              .then(async (response) => {
-                if (response) {
-                  let userId = response.id;
-                  const authenticationLetterForClientUrlFileType = onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1];
-                  var authenticationLetterForClientUrl = userId + '_' + Date.now() + '.' + authenticationLetterForClientUrlFileType;
-                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForClientUrl, onBoardingDetails.authenticationLetterForClientUrl);
-                  const companyIdForClientFileType = onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1];
-                  var companyIdForClient = userId + '_' + Date.now() + '.' + companyIdForClientFileType;
-                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForClient, onBoardingDetails.companyIdForClient);
-                  ClientRepresentatives.create({
-                    userId: userId,
-                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: [],
-                    authenticationLetterForClientUrl: authenticationLetterForClientUrl,
-                    companyIdForClient: companyIdForClient, //onBoardingDetails.companyIdForClient,
-                    status: true
-                  }).then((success) => {
-                    if (success) {
-                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
-                    } else {
-                      return res.status(500).json({ message: "Failed to onboard client representative" });
-                    }
+                  return res.status(409).json({
+                    status: '409',
+                    message: 'User does not exists'
                   });
-                } else {
-                  return res.status(500).json({ message: "Failed to onboard client representative" });
                 }
-              })
-              .catch((err) => {
-                /* istanbul ignore else */
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  if (err.keyPattern.phoneNumber) {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'phoneNumber',
-                      message: 'phoneNumber already registered'
-                    })
-                  } else {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'email',
-                      message: 'email already registered'
-                    })
-                  }
-                } else {
-                  next(err)
-                }
-              })
-          } else if (onBoardingDetails.roleName == "Company Representative") {
-            var roleObject = roleDetails.find((rec) => rec.roleName === 'Company Representative');
-            userObject = {
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              name: onBoardingDetails.name ? onBoardingDetails.name : '',
-              userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-              roleDetails: { primaryRole: roleObject.id, roles: [] },
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
-              phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
-              isUserApproved: false,
-              status: true
-            }
-            // var companiesList = onBoardingDetails.companiesList.map((rec) => { return rec.value });
-            User.create(userObject)
-              .then(async (response) => {
-                if (response) {
-                  let userId = response.id;
-                  const authenticationLetterForCompanyUrlUrlFileType = onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
-                  var authenticationLetterForCompanyUrlUrl = userId + '_' + Date.now() + '.' + authenticationLetterForCompanyUrlUrlFileType;
-                  var authenticationLetterForClientUrls3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterForCompanyUrlUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
-                  const companyIdForCompanyFileType = onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
-                  var companyIdForCompany = userId + '_' + Date.now() + '.' + companyIdForCompanyFileType;
-                  var companyIdForClients3Insert = await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyIdForCompany, onBoardingDetails.companyIdForCompany);
-                  CompanyRepresentatives.create({
-                    userId: userId,
-                    name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                    email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                    password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                    phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
-                    companiesList: [],
-                    authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrlUrl,
-                    companyIdForCompany: companyIdForCompany, //onBoardingDetails.companyIdForCompany,
-                    status: true
-                  }).then((success) => {
-                    if (success) {
-                      return res.status(200).json({ message: "Your details have been saved successfully. You will receive an email from us shortly.", _id: response.id, name: response.name, email: response.email });
-                    } else {
-                      return res.status(500).json({ message: "Failed to onboard company representative" });
-                    }
-                  });
-                } else {
-                  return res.status(500).json({ message: "Failed to onboard company representative" });
-                }
-              }).catch((err) => {
-                if (err.name === 'MongoError' && err.code === 11000) {
-                  if (err.keyPattern.phoneNumber) {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'phoneNumber',
-                      message: 'phoneNumber already registered'
-                    })
-                  } else {
-                    res.status(409).json({
-                      valid: false,
-                      param: 'email',
-                      message: 'email already registered'
-                    })
-                  }
-                } else {
-                  next(err)
-                }
-              })
 
-          } else if (onBoardingDetails.roleName == "Analyst") {
-            //TODO
-          } else if (onBoardingDetails.roleName == "QA") {
-            //TODO
-          } else {
-            return res.status(500).json({ message: "Failed to onboard, invalid value for role or roleName" });
-          }
-        } else {
-          return res.status(500).json({ message: "Unauthorized email id for onboarding!" });
+              } else {
+                return res.status(409).json({
+                  status: 409,
+                  message: ' Employee Failed To Create'
+                });
+              }
+            } else {
+              return res.status(409).json({
+                status: 409,
+                message: 'User Failed To Create'
+              });
+            }
+          case ClientRepresentative || CompanyRepresentative:
+            userObject = getUserDetail(onBoardingDetails, roleObject);
+            console.log({
+              email: onBoardingDetails.email ? onBoardingDetails.email : '',
+              password: onBoardingDetails.password ? onBoardingDetails.password : '',
+              roleDetails: { primaryRole: roleObject.id, roles: [] },
+              ...userObject
+            })
+            const createUser = await User.create({
+              email: onBoardingDetails.email ? onBoardingDetails.email : '',
+              password: onBoardingDetails.password ? onBoardingDetails.password : '',
+              roleDetails: { primaryRole: roleObject.id, roles: [] },
+              ...userObject
+            });
+
+            if (createUser) {
+              const repDetails = await getRepDetails(roleObject.roleName,onBoardingDetails);
+              const query = {
+                userId: createUser.id,
+                name: onBoardingDetails.name ? onBoardingDetails.name : '',
+                email: onBoardingDetails.email ? onBoardingDetails.email : '',
+                password: onBoardingDetails.password ? onBoardingDetails.password : '',
+                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+                companiesList: [],
+                ...repDetails
+              }
+
+              const createRep = roleObject.roleName === ClientRepresentative
+                ? await ClientRepresentatives.create(query)
+                : await CompanyRepresentatives.create(query);
+
+              if (createRep) {
+                return res.status(200).json({
+                  message: "Your details have been saved successfully. You will receive an email from us shortly.",
+                  _id: createRep.id,
+                  name: createRep.name,
+                  email: createRep.email
+                });
+
+              } else {
+                res.status(400).json({
+                  status: "400",
+                  message: `${roleObject.roleName} failed to create`
+                })
+              }
+
+            } else {
+              res.status(400).json({
+                status: "400",
+                message: 'User failed to create'
+              })
+            }
+
+            break;
+          default:
+            break;
         }
       }
+    } else {
+      return res.status(400).json({
+        status: "400",
+        message: `Invalid email for onboarding, emailId:${onBoardingDetails.email} please check!`
+      })
+
+    }
+  } catch (error) {
+    if (error.name === 'MongoError' && error.code === 11000) {
+      if (error.keyPattern.phoneNumber) {
+        res.status(409).json({
+          valid: false,
+          param: 'phoneNumber',
+          message: 'phoneNumber already registered'
+        })
+      } else {
+        res.status(409).json({
+          valid: false,
+          param: 'email',
+          message: 'email already registered'
+        })
+      }
+    }
+    res.status(409).json({
+      status: 409,
+      message: error.message ? error.message : 'email already registered'
     })
   }
+
+  function getUserDetail(onBoardingDetails, roleObject) {
+    return {
+      name: onBoardingDetails.name ? onBoardingDetails.name : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+      phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : ''
+    }
+  }
+
+  async function getEmployee(onBoardingDetails, id) {
+
+    const pancardUrlFileType = onBoardingDetails.pancardUrl.split(';')[0].split('/')[1];
+    const pancardUrl = id + '_' + Date.now() + '.' + pancardUrlFileType;
+
+    const aadhaarUrlFileType = onBoardingDetails.aadhaarUrl.split(';')[0].split('/')[1];
+    const aadhaarUrl = id + '_' + Date.now() + '.' + aadhaarUrlFileType;
+
+    const cancelledChequeUrllFileType = onBoardingDetails.cancelledChequeUrl.split(';')[0].split('/')[1];
+    const cancelledChequeUrl = id + '_' + Date.now() + '.' + cancelledChequeUrllFileType;
+
+    // Storing images in S3 bucket.
+    await Promise.all([
+      storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, pancardUrl, onBoardingDetails.pancardUrl),
+      storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, aadhaarUrl, onBoardingDetails.aadhaarUrl),
+      storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, cancelledChequeUrl, onBoardingDetails.cancelledChequeUrl)
+    ]);
+
+    return {
+      firstName: onBoardingDetails.firstName ? onBoardingDetails.firstName : '',
+      middleName: onBoardingDetails.middleName ? onBoardingDetails.middleName : '',
+      lastName: onBoardingDetails.lastName ? onBoardingDetails.lastName : '',
+      panNumber: onBoardingDetails.panNumber ? onBoardingDetails.panNumber : '',
+      aadhaarNumber: onBoardingDetails.aadhaarNumber ? onBoardingDetails.aadhaarNumber : '',
+      bankAccountNumber: onBoardingDetails.bankAccountNumber ? onBoardingDetails.bankAccountNumber : '',
+      bankIFSCCode: onBoardingDetails.bankIFSCCode ? onBoardingDetails.bankIFSCCode : '',
+      accountHolderName: onBoardingDetails.accountHolderName ? onBoardingDetails.accountHolderName : '',
+      pancardUrl: pancardUrl, //onBoardingDetails.pancardUrl, //pancards3Insert
+      aadhaarUrl: aadhaarUrl, //onBoardingDetails.aadhaarUrl,//aadhars3Insert
+      cancelledChequeUrl: cancelledChequeUrl, //onBoardingDetails.cancelledChequeUrl,//cancelledChequeUrls3Insert
+    }
+  }
+
+  async function getRepDetails(role,onBoardingDetails) {
+    const authenticationLetter = role === ClientRepresentative ?
+      onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1]
+      : onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
+
+    const authenticationLetterUrl = role === ClientRepresentative ?
+      userFound.id + '_' + Date.now() + '.' + authenticationLetter
+      : userFound.id + '_' + Date.now() + '.' + authenticationLetter;
+
+    role === ClientRepresentative ?
+      await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForClientUrl)
+      : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
+
+    const companyIdForFiletype = role === ClientRepresentative ?
+      onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1]
+      : onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
+
+    const companyId = role === ClientRepresentative ?
+      userId + '_' + Date.now() + '.' + companyIdForFiletype
+      : userId + '_' + Date.now() + '.' + companyIdForFiletype;
+
+    role === ClientRepresentative ?
+      await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForClient)
+      : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForClient);
+
+    return role === ClientRepresentative ? {
+      authenticationLetterForClientUrl: authenticationLetterUrl,
+      companyIdForClient: companyId, //onBoardingDetails.companyIdForClient,
+    } : {
+      authenticationLetterForCompanyUrl: authenticationLetterUrl,
+      companyIdForCompany: companyId, //onBoardingDetails.companyIdForCompany,
+    }
+  }
 }
+
+
 
 async function storeOnBoardingImagesInLocalStorage(onboardingBase64Image, folderName) {
   return new Promise(function (resolve, reject) {
@@ -1177,7 +1059,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             }
           }, { upsert: true })
 
-        }  else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
+        } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
           || rolesDetails.roleName == "ClientRepresentative"
           || rolesDetails.roleName == CompanyRepresentative
           || rolesDetails.roleName == "CompanyRepresentative")) {
@@ -1210,7 +1092,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
               }
             }, { upsert: true })
           }
-        }else{
+        } else {
           return res.status(400).json({ status: "400", message: "Invalid Role" })
         }
       }
