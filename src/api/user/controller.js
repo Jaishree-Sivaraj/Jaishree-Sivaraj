@@ -17,6 +17,7 @@ import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles, Grou
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
+
   User.count(query)
     .then(count => User.find(query).sort({ createdAt: -1 })
       .populate('roleId').populate({
@@ -163,17 +164,13 @@ export const create = ({ bodymen: { body } }, res, next) =>
 export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, next) => {
   try {
     const bodyData = Buffer.from(body.onBoardingDetails, 'base64');
-    console.log('Body Data',bodyData)
     const onBoardingDetails = JSON.parse(bodyData);
-    console.log('Data',onBoardingDetails)
     let userObject, userUpdate;
     const [oboardingEmailDetails, roleDetails] = await Promise.all
       ([OnboardingEmails.findOne({ emailId: onBoardingDetails.email }),
       Role.find({ roleName: { $in: GroupRoles } })])
-
     if (oboardingEmailDetails) {
       const userFound = await User.findOne({ email: oboardingEmailDetails.emailId });
-      console.log('This is is ', userFound)
       const roleObject = roleDetails.find((rec) => rec.roleName === onBoardingDetails.roleName)
       if (userFound) {
         if (userFound.isUserRejected && !userFound.isUserApproved) {
@@ -201,36 +198,51 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     message: 'Failed Employee Update'
                   });
                 }
-              }
-              break;
-            case ClientRepresentative || CompanyRepresentative:
-              userObject = getUserDetail(oboardingEmailDetails, roleObject);
-              userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
-              const getRepDetails = await getRepDetails(onBoardingDetails.roleName);
-              const updateRep = onBoardingDetails.roleName == ClientRepresentative ? await ClientRepresentatives.updateOne({ userId: userFound.id }, {
-                $set: {
-                  userId: userFound.id,
-                  ...getRepDetails
-                }
-              }) : await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
-                $set: {
-                  userId: userFound.id,
-                  ...getRepDetails
-                }
-              });
-              if (updateRep) {
-                const repDetails = onBoardingDetails.roleName == ClientRepresentative ?
-                  await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId')
-                  : await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
-
-                return res.status(200).json({
-                  status: '200',
-                  message: "Your details has been updated successfully", data: userDetails ? userDetails : {}
+              } else {
+                return res.status(409).json({
+                  status: 409,
+                  message: 'Failed User Update'
                 });
               }
-              break;
+            case ClientRepresentative:
+            case CompanyRepresentative:
+              userObject = getUserDetail(oboardingEmailDetails, roleObject);
+              userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
+              if (userUpdate) {
+                const repDetails = await getRepDetails(onBoardingDetails.roleName);
+                const updateRep = onBoardingDetails.roleName == ClientRepresentative ?
+                  await ClientRepresentatives.updateOne({ userId: userFound.id }, {
+                    $set: {
+                      userId: userFound.id,
+                      ...repDetails
+                    }
+                  }) : await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
+                    $set: {
+                      userId: userFound.id,
+                      ...repDetails
+                    }
+                  });
+                if (updateRep) {
+                  const repDetailData = onBoardingDetails.roleName == ClientRepresentative ?
+                    await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId')
+                    : await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
+
+                  return res.status(200).json({
+                    status: '200',
+                    message: "Your details has been updated successfully", data: repDetailData ? repDetailData : {}
+                  });
+                }
+              } else {
+                return res.status(409).json({
+                  status: 409,
+                  message: 'Failed User Update'
+                });
+              }
             default:
-              break;
+              return res.status(400).json({
+                status: "400",
+                message: 'Bad Input for role'
+              });
           }
         } else {
           return res.status(409).json({
@@ -240,7 +252,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
           })
         }
       } else {
-        console.log(onBoardingDetails)
         switch (roleObject.roleName) {
           case Employee:
             userObject = getUserDetail(onBoardingDetails, roleObject);
@@ -281,14 +292,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 message: 'User Failed To Create'
               });
             }
-          case ClientRepresentative || CompanyRepresentative:
+          case ClientRepresentative:
+          case CompanyRepresentative:
             userObject = getUserDetail(onBoardingDetails, roleObject);
-            console.log({
-              email: onBoardingDetails.email ? onBoardingDetails.email : '',
-              password: onBoardingDetails.password ? onBoardingDetails.password : '',
-              roleDetails: { primaryRole: roleObject.id, roles: [] },
-              ...userObject
-            })
             const createUser = await User.create({
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
@@ -297,13 +303,11 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             });
 
             if (createUser) {
-              const repDetails = await getRepDetails(roleObject.roleName,onBoardingDetails);
+              const repDetails = await getRepDetails(roleObject.roleName, onBoardingDetails);
               const query = {
                 userId: createUser.id,
-                name: onBoardingDetails.name ? onBoardingDetails.name : '',
-                email: onBoardingDetails.email ? onBoardingDetails.email : '',
-                password: onBoardingDetails.password ? onBoardingDetails.password : '',
-                phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : "",
+                name: onBoardingDetails.firstName ?
+                  `${onBoardingDetails?.firstName} ${onBoardingDetails?.middleName} ${onBoardingDetails?.lastName}` : '',
                 companiesList: [],
                 ...repDetails
               }
@@ -317,7 +321,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   message: "Your details have been saved successfully. You will receive an email from us shortly.",
                   _id: createRep.id,
                   name: createRep.name,
-                  email: createRep.email
+                  email: onBoardingDetails.email
                 });
 
               } else {
@@ -336,7 +340,10 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
 
             break;
           default:
-            break;
+            return res.status(400).json({
+              status: "400",
+              message: 'Bad Input for role'
+            });
         }
       }
     } else {
@@ -409,7 +416,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     }
   }
 
-  async function getRepDetails(role,onBoardingDetails) {
+  async function getRepDetails(role, onBoardingDetails) {
     const authenticationLetter = role === ClientRepresentative ?
       onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1]
       : onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
