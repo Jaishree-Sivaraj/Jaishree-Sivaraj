@@ -18,16 +18,13 @@ if (mongo.uri) {
     })
 
   mongoose.connection.on('error', err => {
-    console.log(err)
+    console.error(err)
+    process.exit(1)
   })
 }
 
-mongoose.Promise = Promise
-
-setImmediate(() => {
-  server.listen(port, ip, () => {
-    console.log('Express server listening on http://%s:%d, in %s mode', ip, port, env)
-  })
+server.listen(port, ip, () => {
+  console.log('Express server listening on http://%s:%d, in %s mode', ip, port, env)
 })
 
 export default app
