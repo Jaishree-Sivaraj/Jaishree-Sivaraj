@@ -1176,7 +1176,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
   userRoles = _.uniq(userRoles);
   let rows = [], count = 0, findQuery = {}, companyIds = [];
   if (query.company) {
-    let companyDetail = await Companies.find({companyName: { $regex: new RegExp( query.company, "i") } }).distinct('_id');
+    let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
     companyIds = companyDetail ? companyDetail : [];
   }
   if (params.role == "Analyst") {
@@ -2093,14 +2093,15 @@ async function getCompanyDetails(companyId) {
   let companyRepEmail = [], clientRepEmail = []
 
   clientRep.map(async (client) => {
-    clientRepEmail.push(client.userId.email)
+    clientRepEmail.push(client?.userId?.email)
   })
 
   companyRep.map(async (company) => {
-    companyRepEmail.push(company.userId.email)
+    companyRepEmail.push(company?.userId?.email)
   })
 
-  const email = _.concat(companyRepEmail, clientRepEmail)
+  let email = _.concat(companyRepEmail, clientRepEmail);
+  email = email.filter(e => e !== undefined);
   return { email, companyName: cmpDetail?.companyName }
 }
 
