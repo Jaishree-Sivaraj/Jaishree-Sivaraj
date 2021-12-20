@@ -9,7 +9,19 @@ const server = http.createServer(app)
 
 if (mongo.uri) {
   mongoose.connect(mongo.uri)
+    .then(() => {
+      console.log('Connected to db')
+    })
+    .catch((error) => {
+      console.error('Database connection connected')
+      console.error(error)
+    })
+
+  mongoose.connection.on('error', err => {
+    console.log(err)
+  })
 }
+
 mongoose.Promise = Promise
 
 setImmediate(() => {
