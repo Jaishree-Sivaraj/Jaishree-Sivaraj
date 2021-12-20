@@ -142,7 +142,7 @@ router.get('/:taskStatus/:role',
 * @apiError {Object} 400 Some parameters may contain invalid values.
 * @apiError 401 user access only.
 */
-router.get('/task/reports/:role',
+router.get('/task/reports/:taskStatus/:role',
   token({
     required: true
   }),
