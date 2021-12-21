@@ -1867,7 +1867,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
-
+    let uniqueDpCodes;
 
     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       const query = {
@@ -1882,9 +1882,10 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         KmpMatrixDataPoints.distinct('datapointId', query)
       ])
       datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
+      uniqueDpCodes = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
     }
     datapointsCount += allStandaloneDetails.length;
-
+    console.log(uniqueDpCodes);
     let datapoints = await Datapoints.find({
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
@@ -1948,8 +1949,15 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
       ])
     } else {
+      if (datapointsCount !== multipliedValue) {
+        const unfinishedDpCodes = datapoints.filter(function (obj) { return uniqueDpCodes.indexOf(obj) == -1; });
+        return res.status(402).json({
+          message: `Task Status not updated. check dpCodes: ${unfinishedDpCodes.map((dp) => dp.code)}`
+        });
+
+      }
       return res.status(402).json({
-        message: "Task Status not updated. Check all DPcodes completed",
+        message: "Task Status not updated. Check all DPcodes have no error or correction pending",
       });
     }
 
@@ -2005,7 +2013,10 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         notifyToUser: taskDetails.groupId.groupAdmin,
         ...query
       }).catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        return res.status(500).json({
+          status: "500",
+          message: error.message ? error.message : "Failed to sent notification!"
+        });
       });
 
       const adminRoleIds = await Role.find({
@@ -2060,11 +2071,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const content = `
                         Hi,
                         We have updated data for ${companyDetails?.companyName} for the years ${body?.year}
-                        which you have access. Kindly login into the portal 
-                        to review the data.Please contact your system administrator/company 
-                        representative incase of any issues.
+                        which you have access. 
+                        Kindly login into the portal to review the data.
+                        Please contact support@esgds.com incase of any issues.
 
-                        ThanksESGDS Team `
+                        ThanksESGDS Team `;
       companyDetails?.email.map(async (e) => {
         await sendEmail(e, 'ESG - Onboarding', content)
           .then((resp) => { console.log('Mail sent!') })
