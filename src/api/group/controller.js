@@ -235,7 +235,7 @@ export const show = async({ params }, res, next) => {
           admin = {
             userDetails: {
               value: group.groupAdmin.id,
-              label: adminDetail.name + "-" + admin.email,
+              label: adminDetail.name + "-" + adminDetail.email,
             },
             roleDetails: {
               role: adminDetail.roleDetails.roles.map((rec) => {
