@@ -165,21 +165,24 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   try {
     const bodyData = Buffer.from(body.onBoardingDetails, 'base64');
     const onBoardingDetails = JSON.parse(bodyData);
+    console.log(onBoardingDetails)
     let userObject, userUpdate;
     const [oboardingEmailDetails, roleDetails] = await Promise.all
-      ([OnboardingEmails.findOne({ emailId: onBoardingDetails.email }),
-      Role.find({ roleName: { $in: GroupRoles } })])
+      ([
+        OnboardingEmails.findOne({ emailId: onBoardingDetails.email }),
+        Role.find({ roleName: { $in: GroupRoles } })
+      ])
     if (oboardingEmailDetails) {
       const userFound = await User.findOne({ email: oboardingEmailDetails.emailId });
       const roleObject = roleDetails.find((rec) => rec.roleName === onBoardingDetails.roleName)
       if (userFound) {
-        if (userFound.isUserRejected && !userFound.isUserApproved) {
+        if (!userFound.isUserApproved) {
           switch (roleObject.roleName) {
             case Employee:
               userObject = getUserDetail(oboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
-                const empDetails = await getEmployee(onBoardingDetails);
+                const empDetails = await getEmployee(onBoardingDetails,userFound?.id);
                 const empUpdate = await Employees.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
@@ -215,7 +218,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               userObject = getUserDetail(oboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
-                const repDetails = await getRepDetails(onBoardingDetails.roleName);
+                const repDetails = await getRepDetails(onBoardingDetails.roleName, onBoardingDetails,userFound);
                 const updateRep = onBoardingDetails.roleName == ClientRepresentative ?
                   await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
@@ -234,9 +237,11 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                   });
                 if (updateRep) {
                   const repDetailData = onBoardingDetails.roleName == ClientRepresentative ?
-                    await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId')
-                    : await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
-  
+                    await Promise.all([ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId'),
+                    OnboardingEmails.findOne({ emailId: onBoardingDetails.email }, { isOnboarded: true })])
+                    : await Promise.all([CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId'),
+                    OnboardingEmails.findOne({ emailId: onBoardingDetails.email }, { isOnboarded: true })]);
+
 
                   return res.status(200).json({
                     status: '200',
@@ -261,7 +266,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             valid: false,
             param: 'email',
             message: 'email already registered'
-          })
+          });
         }
       } else {
         switch (roleObject.roleName) {
@@ -281,6 +286,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               if (empCreate) {
                 const userDetails = await Employees.findOne({ userId: userCreate.id }).populate('userId');
                 if (userDetails) {
+                  await OnboardingEmails.findOne({ emailId: onBoardingDetails.email }, { isOnboarded: true });
                   return res.status(200).json({
                     status: '200',
                     message: 'Your details has been updated successfully', data: userDetails ? userDetails : {}
@@ -315,7 +321,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             });
 
             if (createUser) {
-              const repDetails = await getRepDetails(roleObject.roleName, onBoardingDetails);
+              const repDetails = await getRepDetails(roleObject.roleName, onBoardingDetails,createUser);
               const query = {
                 userId: createUser.id,
                 name: onBoardingDetails.firstName ?
@@ -329,6 +335,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 : await CompanyRepresentatives.create(query);
 
               if (createRep) {
+                await OnboardingEmails.findOne({ emailId: onBoardingDetails.email }, { isOnboarded: true });
                 return res.status(200).json({
                   message: "Your details have been saved successfully. You will receive an email from us shortly.",
                   _id: createRep.id,
@@ -428,14 +435,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     }
   }
 
-  async function getRepDetails(role, onBoardingDetails) {
+  async function getRepDetails(role, onBoardingDetails,userDetails) {
+    console.log(onBoardingDetails)
     const authenticationLetter = role === ClientRepresentative ?
       onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1]
       : onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
 
     const authenticationLetterUrl = role === ClientRepresentative ?
-      userFound.id + '_' + Date.now() + '.' + authenticationLetter
-      : userFound.id + '_' + Date.now() + '.' + authenticationLetter;
+    userDetails?.id + '_' + Date.now() + '.' + authenticationLetter
+      : userDetails?.id + '_' + Date.now() + '.' + authenticationLetter;
 
     role === ClientRepresentative ?
       await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForClientUrl)
@@ -446,8 +454,8 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       : onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
 
     const companyId = role === ClientRepresentative ?
-      userId + '_' + Date.now() + '.' + companyIdForFiletype
-      : userId + '_' + Date.now() + '.' + companyIdForFiletype;
+    userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype
+      : userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype;
 
     role === ClientRepresentative ?
       await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForClient)
@@ -462,8 +470,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     }
   }
 }
-
-
 
 async function storeOnBoardingImagesInLocalStorage(onboardingBase64Image, folderName) {
   return new Promise(function (resolve, reject) {
