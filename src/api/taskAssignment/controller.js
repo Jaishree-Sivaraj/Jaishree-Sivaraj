@@ -1867,7 +1867,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
-    let uniqueDpCodes;
 
     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
       const query = {
@@ -1882,7 +1881,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         KmpMatrixDataPoints.distinct('datapointId', query)
       ])
       datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
-      uniqueDpCodes = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
     }
     datapointsCount += allStandaloneDetails.length;
     console.log(uniqueDpCodes);
@@ -1949,13 +1947,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
       ])
     } else {
-      if (datapointsCount !== multipliedValue) {
-        const unfinishedDpCodes = datapoints.filter(function (obj) { return uniqueDpCodes.indexOf(obj) == -1; });
-        return res.status(402).json({
-          message: `Task Status not updated. check dpCodes: ${unfinishedDpCodes.map((dp) => dp.code)}`
-        });
-
-      }
       return res.status(402).json({
         message: "Task Status not updated. Check all DPcodes have no error or correction pending",
       });
