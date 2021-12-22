@@ -9,13 +9,22 @@ const server = http.createServer(app)
 
 if (mongo.uri) {
   mongoose.connect(mongo.uri)
-}
-mongoose.Promise = Promise
+    .then(() => {
+      console.log('Connected to db')
+    })
+    .catch((error) => {
+      console.error('Database connection connected')
+      console.error(error)
+    })
 
-setImmediate(() => {
-  server.listen(port, ip, () => {
-    console.log('Express server listening on http://%s:%d, in %s mode', ip, port, env)
+  mongoose.connection.on('error', err => {
+    console.error(err)
+    process.exit(1)
   })
+}
+
+server.listen(port, ip, () => {
+  console.log('Express server listening on http://%s:%d, in %s mode', ip, port, env)
 })
 
 export default app

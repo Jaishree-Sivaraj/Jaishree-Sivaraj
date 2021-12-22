@@ -19,13 +19,14 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const getMyNotifications = ({ params, querymen: { query, select, cursor } }, res, next) =>
+export const getMyNotifications = ({ params }, res, next) =>
   Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false })
-    .then(count => Notifications.find({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false, 
+    .then(count => Notifications.find({
+      notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false,
       createdAt: {
         $gte: new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)))
       }
-    }).sort({ "createdAt": -1 }).limit(10)
+    }).sort({ createdAt: -1 }).limit(10)
       .populate('notifyToUser')
       .then((notifications) => ({
         count,
@@ -37,7 +38,7 @@ export const getMyNotifications = ({ params, querymen: { query, select, cursor }
 
 export const show = ({ params }, res, next) =>
   Notifications.findById(params.id)
-  .populate('notifyToUser')
+    .populate('notifyToUser')
     .then(notFound(res))
     .then((notifications) => notifications ? notifications.view() : null)
     .then(success(res))
@@ -45,7 +46,7 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ bodymen: { body }, params }, res, next) =>
   Notifications.findById(params.id)
-  .populate('notifyToUser')
+    .populate('notifyToUser')
     .then(notFound(res))
     .then((notifications) => notifications ? Object.assign(notifications, body).save() : null)
     .then((notifications) => notifications ? notifications.view(true) : null)
