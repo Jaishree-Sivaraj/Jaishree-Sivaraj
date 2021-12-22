@@ -1883,7 +1883,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
     }
     datapointsCount += allStandaloneDetails.length;
-    console.log(uniqueDpCodes);
     let datapoints = await Datapoints.find({
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
@@ -1948,7 +1947,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       ])
     } else {
       return res.status(402).json({
-        message: "Task Status not updated. Check all DPcodes have no error or correction pending",
+        message: "Task Status not updated. Check all DPcodes",
       });
     }
 
