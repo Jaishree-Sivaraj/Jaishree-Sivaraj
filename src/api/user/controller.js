@@ -185,9 +185,15 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                     userId: userFound.id,
                     ...empDetails
                   }
+                }, {
+                  upsert: true
                 });
                 if (empUpdate) {
-                  const userDetails = await Employees.findOne({ userId: userFound.id }).populate('userId');
+                  const [userDetails,] = await Promise.all([
+                    Employees.findOne({ userId: userFound.id }).populate('userId'),
+                    OnboardingEmails.findOne({ emailId: onBoardingDetails.email }, { isOnboarded: true })
+                  ]);
+
                   return res.status(200).json({
                     status: '200',
                     message: "Your details has been updated successfully", data: userDetails ? userDetails : {}
@@ -216,20 +222,26 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                       userId: userFound.id,
                       ...repDetails
                     }
+                  }, {
+                    upsert: true
                   }) : await CompanyRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
                       userId: userFound.id,
                       ...repDetails
                     }
+                  }, {
+                    upsert: true
                   });
                 if (updateRep) {
                   const repDetailData = onBoardingDetails.roleName == ClientRepresentative ?
                     await ClientRepresentatives.findOne({ userId: userFound.id }).populate('userId')
                     : await CompanyRepresentatives.findOne({ userId: userFound.id }).populate('userId');
+  
 
                   return res.status(200).json({
                     status: '200',
-                    message: "Your details has been updated successfully", data: repDetailData ? repDetailData : {}
+                    message: "Your details has been updated successfully",
+                    data: repDetailData ? repDetailData : {}
                   });
                 }
               } else {
