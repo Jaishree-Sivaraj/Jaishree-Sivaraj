@@ -17,12 +17,14 @@ export const create = async({ bodymen: { body: { email } } }, res, next) => {
           Link = `${Link.replace(/\/$/, '')}/${token}`
           const content = `
             Hi ${user.name},<br><br>
-            You requested for a new password for your ESG API account.<br>
-            Please use the below link to set a new password. The link will expire in 1 hour.<br><br>
+            You requested for a password reset for your ESGDS InfinData Platform.<br>
+            Click on the link below or copy and paste it into a browser to reset password.<br>
+            This link will expire in 30 mins <br><br>
             <a href="${Link}">click here</a><br><br>
-            Kindly contact your system administrator if you have not raised this request.<br><br>
-            Thanks<br>
-            ESG API Team
+            Kindly contact us at support@esgds.ai in case you have not requested <br>
+          for the password reset or if you need any support with the password reset<br><br>
+          Regards,<br>
+          ESGDS Support Team
           `
           // var transporter = nodemailer.createTransport({
           //   service: 'Gmail',
