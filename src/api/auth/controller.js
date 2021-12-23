@@ -7,6 +7,7 @@ import { jwtSecret, masterKey } from '../../config'
 import { User } from '../user'
 import { Role } from '../role'
 import { sendEmail } from "../../services/utils/mailing"
+import { otpEmail } from '../../constants/email-content'
 
 export const login = async ({ user }, res, next) => {
   sign(user.id)
@@ -59,55 +60,11 @@ export const login = async ({ user }, res, next) => {
 
         //nodemail code will come here to send OTP
         if (process.env.NODE_ENV === 'production') {
-          const content = `Hi ${user.name},<br/><br/>
-          Please use the below OTP to login to ESGDS InfinData Platform.<br/>
-          OTP - <b>${otpNumber}</b>.<br/>
-          Kindly contact us at support@esgds.ai in case<br/>
-          you have not requested for the OTP or if you <br/>
-          need any further support.<br/><br/>
-          Regards,<br/>
-          ESGDS Support Team
-        `;
-          // var transporter = nodemailer.createTransport({
-          //   service: 'Gmail',
-          //   auth: {
-          //     user: 'testmailer09876@gmail.com',
-          //     pass: 'ijsfupqcuttlpcez'
-          //   }
-          // });
-
-          // transporter.sendMail({
-          //   from: 'testmailer09876@gmail.com',
-          //   to: user.email,
-          //   subject: 'ESG - OTP',
-          //   html: content
-          // });
-          await sendEmail(user.email, 'ESG - OTP', content)
-          .then((resp) => { console.log('Mail sent!'); });
+          const content = otpEmail(user?.name, otpNumber);
+          await sendEmail(user?.email, 'ESG - OTP', content)
+            .then((resp) => { console.log('Mail sent!'); });
         }
         return res.send({ status: "200", message: "Otp sent to registered email" });
-        // } else {
-        //   let userDetail = await User.findOne({
-        //     _id: user.id,
-        //     isUserActive: true,
-        //     isUserApproved: true,
-        //     status: true
-        //   }).populate({ path: 'roleDetails.roles' }).
-        //     populate({ path: 'roleDetails.primaryRole' });
-        //   if (userDetail && Object.keys(userDetail).length > 0) {
-        //     userDetail = userDetail.toObject();
-        //     delete userDetail.password;
-        //     userDetail.roleDetails = {
-        //       "role": userDetail.roleDetails.roles.length > 0 ? userDetail.roleDetails.roles.map((rec1) => {
-        //         return { value: rec1._id, label: rec1.roleName }
-        //       }) : [],
-        //       "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
-        //     }
-        //     return res.send({ message: "Login successful!", status: "200", token: response, user: userDetail });
-        //   } else {
-        //     return res.send({ message: "User don't have access, please contact admin!", status: "401" });
-        //   }
-        // }
       }
     });
 }
@@ -147,3 +104,43 @@ export const validateOTP = ({ body }, res, next) => {
       }
     })
 }
+
+
+
+          // var transporter = nodemailer.createTransport({
+          //   service: 'Gmail',
+          //   auth: {
+          //     user: 'testmailer09876@gmail.com',
+          //     pass: 'ijsfupqcuttlpcez'
+          //   }
+          // });
+
+          // transporter.sendMail({
+          //   from: 'testmailer09876@gmail.com',
+          //   to: user.email,
+          //   subject: 'ESG - OTP',
+          //   html: content
+          // });
+
+          // } else {
+        //   let userDetail = await User.findOne({
+        //     _id: user.id,
+        //     isUserActive: true,
+        //     isUserApproved: true,
+        //     status: true
+        //   }).populate({ path: 'roleDetails.roles' }).
+        //     populate({ path: 'roleDetails.primaryRole' });
+        //   if (userDetail && Object.keys(userDetail).length > 0) {
+        //     userDetail = userDetail.toObject();
+        //     delete userDetail.password;
+        //     userDetail.roleDetails = {
+        //       "role": userDetail.roleDetails.roles.length > 0 ? userDetail.roleDetails.roles.map((rec1) => {
+        //         return { value: rec1._id, label: rec1.roleName }
+        //       }) : [],
+        //       "primaryRole": { value: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole._id : null, label: userDetail.roleDetails.primaryRole ? userDetail.roleDetails.primaryRole.roleName : null }
+        //     }
+        //     return res.send({ message: "Login successful!", status: "200", token: response, user: userDetail });
+        //   } else {
+        //     return res.send({ message: "User don't have access, please contact admin!", status: "401" });
+        //   }
+        // }

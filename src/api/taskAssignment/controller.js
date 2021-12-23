@@ -30,8 +30,9 @@ import {
   CorrectionCompleted,
   Completed,
   CollectionCompleted,
-} from '../../constants/task-status'
-
+} from '../../constants/task-status';
+import { RepEmail ,getJsonEmail} from '../../constants/email-content';
+import { sendEmail } from '../../services/utils/mailing';
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1976,16 +1977,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (getTaskHistory && body.role == QA) {
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId);
-      const content = `
-      Hi,
-        Please login into the data portal and check ${companyDetails?.companyName},
-        ${taskDetails?.categoryId.categoryName}, ${taskDetails?.year} for our comments .
-        Please check the notifications within the system for additional details.
-        Kindly contact us at support@esgds.ai in case you need any support.
-        Regards,<br>
-        ESGDS Support Team`;
+      const content = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
 
-        companyDetails?.email.map(async (e) => {
+      companyDetails?.email.map(async (e) => {
         await sendEmail(e, 'ESG - Onboarding', content)
           .then((resp) => { console.log('Mail sent!') })
       })
@@ -2059,14 +2053,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       );
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId)
-      const content = `
-                        Hi,
-                        We have updated data for ${companyDetails?.companyName} for the years ${body?.year}
-                        which you have access. 
-                        Kindly login into the portal to review the data.
-                        Please contact support@esgds.com incase of any issues.
-
-                        ThanksESGDS Team `;
+      const content = getJsonEmail(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         await sendEmail(e, 'ESG - Onboarding', content)
           .then((resp) => { console.log('Mail sent!') })
