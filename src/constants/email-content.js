@@ -75,7 +75,7 @@ export function RepEmail(companyName, pillar, year) {
             ESGDS Support Team`;
 }
 
-export function getJsonEmail(companyName,year){
+export function getEmailForJsonGeneration(companyName,year){
     return `
         Hi,
         We have updated data for ${companyName} for the years ${year}

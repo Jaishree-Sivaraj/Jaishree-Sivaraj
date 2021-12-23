@@ -31,7 +31,7 @@ import {
   Completed,
   CollectionCompleted,
 } from '../../constants/task-status';
-import { RepEmail ,getJsonEmail} from '../../constants/email-content';
+import { RepEmail ,getEmailForJsonGeneration} from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -2053,7 +2053,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       );
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId)
-      const content = getJsonEmail(companyDetails?.companyName, body?.year);
+      const content = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         await sendEmail(e, 'ESG - Onboarding', content)
           .then((resp) => { console.log('Mail sent!') })
