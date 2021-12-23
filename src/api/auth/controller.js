@@ -59,14 +59,15 @@ export const login = async ({ user }, res, next) => {
 
         //nodemail code will come here to send OTP
         if (process.env.NODE_ENV === 'production') {
-          const content = `
-            Hi ${user.name},<br/><br/>
-            Please use the below OTP to login into your ESG API account.<br/>
-            OTP - <b>${otpNumber}</b>.<br/>
-            Kindly contact your system administrator if you have not raised this request.<br/><br/>
-            Thanks<br/>
-            ESG API Team
-          `;
+          const content = `Hi ${user.name},<br/><br/>
+          Please use the below OTP to login to ESGDS InfinData Platform.<br/>
+          OTP - <b>${otpNumber}</b>.<br/>
+          Kindly contact us at support@esgds.ai in case<br/>
+          you have not requested for the OTP or if you <br/>
+          need any further support.<br/><br/>
+          Regards,<br/>
+          ESGDS Support Team
+        `;
           // var transporter = nodemailer.createTransport({
           //   service: 'Gmail',
           //   auth: {
