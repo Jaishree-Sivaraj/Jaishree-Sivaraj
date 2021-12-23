@@ -1979,12 +1979,13 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const content = `
       Hi,
         Please login into the data portal and check ${companyDetails?.companyName},
-        ${taskDetails?.categoryId.categoryName} for our comments .
+        ${taskDetails?.categoryId.categoryName}, ${taskDetails?.year} for our comments .
         Please check the notifications within the system for additional details.
-        Thanks
+        Kindly contact us at support@esgds.ai in case you need any support.
+        Regards,<br>
+        ESGDS Support Team`;
 
-        ESGDS Team`
-      companyDetails?.email.map(async (e) => {
+        companyDetails?.email.map(async (e) => {
         await sendEmail(e, 'ESG - Onboarding', content)
           .then((resp) => { console.log('Mail sent!') })
       })
