@@ -952,12 +952,12 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                     //nodemail code will come here to send OTP
                     const content = `
                       Hi,<br/><br/>
-                      Please click below to submit your onboarding details:<br/><br/>
+                      Please click on the link below or copy and paste it into a browser to submit your onboarding details:<br/><br/>
                       <a href="${url}">click here</a><br><br>
-                      Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
-                      Thanks<br/>
-                      ESGDS Team `;
-                    await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
+                      Kindly contact us at support@esgds.ai in case you need any support.<br/><br/>          
+                      Regards,<br>
+                      ESGDS Support Team`;
+                      await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
                       .then((resp) => { console.log('Mail sent!'); });
                     let email = `${rowObject['email']}`;
                     await OnboardingEmails.updateOne({
