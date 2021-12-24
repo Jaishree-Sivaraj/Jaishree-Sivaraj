@@ -692,8 +692,8 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             }
             link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
             userDetails = userDetails.toObject();
-            const content = onboardingEmailContent(body.userDetails.comments, 'FAILED_TO_ONBOARD');
-            await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+            const emailDetails = onboardingEmailContent(body.userDetails.comments, 'FAILED_TO_ONBOARD');
+            await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
               .then((resp) => { console.log('Mail sent!'); });
           })
           // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
@@ -926,9 +926,9 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                     let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
                     //nodemail code will come here to send OTP
 
-                    const content = onboardingEmailContent(url, 'LINK_TO_ONBOARD_USER'); // getting email from email-content(constant file)
+                    const emailDetails = onboardingEmailContent(url, 'LINK_TO_ONBOARD_USER'); // getting email from email-content(constant file)
 
-                    await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
+                    await sendEmail(rowObject['email'], emailDetails?.subject, emailDetails?.message)
                       .then((resp) => { console.log('Mail sent!'); });
                     let email = `${rowObject['email']}`;
                     await OnboardingEmails.updateOne({
@@ -1037,7 +1037,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
-          const emailDetails = onboardingEmailContent(url, LINK_TO_ONBOARD_USER);
+          const emailDetails = onboardingEmailContent(url, 'LINK_TO_ONBOARD_USER');
           await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;

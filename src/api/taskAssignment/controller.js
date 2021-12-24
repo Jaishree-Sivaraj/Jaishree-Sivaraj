@@ -2018,11 +2018,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (getTaskHistory && body.role == QA) {
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId);
-      const content = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
-
+      const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
-        await sendEmail(e, 'ESG - Onboarding', content)
+        await sendEmail(e, emailDetails?.subject, emailDetails?.message)
           .then((resp) => { console.log('Mail sent!') })
+          .catch(err => console.log(err))
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2098,6 +2098,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         await sendEmail(e, emailDetails?.subject, emailDetails?.message)
           .then((resp) => { console.log('Mail sent!') })
+          .catch(err => console.log(err))
       })
 
     }
