@@ -25,17 +25,14 @@ export function onboardingEmailContent(data, type) {
                 You now have access to the ESGDS data portal.<br/>
                 Kindly use your email id & the password set by you at the time of filing the form to login into the system.<br/><br/><br/>
                 Link - <a href="${data}">click here</a><br><br>       
-                Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
+                Kindly contact us at support@esgds.ai in case you need any support<br/><br/>                  
                 Thanks<br/>
                 ESGDS Team `
 
         default:
             return '';
     }
-
 }
-
-
 
 // Email to send OTP
 export function otpEmail(name, otpNumber) {
@@ -85,7 +82,7 @@ export function getEmailForJsonGeneration(companyName, year) {
         We have updated data for ${companyName} for the years ${year}
         which you have access. <br><br>
         Kindly login into the portal to review the data.<br>
-        Please contact support@esgds.com incase of any issues.<br><br>
+        Please contact  support@esgds.ai incase of any issues.<br><br>
 
         ThanksESGDS Team `}
 }
