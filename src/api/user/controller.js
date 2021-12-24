@@ -14,7 +14,7 @@ import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 import { sendEmail } from '../../services/utils/mailing'
 import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles, GroupRoles } from '../../constants/roles'
-import { onboardingEmailContent } from '../../constants/email-content';
+import { EmailContent } from '../../constants/email-content';
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -692,7 +692,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             }
             link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
             userDetails = userDetails.toObject();
-            const content = onboardingEmailContent(body.userDetails.comments, 'FAILED_TO_ONBOARD');
+            const content = EmailContent(body.userDetails.comments, 'FAILED_TO_ONBOARD');
             await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
               .then((resp) => { console.log('Mail sent!'); });
           })
@@ -703,10 +703,10 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         } else {
           User.findById(body.userId).then(async function (userDetails) {
             userDetails = userDetails.toObject();
-            const content = onboardingEmailContent(process.env.FRONTEND_URL, 'ACCESS_TO_LOGIN'); // get content from email-content-file
+            const content = EmailContent(process.env.FRONTEND_URL, 'ACCESS_TO_LOGIN'); // get content from email-content-file
 
 
-            await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+            await sendEmail(userDetails['email'], 'ESG - LOGIN', content)
               .then((response) => { console.log('Mail sent!'); });
           })
         }
@@ -926,7 +926,7 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                     let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
                     //nodemail code will come here to send OTP
 
-                    const content = onboardingEmailContent(url, 'LINK_TO_ONBOARD_USER'); // getting email from email-content(constant file)
+                    const content = EmailContent(url, 'LINK_TO_ONBOARD_USER'); // getting email from email-content(constant file)
 
                     await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
                       .then((resp) => { console.log('Mail sent!'); });
@@ -1037,7 +1037,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
-          const content = onboardingEmailContent(url,LINK_TO_ONBOARD_USER);
+          const content = EmailContent(url,'LINK_TO_ONBOARD_USER');
           await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
             .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;

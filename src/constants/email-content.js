@@ -1,7 +1,7 @@
 'use strict';
 
 // Email for onborading users.
-export function onboardingEmailContent(data, type) {
+export function EmailContent(data, type) {
     switch (type) {
         case 'LINK_TO_ONBOARD_USER':
             return `
@@ -27,15 +27,12 @@ export function onboardingEmailContent(data, type) {
                 Link - <a href="${data}">click here</a><br><br>       
                 Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
                 Thanks<br/>
-                ESGDS Team `
-
+                ESGDS Team `;
         default:
             return '';
     }
 
 }
-
-
 
 // Email to send OTP
 export function otpEmail(name, otpNumber) {
@@ -67,21 +64,20 @@ export function passwordResetEmail(name, link) {
 // Email to Client and Company Representative after QA work on the error raised by the reps.
 export function RepEmail(companyName, pillar, year) {
     return `Hi,
-            Please login into the data portal and check ${companyName},
-            ${pillar}, ${year} for our comments .
-            Please check the notifications within the system for additional details.
-            Kindly contact us at support@esgds.ai in case you need any support.
+            Please login into the data portal and check ${companyName},<br>
+            ${pillar}, ${year} for our comments .<br><br>
+            Please check the notifications within the system for additional details.<br>
+            Kindly contact us at support@esgds.ai in case you need any support.<br>
             Regards,<br>
             ESGDS Support Team`;
 }
 
-export function getEmailForJsonGeneration(companyName,year){
+export function getEmailForJsonGeneration(companyName, year) {
     return `
         Hi,
-        We have updated data for ${companyName} for the years ${year}
-        which you have access. 
-        Kindly login into the portal to review the data.
-        Please contact support@esgds.com incase of any issues.
+        We have updated data for ${companyName} for the years ${year} which you have access. <br><br>
+        Kindly login into the portal to review the data.<br>
+        Please contact support@esgds.com incase of any issues.<br><br>
 
         ThanksESGDS Team `
 }
