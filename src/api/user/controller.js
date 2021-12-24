@@ -703,10 +703,10 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         } else {
           User.findById(body.userId).then(async function (userDetails) {
             userDetails = userDetails.toObject();
-            const content = onboardingEmailContent(process.env.FRONTEND_URL, 'ACCESS_TO_LOGIN'); // get content from email-content-file
+            const emailDetails = onboardingEmailContent(process.env.FRONTEND_URL, 'ACCESS_TO_LOGIN'); // get content from email-content-file
 
 
-            await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
+            await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
               .then((response) => { console.log('Mail sent!'); });
           })
         }
@@ -1037,8 +1037,8 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
-          const content = onboardingEmailContent(url,LINK_TO_ONBOARD_USER);
-          await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
+          const emailDetails = onboardingEmailContent(url, LINK_TO_ONBOARD_USER);
+          await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;
           await OnboardingEmails.updateOne({

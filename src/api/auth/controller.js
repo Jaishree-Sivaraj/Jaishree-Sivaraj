@@ -60,8 +60,8 @@ export const login = async ({ user }, res, next) => {
 
         //nodemail code will come here to send OTP
         if (process.env.NODE_ENV === 'production') {
-          const content = otpEmail(user?.name, otpNumber);
-          await sendEmail(user?.email, 'ESG - OTP', content)
+          const emailDetails = otpEmail(user?.name, otpNumber);
+          await sendEmail(user?.email, emailDetails.subject, emailDetails.message)
             .then((resp) => { console.log('Mail sent!'); });
         }
         return res.send({ status: "200", message: "Otp sent to registered email" });

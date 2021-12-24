@@ -16,7 +16,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
             const { user, token } = reset
             let link = `${process.env.FRONTEND_URL}/password-resets`;
             link = `${link.replace(/\/$/, '')}/${token}`
-            const content = passwordResetEmail(user.name, link)
+            const emailDetails = passwordResetEmail(user.name, link)
             // var transporter = nodemailer.createTransport({
             //   service: 'Gmail',
             //   auth: {
@@ -31,7 +31,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
             //   subject: 'ESGAPI - Password Reset',
             //   html: content.toString()
             // });
-            await sendEmail(email, 'ESGAPI - Password Reset', content.toString())
+            await sendEmail(email, emailDetails.subject, emailDetails.message)
               .then((resp) => { console.log('Mail sent!'); });
             return res.status(200).json({ status: "200", message: "Email sent successfully!" })
           })
