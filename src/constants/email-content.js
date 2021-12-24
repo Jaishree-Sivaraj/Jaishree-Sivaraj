@@ -104,6 +104,6 @@ export function getEmailForJsonGeneration(companyName, year) {
         Kindly login into the ESGDS InfinData Platform to review the data.<br><br>
         Kindly contact us at support@esgds.ai in case you need any support.<br><br>    
         Regards, <br>
-        ThanksESGDS Support Team `
+        ESGDS Support Team `
     }
 }
