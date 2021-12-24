@@ -14,6 +14,7 @@ import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 import { sendEmail } from '../../services/utils/mailing'
 import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles, GroupRoles } from '../../constants/roles'
+import { onboardingEmailContent } from '../../constants/email-content';
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -182,7 +183,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               userObject = getUserDetail(oboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
-                const empDetails = await getEmployee(onBoardingDetails,userFound?.id);
+                const empDetails = await getEmployee(onBoardingDetails, userFound?.id);
                 const empUpdate = await Employees.updateOne({ userId: userFound.id }, {
                   $set: {
                     userId: userFound.id,
@@ -218,7 +219,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               userObject = getUserDetail(oboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
-                const repDetails = await getRepDetails(onBoardingDetails.roleName, onBoardingDetails,userFound);
+                const repDetails = await getRepDetails(onBoardingDetails.roleName, onBoardingDetails, userFound);
                 const updateRep = onBoardingDetails.roleName == ClientRepresentative ?
                   await ClientRepresentatives.updateOne({ userId: userFound.id }, {
                     $set: {
@@ -321,7 +322,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
             });
 
             if (createUser) {
-              const repDetails = await getRepDetails(roleObject.roleName, onBoardingDetails,createUser);
+              const repDetails = await getRepDetails(roleObject.roleName, onBoardingDetails, createUser);
               const query = {
                 userId: createUser.id,
                 name: onBoardingDetails.firstName ?
@@ -435,14 +436,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     }
   }
 
-  async function getRepDetails(role, onBoardingDetails,userDetails) {
+  async function getRepDetails(role, onBoardingDetails, userDetails) {
     console.log(onBoardingDetails)
     const authenticationLetter = role === ClientRepresentative ?
       onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1]
       : onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
 
     const authenticationLetterUrl = role === ClientRepresentative ?
-    userDetails?.id + '_' + Date.now() + '.' + authenticationLetter
+      userDetails?.id + '_' + Date.now() + '.' + authenticationLetter
       : userDetails?.id + '_' + Date.now() + '.' + authenticationLetter;
 
     role === ClientRepresentative ?
@@ -454,7 +455,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       : onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
 
     const companyId = role === ClientRepresentative ?
-    userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype
+      userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype
       : userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype;
 
     role === ClientRepresentative ?
@@ -691,26 +692,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             }
             link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
             userDetails = userDetails.toObject();
-            const content = `
-              Hi,<br/><br/>
-              Sorry, we could not process your onboarding request.<br/>
-              Please find comment from the system administrator – ${body.userDetails.comments}.<br/><br/>    
-              Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-              Thanks<br/>
-              ESGDS Team `;
-            // var transporter = nodemailer.createTransport({
-            //   service: 'Gmail',
-            //   auth: {
-            //     user: 'testmailer09876@gmail.com',
-            //     pass: 'ijsfupqcuttlpcez'
-            //   }
-            // });
-            // transporter.sendMail({
-            //   from: 'testmailer09876@gmail.com',
-            //   to: userDetails['email'],
-            //   subject: 'ESG - Onboarding',
-            //   html: content
-            // });
+            const content = onboardingEmailContent(body.userDetails.comments, 'FAILED_TO_ONBOARD');
             await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
               .then((resp) => { console.log('Mail sent!'); });
           })
@@ -721,14 +703,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         } else {
           User.findById(body.userId).then(async function (userDetails) {
             userDetails = userDetails.toObject();
-            const content = `
-                Hi,<br/><br/>
-                You now have access to the ESGDS data portal.<br/>
-                Kindly use your email id & the password set by you at the time of filing the form to login into the system.<br/><br/><br/>
-                Link - <a href="${process.env.FRONTEND_URL}">click here</a><br><br>       
-                Kindly contact your system administrator/company representative incase of any questions.<br/><br/>                  
-                Thanks<br/>
-                ESGDS Team `;
+            const content = onboardingEmailContent(process.env.FRONTEND_URL, 'ACCESS_TO_LOGIN'); // get content from email-content-file
 
 
             await sendEmail(userDetails['email'], 'ESG - Onboarding', content)
@@ -950,13 +925,9 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                   if (rolesDetails && rolesDetails.roleName == Employee) {
                     let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
                     //nodemail code will come here to send OTP
-                    const content = `
-                      Hi,<br/><br/>
-                      Please click below to submit your onboarding details:<br/><br/>
-                      <a href="${url}">click here</a><br><br>
-                      Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
-                      Thanks<br/>
-                      ESGDS Team `;
+
+                    const content = onboardingEmailContent(url, 'LINK_TO_ONBOARD_USER'); // getting email from email-content(constant file)
+
                     await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
                       .then((resp) => { console.log('Mail sent!'); });
                     let email = `${rowObject['email']}`;
@@ -1066,13 +1037,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
-          const content = `
-            Hi,<br/><br/>
-            Please click below to submit your onboarding details:<br/><br/>
-            <a href="${url}">click here</a><br><br>
-            Kindly contact your system administrator/company representative incase of any questions.<br/><br/>          
-            Thanks<br/>
-            ESGDS Team `;
+          const content = onboardingEmailContent(url,LINK_TO_ONBOARD_USER);
           await sendEmail(rowObject['email'], 'ESG - Onboarding', content)
             .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;
@@ -1203,6 +1168,19 @@ export const updateUserName = async (req, res, next) => {
                     //   html: content
                     // });
 
+     // var transporter = nodemailer.createTransport({
+            //   service: 'Gmail',
+            //   auth: {
+            //     user: 'testmailer09876@gmail.com',
+            //     pass: 'ijsfupqcuttlpcez'
+            //   }
+            // });
+            // transporter.sendMail({
+            //   from: 'testmailer09876@gmail.com',
+            //   to: userDetails['email'],
+            //   subject: 'ESG - Onboarding',
+            //   html: content
+            // });
 
 // var transporter = nodemailer.createTransport({
                       //   service: 'Gmail',
