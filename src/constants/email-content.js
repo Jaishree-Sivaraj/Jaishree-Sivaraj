@@ -1,8 +1,8 @@
 'use strict';
 let subject;
-const LINK_TO_ONBOARD_USER = 'LINK_TO_ONBOARD_USER';
-const FAILED_TO_ONBOARD = 'FAILED_TO_ONBOARD';
-const ACCESS_TO_LOGIN = 'ACCESS_TO_LOGIN';
+export const LINK_TO_ONBOARD_USER = 'LINK_TO_ONBOARD_USER';
+export const FAILED_TO_ONBOARD = 'FAILED_TO_ONBOARD';
+export const ACCESS_TO_LOGIN = 'ACCESS_TO_LOGIN';
 
 // Email for onborading users.
 export function onboardingEmailContent(data, type) {
