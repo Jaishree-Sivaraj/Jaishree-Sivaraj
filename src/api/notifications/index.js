@@ -60,7 +60,6 @@ router.get('/',
  */
 router.get('/my-notifications/:notifyToUser',
   token({ required: true }),
-  query(),
   getMyNotifications)
 
 /**

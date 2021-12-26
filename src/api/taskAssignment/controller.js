@@ -463,7 +463,11 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     });
   }
   userRoles = _.uniq(userRoles);
-  let findQuery = {};
+  let findQuery = {}, companyIds = [];
+  if (query.company) {
+    let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+    companyIds = companyDetail ? companyDetail : [];
+  }
   if (params.taskStatus && params.role == "GroupAdmin") {
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
     if (params.taskStatus == "Completed") {
@@ -479,13 +483,20 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
         status: true
       };
     }
+    if (query.company) {
+      let groupAdminCompanyIds = await TaskAssignment.find({ groupId: { $in: groupIds }, status: true }).distinct('companyId');
+      let commonCompanyIds = _.intersectionWith(groupAdminCompanyIds, companyIds, _.isEqual);
+      findQuery['companyId'] = { $in: commonCompanyIds };
+    }
   } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
     if (params.taskStatus == "Completed") {
       findQuery = { taskStatus: { $in: ["Completed", "Verification Completed"] }, status: true };
     } else {
       findQuery = { taskStatus: { $in: ["Pending", "Reassignment Pending"] }, status: true };
     }
-
+    if (query.company) {
+      findQuery['companyId'] = { $in: companyIds };
+    }
   } else {
     findQuery = { taskStatus: '', status: true };
   }
@@ -590,21 +601,38 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
   }
   userRoles = _.uniq(userRoles);
   if (userRoles.includes(params.role)) {
-    let findQuery = {};
+    let findQuery = {}, companyIds = [];
+    if (query.company) {
+      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+      companyIds = companyDetail ? companyDetail : [];
+    }
     if (params.role == "Client Representative") {
-      let repDetails = await ClientRepresentatives.findOne({ userId: user.id });
+      let repDetails = await ClientRepresentatives.findOne({ userId: user.id }).populate('companiesList');
       findQuery = { companyId: { $in: repDetails.companiesList }, status: true };
+      if (query.company) {
+        let repCompanyIds = await Companies.find({ _id: { $in: repDetails.companiesList } }).distinct('_id');
+        let commonCompanyIds = _.intersectionWith(repCompanyIds, companyIds, _.isEqual);
+        findQuery['companyId'] = { $in: commonCompanyIds };
+      }
     } else if (params.role == "Company Representative") {
-      let repDetails = await CompanyRepresentatives.findOne({ userId: user.id });
+      let repDetails = await CompanyRepresentatives.findOne({ userId: user.id }).populate('companiesList');
       findQuery = { companyId: { $in: repDetails.companiesList }, status: true };
+      if (query.company) {
+        let repCompanyIds = await Companies.find({ _id: { $in: repDetails.companiesList } }).distinct('_id');
+        let commonCompanyIds = _.intersectionWith(repCompanyIds, companyIds, _.isEqual);
+        findQuery['companyId'] = { $in: commonCompanyIds };
+      }
     } else if (params.role == "GroupAdmin" || params.role == "Admin" || params.role == "SuperAdmin") {
       findQuery = { status: true };
+      if (query.company) {
+        findQuery['companyId'] = { $in: companyIds };
+      }
     } else {
       return res.json({ status: "200", message: "Tasks retrieved successfully!", count: 0, rows: [] });
     }
-    await ControversyTasks.count({ status: true })
+    await ControversyTasks.count(findQuery)
       .then(async (count) => {
-        await ControversyTasks.find({ status: true }, select, cursor)
+        await ControversyTasks.find(findQuery, select, cursor)
           .populate('companyId')
           .populate('analystId')
           .populate('createdBy')
@@ -1219,6 +1247,9 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       } else {
         return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
       }
+      if (query.company) {
+        findQuery['companyId'] = { $in: companyIds };
+      }
     } else {
       return res.status(400).json({ status: "400", message: "User role not found!" });
     }
@@ -1240,6 +1271,9 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       } else {
         return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
       }
+      if (query.company) {
+        findQuery['companyId'] = { $in: companyIds };
+      }
     } else {
       return res.status(400).json({ status: "400", message: "User role not found!" });
     }
@@ -1248,7 +1282,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       let clientRepDetail = await ClientRepresentatives.findOne({
         userId: completeUserDetail.id,
         status: true
-      });
+      }).populate('companiesList');
       if (clientRepDetail && clientRepDetail.companiesList) {
         if (params.type == "DataReview") {
           findQuery = {
@@ -1264,6 +1298,11 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         } else {
           return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
         }
+        if (query.company) {
+          let repCompanyIds = await Companies.find({ _id: { $in: clientRepDetail.companiesList } }).distinct('_id');
+          let commonCompanyIds = _.intersectionWith(repCompanyIds, companyIds, _.isEqual);
+          findQuery['companyId'] = { $in: commonCompanyIds };
+        }
       } else {
         return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
       }
@@ -1275,7 +1314,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       let companyRepDetail = await CompanyRepresentatives.findOne({
         userId: completeUserDetail.id,
         status: true
-      });
+      }).populate('companiesList');
       if (companyRepDetail && companyRepDetail.companiesList) {
         if (params.type == "DataReview") {
           findQuery = {
@@ -1293,15 +1332,17 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         } else {
           return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
         }
+        if (query.company) {
+          let repCompanyIds = await Companies.find({ _id: { $in: companyRepDetail.companiesList } }).distinct('_id');
+          let commonCompanyIds = _.intersectionWith(repCompanyIds, companyIds, _.isEqual);
+          findQuery['companyId'] = { $in: commonCompanyIds };
+        }
       } else {
         return res.status(200).json({ status: "200", message: "Task retrieved succesfully!", rows: [], count: 0 });
       }
     } else {
       return res.status(400).json({ status: "400", message: "User role not found!" });
     }
-  }
-  if (query.company) {
-    findQuery['companyId'] = { $in: companyIds };
   }
   if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
     count = await ControversyTasks.count(findQuery);
@@ -1959,12 +2000,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (getTaskHistory && body.role == QA) {
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId);
-      const content = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
-
+      const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
         await sendEmail(e, subject, content)
           .then((resp) => { console.log('Mail sent!') })
+          .catch(err => console.log(err))
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2036,11 +2077,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       );
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId)
-      const content = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
+      const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
         await sendEmail(e, subject, content)
           .then((resp) => { console.log('Mail sent!') })
+          .catch(err => console.log(err))
       })
 
     }
