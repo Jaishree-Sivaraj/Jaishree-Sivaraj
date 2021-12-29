@@ -39,9 +39,9 @@ const standaloneDatapointsSchema = new Schema({
   pageNumber: {
     type: String
   },
-  optionalAnalystComment: {
-    type: String
-  },
+  // optionalAnalystComment: {
+  //   type: String
+  // },
   isRestated: {
     type: String
   },
@@ -205,7 +205,7 @@ standaloneDatapointsSchema.methods = {
       sourceFile: this.sourceFile ? this.sourceFile : '',
       isActive: this.isActive,
       pageNumber: this.pageNumber,
-      optionalAnalystComment: this.optionalAnalystComment,
+      // optionalAnalystComment: this.optionalAnalystComment,
       isRestated: this.isRestated,
       restatedForYear: this.restatedForYear,
       restatedInYear: this.restatedInYear,
