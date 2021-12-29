@@ -624,31 +624,31 @@ export const calculateForACompany = async ({
                           }
                         }
                       } else if (datapointDetail.finalUnit === 'Number' || datapointDetail.finalUnit === 'Number (Tonne)' || datapointDetail.finalUnit === 'Number (tCO2e)' || datapointDetail.finalUnit.trim() === 'Currency' || datapointDetail.finalUnit === 'Days' || datapointDetail.finalUnit === 'Hours' || datapointDetail.finalUnit === 'Miles' || datapointDetail.finalUnit === 'Million Hours Worked' || datapointDetail.finalUnit === 'No/Low/Medium/High/Very High' || datapointDetail.finalUnit === 'Number (tCFCe)' || datapointDetail.finalUnit === 'Number (Cubic meter)' || datapointDetail.finalUnit === 'Number (KWh)' || datapointDetail.finalUnit === 'Percentage' && datapointDetail.signal == 'No') {
-                        let performanceResult;
-                        if (datapointDetail.code == 'EMSR017'){
-                          performanceResult = Number(foundResponse.response).toFixed(4)/100;
-                          performanceResult = performanceResult.toFixed(4);
-                        } else {
-                          performanceResult = foundResponse.response
-                        }
+                        // let performanceResult;
+                        // if (datapointDetail.code == 'EMSR017'){
+                        //   performanceResult = Number(foundResponse.response).toFixed(4)/100;
+                        //   performanceResult = performanceResult.toFixed(4);
+                        // } else {
+                        //   performanceResult = foundResponse.response
+                        // }
                         await StandaloneDatapoints.updateOne({
                           _id: foundResponse.id
                         }, {
                           $set: {
-                            performanceResult: performanceResult
+                            performanceResult: foundResponse.response
                           }
                         });
-                      } else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes'){
-                        let performanceResult = Number(foundResponse.response).toFixed(4)/100;
-                        performanceResult = performanceResult.toFixed(4);
-                        await StandaloneDatapoints.updateOne({
-                          _id: foundResponse.id
-                        }, {
-                          $set: {
-                            performanceResult: performanceResult
-                          }
-                        });
-                      }
+                      }// else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes'){
+                      //   let performanceResult = Number(foundResponse.response).toFixed(4)/100;
+                      //   performanceResult = performanceResult.toFixed(4);
+                      //   await StandaloneDatapoints.updateOne({
+                      //     _id: foundResponse.id
+                      //   }, {
+                      //     $set: {
+                      //       performanceResult: performanceResult
+                      //     }
+                      //   });
+                      // }
                     }
                   }
                 }
@@ -2329,162 +2329,162 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
         const year = distinctYears[j];
         let ruleDatapointId = ratioRules[i].datapointId.id;
         if (ratioRules[i].methodType == "IF") {
-          if (ratioRules[i].criteria == "greater or lesser") {
-            let response = "", performanceResult = "";
-            if (ratioRules[i].datapointId.code == "COSR005") {
-              _.filter(mergedDetails, (object, index) => {
-                if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
-                  numeratorValues = object.response;
-                }
-              });
-              if (Number(numeratorValues) >= 1000) {
-                response = "100";
-                performanceResult = "1";
-              } else if (Number(numeratorValues) >= 750 && Number(numeratorValues) <= 999) {
-                response = "75";
-                performanceResult = "0.75";
-              } else if (Number(numeratorValues) >= 250 && Number(numeratorValues) <= 749) {
-                response = "50";
-                performanceResult = "0.5";
-              } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 249) {
-                response = "25";
-                performanceResult = "0.25";
-              } else if (Math.round(Number(numeratorValues)) == 0) {
-                response = "0";
-                performanceResult = "0";
-              } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
-                response = "NA";
-                performanceResult = "NA";
-              } else {
-                response = "NA";
-                performanceResult = "NA";
-              } 
-            } else if (ratioRules[i].datapointId.code == "EMSR010") {
-              _.filter(mergedDetails, (object, index) => {
-                if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
-                  numeratorValues = object.response;
-                }
-              });
-              if (Number(numeratorValues) >= 11) {
-                response = "0";
-                performanceResult = "0";
-              } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 3) {
-                response = "75";
-                performanceResult = "0.75";
-              } else if (Number(numeratorValues) >= 4 && Number(numeratorValues) <= 5) {
-                response = "50";
-                performanceResult = "0.5";
-              } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
-                response = "25";
-                performanceResult = "0.25";
-              } else if (Math.round(Number(numeratorValues)) == 0) {
-                response = "100";
-                performanceResult = "1";
-              } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
-                response = "NA";
-                performanceResult = "NA";
-              } else {
-                response = "NA";
-                performanceResult = "NA";
-              }
-            } else if (ratioRules[i].datapointId.code == "EMSR012") {
-              _.filter(mergedDetails, (object, index) => {
-                if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
-                  numeratorValues = object.response;
-                }
-              });
-              if (Number(numeratorValues) >= 16) {
-                response = "0";
-                performanceResult = "0";
-              } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
-                response = "75";
-                performanceResult = "0.75";
-              } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
-                response = "50";
-                performanceResult = "0.5";
-              } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
-                response = "25";
-                performanceResult = "0.25";
-              } else if (Math.round(Number(numeratorValues)) == 0) {
-                response = "100";
-                performanceResult = "1";
-              } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
-                response = "NA";
-                performanceResult = "NA";
-              } else {
-                response = "NA";
-                performanceResult = "NA";
-              }
-            } else if (ratioRules[i].datapointId.code == "EMSR020") {
-              _.filter(mergedDetails, (object, index) => {
-                if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
-                  numeratorValues = object.response;
-                }
-              });
-              if (Number(numeratorValues) >= 16) {
-                response = "0";
-                performanceResult = "0";
-              } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
-                response = "75";
-                performanceResult = "0.75";
-              } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
-                response = "50";
-                performanceResult = "0.5";
-              } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
-                response = "25";
-                performanceResult = "0.25";
-              } else if (Math.round(Number(numeratorValues)) == 0) {
-                response = "100";
-                performanceResult = "1";
-              } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
-                response = "NA";
-                performanceResult = "NA";
-              } else {
-                response = "NA";
-                performanceResult = "NA";
-              }
-            } else if (ratioRules[i].datapointId.code == "EQUR014") {
-              _.filter(mergedDetails, (object, index) => {
-                if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
-                  numeratorValues = object.response;
-                }
-              });
-              if (Number(numeratorValues) >= 16) {
-                response = "0";
-                performanceResult = "0";
-              } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
-                response = "75";
-                performanceResult = "0.75";
-              } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
-                response = "50";
-                performanceResult = "0.5";
-              } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
-                response = "25";
-                performanceResult = "0.25";
-              } else if (Math.round(Number(numeratorValues)) == 0) {
-                response = "100";
-                performanceResult = "1";
-              } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
-                response = "NA";
-                performanceResult = "NA";
-              } else {
-                response = "NA";
-                performanceResult = "NA";
-              }
-            }
-            let derivedDatapointsObject = {
-              companyId: companyId,
-              datapointId: ruleDatapointId,
-              year: year,
-              response: response,
-              performanceResult : performanceResult,
-              memberName: '',
-              memberStatus: true,
-              status: true,
-              createdBy: userDetail
-            }
-            allDerivedDatapoints.push(derivedDatapointsObject);
-          } else {
+          // if (ratioRules[i].criteria == "greater or lesser") {
+          //   let response = "", performanceResult = "";
+          //   if (ratioRules[i].datapointId.code == "COSR005") {
+          //     _.filter(mergedDetails, (object, index) => {
+          //       if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+          //         numeratorValues = object.response;
+          //       }
+          //     });
+          //     if (Number(numeratorValues) >= 1000) {
+          //       response = "100";
+          //       performanceResult = "1";
+          //     } else if (Number(numeratorValues) >= 750 && Number(numeratorValues) <= 999) {
+          //       response = "75";
+          //       performanceResult = "0.75";
+          //     } else if (Number(numeratorValues) >= 250 && Number(numeratorValues) <= 749) {
+          //       response = "50";
+          //       performanceResult = "0.5";
+          //     } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 249) {
+          //       response = "25";
+          //       performanceResult = "0.25";
+          //     } else if (Math.round(Number(numeratorValues)) == 0) {
+          //       response = "0";
+          //       performanceResult = "0";
+          //     } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } else {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } 
+          //   } else if (ratioRules[i].datapointId.code == "EMSR010") {
+          //     _.filter(mergedDetails, (object, index) => {
+          //       if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+          //         numeratorValues = object.response;
+          //       }
+          //     });
+          //     if (Number(numeratorValues) >= 11) {
+          //       response = "0";
+          //       performanceResult = "0";
+          //     } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 3) {
+          //       response = "75";
+          //       performanceResult = "0.75";
+          //     } else if (Number(numeratorValues) >= 4 && Number(numeratorValues) <= 5) {
+          //       response = "50";
+          //       performanceResult = "0.5";
+          //     } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
+          //       response = "25";
+          //       performanceResult = "0.25";
+          //     } else if (Math.round(Number(numeratorValues)) == 0) {
+          //       response = "100";
+          //       performanceResult = "1";
+          //     } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } else {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     }
+          //   } else if (ratioRules[i].datapointId.code == "EMSR012") {
+          //     _.filter(mergedDetails, (object, index) => {
+          //       if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+          //         numeratorValues = object.response;
+          //       }
+          //     });
+          //     if (Number(numeratorValues) >= 16) {
+          //       response = "0";
+          //       performanceResult = "0";
+          //     } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
+          //       response = "75";
+          //       performanceResult = "0.75";
+          //     } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
+          //       response = "50";
+          //       performanceResult = "0.5";
+          //     } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
+          //       response = "25";
+          //       performanceResult = "0.25";
+          //     } else if (Math.round(Number(numeratorValues)) == 0) {
+          //       response = "100";
+          //       performanceResult = "1";
+          //     } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } else {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     }
+          //   } else if (ratioRules[i].datapointId.code == "EMSR020") {
+          //     _.filter(mergedDetails, (object, index) => {
+          //       if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+          //         numeratorValues = object.response;
+          //       }
+          //     });
+          //     if (Number(numeratorValues) >= 16) {
+          //       response = "0";
+          //       performanceResult = "0";
+          //     } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
+          //       response = "75";
+          //       performanceResult = "0.75";
+          //     } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
+          //       response = "50";
+          //       performanceResult = "0.5";
+          //     } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
+          //       response = "25";
+          //       performanceResult = "0.25";
+          //     } else if (Math.round(Number(numeratorValues)) == 0) {
+          //       response = "100";
+          //       performanceResult = "1";
+          //     } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } else {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     }
+          //   } else if (ratioRules[i].datapointId.code == "EQUR014") {
+          //     _.filter(mergedDetails, (object, index) => {
+          //       if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+          //         numeratorValues = object.response;
+          //       }
+          //     });
+          //     if (Number(numeratorValues) >= 16) {
+          //       response = "0";
+          //       performanceResult = "0";
+          //     } else if (Number(numeratorValues) >= 1 && Number(numeratorValues) <= 5) {
+          //       response = "75";
+          //       performanceResult = "0.75";
+          //     } else if (Number(numeratorValues) >= 6 && Number(numeratorValues) <= 10) {
+          //       response = "50";
+          //       performanceResult = "0.5";
+          //     } else if (Number(numeratorValues) >= 11 && Number(numeratorValues) <= 15) {
+          //       response = "25";
+          //       performanceResult = "0.25";
+          //     } else if (Math.round(Number(numeratorValues)) == 0) {
+          //       response = "100";
+          //       performanceResult = "1";
+          //     } else if (numeratorValues == "NA" || numeratorValues == "" || numeratorValues == null) {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     } else {
+          //       response = "NA";
+          //       performanceResult = "NA";
+          //     }
+          //   }
+          //   let derivedDatapointsObject = {
+          //     companyId: companyId,
+          //     datapointId: ruleDatapointId,
+          //     year: year,
+          //     response: response,
+          //     performanceResult : performanceResult,
+          //     memberName: '',
+          //     memberStatus: true,
+          //     status: true,
+          //     createdBy: userDetail
+          //   }
+          //   allDerivedDatapoints.push(derivedDatapointsObject);
+          // } else {
             let activeMemberValues = [];
             _.filter(mergedDetails, (object, index) => {
               if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
@@ -2567,7 +2567,7 @@ async function ratioCalculation(companyId, mergedDetails, distinctYears, allData
               }
               allDerivedDatapoints.push(derivedDatapointsObject);
             }
-          }
+          // }
         } else {
           _.filter(mergedDetails, (object, index) => {
             if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year) {
