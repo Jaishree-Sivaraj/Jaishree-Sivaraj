@@ -1127,6 +1127,7 @@ export const datapointDetails = async (req, res, next) => {
       "name",
       "normalizedBy",
       "pageNumber",
+      "optionalAnalystComment",
       "isRestated",
       "restatedForYear",
       "restatedInYear",
@@ -1238,7 +1239,7 @@ export const datapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -1275,7 +1276,12 @@ export const datapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -1295,6 +1301,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -1389,6 +1396,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -1483,6 +1491,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -1580,6 +1589,7 @@ export const datapointDetails = async (req, res, next) => {
             inputValues: inputValues,
             textSnippet: '',
             pageNo: '', //Restated TODO
+            optionalAnalystComment: '',
             isRestated: '',
             restatedForYear: '',
             restatedInYear: '',
@@ -1647,7 +1657,7 @@ export const datapointDetails = async (req, res, next) => {
       }
       for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
         let historicalDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -1670,7 +1680,12 @@ export const datapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -1690,6 +1705,7 @@ export const datapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -1823,7 +1839,7 @@ export const datapointDetails = async (req, res, next) => {
           }
         });
         for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
-          var sourceDetails = {
+          let sourceDetails = {
             url: '',
             sourceName: "",
             value: "",
@@ -1852,7 +1868,12 @@ export const datapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -1872,6 +1893,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -1966,6 +1988,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2060,6 +2083,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2158,6 +2182,7 @@ export const datapointDetails = async (req, res, next) => {
             memberName: req.body.memberName,
             textSnippet: '',
             pageNo: '', // Restated TODO
+            optionalAnalystComment: '',
             isRestated: '',
             restatedForYear: '',
             restatedInYear: '',
@@ -2222,7 +2247,7 @@ export const datapointDetails = async (req, res, next) => {
         let historicalDatapointsObject = {};
         for (let historyBoardMemberIndex = 0; historyBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyBoardMemberIndex++) {
           let object = historyAllBoardMemberMatrixDetails[historyBoardMemberIndex];
-          var sourceDetails = {
+          let sourceDetails = {
             url: '',
             sourceName: "",
             value: "",
@@ -2243,7 +2268,12 @@ export const datapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2263,6 +2293,7 @@ export const datapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2398,7 +2429,7 @@ export const datapointDetails = async (req, res, next) => {
         });
         for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
           const object = currentAllKmpMatrixDetails[currentIndex];
-          var sourceDetails = {
+          let sourceDetails = {
             url: '',
             sourceName: "",
             value: "",
@@ -2426,7 +2457,12 @@ export const datapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, name: object.sourceName ? object.sourceName : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2446,6 +2482,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2540,6 +2577,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2635,6 +2673,7 @@ export const datapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -2732,6 +2771,7 @@ export const datapointDetails = async (req, res, next) => {
             memberName: req.body.memberName,
             textSnippet: '',
             pageNo: '', // Restated TODO
+            optionalAnalystComment: '',
             isRestated: '',
             restatedForYear: '',
             restatedInYear: '',
@@ -2795,7 +2835,7 @@ export const datapointDetails = async (req, res, next) => {
         let historicalDatapointsObject = {};
         for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
           let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
-          var sourceDetails = {
+          let sourceDetails = {
             url: '',
             sourceName: "",
             value: "",
@@ -2817,7 +2857,12 @@ export const datapointDetails = async (req, res, next) => {
         }
         if (object.sourceName !== "" || object.sourceName !== " ") {
           let companySourceId = object.sourceName.split(';')[1];
-          let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+          let sourceValues = {};
+          if (companySourceId) {
+            sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+          } else {
+            sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, name: object.sourceName ? object.sourceName : null });
+          }
           if (sourceValues != null) {
             sourceDetails.url = sourceValues.sourceUrl;
             sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2837,6 +2882,7 @@ export const datapointDetails = async (req, res, next) => {
             dataType: dpTypeValues.dataType,
             textSnippet: object.textSnippet,
             pageNo: object.pageNumber,
+            optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
             isRestated: object.isRestated,
             restatedForYear: object.restatedForYear,
             restatedInYear: object.restatedInYear,
@@ -2944,6 +2990,7 @@ export const repDatapointDetails = async (req, res, next) => {
       "name",
       "normalizedBy",
       "pageNumber",
+      "optionalAnalystComment",
       "isRestated",
       "restatedForYear",
       "restatedInYear",
@@ -3055,14 +3102,14 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
-        var sourceDetails = {
-          url: '',
-          sourceName: "",
-          value: "",
-          publicationDate: ''
-        };
         for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
-          var object = currentAllStandaloneDetails[currentIndex];
+          let sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: ''
+          };
+          let object = currentAllStandaloneDetails[currentIndex];
           let s3DataScreenshot = [];
           if (object.screenShot && object.screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < object.screenShot.length; screenShotIndex++) {
@@ -3078,8 +3125,12 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ name: object.sourceName, companyId: object.companyId });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            var sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId['id'] : null, sourceFile: object.sourceFile ? object.sourceFile : null});
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3108,6 +3159,7 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -3127,6 +3179,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  optionalAnalystComment: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.optionalAnalystComment : '',
                   isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
                   restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
                   restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
@@ -3236,6 +3289,12 @@ export const repDatapointDetails = async (req, res, next) => {
         }
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
+            let sourceDetails = {
+              url: '',
+              sourceName: "",
+              value: "",
+              publicationDate: ''
+            };
             let object = currentAllStandaloneDetails[currentIndex];
             let s3DataScreenshot = [];
             if (object.screenShot && object.screenShot.length > 0) {
@@ -3252,7 +3311,12 @@ export const repDatapointDetails = async (req, res, next) => {
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3281,6 +3345,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
                 isRestated: object.isRestated,
                 restatedForYear: object.restatedForYear,
                 restatedInYear: object.restatedInYear,
@@ -3297,6 +3362,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
                     pageNo: '', // Restated TODO
+                    optionalAnalystComment: '',
                     isRestated: '',
                     restatedForYear: '',
                     restatedInYear: '',
@@ -3371,7 +3437,7 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
         let historicalDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -3394,7 +3460,12 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3413,6 +3484,7 @@ export const repDatapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -3539,7 +3611,7 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -3562,8 +3634,12 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ companyName: object.companyId, name: object.sourceName });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3592,6 +3668,7 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -3611,6 +3688,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  optionalAnalystComment: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.optionalAnalystComment : '',
                   isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
                   restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
                   restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
@@ -3720,6 +3798,12 @@ export const repDatapointDetails = async (req, res, next) => {
         };
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
+            let sourceDetails = {
+              url: '',
+              sourceName: "",
+              value: "",
+              publicationDate: ''
+            };
             let object = currentAllBoardMemberMatrixDetails[currentIndex];
             let s3DataScreenshot = [];
             if (object.screenShot && object.screenShot.length > 0) {
@@ -3736,7 +3820,12 @@ export const repDatapointDetails = async (req, res, next) => {
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3765,6 +3854,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
                 isRestated: object.isRestated,
                 restatedForYear: object.restatedForYear,
                 restatedInYear: object.restatedInYear,
@@ -3781,6 +3871,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
                     pageNo: '', // Restated TODO
+                    optionalAnalystComment: '',
                     isRestated: '',
                     restatedForYear: '',
                     restatedInYear: '',
@@ -3849,7 +3940,7 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
         let historicalDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -3872,7 +3963,12 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3893,6 +3989,7 @@ export const repDatapointDetails = async (req, res, next) => {
               dataType: dpTypeValues.dataType,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -4018,7 +4115,7 @@ export const repDatapointDetails = async (req, res, next) => {
       }
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         let currentDatapointsObject = {};
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -4041,8 +4138,12 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ companyId: object.companyId, name: object.sourceName });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -4071,6 +4172,7 @@ export const repDatapointDetails = async (req, res, next) => {
               inputValues: inputValues,
               textSnippet: object.textSnippet,
               pageNo: object.pageNumber,
+              optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
               isRestated: object.isRestated ? object.isRestated : '',
               restatedForYear: object.restatedForYear ? object.restatedForYear : '',
               restatedInYear: object.restatedInYear ? object.restatedInYear : '',
@@ -4090,6 +4192,7 @@ export const repDatapointDetails = async (req, res, next) => {
                   fiscalYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.fiscalYear : '',
                   textSnippet: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.textSnippet : '',
                   pageNo: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.pageNo : '',
+                  optionalAnalystComment: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.optionalAnalystComment : '',
                   isRestated: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.isRestated : '',
                   restatedForYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedForYear : '',
                   restatedInYear: errorDetailsObject[0] ? errorDetailsObject[0].errorCaughtByRep.restatedInYear : '',
@@ -4201,6 +4304,12 @@ export const repDatapointDetails = async (req, res, next) => {
         };
         if (Object.keys(currentDatapointsObject).length == 0) {
           for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
+            let sourceDetails = {
+              url: '',
+              sourceName: "",
+              value: "",
+              publicationDate: ''
+            };
             let object = currentAllKmpMatrixDetails[currentIndex];
             let s3DataScreenshot = [];
             if (object.screenShot && object.screenShot.length > 0) {
@@ -4217,7 +4326,12 @@ export const repDatapointDetails = async (req, res, next) => {
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -4246,6 +4360,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues: inputValues,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
                 isRestated: object.isRestated,
                 restatedForYear: object.restatedForYear,
                 restatedInYear: object.restatedInYear,
@@ -4262,6 +4377,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     dataType: dpTypeValues.dataType,
                     textSnippet: '',
                     pageNo: '', // Restated TODO
+                    optionalAnalystComment: '',
                     isRestated: '',
                     restatedForYear: '',
                     restatedInYear: '',
@@ -4329,7 +4445,7 @@ export const repDatapointDetails = async (req, res, next) => {
         kmpDatapointsObject.comments = kmpDatapointsObject.comments.filter(value => Object.keys(value).length !== 0);
       }
       for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
-        var sourceDetails = {
+        let sourceDetails = {
           url: '',
           sourceName: "",
           value: "",
@@ -4353,7 +4469,12 @@ export const repDatapointDetails = async (req, res, next) => {
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -4372,6 +4493,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 dataType: dpTypeValues.dataType,
                 textSnippet: object.textSnippet,
                 pageNo: object.pageNumber,
+                optionalAnalystComment: object.optionalAnalystComment ? object.optionalAnalystComment : '',
                 isRestated: object.isRestated,
                 restatedForYear: object.restatedForYear,
                 restatedInYear: object.restatedInYear,

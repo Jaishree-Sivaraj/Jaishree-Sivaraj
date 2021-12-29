@@ -1,9 +1,13 @@
 'use strict';
 let subject;
+export const LINK_TO_ONBOARD_USER = 'LINK_TO_ONBOARD_USER';
+export const FAILED_TO_ONBOARD = 'FAILED_TO_ONBOARD';
+export const ACCESS_TO_LOGIN = 'ACCESS_TO_LOGIN';
+
 // Email for onborading users.
 export function onboardingEmailContent(data, type) {
     switch (type) {
-        case 'LINK_TO_ONBOARD_USER':
+        case LINK_TO_ONBOARD_USER:
             subject = 'ESGDS InfinData Platform Access form';
             return {
                 subject,
@@ -14,8 +18,9 @@ export function onboardingEmailContent(data, type) {
                 Regards,<br>
                 ESGDS Support Team`
             };
-        case 'FAILED_TO_ONBOARD':
-            subject = 'ESGDS InfinData Platform Access Denied'
+
+        case FAILED_TO_ONBOARD:
+            subject = 'ESGDS InfinData Platform Access Denied';
             return {
                 subject,
                 message: `Hi,<br/><br/>
@@ -24,9 +29,10 @@ export function onboardingEmailContent(data, type) {
                 ${data}<br><br>
                 Kindly contact us at support@esgds.ai in case you need any support.<br><br>
                 Thanks<br/>
-                ESGDS Team `};
+                ESGDS Support Team `
+            };
 
-        case 'ACCESS_TO_LOGIN':
+        case ACCESS_TO_LOGIN:
             subject = 'ESGDS InfinData Platform access enabled';
             return {
                 subject,
@@ -46,7 +52,7 @@ export function onboardingEmailContent(data, type) {
 
 // Email to send OTP
 export function otpEmail(name, otpNumber) {
-     subject = `OTP forESGDS InfinData Platform`;
+    subject = `OTP for ESGDS InfinData Platform`;
     return {
         subject,
         message: `Hi ${name},<br/><br/>
@@ -62,7 +68,7 @@ export function otpEmail(name, otpNumber) {
 
 // Email for Password reset.
 export function passwordResetEmail(name, link) {
-    const subject = 'Reset Password forESGDS InfinData Platform';
+    subject = 'Reset Password for ESGDS InfinData Platform';
     return {
         subject,
         message: ` Hi ${name},<br><br>
@@ -90,11 +96,12 @@ export function RepEmail(companyName, pillar, year) {
             Please check the notifications within the system for additional details.<br>
             Kindly contact us at support@esgds.ai in case you need any support.<br><br>
             Regards,<br>
-            ESGDS Support Team`}
+            ESGDS Support Team`
+    }
 }
 
 export function getEmailForJsonGeneration(companyName, year) {
-    const subject = `${companyName} data uploaded on ESGDS InfinData Platform`;
+    subject = `${companyName} data uploaded on ESGDS InfinData Platform`;
     return {
         subject,
         message: `Hi,<br><br>
