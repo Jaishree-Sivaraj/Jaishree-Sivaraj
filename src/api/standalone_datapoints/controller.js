@@ -734,7 +734,6 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 url: item['URL'] ? item['URL'].toString() : '',
                 pageNumber: item['Page number'],
                 optionalAnalystComment: item['optionalAnalystComment'],
-                optionalAnalystComment: item['optionalAnalystComment'],
                 isRestated: item['isRestated'],
                 restatedForYear: item['restatedForYear'],
                 restatedInYear: item['restatedInYear'],
