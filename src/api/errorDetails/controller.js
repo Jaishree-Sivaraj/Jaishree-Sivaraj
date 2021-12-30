@@ -222,6 +222,7 @@ export const saveErrorDetails = async({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -255,6 +256,7 @@ export const saveErrorDetails = async({
         screenShot: item['screenShot'],
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
+        optionalAnalystComment: item['optionalAnalystComment'],
         isRestated: item['isRestated'],
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
@@ -324,6 +326,7 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
+          optionalAnalystComment: item['optionalAnalystComment'],
           isRestated: item['isRestated'],
           restatedForYear: item['restatedForYear'],
           restatedInYear: item['restatedInYear'],
@@ -373,6 +376,7 @@ export const saveErrorDetails = async({
         screenShot: formattedScreenShots, //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
+        optionalAnalystComment: item['optionalAnalystComment'],
         isRestated: item['isRestated'],
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
@@ -444,6 +448,7 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
+          optionalAnalystComment: item['optionalAnalystComment'],
           isRestated: item['isRestated'],
           restatedForYear: item['restatedForYear'],
           restatedInYear: item['restatedInYear'],
@@ -493,6 +498,7 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
+          optionalAnalystComment: item['optionalAnalystComment'],
           isRestated: item['isRestated'],
           restatedForYear: item['restatedForYear'],
           restatedInYear: item['restatedInYear'],
@@ -548,6 +554,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
                 fiscalYear: item.fiscalYear,
                 textSnippet: item.error.refData.textSnippet,
                 pageNo: item.error.refData.pageNo,
+                optionalAnalystComment: item.error.refData.optionalAnalystComment,
                 isRestated: item.error.refData.isRestated,
                 restatedForYear: item.error.refData.restatedForYear,
                 restatedInYear: item.error.refData.restatedInYear,
@@ -618,6 +625,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
+            optionalAnalystComment: item.error.refData.optionalAnalystComment,
             isRestated: item.error.refData.isRestated,
             restatedForYear: item.error.refData.restatedForYear,
             restatedInYear: item.error.refData.restatedInYear,
@@ -689,6 +697,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
+            optionalAnalystComment: item.error.refData.optionalAnalystComment,
             isRestated: item.error.refData.isRestated,
             restatedForYear: item.error.refData.restatedForYear,
             restatedInYear: item.error.refData.restatedInYear,

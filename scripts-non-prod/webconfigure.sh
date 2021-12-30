@@ -12,4 +12,5 @@ if [ "$DEPLOYMENT_GROUP_NAME" == "ESGDS-Backend-prod-DeploymentGroup" ]; then
 else
 #adding pm2 service for dev-qa environment
 	npm install pm2 -g && pm2 update 
+  sudo ln -s $(which pm2) /usr/bin/pm2 
 fi

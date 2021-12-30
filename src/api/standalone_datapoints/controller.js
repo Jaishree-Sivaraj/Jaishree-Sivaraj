@@ -733,6 +733,8 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 sourceName: item['Source name'],
                 url: item['URL'] ? item['URL'].toString() : '',
                 pageNumber: item['Page number'],
+                optionalAnalystComment: item['optionalAnalystComment'],
+                optionalAnalystComment: item['optionalAnalystComment'],
                 isRestated: item['isRestated'],
                 restatedForYear: item['restatedForYear'],
                 restatedInYear: item['restatedInYear'],
@@ -860,6 +862,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
+                  optionalAnalystComment: item['optionalAnalystComment'],
                   isRestated: item['isRestated'],
                   restatedForYear: item['restatedForYear'],
                   restatedInYear: item['restatedInYear'],
@@ -996,6 +999,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                   sourceName: item['Source name'],
                   url: item['URL'] ? item['URL'].toString() : '',
                   pageNumber: item['Page number'],
+                  optionalAnalystComment: item['optionalAnalystComment'],
                   isRestated: item['isRestated'],
                   restatedForYear: item['restatedForYear'],
                   restatedInYear: item['restatedInYear'],
@@ -1389,6 +1393,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1428,6 +1433,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1480,6 +1486,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1520,6 +1527,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1573,6 +1581,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1613,6 +1622,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1687,6 +1697,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1732,6 +1743,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1792,6 +1804,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1838,6 +1851,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1896,6 +1910,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
@@ -1942,6 +1957,7 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
             restatedInYear: item['restatedInYear'],
