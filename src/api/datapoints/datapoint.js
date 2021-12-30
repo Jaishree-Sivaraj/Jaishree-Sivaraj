@@ -183,13 +183,11 @@ export const datapointDetails = async (req, res, next) => {
         switch (req.body.memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
-                    StandaloneDatapoints.find(currentQuery)
-                        .populate('createdBy') //!check if it being.
+                    StandaloneDatapoints.find(currentQuery) //!check if it being.
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId'),
-                    StandaloneDatapoints.find(historyQuery)
-                        .populate('createdBy') //!check if it being.
+                    StandaloneDatapoints.find(historyQuery) //!check if it being.
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId')
@@ -272,7 +270,6 @@ export const datapointDetails = async (req, res, next) => {
                         ...currentQuery,
                         memberName: req.body.memberName
                     })
-                        .populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId'),
@@ -280,7 +277,6 @@ export const datapointDetails = async (req, res, next) => {
                         ...historyQuery,
                         memberName: req.body.memberName
                     })
-                        .populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId')]);
@@ -364,7 +360,6 @@ export const datapointDetails = async (req, res, next) => {
                         ...currentQuery,
                         memberName: req.body.memberName
                     })
-                        .populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId'),
@@ -372,7 +367,6 @@ export const datapointDetails = async (req, res, next) => {
                         ...historyQuery,
                         memberName: req.body.memberName
                     })
-                        .populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId'),
