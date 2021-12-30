@@ -46,7 +46,7 @@ export function EmailContent(data, type) {
 
 // Email to send OTP
 export function otpEmail(name, otpNumber) {
-     subject = `OTP forESGDS InfinData Platform`;
+     subject = `OTP for ESGDS InfinData Platform`;
     return {
         subject,
         message: `Hi ${name},<br/><br/>
@@ -62,13 +62,13 @@ export function otpEmail(name, otpNumber) {
 
 // Email for Password reset.
 export function passwordResetEmail(name, link) {
-    const subject = 'Reset Password forESGDS InfinData Platform';
+    const subject = 'Reset Password for ESGDS InfinData Platform';
     return {
         subject,
         message: ` Hi ${name},<br><br>
                 You requested for a password reset for your ESGDS InfinData Platform.<br><br>
                 Click on the link below or copy and paste it into a browser to reset password
-                This link will expire in 30 mins <br><br>
+                This link will expire in 30 mins. <br><br>
                 <a href="${link}">${link}</a><br><br>
                 Kindly contact us at support@esgds.ai in case you have not requested for the
                 password reset or if you need any support with <br>
