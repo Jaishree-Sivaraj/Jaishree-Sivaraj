@@ -7,25 +7,26 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const assignPillarToUsers = async({ user, bodymen: { body } }, res, next) => {
-  if (body.user && body.user.length > 0) {
+export const assignPillarToUsers = async(req, res, next) => {
+  let body = req.body;
+  if (body && body.length > 0) {
     let pillarAssignmentList = [];
-    for (let index = 0; index < body.user.length; index++) {
+    for (let index = 0; index < body.length; index++) {
       let secondaryPillarList = [];
-      if (body.secondary.length > 0) {
-        for (let sIndex = 0; sIndex < body.secondary.length; sIndex++) {
-          if (body.secondary[sIndex].value) {
-            secondaryPillarList.push(body.secondary[sIndex].value);            
+      if (body[index].secondary.length > 0) {
+        for (let sIndex = 0; sIndex < body[index].secondary.length; sIndex++) {
+          if (body[index].secondary[sIndex].value) {
+            secondaryPillarList.push(body[index].secondary[sIndex].value);            
           }
         }
       }
       let objectToInsert = {
-        clientTaxonomyId: body.taxonomy ? body.taxonomy.value : null,
-        primaryPillar: body.primary ? body.primary.value : null,
+        clientTaxonomyId: body[index].taxonomy ? body[index].taxonomy.value : null,
+        primaryPillar: body[index].primary ? body[index].primary.value : null,
         secondaryPillar: secondaryPillarList,
-        userId: body.user[index] ? body.user[index] : null,
+        userId: body[index].user ? body[index].user : null,
         status: true,
-        createdBy: user
+        createdBy: req.user
       }
       pillarAssignmentList.push(objectToInsert);
     }
