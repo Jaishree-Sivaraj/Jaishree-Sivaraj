@@ -175,7 +175,46 @@ export const saveErrorDetails = async({
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
         //store in s3 bucket with filename       
-        if(item.error.isThere == true){
+        if(item.isUnfreezed == true){         
+          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
+          let formattedScreenShots = [];
+          if (item['screenShot'] && item['screenShot'].length > 0) {
+            for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+              let screenshotItem = item['screenShot'][screenshotIndex];
+              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              formattedScreenShots.push(screenshotFileName);
+            }
+          }
+          await StandaloneDatapoints.create({
+            datapointId: body.dpCodeId,
+            companyId: body.companyId,
+            taskId: body.taskId,
+            year: item['fiscalYear'],
+            response: item['response'],
+            screenShot: formattedScreenShots, //aws filename todo
+            textSnippet: item['textSnippet'],
+            pageNumber: item['pageNo'],
+            optionalAnalystComment: item['optionalAnalystComment'],
+            isRestated: item['isRestated'],
+            restatedForYear: item['restatedForYear'],
+            restatedInYear: item['restatedInYear'],
+            restatedValue: item['restatedValue'],
+            publicationDate: item.source['publicationDate'],
+            url: item.source['url'],
+            sourceName: item.source['sourceName'] + ";" + item.source['value'],
+            additionalDetails: item['additionalDetails'],
+            isActive: true,
+            dpStatus: dpStatus,
+            status: true,
+            hasError: false,
+            hasCorrection: false,
+            correctionStatus: 'Completed',
+            createdBy: user
+          });
+          
+        } else if(item.error.isThere == true){
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
           let standaloneDatapoints = {
             datapointId: body.dpCodeId,
@@ -201,44 +240,6 @@ export const saveErrorDetails = async({
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed'}});
           await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
           { $set: standaloneDatapoints }, { upsert: true });
-        } else if(item.error.isUnfreezed == true){         
-          await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: {isActive:false}});
-          let formattedScreenShots = [];
-          if (item['screenShot'] && item['screenShot'].length > 0) {
-            for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
-              let screenshotItem = item['screenShot'][screenshotIndex];
-              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-              formattedScreenShots.push(screenshotFileName);
-            }
-          }
-          await StandaloneDatapoints.create({
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            taskId: body.taskId,
-            year: item['fiscalYear'],
-            response: item['response'],
-            screenShot: formattedScreenShots, //aws filename todo
-            textSnippet: item['textSnippet'],
-            pageNumber: item['pageNo'],
-            // optionalAnalystComment: item['optionalAnalystComment'],
-            isRestated: item['isRestated'],
-            restatedForYear: item['restatedForYear'],
-            restatedInYear: item['restatedInYear'],
-            restatedValue: item['restatedValue'],
-            publicationDate: item.source['publicationDate'],
-            url: item.source['url'],
-            sourceName: item.source['sourceName'] + ";" + item.source['value'],
-            additionalDetails: item['additionalDetails'],
-            isActive: true,
-            dpStatus: dpStatus,
-            status: true,
-            hasError: false,
-            hasCorrection: false,
-            correctionStatus: 'Completed',
-            createdBy: user
-          });
         } else{          
           await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },{$set: { hasError: false, hasCorrection: false, correctionStatus: 'Completed'}});
         }
@@ -256,7 +257,7 @@ export const saveErrorDetails = async({
         screenShot: item['screenShot'],
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
-        // optionalAnalystComment: item['optionalAnalystComment'],
+        optionalAnalystComment: item['optionalAnalystComment'],
         isRestated: item['isRestated'],
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
@@ -277,7 +278,52 @@ export const saveErrorDetails = async({
   } else if(body.memberType == 'Board Matrix'){
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
-      if(item.error.isThere == true){
+      if(item.isUnfreezed == true){
+        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
+        { $set: {isActive: false}});
+        let formattedScreenShots = [];
+        if (item['screenShot'] && item['screenShot'].length > 0) {
+          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+            let screenshotItem = item['screenShot'][screenshotIndex];
+            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            formattedScreenShots.push(screenshotFileName);
+          }
+        }
+        await BoardMembersMatrixDataPoints.create({
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: formattedScreenShots, //aws filename todo
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          optionalAnalystComment: item['optionalAnalystComment'],
+          isRestated: item['isRestated'],
+          restatedForYear: item['restatedForYear'],
+          restatedInYear: item['restatedInYear'],
+          restatedValue: item['restatedValue'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          isActive: true,
+          status: true,          
+          dpStatus: dpStatus,
+          hasCorrection: false,
+          hasError: false,
+          correctionStatus: 'Completed',
+          createdBy: user
+        }).catch(error =>{
+          res.status('500').json({
+            message: error.message
+          });
+        })
+      } else if(item.error.isThere == true){
         let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
         let errorDp = {
           datapointId: body.dpCodeId,
@@ -304,52 +350,7 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false,correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else if(item.error.isUnfreezed == true){
-        await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-        { $set: {isActive: false}});
-        let formattedScreenShots = [];
-        if (item['screenShot'] && item['screenShot'].length > 0) {
-          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
-            let screenshotItem = item['screenShot'][screenshotIndex];
-            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-            formattedScreenShots.push(screenshotFileName);
-          }
-        }
-        await BoardMembersMatrixDataPoints.create({
-          datapointId: body.dpCodeId,
-          companyId: body.companyId,
-          taskId: body.taskId,
-          year: item['fiscalYear'],
-          response: item['response'],
-          screenShot: formattedScreenShots, //aws filename todo
-          textSnippet: item['textSnippet'],
-          pageNumber: item['pageNo'],
-          // optionalAnalystComment: item['optionalAnalystComment'],
-          isRestated: item['isRestated'],
-          restatedForYear: item['restatedForYear'],
-          restatedInYear: item['restatedInYear'],
-          restatedValue: item['restatedValue'],
-          publicationDate: item.source['publicationDate'],
-          url: item.source['url'],
-          sourceName: item.source['sourceName'] + ";" + item.source['value'],
-          additionalDetails: item['additionalDetails'],
-          memberName: body.memberName,
-          memberStatus: true,
-          isActive: true,
-          status: true,          
-          dpStatus: dpStatus,
-          hasCorrection: false,
-          hasError: false,
-          correctionStatus: 'Completed',
-          createdBy: user
-        }).catch(error =>{
-          res.status('500').json({
-            message: error.message
-          });
-        })
-      }else {
+      } else {
         await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId,memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
         { $set: {hasError: false ,hasCorrection: false,correctionStatus: 'Completed'}});}
     }
@@ -376,7 +377,7 @@ export const saveErrorDetails = async({
         screenShot: formattedScreenShots, //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
-        // optionalAnalystComment: item['optionalAnalystComment'],
+        optionalAnalystComment: item['optionalAnalystComment'],
         isRestated: item['isRestated'],
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
@@ -399,7 +400,52 @@ export const saveErrorDetails = async({
   } else if(body.memberType == 'KMP Matrix'){
     for (let index = 0; index < dpCodesDetails.length; index++) {
       let item = dpCodesDetails[index];
-      if(item.error.isThere == true){
+      if(item.isUnfreezed == true){
+        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
+        { $set: {isActive: false}});
+        let formattedScreenShots = [];
+        if (item['screenShot'] && item['screenShot'].length > 0) {
+          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
+            let screenshotItem = item['screenShot'][screenshotIndex];
+            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            formattedScreenShots.push(screenshotFileName);
+          }
+        }
+        await KmpMatrixDataPoints.create({
+          datapointId: body.dpCodeId,
+          companyId: body.companyId,
+          taskId: body.taskId,
+          year: item['fiscalYear'],
+          response: item['response'],
+          screenShot: formattedScreenShots, //aws filename todo
+          textSnippet: item['textSnippet'],
+          pageNumber: item['pageNo'],
+          optionalAnalystComment: item['optionalAnalystComment'],
+          isRestated: item['isRestated'],
+          restatedForYear: item['restatedForYear'],
+          restatedInYear: item['restatedInYear'],
+          restatedValue: item['restatedValue'],
+          publicationDate: item.source['publicationDate'],
+          url: item.source['url'],
+          sourceName: item.source['sourceName'] + ";" + item.source['value'],
+          additionalDetails: item['additionalDetails'],
+          memberName: body.memberName,
+          memberStatus: true,
+          hasCorrection: false, 
+          dpStatus: dpStatus,
+          hasError: false , 
+          correctionStatus: 'Completed',
+          status: true,
+          isActive:true,
+          createdBy: user
+        }).catch(error =>{
+          res.status('500').json({
+            message: error.message
+          });
+        })
+      } else if(item.error.isThere == true){
         let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);  
         let errorDp = {
           datapointId: body.dpCodeId,
@@ -426,51 +472,6 @@ export const saveErrorDetails = async({
         { $set: {hasError: true ,hasCorrection: false, correctionStatus: 'Completed'}});
         await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName,datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
         { $set: errorDp }, { upsert: true });
-      } else if(item.error.isUnfreezed == true){
-        await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
-        { $set: {isActive: false}});
-        let formattedScreenShots = [];
-        if (item['screenShot'] && item['screenShot'].length > 0) {
-          for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
-            let screenshotItem = item['screenShot'][screenshotIndex];
-            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-            let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-            formattedScreenShots.push(screenshotFileName);
-          }
-        }
-        await KmpMatrixDataPoints.create({
-          datapointId: body.dpCodeId,
-          companyId: body.companyId,
-          taskId: body.taskId,
-          year: item['fiscalYear'],
-          response: item['response'],
-          screenShot: formattedScreenShots, //aws filename todo
-          textSnippet: item['textSnippet'],
-          pageNumber: item['pageNo'],
-          // optionalAnalystComment: item['optionalAnalystComment'],
-          isRestated: item['isRestated'],
-          restatedForYear: item['restatedForYear'],
-          restatedInYear: item['restatedInYear'],
-          restatedValue: item['restatedValue'],
-          publicationDate: item.source['publicationDate'],
-          url: item.source['url'],
-          sourceName: item.source['sourceName'] + ";" + item.source['value'],
-          additionalDetails: item['additionalDetails'],
-          memberName: body.memberName,
-          memberStatus: true,
-          hasCorrection: false, 
-          dpStatus: dpStatus,
-          hasError: false , 
-          correctionStatus: 'Completed',
-          status: true,
-          isActive:true,
-          createdBy: user
-        }).catch(error =>{
-          res.status('500').json({
-            message: error.message
-          });
-        })
       } else{
         await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive:true, status: true },
         { $set: {hasError: false ,hasCorrection: false, correctionStatus: 'Completed'}});}
@@ -498,7 +499,7 @@ export const saveErrorDetails = async({
           screenShot: formattedScreenShots, //aws filename todo
           textSnippet: item['textSnippet'],
           pageNumber: item['pageNo'],
-          // optionalAnalystComment: item['optionalAnalystComment'],
+          optionalAnalystComment: item['optionalAnalystComment'],
           isRestated: item['isRestated'],
           restatedForYear: item['restatedForYear'],
           restatedInYear: item['restatedInYear'],
@@ -554,7 +555,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
                 fiscalYear: item.fiscalYear,
                 textSnippet: item.error.refData.textSnippet,
                 pageNo: item.error.refData.pageNo,
-                // optionalAnalystComment: item.error.refData.optionalAnalystComment,
+                optionalAnalystComment: item.error.refData.optionalAnalystComment,
                 isRestated: item.error.refData.isRestated,
                 restatedForYear: item.error.refData.restatedForYear,
                 restatedInYear: item.error.refData.restatedInYear,
@@ -625,7 +626,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
-            // optionalAnalystComment: item.error.refData.optionalAnalystComment,
+            optionalAnalystComment: item.error.refData.optionalAnalystComment,
             isRestated: item.error.refData.isRestated,
             restatedForYear: item.error.refData.restatedForYear,
             restatedInYear: item.error.refData.restatedInYear,
@@ -697,7 +698,7 @@ export const saveRepErrorDetails = async({ user, bodymen: { body }, params}, res
             fiscalYear: item.error.refData.fiscalYear,
             textSnippet: item.error.refData.textSnippet,
             pageNo: item.error.refData.pageNo,
-            // optionalAnalystComment: item.error.refData.optionalAnalystComment,
+            optionalAnalystComment: item.error.refData.optionalAnalystComment,
             isRestated: item.error.refData.isRestated,
             restatedForYear: item.error.refData.restatedForYear,
             restatedInYear: item.error.refData.restatedInYear,

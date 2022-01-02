@@ -16,7 +16,7 @@ export function EmailContent(data, type) {
                 <a href="${data}">${data}</a><br><br>
                 Kindly contact us at support@esgds.ai in case you need any support.<br/><br/>          
                 Regards,<br>
-                ESGDS Support Team`
+                ESGDS Support Team.`
             };
 
         case FAILED_TO_ONBOARD:
@@ -29,7 +29,7 @@ export function EmailContent(data, type) {
                 ${data}<br><br>
                 Kindly contact us at support@esgds.ai in case you need any support.<br><br>
                 Thanks<br/>
-                ESGDS Support Team `
+                ESGDS Support Team.`
             };
 
         case ACCESS_TO_LOGIN:
@@ -42,7 +42,7 @@ export function EmailContent(data, type) {
                 Platform URL - <a href="${data}">${data}</a><br><br>       
                 Kindly contact us at support@esgds.ai in case you need any support. <br/><br/>                  
                 Thanks<br/>
-                ESGDS Support Team `
+                ESGDS Support Team.`
             }
 
         default:
@@ -62,7 +62,7 @@ export function otpEmail(name, otpNumber) {
                 you have not requested for the OTP or if you 
                 need any further support.<br/><br/>
                 Regards,<br/>
-                ESGDS Support Team`
+                ESGDS Support Team.`
     }
 }
 
@@ -81,7 +81,7 @@ export function passwordResetEmail(name, link) {
                 the password reset.
                 <br><br>
                 Regards,<br>
-                ESGDS Support Team`
+                ESGDS Support Team.`
     }
 }
 
@@ -96,7 +96,7 @@ export function RepEmail(companyName, pillar, year) {
             Please check the notifications within the system for additional details.<br>
             Kindly contact us at support@esgds.ai in case you need any support.<br><br>
             Regards,<br>
-            ESGDS Support Team`
+            ESGDS Support Team.`
     }
 }
 
@@ -111,6 +111,6 @@ export function getEmailForJsonGeneration(companyName, year) {
         Kindly login into the ESGDS InfinData Platform to review the data.<br><br>
         Kindly contact us at support@esgds.ai in case you need any support.<br><br>    
         Regards, <br>
-        ESGDS Support Team `
+        ESGDS Support Team.`
     }
 }
