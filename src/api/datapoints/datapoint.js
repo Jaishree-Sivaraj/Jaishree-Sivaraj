@@ -22,7 +22,7 @@ import { object } from 'mongoose/lib/utils'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { QA } from '../../constants/roles';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
-import { YetToStart } from '../../constants/task-status';
+import { YetToStart, Completed} from '../../constants/task-status';
 
 const requiredFields = [
     "categoryCode",
