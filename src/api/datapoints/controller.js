@@ -1275,8 +1275,15 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -1674,8 +1681,15 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -1857,8 +1871,15 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2252,8 +2273,15 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2436,8 +2464,15 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -2831,8 +2866,15 @@ export const datapointDetails = async (req, res, next) => {
           }
         }
         if (object.sourceName !== "" || object.sourceName !== " ") {
+          // let companySourceId = object.sourceName.split(';')[1];
+          // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
           let companySourceId = object.sourceName.split(';')[1];
-          let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+          let sourceValues = {};
+          if (companySourceId) {
+            sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+          } else {
+            sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+          }
           if (sourceValues != null) {
             sourceDetails.url = sourceValues.sourceUrl;
             sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3095,8 +3137,15 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ name: object.sourceName, companyId: object.companyId });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            // // let sourceValues = await CompanySources.findOne({ name: object.sourceName, companyId: object.companyId });
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let companySourceId = object.sourceName.split(';')[1];
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3270,8 +3319,15 @@ export const repDatapointDetails = async (req, res, next) => {
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
+              // let companySourceId = object.sourceName.split(';')[1];
+              // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3414,8 +3470,15 @@ export const repDatapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3584,8 +3647,15 @@ export const repDatapointDetails = async (req, res, next) => {
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ companyName: object.companyId, name: object.sourceName });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            // // let sourceValues = await CompanySources.findOne({ companyName: object.companyId, name: object.sourceName });
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let companySourceId = object.sourceName.split(';')[1];
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3759,8 +3829,15 @@ export const repDatapointDetails = async (req, res, next) => {
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
+              // let companySourceId = object.sourceName.split(';')[1];
+              // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -3897,8 +3974,15 @@ export const repDatapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -4067,9 +4151,16 @@ export const repDatapointDetails = async (req, res, next) => {
             }
           }
           if (object.sourceName !== "" || object.sourceName !== " ") {
+            // let companySourceId = object.sourceName.split(';')[1];
+            // // let sourceValues = await CompanySources.findOne({ companyId: object.companyId, name: object.sourceName });
+            // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
-            // let sourceValues = await CompanySources.findOne({ companyId: object.companyId, name: object.sourceName });
-            let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
             if (sourceValues != null) {
               sourceDetails.url = sourceValues.sourceUrl;
               sourceDetails.publicationDate = sourceValues.publicationDate;
@@ -4245,14 +4336,21 @@ export const repDatapointDetails = async (req, res, next) => {
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
+              // let companySourceId = object.sourceName.split(';')[1];
+              // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
-              if (sourceValues != null) {
-                sourceDetails.url = sourceValues.sourceUrl;
-                sourceDetails.publicationDate = sourceValues.publicationDate;
-                sourceDetails.sourceName = sourceValues.name;
-                sourceDetails.value = sourceValues._id;
-              }
+            let sourceValues = {};
+            if (companySourceId) {
+              sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+            } else {
+              sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+            }
+            if (sourceValues != null) {
+              sourceDetails.url = sourceValues.sourceUrl;
+              sourceDetails.publicationDate = sourceValues.publicationDate;
+              sourceDetails.sourceName = sourceValues.name;
+              sourceDetails.value = sourceValues._id;
+            }
             }
             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false) {
               let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role)
@@ -4383,8 +4481,15 @@ export const repDatapointDetails = async (req, res, next) => {
               }
             }
             if (object.sourceName !== "" || object.sourceName !== " ") {
+              // let companySourceId = object.sourceName.split(';')[1];
+              // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
-              let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
+              let sourceValues = {};
+              if (companySourceId) {
+                sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });             
+              } else {
+                sourceValues = await CompanySources.findOne({ companyId: object.companyId ? object.companyId : null, sourceFile: object.sourceFile ? object.sourceFile : null });
+              }
               if (sourceValues != null) {
                 sourceDetails.url = sourceValues.sourceUrl;
                 sourceDetails.publicationDate = sourceValues.publicationDate;
