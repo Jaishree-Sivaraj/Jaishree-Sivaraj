@@ -643,7 +643,7 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
 
 }
 
-export function getDisplayFields(displayFields, currentAllStandaloneDetails, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
+export function getDisplayFields(displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
     displayFields.map(display => {
         if (!requiredFields.includes(display.fieldName)) {
             let optionValues = [], optionVal = '', currentValue;
@@ -667,7 +667,7 @@ export function getDisplayFields(displayFields, currentAllStandaloneDetails, cur
                             { value: '', label: '' } : '';
                     } else {
                         optionVal = display.inputValues;
-                        let standaloneDetail = currentAllStandaloneDetails.find((obj) => obj.year == currentYear);
+                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
                         if (standaloneDetail) {
                             currentValue = display.inputType == SELECT ?
                             {
