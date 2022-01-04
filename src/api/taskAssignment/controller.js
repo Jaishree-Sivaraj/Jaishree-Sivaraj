@@ -1861,24 +1861,6 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 
 
 export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next) => {
-
-  /*
-  1520-1580: Search for Task and check if the total Dp points in all dptypes and datapoints in collection are equal multipied by year
- ! When there is error in any Dp Code is there the status is updated
-  * if role is QA dpStatus: 'Error', correctionStatus: 'Incomplete' 
-  * If another Role { dpStatus: 'Collection', correctionStatus: 'Incomplete' }
-  * Task Status in case of QA: "Correction Pending" , for others "Reassignment Pending"
-  ! When correction is done
-  * taskStatusValue = "Correction Completed";
-  * dpStatus: 'Correction', correctionStatus: 'Incomplete' 
-  ! when there is no error and no correction is made then
-  * taskStatusValue , incase of QA= "Verification Completed",incase of Analyst= "Collection Completed" for rest ="Completed"
-  * dpStatus: 'Correction', correctionStatus: 'Incomplete' 
-
-  ? When Reassignment is the dpStatus Notification is sent to admins.. 
-  TODO: email is send when dpStatus="Verification Completed"or  "Completed"
-  */
-
   try {
     // get all task details.
     const taskDetails = await TaskAssignment.findOne({
@@ -2020,7 +2002,8 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const companyDetails = await getCompanyDetails(body.companyId);
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
-        await sendEmail(e, emailDetails?.subject, emailDetails?.message)
+        const subject = `Error Updated for task ${taskDetails.taskNumber}`
+        await sendEmail(e, subject, content)
           .then((resp) => { console.log('Mail sent!') })
           .catch(err => console.log(err))
       })
@@ -2096,7 +2079,8 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const companyDetails = await getCompanyDetails(body.companyId)
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
-        await sendEmail(e, emailDetails?.subject, emailDetails?.message)
+        const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
+        await sendEmail(e, subject, content)
           .then((resp) => { console.log('Mail sent!') })
           .catch(err => console.log(err))
       })

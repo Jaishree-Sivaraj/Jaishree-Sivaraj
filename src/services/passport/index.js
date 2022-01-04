@@ -21,9 +21,9 @@ export const password = () => (req, res, next) => {
         }
         passport.authenticate('password', { session: false }, (err, user, info) => {
           if (err && err.param) {
-            return res.status(400).json({ message: MISSING_FIELDS, error: err })
+            return res.status(401).json({ status: "401", message: UNAUTH }).end()
           } else if (err || !user) {
-            return res.status(401).json({ message: WRONG_USER }).end()
+            return res.status(401).json({ status: "401", message: WRONG_USER }).end()
           } else if (user && !user.isUserActive) {
             return res.status(401).json({ status: "401", message: DEACTIVATED_USER }).end()
           } else if (user && !user.isUserApproved) {
@@ -49,9 +49,9 @@ export const password = () => (req, res, next) => {
     }
     passport.authenticate('password', { session: false }, (err, user, info) => {
       if (err && err.param) {
-        return res.status(400).json({ message: MISSING_FIELDS, error: err })
+        return res.status(401).json({ status: "401", message: UNAUTH }).end()
       } else if (err || !user) {
-        return res.status(401).json({ message: WRONG_USER }).end()
+        return res.status(401).json({ status: "401", message: WRONG_USER }).end()
       } else if (user && !user.isUserActive) {
         return res.status(401).json({ status: "401", message: DEACTIVATED_USER }).end()
       } else if (user && !user.isUserApproved) {
@@ -94,9 +94,9 @@ export const otpVerification = () => (req, res, next) => {
   }
   passport.authenticate('otp', { session: false }, (err, user, info) => {
     if (err && err.param) {
-      return res.status(400).json({ message: MISSING_FIELDS, error: err })
+      return res.status(401).json({ status: "401", message: UNAUTH, error: err }).end()
     } else if (err || !user) {
-      return res.status(401).json({ message: UNAUTH }).end()
+      return res.status(401).json({ status: "401", message: UNAUTH }).end()
     } else if (user && !user.isUserActive) {
       return res.status(401).json({ status: "401", message: DEACTIVATED_USER }).end()
     } else if (user && !user.isUserApproved) {
@@ -131,17 +131,21 @@ passport.use('password', new LocalStrategy(
   function (email, password, done) {
     const userSchema = new Schema({ email: schema.tree.email, password: schema.tree.password })
     userSchema.validate({ email, password }, (err) => {
-      if (err) done(err)
-    })
-    User.findOne({ email, status: true }).then((user) => {
-      if (!user) {
-        done(true)
-        return null
+      if (err){
+        done(err);
+      } else {
+        User.findOne({ email, status: true }).then((user) => {
+          if (!user) {
+            done(true)
+            return null
+          } else {
+            return user.authenticate(password, user.password).then((user) => {
+              done(null, user)
+              return null
+            }).catch(done)
+          }
+        })
       }
-      return user.authenticate(password, user.password).then((user) => {
-        done(null, user)
-        return null
-      }).catch(done)
     })
   }
 ));
