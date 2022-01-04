@@ -465,7 +465,6 @@ export const repDatapointDetails = async (req, res, next) => {
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true);
-
                                 currentDatapointsObject = getDisplayFields(displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                                 datapointsObject.status = object.correctionStatus;
@@ -614,17 +613,16 @@ function getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapo
                                 standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : ''
                         }
 
-                        : standaloneDetail.errorCaughtByRep.additionalDetails ? standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : ''
-
-
-                    currentDatapointsObject.error.refData.additionalDetails.push({
-                        fieldName: display.fieldName,
-                        name: display.name,
-                        value: currentValue ? currentValue : '',
-                        inputType: display.inputType,
-                        inputValues: optionValues.length > 0 ? optionValues : optionVal
-                    });
-            }
+                        : standaloneDetail.errorCaughtByRep.additionalDetails ? standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : '';
+                    break;
+                }
+                currentDatapointsObject.error.refData.additionalDetails.push({
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : '',
+                    inputType: display.inputType,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
         }
     });
     return currentDatapointsObject;
