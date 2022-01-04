@@ -46,9 +46,9 @@ const kmpMatrixDataPointsSchema = new Schema({
   pageNumber: {
     type: String
   },
-  // optionalAnalystComment: {
-  //   type: String
-  // },
+  optionalAnalystComment: {
+    type: String
+  },
   isRestated: {
     type: String
   },
@@ -172,7 +172,7 @@ kmpMatrixDataPointsSchema.methods = {
       url: this.url,
       sourceFile: this.sourceFile ? this.sourceFile : '',
       pageNumber: this.pageNumber,
-      // optionalAnalystComment: this.optionalAnalystComment,
+      optionalAnalystComment: this.optionalAnalystComment,
       isRestated: this.restated,
       restatedForYear: this.restatedForYear,
       restatedInYear: this.restatedInYear,
