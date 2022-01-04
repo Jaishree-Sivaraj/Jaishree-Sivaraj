@@ -516,7 +516,7 @@ export const datapointDetails = async (req, res, next) => {
     }
 }
 
-function getError(errorDataDetails, currentYear, taskId, datapointId) {
+export function getError(errorDataDetails, currentYear, taskId, datapointId) {
     const errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId
         && obj.year == currentYear
         && obj.taskId == taskId);
@@ -525,7 +525,7 @@ function getError(errorDataDetails, currentYear, taskId, datapointId) {
     return { errorTypeId, errorDetailsObject };
 }
 
-async function getS3ScreenShot(screenShot) {
+export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
     if (screenShot && screenShot.length > 0) {
         for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
@@ -542,9 +542,9 @@ async function getS3ScreenShot(screenShot) {
     return s3DataScreenshot;
 }
 
-async function getSourceDetails(object, sourceDetails) {
+export async function getSourceDetails(object, sourceDetails) {
     if (object.sourceName !== "" || object.sourceName !== " ") {
-        let companySourceId = object.sourceName.split(';')[1];
+        let companySourceId = object.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
         findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object.companyId ? object.companyId.id : null, sourceFile: object.sourceFile ? object.sourceFile : null };
         sourceValues = findQuery ? await CompanySources.findOne(findQuery) : {};
@@ -558,7 +558,7 @@ async function getSourceDetails(object, sourceDetails) {
     return sourceDetails;
 }
 
-function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId) {
+export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId) {
     return {
         status: Completed,
         dpCode: dpTypeValues.code,
@@ -593,7 +593,7 @@ function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, 
     }
 }
 
-function getCurrentEmptyObject(dpTypeValues,currentYear, sourceTypeDetails,inputValues) {
+export function getCurrentEmptyObject(dpTypeValues,currentYear, sourceTypeDetails,inputValues) {
     return {
         status: YetToStart,
         dpCode: dpTypeValues.code,
@@ -625,7 +625,7 @@ function getCurrentEmptyObject(dpTypeValues,currentYear, sourceTypeDetails,input
     }
 }
 
-async function getS3RefScreenShot(errorDetailLength, screenshot) {
+export async function getS3RefScreenShot(errorDetailLength, screenshot) {
     let s3DataRefErrorScreenshot = [];
     if (errorDetailLength > 0 && screenshot && screenshot.length > 0) {
         for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < screenshot.length; refErrorScreenShotIndex++) {
@@ -643,7 +643,7 @@ async function getS3RefScreenShot(errorDetailLength, screenshot) {
 
 }
 
-function getDisplayFields(displayFields, currentAllStandaloneDetails, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
+export function getDisplayFields(displayFields, currentAllStandaloneDetails, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
     displayFields.map(display => {
         if (!requiredFields.includes(display.fieldName)) {
             let optionValues = [], optionVal = '', currentValue;
@@ -703,7 +703,7 @@ function getDisplayFields(displayFields, currentAllStandaloneDetails, currentYea
 
 }
 
-function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year) {
+export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year) {
     return {
         status: Completed,
         dpCode: dpTypeValues.code,
