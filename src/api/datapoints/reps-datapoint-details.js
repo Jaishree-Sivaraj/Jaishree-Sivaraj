@@ -197,7 +197,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                 && obj.year == currentYear[currentYearIndex]
                                 && obj.taskId == req.body.taskId
                                 && obj.raisedBy == req.body.role);
-                            if (errorDetailsObject.length !== 0) {
+                            if (errorDetailsObject.length > 0) {
                                 if (errorDetailsObject[0].raisedBy == req.body.role) {
                                     let comments = errorDetailsObject[0] ? errorDetailsObject[0].comments : "";
                                     let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0].rejectComment : "";
@@ -223,17 +223,20 @@ export const repDatapointDetails = async (req, res, next) => {
                                 getSourceDetails(object, sourceDetails)
                             ]);
                             if (object.datapointId.id == req.body.datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false) {
-                                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId && obj.year == currentYear[currentYearIndex] && obj.taskId == req.body.taskId && obj.raisedBy == req.body.role);
-                                if (errorDetailsObject[0]) {
+                                let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == req.body.datapointId
+                                    && obj.year == currentYear[currentYearIndex]
+                                    && obj.taskId == req.body.taskId
+                                    && obj.raisedBy == req.body.role);
+                                if (errorDetailsObject.length > 0) {
                                     if (errorDetailsObject[0].raisedBy == req.body.role) {
-                                        let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0].comments : "";
-                                        let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0].rejectComment : "";
+                                        let comments = errorDetailsObject[0].comments;
+                                        let rejectComment = errorDetailsObject[0].rejectComment;
                                         datapointsObject.comments.push(comments);
                                         datapointsObject.comments.push(rejectComment);
                                     }
                                 }
                                 currentDatapointsObject = currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true);
-                                currentDatapointsObject = getDisplayFields(displayFields, currentAllStandaloneDetails, currentDatapointsObject, false, true);
+                                currentDatapointsObject = getDisplayFields(displayFields, currentAllStandaloneDetails,currentYear[currentYearIndex], currentDatapointsObject, false, true);
                                 datapointsObject.status = object.correctionStatus;
                                 datapointsObject.currentData.push(currentDatapointsObject);
                             }
@@ -329,7 +332,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0].errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject = getDisplayFields(displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false)
-                            currentDatapointsObject = ggetDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, req.body.datapointId, req.body.taskId, currentYear[currentYearIndex])
+                            currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, req.body.datapointId, req.body.taskId, currentYear[currentYearIndex])
                             datapointsObject.status = object.correctionStatus;
                             datapointsObject.currentData.push(currentDatapointsObject);
                         }
@@ -465,7 +468,6 @@ export const repDatapointDetails = async (req, res, next) => {
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true);
-
                                 currentDatapointsObject = getDisplayFields(displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                                 datapointsObject.status = object.correctionStatus;
@@ -614,17 +616,16 @@ function getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapo
                                 standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : ''
                         }
 
-                        : standaloneDetail.errorCaughtByRep.additionalDetails ? standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : ''
-
-
-                    currentDatapointsObject.error.refData.additionalDetails.push({
-                        fieldName: display.fieldName,
-                        name: display.name,
-                        value: currentValue ? currentValue : '',
-                        inputType: display.inputType,
-                        inputValues: optionValues.length > 0 ? optionValues : optionVal
-                    });
+                        : standaloneDetail.errorCaughtByRep.additionalDetails ? standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : '';
+                    break;
             }
+            currentDatapointsObject.error.refData.additionalDetails.push({
+                fieldName: display.fieldName,
+                name: display.name,
+                value: currentValue ? currentValue : '',
+                inputType: display.inputType,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+            });
         }
     });
     return currentDatapointsObject;
