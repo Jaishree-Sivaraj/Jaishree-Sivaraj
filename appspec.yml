@@ -13,25 +13,25 @@ permissions:
     
 hooks:
   ApplicationStop:
-    - location: scripts/webstop.sh
+    - location: scripts-non-prod/webstop.sh
       timeout: 180
       runas: ubuntu
   # Execute BeforeInstall only for the first time if node is not configured in system 
   #BeforeInstall:
     #- location: scripts/nodeconfigure.sh
   Install:
-    - location: scripts/webconfigure.sh
+    - location: scripts-non-prod/webconfigure.sh
       timeout: 180
       runas: ubuntu
   AfterInstall:
-    - location: scripts/appbuild.sh
+    - location: scripts-non-prod/appbuild.sh
       timeout: 600
       runas: ubuntu
   ApplicationStart:
-    - location: scripts/webstartservice.sh
+    - location: scripts-non-prod/webstartservice.sh
       timeout: 600
       runas: ubuntu
   ValidateService:
-    - location: scripts/monitorservice.sh
+    - location: scripts-non-prod/monitorservice.sh
       timeout: 600
       runas: ubuntu
