@@ -3,9 +3,17 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, getCategorywiseDatapoints, uploadTaxonomyDatapoints, datapointDetails, repDatapointDetails, uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony } from './controller'
-import { schema } from './model'
-export Datapoints, { schema } from './model'
+import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints
+  , getCategorywiseDatapoints,
+  datapointDetails, 
+  repDatapointDetails, 
+  uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony
+} from './controller'
+import { schema } from './model';
+export Datapoints, { schema } from './model';
+// import { datapointDetails } from './datapoint';
+// import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
+// import {repDatapointDetails} from './reps-datapoint-details';
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
