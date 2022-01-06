@@ -14,7 +14,7 @@ import { OnboardingEmails } from '../onboarding-emails'
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 import { sendEmail } from '../../services/utils/mailing'
 import { Employee, CompanyRepresentative, ClientRepresentative, adminRoles, GroupRoles } from '../../constants/roles'
-import { onboardingEmailContent, LINK_TO_ONBOARD_USER, FAILED_TO_ONBOARD, ACCESS_TO_LOGIN } from '../../constants/email-content';
+import { EmailContent, LINK_TO_ONBOARD_USER, FAILED_TO_ONBOARD, ACCESS_TO_LOGIN } from '../../constants/email-content';
 
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
@@ -376,20 +376,20 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   } catch (error) {
     if (error.name === 'MongoError' && error.code === 11000) {
       if (error.keyPattern.phoneNumber) {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'phoneNumber',
           message: 'phoneNumber already registered'
         })
       } else {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'email',
           message: 'email already registered'
         })
       }
     }
-    res.status(409).json({
+    return res.status(409).json({
       status: 409,
       message: error.message ? error.message : 'email already registered'
     })
@@ -692,7 +692,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             }
             link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
             userDetails = userDetails.toObject();
-            const emailDetails = onboardingEmailContent(body.userDetails.comments, FAILED_TO_ONBOARD);
+            const emailDetails = EmailContent(body.userDetails.comments, FAILED_TO_ONBOARD);
             await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
               .then((resp) => { console.log('Mail sent!'); });
           })
@@ -703,7 +703,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
         } else {
           User.findById(body.userId).then(async function (userDetails) {
             userDetails = userDetails.toObject();
-            const emailDetails = onboardingEmailContent(process.env.FRONTEND_URL, ACCESS_TO_LOGIN); // get content from email-content-file
+            const emailDetails = EmailContent(process.env.FRONTEND_URL, ACCESS_TO_LOGIN); // get content from email-content-file
 
 
             await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
@@ -926,7 +926,7 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                     let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
                     //nodemail code will come here to send OTP
 
-                    const emailDetails = onboardingEmailContent(url, LINK_TO_ONBOARD_USER); // getting email from email-content(constant file)
+                    const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER); // getting email from email-content(constant file)
 
                     await sendEmail(rowObject['email'], emailDetails?.subject, emailDetails?.message)
                       .then((resp) => { console.log('Mail sent!'); });
@@ -1037,7 +1037,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         if (rolesDetails && rolesDetails.roleName == Employee) {
           let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
           //nodemail code will come here to send OTP
-          const emailDetails = onboardingEmailContent(url, LINK_TO_ONBOARD_USER);
+          const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER);
           await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!'); });
           let email = `${rowObject['email']}`;
