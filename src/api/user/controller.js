@@ -376,20 +376,20 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   } catch (error) {
     if (error.name === 'MongoError' && error.code === 11000) {
       if (error.keyPattern.phoneNumber) {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'phoneNumber',
           message: 'phoneNumber already registered'
         })
       } else {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'email',
           message: 'email already registered'
         })
       }
     }
-    res.status(409).json({
+    return res.status(409).json({
       status: 409,
       message: error.message ? error.message : 'email already registered'
     })
