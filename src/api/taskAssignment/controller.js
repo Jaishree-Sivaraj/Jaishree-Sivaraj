@@ -492,7 +492,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     if (params.taskStatus == "Completed") {
       findQuery = { taskStatus: { $in: ["Completed", "Verification Completed"] }, status: true };
     } else {
-      findQuery = { taskStatus: { $in: ["Pending", "Reassignment Pending", "Collection Pending", "Collection Completed", "Correction Pending", "Correction Completed"] }, status: true };
+      findQuery = { taskStatus: { $nin: ["Completed", "Verification Completed"] }, status: true };
     }
     if (query.company) {
       findQuery['companyId'] = { $in: companyIds };
