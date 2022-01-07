@@ -122,8 +122,8 @@ router.get('/addExtraKeys/:clientTaxonomyId',
   includeExtraKeysFromJson)
 
 /**
-* @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
-* @apiName AddExtraKeysForAllDatapoints
+* @api {get} /datapoints/downloadSubsetTaxmonony/:clientTaxonomyId Add extraKeys for datapoints
+* @apiName DownloadSubsetTaxmononyDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
 * @apiParam {String} access_token user access token.
