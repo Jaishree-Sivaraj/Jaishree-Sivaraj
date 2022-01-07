@@ -19,7 +19,6 @@ const { measureId, measureUomId, uomConversionId, clientTaxonomyId, status } = s
  * @apiParam measureUomId Taxonomy uoms's measureUomId.
  * @apiParam uomConversionId Taxonomy uoms's uomConversionId.
  * @apiParam clientTaxonomyId Taxonomy uoms's clientTaxonomyId.
- * @apiParam status Taxonomy uoms's status.
  * @apiSuccess {Object} taxonomyUoms Taxonomy uoms's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Taxonomy uoms not found.
@@ -27,7 +26,7 @@ const { measureId, measureUomId, uomConversionId, clientTaxonomyId, status } = s
  */
 router.post('/',
   token({ required: true }),
-  body({ measureId, measureUomId, uomConversionId, clientTaxonomyId, status }),
+  body({ measureId, measureUomId, uomConversionId, clientTaxonomyId }),
   create)
 
 /**

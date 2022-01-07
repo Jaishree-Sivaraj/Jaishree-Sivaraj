@@ -4,40 +4,37 @@ import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
 import { create, index, show, update, destroy } from './controller'
 import { schema } from './model'
-export MeasureUoms, { schema } from './model'
+export PlaceValues, { schema } from './model'
 
 const router = new Router()
-const { measureId, uomName, description, status } = schema.tree
+const { name, status } = schema.tree
 
 /**
- * @api {post} /measure_uoms Create measure uoms
- * @apiName CreateMeasureUoms
- * @apiGroup MeasureUoms
+ * @api {post} /place_values Create place values
+ * @apiName CreatePlaceValues
+ * @apiGroup PlaceValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam measureId Measure uoms's measureId.
- * @apiParam uomName Measure uoms's uomName.
- * @apiParam description Measure uoms's description.
- * @apiParam status Measure uoms's status.
- * @apiSuccess {Object} measureUoms Measure uoms's data.
+ * @apiParam name Place values's name.
+ * @apiSuccess {Object} placeValues Place values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 404 Measure uoms not found.
+ * @apiError 404 Place values not found.
  * @apiError 401 user access only.
  */
 router.post('/',
   token({ required: true }),
-  body({ measureId, uomName, description }),
+  body({ name }),
   create)
 
 /**
- * @api {get} /measure_uoms Retrieve measure uoms
- * @apiName RetrieveMeasureUoms
- * @apiGroup MeasureUoms
+ * @api {get} /place_values Retrieve place values
+ * @apiName RetrievePlaceValues
+ * @apiGroup PlaceValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiUse listParams
- * @apiSuccess {Number} count Total amount of measure uoms.
- * @apiSuccess {Object[]} rows List of measure uoms.
+ * @apiSuccess {Number} count Total amount of place values.
+ * @apiSuccess {Object[]} rows List of place values.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 user access only.
  */
@@ -47,14 +44,14 @@ router.get('/',
   index)
 
 /**
- * @api {get} /measure_uoms/:id Retrieve measure uoms
- * @apiName RetrieveMeasureUoms
- * @apiGroup MeasureUoms
+ * @api {get} /place_values/:id Retrieve place values
+ * @apiName RetrievePlaceValues
+ * @apiGroup PlaceValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiSuccess {Object} measureUoms Measure uoms's data.
+ * @apiSuccess {Object} placeValues Place values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 404 Measure uoms not found.
+ * @apiError 404 Place values not found.
  * @apiError 401 user access only.
  */
 router.get('/:id',
@@ -62,33 +59,31 @@ router.get('/:id',
   show)
 
 /**
- * @api {put} /measure_uoms/:id Update measure uoms
- * @apiName UpdateMeasureUoms
- * @apiGroup MeasureUoms
+ * @api {put} /place_values/:id Update place values
+ * @apiName UpdatePlaceValues
+ * @apiGroup PlaceValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
- * @apiParam measureId Measure uoms's measureId.
- * @apiParam uomName Measure uoms's uomName.
- * @apiParam description Measure uoms's description.
- * @apiParam status Measure uoms's status.
- * @apiSuccess {Object} measureUoms Measure uoms's data.
+ * @apiParam name Place values's name.
+ * @apiParam status Place values's status.
+ * @apiSuccess {Object} placeValues Place values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
- * @apiError 404 Measure uoms not found.
+ * @apiError 404 Place values not found.
  * @apiError 401 user access only.
  */
 router.put('/:id',
   token({ required: true }),
-  body({ measureId, uomName, description, status }),
+  body({ name, status }),
   update)
 
 /**
- * @api {delete} /measure_uoms/:id Delete measure uoms
- * @apiName DeleteMeasureUoms
- * @apiGroup MeasureUoms
+ * @api {delete} /place_values/:id Delete place values
+ * @apiName DeletePlaceValues
+ * @apiGroup PlaceValues
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiSuccess (Success 204) 204 No Content.
- * @apiError 404 Measure uoms not found.
+ * @apiError 404 Place values not found.
  * @apiError 401 user access only.
  */
 router.delete('/:id',

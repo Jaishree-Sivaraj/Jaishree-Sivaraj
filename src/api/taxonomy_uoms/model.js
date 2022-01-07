@@ -7,19 +7,29 @@ const taxonomyUomsSchema = new Schema({
     required: true
   },
   measureId: {
-    type: String
+    type: Schema.ObjectId,
+    ref: 'Measures',
+    required: true
   },
   measureUomId: {
-    type: String
+    type: Schema.ObjectId,
+    ref: 'MeasureUoms',
+    required: true
   },
   uomConversionId: {
-    type: String
+    type: Schema.ObjectId,
+    ref: 'UomConversions',
+    required: false,
+    default: null
   },
   clientTaxonomyId: {
-    type: String
+    type: Schema.ObjectId,
+    ref: 'ClientTaxonomy',
+    required: true
   },
   status: {
-    type: String
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -34,11 +44,11 @@ taxonomyUomsSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy.view(full),
-      measureId: this.measureId,
-      measureUomId: this.measureUomId,
-      uomConversionId: this.uomConversionId,
-      clientTaxonomyId: this.clientTaxonomyId,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      measureId: this.measureId ? this.measureId.view(full) : null,
+      measureUomId: this.measureUomId ? this.measureUomId.view(full) : null,
+      uomConversionId: this.uomConversionId ? this.uomConversionId.view(full) : null,
+      clientTaxonomyId: this.clientTaxonomyId ? this.clientTaxonomyId.view(full) : null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

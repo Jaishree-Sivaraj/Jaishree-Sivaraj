@@ -1,15 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 
-const measuresSchema = new Schema({
-  createdBy: {
-    type: Schema.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  measureName: {
-    type: String
-  },
-  measureDescription: {
+const placeValuesSchema = new Schema({
+  name: {
     type: String
   },
   status: {
@@ -24,14 +16,12 @@ const measuresSchema = new Schema({
   }
 })
 
-measuresSchema.methods = {
+placeValuesSchema.methods = {
   view (full) {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy ? this.createdBy.view(full) : null,
-      measureName: this.measureName,
-      measureDescription: this.measureDescription,
+      name: this.name,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
@@ -44,7 +34,7 @@ measuresSchema.methods = {
   }
 }
 
-const model = mongoose.model('Measures', measuresSchema)
+const model = mongoose.model('PlaceValues', placeValuesSchema)
 
 export const schema = model.schema
 export default model

@@ -25,7 +25,7 @@ const { measureName, measureDescription, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ measureName, measureDescription, status }),
+  body({ measureName, measureDescription }),
   create)
 
 /**

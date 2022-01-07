@@ -5,7 +5,8 @@ const conversiontypesSchema = new Schema({
     type: String
   },
   status: {
-    type: String
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,

@@ -7,7 +7,9 @@ const measureUomsSchema = new Schema({
     required: true
   },
   measureId: {
-    type: String
+    type: Schema.ObjectId,
+    ref: 'Measures',
+    required: true
   },
   uomName: {
     type: String
@@ -16,7 +18,8 @@ const measureUomsSchema = new Schema({
     type: String
   },
   status: {
-    type: String
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -31,8 +34,8 @@ measureUomsSchema.methods = {
     const view = {
       // simple view
       id: this.id,
-      createdBy: this.createdBy.view(full),
-      measureId: this.measureId,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      measureId: this.measureId ? this.measureId.view(full) : null,
       uomName: this.uomName,
       description: this.description,
       status: this.status,

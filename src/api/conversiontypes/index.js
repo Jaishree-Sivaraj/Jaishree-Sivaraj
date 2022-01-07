@@ -16,7 +16,6 @@ const { typeName, status } = schema.tree
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam typeName Conversiontypes's typeName.
- * @apiParam status Conversiontypes's status.
  * @apiSuccess {Object} conversiontypes Conversiontypes's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Conversiontypes not found.
@@ -24,7 +23,7 @@ const { typeName, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ typeName, status }),
+  body({ typeName }),
   create)
 
 /**
