@@ -29,9 +29,9 @@ export const dataCollection = async ({
             isActive: true,
             status: true
         }
-        console.log(Pending);
 
         let isUpdated;
+        console.log()
         switch (taskDetailsObject.taskStatus) {
             case Pending:
                 let historyYearData = [], currentYearData = [];
@@ -39,6 +39,7 @@ export const dataCollection = async ({
                     case STANDALONE:
                         // checking if the datapoint is already been saved.
                         isUpdated = await updateDerivedCalculationCompletedStatus(STANDALONE, updateQuery, body, dpCodesDetails);
+                        // Pushing the current data
                         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                             let item = dpCodesDetails[dpIndex];
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
@@ -52,8 +53,9 @@ export const dataCollection = async ({
                             let currenData = getData(body, item, user, formattedScreenShots);
                             currenData = { ...currenData, correctionStatus: Completed };
                             currentYearData.push(currenData);
-
                         }
+
+                        // Pushing the history data.
                         for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                             let item = dpHistoricalDpDetails[dpHistoryIndex];
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
@@ -62,7 +64,9 @@ export const dataCollection = async ({
                             let historyData = getData(body, item, user, formattedScreenShots);
                             historyYearData.push(historyData);
                         }
+                        // concatinating history and current data
                         const structuredStandaloneDetails = _.concat(currentYearData, historyYearData);
+
                         await StandaloneDatapoints.insertMany(structuredStandaloneDetails)
                             .then((result, err) => {
                                 if (err) {
@@ -72,6 +76,8 @@ export const dataCollection = async ({
                                 } else {
                                     return res.status('200').json({
                                         message: "Data inserted Successfully",
+
+                                        // if the value have been updated then the derived calculation disable =false hence the value false upon update.
                                         isDerviedCalculationCompleted: isUpdated ? false : true
                                     });
                                 }
@@ -80,6 +86,7 @@ export const dataCollection = async ({
                         break;
                     case BOARD_MATRIX:
                         isUpdated = await updateDerivedCalculationCompletedStatus(BOARD_MATRIX, updateQuery, body, dpCodesDetails);
+
                         for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                             let item = dpCodesDetails[dpIndex];
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
@@ -89,6 +96,7 @@ export const dataCollection = async ({
                             currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
                             currentYearData.push(currentData);
                         }
+
                         for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                             let item = dpHistoricalDpDetails[dpHistoryIndex];
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
@@ -96,6 +104,7 @@ export const dataCollection = async ({
                             historyData = { ...historyData, memberName: body.memberName }
                             historyYearData.push(historyData);
                         }
+
                         const boardMemberDetails = _.concat(currentYearData, historyYearData);
                         await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails)
                             .then((result, err) => {
@@ -123,6 +132,7 @@ export const dataCollection = async ({
                             currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
                             currentYearData.push(currentData);
                         }
+
                         for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                             let item = dpHistoricalDpDetails[dpHistoryIndex];
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
@@ -130,7 +140,9 @@ export const dataCollection = async ({
                             historyData = { ...historyData, memberName: body.memberName };
                             historyYearData.push(historyData);
                         }
+
                         const kmpMemberDetails = _.concat(currentYearData, historyYearData);
+
                         await KmpMatrixDataPoints.insertMany(kmpMemberDetails)
                             .then((result, err) => {
                                 if (err) {
@@ -306,6 +318,13 @@ export const dataCollection = async ({
                         for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
                             let item = dpCodesDetails[dpDetailsIndex];
                             let hasCorrectionValue = true;
+                            const query = {
+                                taskId: body.taskId,
+                                datapointId: body.dpCodeId,
+                                year: item['fiscalYear'],
+                                raisedBy: item.rejectedTo,
+                                status: true
+                            }
                             item?.isAccepted
                                 ? await ErrorDetails.updateOne({ ...query, memberName: body.memberName },
                                     { $set: { isErrorAccepted: true, isErrorRejected: false } })
@@ -414,9 +433,9 @@ function getData(body, item, user, formattedScreenShots) {
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
         restatedValue: item['restatedValue'],
-        publicationDate: item.source['publicationDate'],
+        publicationDate: item?.source['publicationDate'],
         url: item.source['url'],
-        sourceName: item.source['sourceName'] + ";" + item.source['value'],
+        sourceName: item?.source['sourceName'] + ";" + item.source['value'],
         isActive: true,
         status: true,
         additionalDetails: item['additionalDetails'],
@@ -424,6 +443,7 @@ function getData(body, item, user, formattedScreenShots) {
         updatedAt: Date.now()
         // member name for other dptype except Standalone
         // correctionStatus for currentDataCorrection.
+
         // ! this is for correctionCompleted data.   
         // hasError: false,
         // hasCorrection: hasCorrectionValue,
@@ -436,67 +456,73 @@ function getData(body, item, user, formattedScreenShots) {
 async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, dpCodesDetails) {
     try {
         let datapointDataBeenChanged, getDataPointCode, isDpDependent;
+        let isDatapointChanged = false;
         switch (type) {
             case STANDALONE:
                 [datapointDataBeenChanged, getDataPointCode] = await Promise.all([
-                    StandaloneDatapoints.findOne(updateQuery).lean(),
+                    StandaloneDatapoints.findOne(updateQuery, { response: 1, _id: 0 }).lean(),
                     Datapoints.findOne({ _id: body.dpCodeId }, { _id: 0, code: 1 }).lean()
                 ]);
                 dpCodesDetails.map(obj => {
-                    console.log(obj);
-                    if (obj.response == datapointDataBeenChanged?.response) {
-                        isDatapointChanged = true;
+                    if (obj.response !== datapointDataBeenChanged?.response) {
+                        // If the collected response is not same as the existing response then datapoint has not been changed 
+                        isDatapointChanged = true; // datapoint response have been changed.
                     }
                 });
-                isDpDependent = await Rules.find({ 'parameter': { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
+                isDpDependent = await Rules.find({ 'parameter': { '$regex': 'COSS001', '$options': 'i' } }).lean();
                 console.log(isDpDependent);
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
-                        _id: body.taskId
+                        _id: body.taskId,
+                        isDerviedCalculationCompleted: true
                     }, { isDerviedCalculationCompleted: false }, { new: true });
                 }
                 break;
             case BOARD_MATRIX:
                 [datapointDataBeenChanged, getDataPointCode] = await Promise.all([
-                    BoardMembersMatrixDataPoints.findOne({ ...updateQuery, memberName: body.memberName }).lean(),
-                    Datapoints.findOne({ _id: body.datapointId }, { _id: 0, code: 1 }).lean()
+                    BoardMembersMatrixDataPoints.findOne({ ...updateQuery, memberName: body.memberName }, { response: 1, _id: 0 }).lean(),
+                    Datapoints.findOne({ _id: body.dpCodeId }, { _id: 0, code: 1 }).lean()
                 ]);
                 dpCodesDetails.map(obj => {
-                    if (obj.response == datapointDataBeenChanged?.response) {
+                    if (obj.response !== datapointDataBeenChanged?.response) {
                         isDatapointChanged = true;
                     }
                 });
                 isDpDependent = await Rules.find({ 'parameter': { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
-                        _id: body.taskId
+                        _id: body.taskId,
+                        isDerviedCalculationCompleted: true
                     }, { isDerviedCalculationCompleted: false }, { new: true });
                 }
                 break;
             case KMP_MATRIX:
                 [datapointDataBeenChanged, getDataPointCode] = await Promise.all([
-                    KMP_MATRIX.findOne({ ...updateQuery, memberName: body.memberName }).lean(),
-                    Datapoints.findOne({ _id: body.datapointId }, { _id: 0, code: 1 }).lean()
+                    KmpMatrixDataPoints.findOne({ ...updateQuery, memberName: body.memberName }, { response: 1, _id: 0 }).lean(),
+                    Datapoints.findOne({ _id: body.dpCodeId }, { _id: 0, code: 1 }).lean()
                 ]);
                 dpCodesDetails.map(obj => {
-                    if (obj.response == datapointDataBeenChanged?.response) {
+                    if (obj.response !== datapointDataBeenChanged?.response) {
                         isDatapointChanged = true;
                     }
                 });
                 isDpDependent = await Rules.find({ 'parameter': { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
-                        _id: body.taskId
+                        _id: body.taskId,
+                        isDerviedCalculationCompleted: true
                     }, { isDerviedCalculationCompleted: false }, { new: true });
                 }
+
                 break;
             default:
                 updatedDerivedCalculation = {};
                 break;
 
         }
-        return isDpDependent.length > 0 && isDatapointChanged;
+        return isDpDependent.length > 0 && isDatapointChanged
     } catch (error) {
+        console.log(error);
         return error;
 
     }
