@@ -7,7 +7,7 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
-import { Pending, CollectionCompleted, VerificationCompleted, Completed } from '../../constants/task-status';
+import { Pending, CollectionCompleted, CorrectionPending, CorrectionCompleted, VerificationCompleted, Completed } from '../../constants/task-status';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { KeyIssues } from '../key_issues'
 export const getCategorywiseDatapoints = async (req, res, next) => {
@@ -73,6 +73,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           .populate('taskId')
       ]);
     const taskStatus = [Pending, CollectionCompleted, VerificationCompleted, Completed];
+    let keyIssueId;
     if (taskStatus.includes(taskDetails.taskStatus)) {
       if (dpTypeValues.length < 0) {
         return res.status(400).json({
@@ -107,7 +108,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       }
 
       if (dpTypeValues.length > 1) {
-        let dpsQuery, keyIssueId;
+        let dpsQuery;
         if (keyIssueName) {
           // this is for datapoints
           const dbQuery = {};
@@ -429,8 +430,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         });
       }
 
-    } else if (taskDetails.taskStatus == "Correction Pending") {
-      if (dpTypeValues.length < 1) {
+    } else if (taskDetails.taskStatus == CorrectionPending) {
+      // In here no keyIssues
+
+      if (keyIssueName) {
+        // this is for datapoints
+        const dbQuery = {};
+        Object.assign(dbQuery, { keyIssueName: { $regex: keyIssueName, $options: 'i' } });
+        keyIssueId = await KeyIssues.findOne(dbQuery, { id: 1 });
+        dpsQuery = {
+          ...dptypeQuery,
+          keyIssueId: keyIssueId?.id
+        }
+      }
+      if (dpTypeValues.length > 1) {
         try {
           const errorDatapoints = await StandaloneDatapoints.find({
             taskId: req.params.taskId,
@@ -438,12 +451,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             dpStatus: "Error",
             isActive: true,
             status: true
-          }).populate({
-            path: 'datapointId',
-            populate: {
-              path: 'keyIssueId'
-            }
-          }).lean();
+          })
+            .skip(+offset).limit(+limit)
+            .populate({
+              path: 'datapointId',
+              populate: {
+                path: 'keyIssueId'
+              }
+            }).lean();
 
           for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
             let datapointsObject = {
@@ -485,18 +500,67 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       }
       for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
         switch (dpTypeValues[dpTypeIndex]) {
+          case STANDALONE:
+            {
+              const errorDatapoints = await StandaloneDatapoints.find({
+                taskId: req.params.taskId,
+                companyId: taskDetails.companyId.id,
+                dpStatus: 'Error',
+                isActive: true,
+                status: true
+              }).skip(+offset)
+                .limit(+limit)
+                .sort({ updatedAt: -1 })
+                .populate([{
+                  path: 'datapointId',
+                  populate: {
+                    path: 'keyIssueId'
+                  }
+                }]);
+              for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
+
+                let datapointsObject = {
+                  dpCode: errorDatapoints[errorDpIndex].datapointId.code,
+                  dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
+                  dpName: errorDatapoints[errorDpIndex].datapointId.name,
+                  companyId: taskDetails.companyId.id,
+                  companyName: taskDetails.companyId.companyName,
+                  keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
+                  keyIssue: errorDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
+                  pillarId: taskDetails.categoryId.id,
+                  pillar: taskDetails.categoryId.categoryName,
+                  fiscalYear: errorDatapoints[errorDpIndex].year,
+                  status: errorDatapoints[errorDpIndex].correctionStatus
+                }
+                if (dpCodesData.length > 0) {
+                  let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
+                  if (yearfind > -1) {
+                    dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",", errorDatapoints[errorDpIndex].year)
+                  } else {
+                    dpCodesData.push(datapointsObject);
+                  }
+                } else {
+                  dpCodesData.push(datapointsObject);
+                }
+              }
+
+            }
+            break;
           case BOARD_MATRIX:
             const [errorboardDatapoints, boardMemberEq] = await Promise.all([
               BoardMembersMatrixDataPoints.find({
                 ...dptypeQuery,
                 isActive: true,
                 dpStatus: 'Error'
-              }).populate([{
-                path: 'datapointId',
-                populate: {
-                  path: 'keyIssueId'
-                }
-              }]),
+              }).skip(+offset)
+                .limit(+limit)
+                .sort({ updatedAt: -1 })
+                .populate([{
+                  path: 'datapointId',
+                  populate: {
+                    path: 'keyIssueId'
+                  }
+                }]),
               BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 }).lean()
             ]);
             for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -557,134 +621,89 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             break;
           case KMP_MATRIX:
           case 'KMP Matrix':
-            break;
-          case STANDALONE:
-            break;
-          default:
-            break;
+            let errorkmpDatapoints = await KmpMatrixDataPoints.find({
+              taskId: req.params.taskId,
+              companyId: taskDetails.companyId.id,
+              year: {
+                $in: currentYear
+              },
+              isActive: true,
+              dpStatus: 'Error',
+              status: true
+            }).skip(+offset)
+              .limit(+limit)
+              .sort({ updatedAt: -1 })
+              .populate([{
+                path: 'datapointId',
+                populate: {
+                  path: 'keyIssueId'
+                }
+              }]);
+            let kmpMemberEq = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
+            for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+              let yearSplit = currentYear[currentYearIndex].split('-');
+              let endDateString = yearSplit[1] + "-12-31";
+              let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
+              let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+              console.log(1614709800, yearTimeStamp)
+              let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
-
-
-        }
-        if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
-
-
-        } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
-          let errorkmpDatapoints = await KmpMatrixDataPoints.find({
-            taskId: req.params.taskId,
-            companyId: taskDetails.companyId.id,
-            year: {
-              $in: currentYear
-            },
-            isActive: true,
-            dpStatus: 'Error',
-            status: true
-          }).populate([{
-            path: 'datapointId',
-            populate: {
-              path: 'keyIssueId'
-            }
-          }]);
-          let kmpMemberEq = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
-          for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-            let yearSplit = currentYear[currentYearIndex].split('-');
-            let endDateString = yearSplit[1] + "-12-31";
-            let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-            let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
-            console.log(1614709800, yearTimeStamp)
-            let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
-
-            for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
-              let kmpNameValue = {
-                label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
-                value: mergeKmpMemberList[kmpMemberNameListIndex].id,
-                year: currentYear[currentYearIndex]
-              }
-              if (kmpDpCodesData.kmpMemberList.length > 0) {
-                let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
-                if (kmpMemberValues.length > 0) {
-                  let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                  kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+              for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
+                let kmpNameValue = {
+                  label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
+                  value: mergeKmpMemberList[kmpMemberNameListIndex].id,
+                  year: currentYear[currentYearIndex]
+                }
+                if (kmpDpCodesData.kmpMemberList.length > 0) {
+                  let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
+                  if (kmpMemberValues.length > 0) {
+                    let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
+                    kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                  } else {
+                    kmpDpCodesData.kmpMemberList.push(kmpNameValue);
+                  }
                 } else {
                   kmpDpCodesData.kmpMemberList.push(kmpNameValue);
                 }
-              } else {
-                kmpDpCodesData.kmpMemberList.push(kmpNameValue);
               }
             }
-          }
-          for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
-            _.filter(kmpDpCodesData.kmpMemberList, (object) => {
-              if (object.label == errorkmpDatapoints[errorDpIndex].memberName) {
-                let kmpDatapointsObject = {
-                  dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
-                  dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
-                  dpName: errorkmpDatapoints[errorDpIndex].datapointId.name,
-                  companyId: taskDetails.companyId.id,
-                  companyName: taskDetails.companyId.companyName,
-                  keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
-                  keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-                  pillarId: taskDetails.categoryId.id,
-                  pillar: taskDetails.categoryId.categoryName,
-                  fiscalYear: errorkmpDatapoints[errorDpIndex].year,
-                  memberName: object.label,
-                  memberId: object.value,
-                  status: errorkmpDatapoints[errorDpIndex].correctionStatus
-                }
-                if (kmpDpCodesData.dpCodesData.length > 0) {
-                  let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
-                  if (yearfind > -1) {
-                    kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",", errorkmpDatapoints[errorDpIndex].year)
+            for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
+              _.filter(kmpDpCodesData.kmpMemberList, (object) => {
+                if (object.label == errorkmpDatapoints[errorDpIndex].memberName) {
+                  let kmpDatapointsObject = {
+                    dpCode: errorkmpDatapoints[errorDpIndex].datapointId.code,
+                    dpCodeId: errorkmpDatapoints[errorDpIndex].datapointId.id,
+                    dpName: errorkmpDatapoints[errorDpIndex].datapointId.name,
+                    companyId: taskDetails.companyId.id,
+                    companyName: taskDetails.companyId.companyName,
+                    keyIssueId: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.id,
+                    keyIssue: errorkmpDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
+                    pillarId: taskDetails.categoryId.id,
+                    pillar: taskDetails.categoryId.categoryName,
+                    fiscalYear: errorkmpDatapoints[errorDpIndex].year,
+                    memberName: object.label,
+                    memberId: object.value,
+                    status: errorkmpDatapoints[errorDpIndex].correctionStatus
+                  }
+                  if (kmpDpCodesData.dpCodesData.length > 0) {
+                    let yearfind = kmpDpCodesData.dpCodesData.findIndex(obj => obj.dpCode == errorkmpDatapoints[errorDpIndex].datapointId.code && obj.memberName == errorkmpDatapoints[errorDpIndex].memberName);
+                    if (yearfind > -1) {
+                      kmpDpCodesData.dpCodesData[yearfind].fiscalYear = kmpDpCodesData.dpCodesData[yearfind].fiscalYear.concat(",", errorkmpDatapoints[errorDpIndex].year)
+                    } else {
+                      kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+                    }
                   } else {
                     kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                   }
-                } else {
-                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
                 }
-              }
+              });
+            }
+            break;
+          default:
+            return res.json({
+              status: 500,
+              message: 'Invalid dp type'
             });
-          }
-        } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
-
-          let errorDatapoints = await StandaloneDatapoints.find({
-            taskId: req.params.taskId,
-            companyId: taskDetails.companyId.id,
-            dpStatus: 'Error',
-            isActive: true,
-            status: true
-          }).populate([{
-            path: 'datapointId',
-            populate: {
-              path: 'keyIssueId'
-            }
-          }]);
-          for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
-
-            let datapointsObject = {
-              dpCode: errorDatapoints[errorDpIndex].datapointId.code,
-              dpCodeId: errorDatapoints[errorDpIndex].datapointId.id,
-              dpName: errorDatapoints[errorDpIndex].datapointId.name,
-              companyId: taskDetails.companyId.id,
-              companyName: taskDetails.companyId.companyName,
-              keyIssueId: errorDatapoints[errorDpIndex].datapointId.keyIssueId.id,
-              keyIssue: errorDatapoints[errorDpIndex].datapointId.keyIssueId.keyIssueName,
-              pillarId: taskDetails.categoryId.id,
-              pillar: taskDetails.categoryId.categoryName,
-              fiscalYear: errorDatapoints[errorDpIndex].year,
-              status: errorDatapoints[errorDpIndex].correctionStatus
-            }
-            if (dpCodesData.length > 0) {
-              let yearfind = dpCodesData.findIndex(obj => obj.dpCode == errorDatapoints[errorDpIndex].datapointId.code);
-              if (yearfind > -1) {
-                dpCodesData[yearfind].fiscalYear = dpCodesData[yearfind].fiscalYear.concat(",", errorDatapoints[errorDpIndex].year)
-              } else {
-                dpCodesData.push(datapointsObject);
-              }
-            } else {
-              dpCodesData.push(datapointsObject);
-            }
-          }
-
         }
       }
       return res.status(200).send({
@@ -697,8 +716,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         kmpMatrix: kmpDpCodesData
       });
 
-    } else if (taskDetails.taskStatus == 'Correction Completed') {
-      if (dpTypeValues < 1) {
+    } else if (taskDetails.taskStatus == CorrectionCompleted) {
+      if (dpTypeValues.length > 1) {
         try {
           let errorDatapoints = await StandaloneDatapoints.find({
             taskId: req.params.taskId,
@@ -709,12 +728,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             isActive: true,
             dpStatus: 'Correction',
             status: true
-          }).populate([{
-            path: 'datapointId',
-            populate: {
-              path: 'keyIssueId'
-            }
-          }]);
+          }).skip(+offset)
+            .limit(+limit)
+            .sort({ updatedAt: -1 })
+            .populate([{
+              path: 'datapointId',
+              populate: {
+                path: 'keyIssueId'
+              }
+            }]);
           for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
             let datapointsObject = {
               dpCode: errorDatapoints[errorDpIndex].datapointId.code,
@@ -786,12 +808,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               ...dptypeQuery,
               isActive: true,
               dpStatus: 'Correction'
-            }).populate([{
-              path: 'datapointId',
-              populate: {
-                path: 'keyIssueId'
-              }
-            }]);
+            }).skip(+offset)
+              .limit(+limit)
+              .sort({ updatedAt: -1 })
+              .populate([{
+                path: 'datapointId',
+                populate: {
+                  path: 'keyIssueId'
+                }
+              }]);
             if (errorboardDatapoints.length > 0) {
               for (let errorDpIndex = 0; errorDpIndex < errorboardDatapoints.length; errorDpIndex++) {
                 _.filter(boardDpCodesData.boardMemberList, (object) => {
@@ -863,12 +888,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               isActive: true,
               dpStatus: 'Correction',
               status: true
-            }).populate([{
-              path: 'datapointId',
-              populate: {
-                path: 'keyIssueId'
-              }
-            }]);
+            }).skip(+offset)
+              .limit(+limit)
+              .sort({ updatedAt: -1 })
+              .populate([{
+                path: 'datapointId',
+                populate: {
+                  path: 'keyIssueId'
+                }
+              }]);
             if (errorkmpDatapoints.length > 0) {
               for (let errorDpIndex = 0; errorDpIndex < errorkmpDatapoints.length; errorDpIndex++) {
                 _.filter(kmpDpCodesData.kmpMemberList, (object) => {
@@ -909,12 +937,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               ...dptypeQuery,
               isActive: true,
               dpStatus: 'Correction'
-            }).populate([{
-              path: 'datapointId',
-              populate: {
-                path: 'keyIssueId'
-              }
-            }]);
+            }).skip(+offset)
+              .limit(+limit)
+              .sort({ updatedAt: -1 }).populate([{
+                path: 'datapointId',
+                populate: {
+                  path: 'keyIssueId'
+                }
+              }]);
             for (let errorDpIndex = 0; errorDpIndex < errorDatapoints.length; errorDpIndex++) {
               let datapointsObject = {
                 dpCode: errorDatapoints[errorDpIndex].datapointId.code,
@@ -943,9 +973,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
             break;
           default:
-            break;
-
-
+            return res.json({
+              status: 500,
+              message: 'Invalid dp type'
+            });
         }
       }
       return res.status(200).send({
