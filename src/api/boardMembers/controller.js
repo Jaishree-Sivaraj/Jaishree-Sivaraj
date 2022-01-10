@@ -176,19 +176,23 @@ export const getDistinctBoardMembersCompanywise = async({ user, params }, res, n
       let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
       console.log('uniqBoardMembers length', uniqBoardMembers.length);
       for (let bmIndex = 0; bmIndex < uniqBoardMembers.length; bmIndex++) {
-        let memberDetail = uniqBoardMembers[bmIndex];
-        let memberObject = {
-          // boardMemberMatrixId: memberDetail.id,
-          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
-          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
-          memberName: memberDetail.memberName,
-          expectedName: memberDetail.memberName,
-          year: params.year
-        };
-        // console.log('memberObject', memberObject);
-        let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
-        if (foundBoardMemberIndex == -1) {
-          distinctBoardMembers.push(memberObject);
+        try {
+          let memberDetail = uniqBoardMembers[bmIndex];
+          let memberObject = {
+            // boardMemberMatrixId: memberDetail.id,
+            companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+            companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+            memberName: memberDetail.memberName,
+            expectedName: memberDetail.memberName,
+            year: params.year
+          };
+          // console.log('memberObject', memberObject);
+          let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
+          if (foundBoardMemberIndex == -1) {
+            distinctBoardMembers.push(memberObject);
+          }
+        } catch (error) {
+          return next(error);
         }
       }
       // if (distinctYears.length-1 == yearIndex) {
