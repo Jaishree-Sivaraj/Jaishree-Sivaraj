@@ -1,27 +1,18 @@
-import _ from 'lodash'
-import XLSX from 'xlsx'
-import * as fs from 'fs'
-import { success, notFound, authorOrAdmin } from '../../services/response/'
-import { Datapoints } from '.'
-import { StandaloneDatapoints } from '../standalone_datapoints'
-import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
-import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
-import { ClientTaxonomy } from '../clientTaxonomy'
-import { Categories } from '../categories'
-import { Themes } from '../themes'
-import { KeyIssues } from '../key_issues'
-import { Functions } from '../functions'
-import { TaskAssignment } from '../taskAssignment'
-import { Taxonomies } from '../taxonomies'
-import { ErrorDetails } from '../errorDetails'
-import { BoardMembers } from '../boardMembers'
-import { Kmp } from '../kmp'
-import { CompanySources } from '../companySources'
-import { TaxonomyUoms } from '../taxonomy_uoms'
-import { Measures } from '../measures'
-import { PlaceValues } from '../place_values'
-import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
-import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
+import _ from 'lodash';
+import { Datapoints } from '.';
+import { StandaloneDatapoints } from '../standalone_datapoints';
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
+import { ClientTaxonomy } from '../clientTaxonomy';
+import { Functions } from '../functions';
+import { TaskAssignment } from '../taskAssignment';
+import { ErrorDetails } from '../errorDetails';
+import { CompanySources } from '../companySources';
+import { TaxonomyUoms } from '../taxonomy_uoms';
+import { Measures } from '../measures';
+import { PlaceValues } from '../place_values';
+import { fetchFileFromS3 } from "../../services/utils/aws-s3";
+import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';;
 import { QA } from '../../constants/roles';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { YetToStart, Completed } from '../../constants/task-status';
@@ -200,9 +191,14 @@ export const datapointDetails = async (req, res, next) => {
         let index, prevDatapoint, nextDatapoint;
         const allDatapoints = await Datapoints.distinct('_id', { status: true });
         console.log(allDatapoints[0]);
-        if(allDatapoints[0]=='609d2aacbe8b9d1b577cea8c'){
-            console.log('matched');
-        }
+
+        allDatapoints.map(datapoint => {
+            if (datapoint.id === req.body.datapointId) {
+                index = allDatapoints.indexOf(datapoint);
+                break;
+            }
+        });
+
         switch (req.body.memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
@@ -217,15 +213,9 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
-                // TODO: Getting prev and next value.
-                allDatapoints.map(standalone => {
-                    if (standalone._id === req.body.datapointId) {
-                        index = allStandalone.indexOf(standalone);
-                    }
-                });
 
-                prevDatapoint = Number.isFinite(index) ? allStandalone[index - 1] ? allStandalone[index - 1].datapointId._id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allStandalone[index + 1] ? allStandalone[index + 1].datapointId._id : '' : '';
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1].id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1].id : '' : '';
 
 
                 historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
@@ -351,9 +341,9 @@ export const datapointDetails = async (req, res, next) => {
                         index = allBoardmatrix.indexOf(boardmatrix);
                     }
                 });
-
-                prevDatapoint = Number.isFinite(index) ? allBoardmatrix[index - 1] ? allBoardmatrix[index - 1].datapointId._id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allBoardmatrix[index + 1] ? allBoardmatrix[index + 1].datapointId._id : '' : '';
+               
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1].id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1].id : '' : '';
 
                 historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
@@ -481,10 +471,9 @@ export const datapointDetails = async (req, res, next) => {
                         index = allKmpDetails.indexOf(kmpmatrix);
                     }
                 });
-
-                prevDatapoint = Number.isFinite(index) ? allKmpDetails[index - 1] ? allKmpDetails[index - 1].datapointId._id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allKmpDetails[index + 1] ? allKmpDetails[index + 1].datapointId._id : '' : '';
-
+               
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1].id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1].id : '' : '';
 
                 historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
