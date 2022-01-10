@@ -195,7 +195,6 @@ export const datapointDetails = async (req, res, next) => {
         allDatapoints.map(datapoint => {
             if (datapoint.id === req.body.datapointId) {
                 index = allDatapoints.indexOf(datapoint);
-                break;
             }
         });
 
