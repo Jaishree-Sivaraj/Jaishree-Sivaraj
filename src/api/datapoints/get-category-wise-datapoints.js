@@ -122,7 +122,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         const keyIssuesCollection = await Datapoints.find(dpsQuery)
           .skip(+offset)
           .limit(+limit)
-          .sort({ name: -1 })
+          .sort({ name: -1 }) // sort by code.
           .populate('keyIssueId');
         const keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
         keyIssueListObject.map(keyIssue => {

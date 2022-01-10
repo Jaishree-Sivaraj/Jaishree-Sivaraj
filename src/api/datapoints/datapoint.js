@@ -198,10 +198,14 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
         let index, prevDatapoint, nextDatapoint;
+        const allDatapoints = await Datapoints.distinct('_id', { status: true });
+        console.log(allDatapoints[0]);
+        if(allDatapoints[0]=='609d2aacbe8b9d1b577cea8c'){
+            console.log('matched');
+        }
         switch (req.body.memberType) {
             case STANDALONE:
-                const [allStandalone, currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
-                    StandaloneDatapoints.find({ status: true, isActive: true }).limit(100).populate('datapointId'),
+                const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
                     StandaloneDatapoints.find(currentQuery).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -214,14 +218,14 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('uom')
                 ]);
                 // TODO: Getting prev and next value.
-                allStandalone.map(standalone => {
-                    if (standalone.datapointId.id === req.body.datapointId) {
+                allDatapoints.map(standalone => {
+                    if (standalone._id === req.body.datapointId) {
                         index = allStandalone.indexOf(standalone);
                     }
                 });
 
-                prevDatapoint = Number.isFinite(index) ? allStandalone[index - 1] ? allStandalone[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allStandalone[index + 1] ? allStandalone[index + 1].datapointId.id : '' : '';
+                prevDatapoint = Number.isFinite(index) ? allStandalone[index - 1] ? allStandalone[index - 1].datapointId._id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allStandalone[index + 1] ? allStandalone[index + 1].datapointId._id : '' : '';
 
 
                 historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
@@ -323,8 +327,7 @@ export const datapointDetails = async (req, res, next) => {
                     dpCodeData: datapointsObject
                 });
             case BOARD_MATRIX:
-                const [allBoardmatrix, currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails,] = await Promise.all([
-                    BoardMembersMatrixDataPoints.find({ status: true, isActive: true }).limit(100).populate('datapointId'),
+                const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails,] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
                         memberName: req.body.memberName
@@ -343,14 +346,14 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('uom')
                 ]);
                 // TODO: Getting prev and next value.
-                allBoardmatrix.map(boardmatrix => {
-                    if (boardmatrix.datapointId.id === req.body.datapointId) {
+                allDatapoints.map(boardmatrix => {
+                    if (boardmatrix.datapointId_.id === req.body.datapointId) {
                         index = allBoardmatrix.indexOf(boardmatrix);
                     }
                 });
 
-                prevDatapoint = Number.isFinite(index) ? allBoardmatrix[index - 1] ? allBoardmatrix[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allBoardmatrix[index + 1] ? allBoardmatrix[index + 1].datapointId.id : '' : '';
+                prevDatapoint = Number.isFinite(index) ? allBoardmatrix[index - 1] ? allBoardmatrix[index - 1].datapointId._id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allBoardmatrix[index + 1] ? allBoardmatrix[index + 1].datapointId._id : '' : '';
 
                 historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
@@ -451,9 +454,8 @@ export const datapointDetails = async (req, res, next) => {
                     dpCodeData: datapointsObject
                 });
             case KMP_MATRIX:
-                const [allKmpDetails, currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] =
+                const [currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] =
                     await Promise.all([
-                        BoardMembersMatrixDataPoints.find({ status: true, isActive: true }).limit(100).populate('datapointId'),
                         KmpMatrixDataPoints.find({
                             ...currentQuery,
                             memberName: req.body.memberName
@@ -474,14 +476,14 @@ export const datapointDetails = async (req, res, next) => {
                     ]);
 
                 // TODO: Getting prev and next value.
-                allKmpDetails.map(kmpmatrix => {
-                    if (kmpmatrix.datapointId.id === req.body.datapointId) {
+                allDatapoints.map(kmpmatrix => {
+                    if (kmpmatrix.datapointId._id === req.body.datapointId) {
                         index = allKmpDetails.indexOf(kmpmatrix);
                     }
                 });
 
-                prevDatapoint = Number.isFinite(index) ? allKmpDetails[index - 1] ? allKmpDetails[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allKmpDetails[index + 1] ? allKmpDetails[index + 1].datapointId.id : '' : '';
+                prevDatapoint = Number.isFinite(index) ? allKmpDetails[index - 1] ? allKmpDetails[index - 1].datapointId._id : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allKmpDetails[index + 1] ? allKmpDetails[index + 1].datapointId._id : '' : '';
 
 
                 historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
