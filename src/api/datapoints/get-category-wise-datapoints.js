@@ -443,6 +443,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           keyIssueId: keyIssueId?.id
         }
       }
+      // aggrgate // Datapoint categorID and keyIssueId.
+      let keyIssuesDpIds = await Datapoints.find({categoryId: taskDetails.categoryId.id, keyIssueId: keyIssueId}).distinct('_id');
       if (dpTypeValues.length > 1) {
         try {
           const errorDatapoints = await StandaloneDatapoints.find({
@@ -450,7 +452,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             companyId: taskDetails.companyId.id,
             dpStatus: "Error",
             isActive: true,
-            status: true
+            status: true,
+            datapointId: { $in: keyIssuesDpIds }
+            // distinct datapoint in a
           })
             .skip(+offset).limit(+limit)
             .populate({
