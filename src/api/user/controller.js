@@ -345,14 +345,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
 
               } else {
-                res.status(400).json({
+               return  res.status(400).json({
                   status: "400",
                   message: `${roleObject.roleName} failed to create`
                 })
               }
 
             } else {
-              res.status(400).json({
+              return res.status(400).json({
                 status: "400",
                 message: 'User failed to create'
               })
@@ -376,20 +376,20 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   } catch (error) {
     if (error.name === 'MongoError' && error.code === 11000) {
       if (error.keyPattern.phoneNumber) {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'phoneNumber',
           message: 'phoneNumber already registered'
         })
       } else {
-        res.status(409).json({
+        return res.status(409).json({
           valid: false,
           param: 'email',
           message: 'email already registered'
         })
       }
     }
-    res.status(409).json({
+    return res.status(409).json({
       status: 409,
       message: error.message ? error.message : 'email already registered'
     })
