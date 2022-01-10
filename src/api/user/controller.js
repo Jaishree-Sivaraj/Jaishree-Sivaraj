@@ -357,8 +357,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 message: 'User failed to create'
               })
             }
-
-            break;
           default:
             return res.status(400).json({
               status: "400",
