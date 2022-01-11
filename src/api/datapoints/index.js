@@ -17,8 +17,8 @@ import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
 import {repDatapointDetails} from './reps-datapoint-details';
 
 const router = new Router()
-const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
-const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '';
+const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
+const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '';
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -184,7 +184,7 @@ router.get('/import-from-json/categoryId',
   includeCategoryIdsFromJson)
 
 /**
-* @api {get} /datapoints/list/:taskId Get categorywise datapoints
+* @api {post} /datapoints/list/pillarwise Get categorywise datapoints
 * @apiName GetCategorywiseDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
@@ -194,8 +194,9 @@ router.get('/import-from-json/categoryId',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.get('/list/:taskId',
-  // token({ required: true }),
+router.post('/list/pillarwise',
+  token({ required: true }),
+  body({ taskId, dpType, keyIssueId, memberId, memberName, page, limit }),
   getCategorywiseDatapoints)
 
 /**
