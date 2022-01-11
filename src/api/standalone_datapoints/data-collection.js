@@ -439,6 +439,8 @@ function getData(body, item, user, formattedScreenShots) {
         isActive: true,
         status: true,
         additionalDetails: item['additionalDetails'],
+        uom: body.subDataType ?.body.subDataType.selectedUom['value'],
+        placeValue: body.subDataType ?.body.subDataType.selectedPlaceValue['value'],
         createdBy: user,
         updatedAt: Date.now()
         // member name for other dptype except Standalone
