@@ -12,12 +12,12 @@ import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { KeyIssues } from '../key_issues';
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
-    const { offset, limit, keyIssueName } = req.query;
+    const { page, limit, keyIssueName } = req.query;
 
-    if (!offset || !limit) {
-      res.json({
+    if (!page || !limit) {
+      return res.json({
         status: 500,
-        message: 'Offset and Limit Missing'
+        message: 'Offset and Page Missing'
       });
     }
 
@@ -170,9 +170,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         }
 
-        const keyIssuesCollection = await Datapoints.find(dptypeQuery)
+        const keyIssuesCollection = await Datapoints.find({
+          dataCollection: 'Yes',
+          functionId: {
+            "$ne": functionId.id
+          },
+          clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
+          categoryId: taskDetails?.categoryId.id,
+          status: true
+        })
           .sort({ code: 1 })
-          .skip(+offset)
+          .skip(+page)
           .limit(+limit)
           .populate('keyIssueId');
 
@@ -188,7 +196,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
           let dpTypeDatapoints = await Datapoints.find({
             ...dptypeQuery, dpType: dpTypeValues[dpTypeIndex]
-          }).skip(+offset)
+          }).skip(+page)
             .limit(+limit)
             .sort({ code: 1 })
             .populate('keyIssueId')
@@ -403,12 +411,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           }
 
-          let dpTypeDatapoints = await Datapoints.find({
-            ...dptypeQuery,
-            dpType: dpTypeValues[dpTypeIndex]
-          }).sort({ code: 1 })
-            .skip(+offset)
+          let dpTypeDatapoints = await Datapoints.find(
+            {
+              dataCollection: 'Yes',
+              functionId: {
+                "$ne": functionId.id
+              },
+              clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
+              categoryId: taskDetails?.categoryId.id,
+              status: true,
+              dpType: dpTypeValues[dpTypeIndex]
+            }).skip(+page)
             .limit(+limit)
+            .sort({ code: 1 })
             .populate('keyIssueId')
             .populate('categoryId');
 
@@ -494,7 +509,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       if (dpTypeValues.length === 1) {
         try {
           const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
-            .skip(+offset).limit(+limit)
+            .skip(+page).limit(+limit)
             .populate({
               path: 'datapointId',
               populate: {
@@ -552,7 +567,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 ...errorQuery,
                 dpStatus: Error
               })
-                .skip(+offset)
+                .skip(+page)
                 .limit(+limit)
                 .populate([{
                   path: 'datapointId',
@@ -599,7 +614,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   $in: currentYear
                 },
                 dpStatus: Error
-              }).skip(+offset)
+              }).skip(+page)
                 .limit(+limit)
                 .populate([{
                   path: 'datapointId',
@@ -674,7 +689,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 $in: currentYear
               },
               dpStatus: Error
-            }).skip(+offset)
+            }).skip(+page)
               .limit(+limit)
               .populate([{
                 path: 'datapointId',
@@ -774,7 +789,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               $in: currentYear
             },
             dpStatus: Correction
-          }).skip(+offset)
+          }).skip(+page)
             .limit(+limit)
             .populate([{
               path: 'datapointId',
@@ -833,7 +848,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             const errorDatapoints = await StandaloneDatapoints.find({
               ...errorQuery,
               dpStatus: Correction
-            }).skip(+offset)
+            }).skip(+page)
               .limit(+limit)
               .populate([{
                 path: 'datapointId',
@@ -902,7 +917,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 $in: currentYear
               },
               dpStatus: Correction
-            }).skip(+offset)
+            }).skip(+page)
               .limit(+limit)
               .populate([{
                 path: 'datapointId',
@@ -981,7 +996,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 $in: currentYear
               },
               dpStatus: Correction
-            }).skip(+offset)
+            }).skip(+page)
               .limit(+limit)
               .populate([{
                 path: 'datapointId',
@@ -1044,6 +1059,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         kmpMatrix: kmpDpCodesData,
         isDerviedCalculationCompleted: getIsDerivedCalculationCompleted?.isDerviedCalculationCompleted
       });
+    } else {
+      return res.json({
+        status: 500,
+        message: 'Invalid Task Status'
+      })
     }
   } catch (error) {
     return res.status(500).json({
