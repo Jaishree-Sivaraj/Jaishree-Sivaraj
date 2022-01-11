@@ -471,7 +471,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true; // datapoint response have been changed.
                     }
                 });
-                isDpDependent = await Rules.find({ 'parameter': { '$regex': 'COSS001', '$options': 'i' } }).lean();
+                isDpDependent = await Rules.find({ 'parameter': { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 console.log(isDpDependent);
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
