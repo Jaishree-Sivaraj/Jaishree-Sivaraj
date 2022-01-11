@@ -238,211 +238,215 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
         if (dpTypeValues.length > 1) {
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
-            let keyIssuesCollection = await Datapoints.find({
-              dataCollection: 'Yes',
-              functionId: {
-                "$ne": functionId.id
-              },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
-              categoryId: taskDetails.categoryId,
-              status: true
-            }).populate('keyIssueId');
-            let dpTypeDatapoints = await Datapoints.find({
-              dataCollection: 'Yes',
-              functionId: {
-                "$ne": functionId.id
-              },
-              clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
-              categoryId: taskDetails.categoryId,
-              dpType: dpTypeValues[dpTypeIndex],
-              status: true
-            }).populate('keyIssueId').populate('categoryId');
-
-            let keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
-            for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
-              let keyIssues = {
-                label: keyIssueListObject[keyIssueListIndex].keyIssueId.keyIssueName,
-                value: keyIssueListObject[keyIssueListIndex].keyIssueId.id
+            try {
+              let keyIssuesCollection = await Datapoints.find({
+                dataCollection: 'Yes',
+                functionId: {
+                  "$ne": functionId.id
+                },
+                clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
+                categoryId: taskDetails.categoryId,
+                status: true
+              }).populate('keyIssueId');
+              let dpTypeDatapoints = await Datapoints.find({
+                dataCollection: 'Yes',
+                functionId: {
+                  "$ne": functionId.id
+                },
+                clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
+                categoryId: taskDetails.categoryId,
+                dpType: dpTypeValues[dpTypeIndex],
+                status: true
+              }).populate('keyIssueId').populate('categoryId');
+  
+              let keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
+              for (let keyIssueListIndex = 0; keyIssueListIndex < keyIssueListObject.length; keyIssueListIndex++) {
+                let keyIssues = {
+                  label: keyIssueListObject[keyIssueListIndex].keyIssueId.keyIssueName,
+                  value: keyIssueListObject[keyIssueListIndex].keyIssueId.id
+                }
+                keyIssuesList.push(keyIssues);
               }
-              keyIssuesList.push(keyIssues);
-            }
-            if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
-              let boardMemberEq = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
-              for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                let yearSplit = currentYear[currentYearIndex].split('-');
-                let endDateString = yearSplit[1] + "-12-31";
-                let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                let boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
-                console.log(1614709800, yearTimeStamp)
-                let mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
-
-                for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
-                  let boardNameValue = {
-                    label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
-                    value: mergeBoardMemberList[boardMemberNameListIndex].id,
-                    year: currentYear[currentYearIndex]
-                  }
-                  if (boardDpCodesData.boardMemberList.length > 0) {
-                    let boardMemberValues = boardDpCodesData.boardMemberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
-                    if (boardMemberValues.length > 0) {
-                      let memberIndex = boardDpCodesData.boardMemberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
-                      boardDpCodesData.boardMemberList[memberIndex].year = boardDpCodesData.boardMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+              if (dpTypeValues[dpTypeIndex] == 'Board Matrix') {
+                let boardMemberEq = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  let yearSplit = currentYear[currentYearIndex].split('-');
+                  let endDateString = yearSplit[1] + "-12-31";
+                  let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
+                  let boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  console.log(1614709800, yearTimeStamp)
+                  let mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
+  
+                  for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
+                    let boardNameValue = {
+                      label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
+                      value: mergeBoardMemberList[boardMemberNameListIndex].id,
+                      year: currentYear[currentYearIndex]
+                    }
+                    if (boardDpCodesData.boardMemberList.length > 0) {
+                      let boardMemberValues = boardDpCodesData.boardMemberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
+                      if (boardMemberValues.length > 0) {
+                        let memberIndex = boardDpCodesData.boardMemberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
+                        boardDpCodesData.boardMemberList[memberIndex].year = boardDpCodesData.boardMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                      } else {
+                        boardDpCodesData.boardMemberList.push(boardNameValue);
+                      }
                     } else {
                       boardDpCodesData.boardMemberList.push(boardNameValue);
                     }
-                  } else {
-                    boardDpCodesData.boardMemberList.push(boardNameValue);
                   }
                 }
-              }
-              for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-                for (let boarMemberListIndex = 0; boarMemberListIndex < boardDpCodesData.boardMemberList.length; boarMemberListIndex++) {
-                  let boardDatapointsObject = {
-                    dpCode: dpTypeDatapoints[datapointsIndex].code,
-                    dpCodeId: dpTypeDatapoints[datapointsIndex].id,
-                    dpName: dpTypeDatapoints[datapointsIndex].name,
-                    companyId: taskDetails.companyId.id,
-                    companyName: taskDetails.companyId.companyName,
-                    keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
-                    keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
-                    pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                    pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
-                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
-                    fiscalYear: boardDpCodesData.boardMemberList[boarMemberListIndex].year,
-                    memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
-                    memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
-                    priority: {
-                      isDpcodeValidForCollection: isDpcodeValidForCollection,
-                      message: message
-                    },
-                    status: "Yet to Start"
+                for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+                  for (let boarMemberListIndex = 0; boarMemberListIndex < boardDpCodesData.boardMemberList.length; boarMemberListIndex++) {
+                    let boardDatapointsObject = {
+                      dpCode: dpTypeDatapoints[datapointsIndex].code,
+                      dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                      dpName: dpTypeDatapoints[datapointsIndex].name,
+                      companyId: taskDetails.companyId.id,
+                      companyName: taskDetails.companyId.companyName,
+                      keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                      keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                      pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                      pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                      dataType: dpTypeDatapoints[datapointsIndex].dataType,
+                      fiscalYear: boardDpCodesData.boardMemberList[boarMemberListIndex].year,
+                      memberName: boardDpCodesData.boardMemberList[boarMemberListIndex].label,
+                      memberId: boardDpCodesData.boardMemberList[boarMemberListIndex].value,
+                      priority: {
+                        isDpcodeValidForCollection: isDpcodeValidForCollection,
+                        message: message
+                      },
+                      status: "Yet to Start"
+                    }
+                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                      _.filter(currentAllBoardMemberMatrixDetails, (object) => {
+                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == boardDpCodesData.boardMemberList[boarMemberListIndex].label) {
+                          boardDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                        }
+                      })
+                    }
+                    boardDpCodesData.dpCodesData.push(boardDatapointsObject);
                   }
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    _.filter(currentAllBoardMemberMatrixDetails, (object) => {
-                      if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == boardDpCodesData.boardMemberList[boarMemberListIndex].label) {
-                        boardDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                }
+              } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
+                let kmpMemberEq = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  let yearSplit = currentYear[currentYearIndex].split('-');
+                  let endDateString = yearSplit[1] + "-12-31";
+                  let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  console.log(1614709800, yearTimeStamp)
+                  let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
+                  for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
+                    let kmpNameValue = {
+                      label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
+                      value: mergeKmpMemberList[kmpMemberNameListIndex].id,
+                      year: currentYear[currentYearIndex]
+                    }
+                    if (kmpDpCodesData.kmpMemberList.length > 0) {
+                      let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
+                      if (kmpMemberValues.length > 0) {
+                        let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
+                        kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                      } else {
+                        kmpDpCodesData.kmpMemberList.push(kmpNameValue);
                       }
-                    })
-                  }
-                  boardDpCodesData.dpCodesData.push(boardDatapointsObject);
-                }
-              }
-            } else if (dpTypeValues[dpTypeIndex] == 'Kmp Matrix' || dpTypeValues[dpTypeIndex] == 'KMP Matrix') {
-              let kmpMemberEq = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 });
-              for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                let yearSplit = currentYear[currentYearIndex].split('-');
-                let endDateString = yearSplit[1] + "-12-31";
-                let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
-                console.log(1614709800, yearTimeStamp)
-                let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
-                for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
-                  let kmpNameValue = {
-                    label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
-                    value: mergeKmpMemberList[kmpMemberNameListIndex].id,
-                    year: currentYear[currentYearIndex]
-                  }
-                  if (kmpDpCodesData.kmpMemberList.length > 0) {
-                    let kmpMemberValues = kmpDpCodesData.kmpMemberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
-                    if (kmpMemberValues.length > 0) {
-                      let memberIndex = kmpDpCodesData.kmpMemberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                      kmpDpCodesData.kmpMemberList[memberIndex].year = kmpDpCodesData.kmpMemberList[memberIndex].year + ',' + currentYear[currentYearIndex];
                     } else {
                       kmpDpCodesData.kmpMemberList.push(kmpNameValue);
                     }
+                  }
+                }
+                for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+                  for (let kmpMemberListIndex = 0; kmpMemberListIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberListIndex++) {
+                    let kmpDatapointsObject = {
+                      dpCode: dpTypeDatapoints[datapointsIndex].code,
+                      dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                      dpName: dpTypeDatapoints[datapointsIndex].name,
+                      companyId: taskDetails.companyId.id,
+                      companyName: taskDetails.companyId.companyName,
+                      keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                      keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                      pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                      pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                      dataType: dpTypeDatapoints[datapointsIndex].dataType,
+                      fiscalYear: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].year,
+                      memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
+                      memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
+                      priority: {
+                        isDpcodeValidForCollection: isDpcodeValidForCollection,
+                        message: message
+                      },
+                      status: 'Yet to Start'
+                    }
+                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                      _.filter(currentAllKmpMatrixDetails, (object) => {
+                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label) {
+                          kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
+                        }
+                      })
+                    }
+                    kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
+                  }
+                }
+              } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
+                for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+                  if (dpTypeDatapoints[datapointsIndex].isPriority == true) {
+                    let datapointsObject = {
+                      dpCode: dpTypeDatapoints[datapointsIndex].code,
+                      dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                      dpName: dpTypeDatapoints[datapointsIndex].name,
+                      companyId: taskDetails.companyId.id,
+                      companyName: taskDetails.companyId.companyName,
+                      keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                      keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                      pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                      pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                      fiscalYear: taskDetails.year,
+                      priority: {
+                        isDpcodeValidForCollection: true,
+                        message: ""
+                      },
+                      status: 'Yet to Start'
+                    }
+                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                      _.filter(currentAllStandaloneDetails, (object) => {
+                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
+                          datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                        }
+                      })
+                    }
+                    dpCodesData.push(datapointsObject);
                   } else {
-                    kmpDpCodesData.kmpMemberList.push(kmpNameValue);
+                    let datapointsObject = {
+                      dpCode: dpTypeDatapoints[datapointsIndex].code,
+                      dpCodeId: dpTypeDatapoints[datapointsIndex].id,
+                      dpName: dpTypeDatapoints[datapointsIndex].name,
+                      companyId: taskDetails.companyId.id,
+                      companyName: taskDetails.companyId.companyName,
+                      keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
+                      keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
+                      pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
+                      pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
+                      fiscalYear: taskDetails.year,
+                      priority: {
+                        isDpcodeValidForCollection: isDpcodeValidForCollection,
+                        message: message
+                      },
+                      status: 'Yet to Start'
+                    }
+                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                      _.filter(currentAllStandaloneDetails, (object) => {
+                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
+                          datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                        }
+                      })
+                    }
+                    dpCodesData.push(datapointsObject);
                   }
                 }
               }
-              for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-                for (let kmpMemberListIndex = 0; kmpMemberListIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberListIndex++) {
-                  let kmpDatapointsObject = {
-                    dpCode: dpTypeDatapoints[datapointsIndex].code,
-                    dpCodeId: dpTypeDatapoints[datapointsIndex].id,
-                    dpName: dpTypeDatapoints[datapointsIndex].name,
-                    companyId: taskDetails.companyId.id,
-                    companyName: taskDetails.companyId.companyName,
-                    keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
-                    keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
-                    pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                    pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
-                    dataType: dpTypeDatapoints[datapointsIndex].dataType,
-                    fiscalYear: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].year,
-                    memberName: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label,
-                    memberId: kmpDpCodesData.kmpMemberList[kmpMemberListIndex].value,
-                    priority: {
-                      isDpcodeValidForCollection: isDpcodeValidForCollection,
-                      message: message
-                    },
-                    status: 'Yet to Start'
-                  }
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    _.filter(currentAllKmpMatrixDetails, (object) => {
-                      if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == kmpDpCodesData.kmpMemberList[kmpMemberListIndex].label) {
-                        kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
-                      }
-                    })
-                  }
-                  kmpDpCodesData.dpCodesData.push(kmpDatapointsObject);
-                }
-              }
-            } else if (dpTypeValues[dpTypeIndex] == 'Standalone') {
-              for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-                if (dpTypeDatapoints[datapointsIndex].isPriority == true) {
-                  let datapointsObject = {
-                    dpCode: dpTypeDatapoints[datapointsIndex].code,
-                    dpCodeId: dpTypeDatapoints[datapointsIndex].id,
-                    dpName: dpTypeDatapoints[datapointsIndex].name,
-                    companyId: taskDetails.companyId.id,
-                    companyName: taskDetails.companyId.companyName,
-                    keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
-                    keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
-                    pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                    pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
-                    fiscalYear: taskDetails.year,
-                    priority: {
-                      isDpcodeValidForCollection: true,
-                      message: ""
-                    },
-                    status: 'Yet to Start'
-                  }
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    _.filter(currentAllStandaloneDetails, (object) => {
-                      if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
-                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-                      }
-                    })
-                  }
-                  dpCodesData.push(datapointsObject);
-                } else {
-                  let datapointsObject = {
-                    dpCode: dpTypeDatapoints[datapointsIndex].code,
-                    dpCodeId: dpTypeDatapoints[datapointsIndex].id,
-                    dpName: dpTypeDatapoints[datapointsIndex].name,
-                    companyId: taskDetails.companyId.id,
-                    companyName: taskDetails.companyId.companyName,
-                    keyIssueId: dpTypeDatapoints[datapointsIndex].keyIssueId.id,
-                    keyIssue: dpTypeDatapoints[datapointsIndex].keyIssueId.keyIssueName,
-                    pillarId: dpTypeDatapoints[datapointsIndex].categoryId.id,
-                    pillar: dpTypeDatapoints[datapointsIndex].categoryId.categoryName,
-                    fiscalYear: taskDetails.year,
-                    priority: {
-                      isDpcodeValidForCollection: isDpcodeValidForCollection,
-                      message: message
-                    },
-                    status: 'Yet to Start'
-                  }
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    _.filter(currentAllStandaloneDetails, (object) => {
-                      if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
-                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-                      }
-                    })
-                  }
-                  dpCodesData.push(datapointsObject);
-                }
-              }
+            } catch (error) {
+              return next(error);    
             }
           }
           return res.status(200).send({
@@ -4618,74 +4622,78 @@ export const uploadTaxonomyDatapoints = async (req, res, next) => {
       if (headerNameList.length >= 22) {
         if (allSheetsObject.length > 0) {
           for (let objIndex = 0; objIndex < allSheetsObject.length; objIndex++) {
-            const rowObjects = allSheetsObject[objIndex];
-            if (rowObjects.length > 0) {
-              let newDpObjectToPush = {};
-              newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
-              newDpObjectToPush["createdAt"] = Date.now();
-              newDpObjectToPush["updatedAt"] = Date.now();
-              newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
-              for (let rindex = 0; rindex < rowObjects.length; rindex++) {
-                const rowObject = rowObjects[rindex];
-                for (let hIndex = 0; hIndex < headerNameList.length; hIndex++) {
-                  const headerObject = headerNameList[hIndex];
-                  if (headerObject.fieldName == "categoryId") {
-                    //find in allCategories
-                    let categoryObject = allCategories.find((rec) => rec.categoryName === rowObject[headerObject.aliasName])
-                    if (categoryObject && categoryObject.id) {
-                      newDpObjectToPush[headerObject.fieldName] = categoryObject.id;
+            try {
+              const rowObjects = allSheetsObject[objIndex];
+              if (rowObjects.length > 0) {
+                let newDpObjectToPush = {};
+                newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
+                newDpObjectToPush["createdAt"] = Date.now();
+                newDpObjectToPush["updatedAt"] = Date.now();
+                newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
+                for (let rindex = 0; rindex < rowObjects.length; rindex++) {
+                  const rowObject = rowObjects[rindex];
+                  for (let hIndex = 0; hIndex < headerNameList.length; hIndex++) {
+                    const headerObject = headerNameList[hIndex];
+                    if (headerObject.fieldName == "categoryId") {
+                      //find in allCategories
+                      let categoryObject = allCategories.find((rec) => rec.categoryName === rowObject[headerObject.aliasName])
+                      if (categoryObject && categoryObject.id) {
+                        newDpObjectToPush[headerObject.fieldName] = categoryObject.id;
+                      } else {
+                        return res.status(400).json({
+                          status: "400",
+                          message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
+                        });
+                      }
+                    } else if (headerObject.fieldName == "functionId") {
+                      //find in allFunctions
+                      let functionObject = allFunctions.find((rec) => rec.functionType === rowObject[headerObject.aliasName])
+                      if (functionObject && functionObject.id) {
+                        newDpObjectToPush[headerObject.fieldName] = functionObject.id;
+                      } else {
+                        return res.status(400).json({
+                          status: "400",
+                          message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
+                        });
+                      }
+                    } else if (headerObject.fieldName == "keyIssueId") {
+                      //find in allKeyIssues
+                      let keyIssueObject = allKeyIssues.find((rec) => rec.keyIssueName === rowObject[headerObject.aliasName])
+                      if (keyIssueObject && keyIssueObject.id) {
+                        newDpObjectToPush[headerObject.fieldName] = keyIssueObject.id;
+                      } else {
+                        return res.status(400).json({
+                          status: "400",
+                          message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
+                        });
+                      }
                     } else {
-                      return res.status(400).json({
-                        status: "400",
-                        message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
-                      });
+                      newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.aliasName];
                     }
-                  } else if (headerObject.fieldName == "functionId") {
-                    //find in allFunctions
-                    let functionObject = allFunctions.find((rec) => rec.functionType === rowObject[headerObject.aliasName])
-                    if (functionObject && functionObject.id) {
-                      newDpObjectToPush[headerObject.fieldName] = functionObject.id;
-                    } else {
-                      return res.status(400).json({
-                        status: "400",
-                        message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
-                      });
-                    }
-                  } else if (headerObject.fieldName == "keyIssueId") {
-                    //find in allKeyIssues
-                    let keyIssueObject = allKeyIssues.find((rec) => rec.keyIssueName === rowObject[headerObject.aliasName])
-                    if (keyIssueObject && keyIssueObject.id) {
-                      newDpObjectToPush[headerObject.fieldName] = keyIssueObject.id;
-                    } else {
-                      return res.status(400).json({
-                        status: "400",
-                        message: `Invalid value for ${headerObject.aliasName} as ${rowObject[headerObject.aliasName]}, please check!`
-                      });
-                    }
-                  } else {
-                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.aliasName];
                   }
+                  newDatapoints.push(newDpObjectToPush);
                 }
-                newDatapoints.push(newDpObjectToPush);
-              }
-              await Datapoints.insertMany(newDatapoints)
-                .then((err, result) => {
-                  if (err) {
-                    console.log('error', err);
-                  } else {
-                    //  console.log('result', result);
-                  }
+                await Datapoints.insertMany(newDatapoints)
+                  .then((err, result) => {
+                    if (err) {
+                      console.log('error', err);
+                    } else {
+                      //  console.log('result', result);
+                    }
+                  });
+                return res.status(200).json({
+                  status: "200",
+                  message: "Datapoint uploaded successfully!",
+                  data: newDatapoints
                 });
-              return res.status(200).json({
-                status: "200",
-                message: "Datapoint uploaded successfully!",
-                data: newDatapoints
-              });
-            } else {
-              return res.status(400).json({
-                status: "400",
-                message: "No values present in the uploaded file, please check!"
-              });
+              } else {
+                return res.status(400).json({
+                  status: "400",
+                  message: "No values present in the uploaded file, please check!"
+                });
+              }
+            } catch (error) {
+              return next(error);
             }
           }
         } else {
@@ -4821,95 +4829,99 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
           const rowObjects = allSheetsObject[objIndex];
           if (rowObjects.length > 0) {
             for (let rindex = 0; rindex < rowObjects.length; rindex++) {
-              let newDpObjectToPush = {};
-              newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
-              newDpObjectToPush["additionalDetails"] = {};
-              newDpObjectToPush["createdAt"] = Date.now();
-              newDpObjectToPush["updatedAt"] = Date.now();
-              newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
-              let newCategoryObject = {
-                clientTaxonomyId: req.body.clientTaxonomyId ? req.body.clientTaxonomyId : null,
-                categoryName: '',
-                categoryCode: '',
-                categoryDescription: '',
-                status: true
-              };
-              let newThemeObject = {
-                categoryId: '',
-                themeName: '',
-                themeCode: '',
-                themeDescription: '',
-                status: true
-              };
-              let newKeyIssueObject = {
-                themeId: '',
-                keyIssueName: '',
-                keyIssueCode: '',
-                keyIssueDescription: '',
-                status: true
-              };
-              let newFunctionObject = {
-                functionType: '',
-                status: true
-              };
-              const rowObject = rowObjects[rindex];
-              // let missingFields = []
-              for (let shIndex = 0; shIndex < staticHeaders.length; shIndex++) {
-                if (!rowObject[staticHeaders[shIndex]] || rowObject[staticHeaders[shIndex]] == '' || rowObject[staticHeaders[shIndex]] == ' ' || rowObject[staticHeaders[shIndex]] == null) {
-                  // Here i have added another IF condition for validating the IsPriority Values TRUE or FALSE Ref: ECS - 502
-                  // Commenting for the Code Review @Shiva
-                  // if (rowObject[staticHeaders[shIndex]] == false || rowObject[staticHeaders[shIndex]] == true) {
-                  //   console.log("Success");
-                  // }else{
-                  //   // return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
-                  //   missingFields.push(staticHeaders[shIndex])
-                  // }
-                  // missingFields.push(staticHeaders[shIndex])
-                  return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
+              try {
+                let newDpObjectToPush = {};
+                newDpObjectToPush["clientTaxonomyId"] = req.body.clientTaxonomyId;
+                newDpObjectToPush["additionalDetails"] = {};
+                newDpObjectToPush["createdAt"] = Date.now();
+                newDpObjectToPush["updatedAt"] = Date.now();
+                newDpObjectToPush["updatedBy"] = req.user ? req.user : null;
+                let newCategoryObject = {
+                  clientTaxonomyId: req.body.clientTaxonomyId ? req.body.clientTaxonomyId : null,
+                  categoryName: '',
+                  categoryCode: '',
+                  categoryDescription: '',
+                  status: true
+                };
+                let newThemeObject = {
+                  categoryId: '',
+                  themeName: '',
+                  themeCode: '',
+                  themeDescription: '',
+                  status: true
+                };
+                let newKeyIssueObject = {
+                  themeId: '',
+                  keyIssueName: '',
+                  keyIssueCode: '',
+                  keyIssueDescription: '',
+                  status: true
+                };
+                let newFunctionObject = {
+                  functionType: '',
+                  status: true
+                };
+                const rowObject = rowObjects[rindex];
+                // let missingFields = []
+                for (let shIndex = 0; shIndex < staticHeaders.length; shIndex++) {
+                  if (!rowObject[staticHeaders[shIndex]] || rowObject[staticHeaders[shIndex]] == '' || rowObject[staticHeaders[shIndex]] == ' ' || rowObject[staticHeaders[shIndex]] == null) {
+                    // Here i have added another IF condition for validating the IsPriority Values TRUE or FALSE Ref: ECS - 502
+                    // Commenting for the Code Review @Shiva
+                    // if (rowObject[staticHeaders[shIndex]] == false || rowObject[staticHeaders[shIndex]] == true) {
+                    //   console.log("Success");
+                    // }else{
+                    //   // return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
+                    //   missingFields.push(staticHeaders[shIndex])
+                    // }
+                    // missingFields.push(staticHeaders[shIndex])
+                    return res.status(400).json({ status: "400", message: "Found empty value for " + staticHeaders[shIndex] });
+                  }
                 }
-              }
-              for (let mlmIndex = 0; mlmIndex < masterLevelMandatoryNamesList.length; mlmIndex++) {
-                const headerObject = masterLevelMandatoryNamesList[mlmIndex];
-                if (headerObject.fieldName == "categoryName") {
-                  newDpObjectToPush.categoryId = rowObject[headerObject.name];
-                  newCategoryObject.categoryName = rowObject[headerObject.name];
-                  newThemeObject.categoryId = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "categoryCode") {
-                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
-                  newCategoryObject.categoryCode = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "themeName") {
-                  newDpObjectToPush.themeId = rowObject[headerObject.name];
-                  newThemeObject.themeName = rowObject[headerObject.name];
-                  newKeyIssueObject.themeId = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "themeCode") {
-                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
-                  newThemeObject.themeCode = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "keyIssueName") {
-                  newDpObjectToPush.keyIssueId = rowObject[headerObject.name];
-                  newKeyIssueObject.keyIssueName = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "keyIssueCode") {
-                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
-                  newKeyIssueObject.keyIssueCode = rowObject[headerObject.name];
-                } else if (headerObject.fieldName == "functionType") {
-                  newDpObjectToPush.functionId = rowObject[headerObject.name];
-                  newFunctionObject.functionType = rowObject[headerObject.name];
-                } else {
-                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                for (let mlmIndex = 0; mlmIndex < masterLevelMandatoryNamesList.length; mlmIndex++) {
+                  const headerObject = masterLevelMandatoryNamesList[mlmIndex];
+                  if (headerObject.fieldName == "categoryName") {
+                    newDpObjectToPush.categoryId = rowObject[headerObject.name];
+                    newCategoryObject.categoryName = rowObject[headerObject.name];
+                    newThemeObject.categoryId = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "categoryCode") {
+                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                    newCategoryObject.categoryCode = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "themeName") {
+                    newDpObjectToPush.themeId = rowObject[headerObject.name];
+                    newThemeObject.themeName = rowObject[headerObject.name];
+                    newKeyIssueObject.themeId = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "themeCode") {
+                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                    newThemeObject.themeCode = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "keyIssueName") {
+                    newDpObjectToPush.keyIssueId = rowObject[headerObject.name];
+                    newKeyIssueObject.keyIssueName = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "keyIssueCode") {
+                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                    newKeyIssueObject.keyIssueCode = rowObject[headerObject.name];
+                  } else if (headerObject.fieldName == "functionType") {
+                    newDpObjectToPush.functionId = rowObject[headerObject.name];
+                    newFunctionObject.functionType = rowObject[headerObject.name];
+                  } else {
+                    newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name];
+                  }
                 }
+                for (let mloIndex = 0; mloIndex < masterLevelOptionalNamesList.length; mloIndex++) {
+                  const headerObject = masterLevelOptionalNamesList[mloIndex];
+                  newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
+                }
+                for (let addFieldIndex = 0; addFieldIndex < additionalFieldNamesList.length; addFieldIndex++) {
+                  const headerObject = additionalFieldNamesList[addFieldIndex];
+                  newDpObjectToPush["additionalDetails"][headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
+                }
+                newDatapoints.push(newDpObjectToPush);
+                newCategoriesList.push(newCategoryObject);
+                newThemesList.push(newThemeObject);
+                newKeyIssuesList.push(newKeyIssueObject);
+                newFunctionsList.push(newFunctionObject);
+              } catch {
+                return next(error);
               }
-              for (let mloIndex = 0; mloIndex < masterLevelOptionalNamesList.length; mloIndex++) {
-                const headerObject = masterLevelOptionalNamesList[mloIndex];
-                newDpObjectToPush[headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
-              }
-              for (let addFieldIndex = 0; addFieldIndex < additionalFieldNamesList.length; addFieldIndex++) {
-                const headerObject = additionalFieldNamesList[addFieldIndex];
-                newDpObjectToPush["additionalDetails"][headerObject.fieldName] = rowObject[headerObject.name] ? rowObject[headerObject.name] : '';
-              }
-              newDatapoints.push(newDpObjectToPush);
-              newCategoriesList.push(newCategoryObject);
-              newThemesList.push(newThemeObject);
-              newKeyIssuesList.push(newKeyIssueObject);
-              newFunctionsList.push(newFunctionObject);
             }
             // if (missingFields.length > 0) {
             //   let uniqFields = _.uniq(missingFields);
@@ -5142,9 +5154,10 @@ export const downloadSubsetTaxmonony = async (req, res, next) => {
               obj[filteredFields[index1]["name"]] = dataPoints[index]["additionalDetails"][filteredFields[index1]["fieldName"]];
             }
           }
-          obj["Is Priority"] = "";
-          // obj["Relevant for India"] = dataPoints[index]["relevantForIndia"] ? dataPoints[index]["relevantForIndia"] : "";
+          obj["Is Priority"] = dataPoints[index]["isPriority"] ? dataPoints[index]["isPriority"] : "";
+          obj["Relevant for India"] = dataPoints[index]["relevantForIndia"] ? dataPoints[index]["relevantForIndia"] : "";
           obj["Polarity"] = dataPoints[index]["polarity"] ? dataPoints[index]["polarity"] : "";
+          obj["Is Required For JSON"] = dataPoints[index]["isRequiredForJson"] ? dataPoints[index]["isRequiredForJson"] : "";
         }
       }
       response.push(obj);

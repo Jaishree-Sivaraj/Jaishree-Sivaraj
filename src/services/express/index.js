@@ -21,13 +21,19 @@ export default (apiRoot, routes) => {
   app.use(express.json({ limit: '50mb', extended: true }));
   app.use(express.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }));
   app.use(apiRoot, routes)
-  app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({status: "500", message: err ? err : "API Failed!" });
-  })
   app.use(queryErrorHandler())
   app.use(bodyErrorHandler())
 
+  app.get('/crashed', (err, res) => {
+     res.status(500).json({message:  "Failed, some error occured!" });
+  })
 
+  app.get('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
+
+  app.use((err, req, res, next) => {
+    console.log("Error", err);
+    console.error(err);
+    res.redirect('/crashed')
+  })
   return app
 }

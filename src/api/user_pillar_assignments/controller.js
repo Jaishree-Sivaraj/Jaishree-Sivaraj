@@ -8,35 +8,39 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .catch(next)
 
 export const assignPillarToUsers = async(req, res, next) => {
-  let body = req.body;
-  if (body && body.length > 0) {
-    let pillarAssignmentList = [];
-    for (let index = 0; index < body.length; index++) {
-      let secondaryPillarList = [];
-      if (body[index].secondary.length > 0) {
-        for (let sIndex = 0; sIndex < body[index].secondary.length; sIndex++) {
-          if (body[index].secondary[sIndex].value) {
-            secondaryPillarList.push(body[index].secondary[sIndex].value);            
+  try {
+    let body = req.body;
+    if (body && body.length > 0) {
+      let pillarAssignmentList = [];
+      for (let index = 0; index < body.length; index++) {
+        let secondaryPillarList = [];
+        if (body[index].secondary.length > 0) {
+          for (let sIndex = 0; sIndex < body[index].secondary.length; sIndex++) {
+            if (body[index].secondary[sIndex].value) {
+              secondaryPillarList.push(body[index].secondary[sIndex].value);            
+            }
           }
         }
+        let objectToInsert = {
+          clientTaxonomyId: body[index].taxonomy ? body[index].taxonomy.value : null,
+          primaryPillar: body[index].primary ? body[index].primary.value : null,
+          secondaryPillar: secondaryPillarList,
+          userId: body[index].user ? body[index].user : null,
+          status: true,
+          createdBy: req.user
+        }
+        pillarAssignmentList.push(objectToInsert);
       }
-      let objectToInsert = {
-        clientTaxonomyId: body[index].taxonomy ? body[index].taxonomy.value : null,
-        primaryPillar: body[index].primary ? body[index].primary.value : null,
-        secondaryPillar: secondaryPillarList,
-        userId: body[index].user ? body[index].user : null,
-        status: true,
-        createdBy: req.user
-      }
-      pillarAssignmentList.push(objectToInsert);
+      await UserPillarAssignments.insertMany(pillarAssignmentList)
+      .then((record) => {
+        return res.status(200).json({ status: "200", message: "Pillar assignment successful!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to assign pillar!" });
+      });
     }
-    await UserPillarAssignments.insertMany(pillarAssignmentList)
-    .then((record) => {
-      return res.status(200).json({ status: "200", message: "Pillar assignment successful!" });
-    })
-    .catch((error) => {
-      return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to assign pillar!" });
-    });
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to assign the pillars to users" })
   }
 }
 
