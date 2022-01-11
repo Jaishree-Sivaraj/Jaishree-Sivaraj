@@ -14,6 +14,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
     const { offset, limit, keyIssueName } = req.query;
 
+    if (!offset || !limit) {
+      res.json({
+        status: 500,
+        message: 'Offset and Limit Missing'
+      });
+    }
+
     let [keyIssuesList, boardDpCodesData, kmpDpCodesData, dpCodesData] = [[], {
       boardMemberList: [],
       dpCodesData: []
@@ -405,7 +412,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             .populate('keyIssueId')
             .populate('categoryId');
 
-            
+
           let keyIssueListObject = _.uniqBy(dpTypeDatapoints, 'keyIssueId');
           keyIssueListObject.map(keyIssues => {
             keyIssuesList.push({
@@ -470,7 +477,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           }
         }
-        dpCodesData.sort((a,b) => (a.dpCode > b.dpCode) ? 1 : ((b.dpCode > a.dpCode) ? -1 : 0))
+        dpCodesData.sort((a, b) => (a.dpCode > b.dpCode) ? 1 : ((b.dpCode > a.dpCode) ? -1 : 0))
         return res.status(200).send({
           status: "200",
           message: "Data collection dp codes retrieved successfully!",
