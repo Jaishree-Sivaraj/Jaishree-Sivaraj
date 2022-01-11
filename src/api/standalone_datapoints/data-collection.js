@@ -439,8 +439,8 @@ function getData(body, item, user, formattedScreenShots) {
         isActive: true,
         status: true,
         additionalDetails: item['additionalDetails'],
-        uom: body.subDataType ?.body.subDataType.selectedUom['value'],
-        placeValue: body.subDataType ?.body.subDataType.selectedPlaceValue['value'],
+        uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+        placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
         createdBy: user,
         updatedAt: Date.now()
         // member name for other dptype except Standalone
