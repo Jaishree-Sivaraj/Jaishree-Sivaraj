@@ -13,7 +13,7 @@ import {
 import { schema } from './model';
 export Datapoints, { schema } from './model';
 import { datapointDetails } from './datapoint';
-import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
+// import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
 import {repDatapointDetails} from './reps-datapoint-details';
 
 const router = new Router()
