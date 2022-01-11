@@ -3,10 +3,11 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints,
-  // , getCategorywiseDatapoints,
+import {
+  create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints,
+  // getCategorywiseDatapoints,
   // datapointDetails, 
-  // repDatapointDetails, 
+  // repDatapointDetails,
   uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony
 } from './controller'
 import { schema } from './model';
@@ -122,8 +123,8 @@ router.get('/addExtraKeys/:clientTaxonomyId',
   includeExtraKeysFromJson)
 
 /**
-* @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
-* @apiName AddExtraKeysForAllDatapoints
+* @api {get} /datapoints/downloadSubsetTaxmonony/:clientTaxonomyId Add extraKeys for datapoints
+* @apiName DownloadSubsetTaxmononyDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
 * @apiParam {String} access_token user access token.
@@ -194,7 +195,7 @@ router.get('/import-from-json/categoryId',
 * @apiError 401 user access only.
 */
 router.get('/list/:taskId',
-  token({ required: true }),
+  // token({ required: true }),
   getCategorywiseDatapoints)
 
 /**
@@ -214,7 +215,7 @@ router.get('/list/:taskId',
 */
 router.post('/dpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName }),
+  body({ taskId, datapointId, memberType, memberName, year }),
   datapointDetails);
 
 /**

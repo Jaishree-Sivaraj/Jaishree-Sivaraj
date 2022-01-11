@@ -58,16 +58,21 @@ const taskAssignmentSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  isDerviedCalculationCompleted: {
+    type: Boolean,
+    default: false
   }
-}, {
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    transform: (obj, ret) => {
-      delete ret._id
+},
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (obj, ret) => {
+        delete ret._id
+      }
     }
-  }
-})
+  })
 
 taskAssignmentSchema.methods = {
   view(full) {

@@ -142,6 +142,15 @@ const boardMembersMatrixDataPointsSchema = new Schema({
   screenShot1: {
     type: String,
     default: ''
+  },
+  placeValue: {
+    type: String,
+    default: null
+  },
+  uom: {
+    type: Schema.ObjectId,
+    ref: 'MeasureUoms',
+    default: null
   }
 }, {
   timestamps: true,
@@ -192,6 +201,8 @@ boardMembersMatrixDataPointsSchema.methods = {
       hasError: this.hasError,
       memberStatus: this.memberStatus,
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
+      placeValue: this.placeValue ? this.placeValue : '',
+      uom: this.uom ? this.uom.view(full) : null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
