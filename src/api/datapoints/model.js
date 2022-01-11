@@ -128,6 +128,10 @@ const datapointsSchema = new Schema({
   },
   isRequiredForJson: {
     type: Boolean
+  },
+  measureType: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true,
@@ -174,6 +178,7 @@ datapointsSchema.methods = {
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
       status: this.status,
       isRequiredForJson: this.isRequiredForJson,
+      measureType: this.measureType ? this.measureType : '',
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
