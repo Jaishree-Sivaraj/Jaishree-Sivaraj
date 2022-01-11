@@ -184,14 +184,28 @@ export const repDatapointDetails = async (req, res, next) => {
                 inputValues.push(element);
             }
         }
+
+
+        let index, prevDatapoint, nextDatapoint;
+        const allDatapoints = await Datapoints.distinct('_id', { status: true });
+        console.log(allDatapoints[0]);
+
+        for (let i = 0; i < allDatapoints?.length; i++) {
+            if (allDatapoints[i] == req.body.datapointId) {
+                index = allDatapoints.indexOf(allDatapoints[i]);
+                console.log(index);
+                console.log(allDatapoints[i])
+                break;
+            }
+        }
+
         let s3DataScreenshot = [];
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
-        let historyYear, index, prevDatapoint, nextDatapoint;
+        let historyYear;
         switch (req.body.memberType) {
             case STANDALONE:
-                const [allStandalone, currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
-                    StandaloneDatapoints.find({ status: true, isActive: true }).limit(100).populate('datapointId'),// need to remove limit and find a solution to it.
+                const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
                     StandaloneDatapoints.find(currentQuery).sort({ updatedAt: -1 }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -203,15 +217,8 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
-                allStandalone.map(standalone => {
-                    if (standalone.datapointId.id === req.body.datapointId) {
-                        index = allStandalone.indexOf(standalone);
-                    }
-                });
-
-                prevDatapoint = Number.isFinite(index) ? allStandalone[index - 1] ? allStandalone[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allStandalone[index + 1] ? allStandalone[index + 1].datapointId.id : '' : '';
-
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1] : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1] : '' : '';
 
                 historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
@@ -325,11 +332,7 @@ export const repDatapointDetails = async (req, res, next) => {
 
                 });
             case BOARD_MATRIX:
-                const [allBoardMatrixData, currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails] = await Promise.all([
-                    BoardMembersMatrixDataPoints.find({
-                        status: true, isActive: true
-                    }).limit(100)
-                        .populate('datapointId'),// need to remove limit and find a solution to it.
+                const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
                         memberName: req.body.memberName
@@ -348,14 +351,8 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('uom')
                 ]);
 
-                let index;
-                allBoardMatrixData.map(boardmatrix => {
-                    if (boardmatrix.datapointId.id === req.body.datapointId) {
-                        index = allBoardMatrixData.indexOf(boardmatrix);
-                    }
-                });
-                prevDatapoint = Number.isFinite(index) ? allBoardMatrixData[index - 1] ? allBoardMatrixData[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allBoardMatrixData[index + 1] ? allBoardMatrixData[index + 1].datapointId.id : '' : '';
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1] : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1] : '' : '';
 
                 historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
@@ -454,17 +451,15 @@ export const repDatapointDetails = async (req, res, next) => {
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
-                        dpCodeData: datapointsObject,
+
                         prevDatapoint,
                         nextDatapoint
-                    }
+                    },
+                    dpCodeData: datapointsObject,
+
                 });
             case KMP_MATRIX:
-                const [allKmpMatrixData, currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] = await Promise.all([
-                    KmpMatrixDataPoints.find({
-                        isActive: true,
-                        status: true
-                    }).distinct('datapointId'),
+                const [currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] = await Promise.all([
                     KmpMatrixDataPoints.find({
                         ...currentQuery, memberName: req.body.memberName,
                     }).populate('createdBy')
@@ -481,13 +476,9 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
-                allKmpMatrixData.map(kmpmatrix => {
-                    if (kmpmatrix.datapointId.id === req.body.datapointId) {
-                        index = allKmpMatrixData.indexOf(kmpmatrix);
-                    }
-                });
-                prevDatapoint = Number.isFinite(index) ? allKmpMatrixData[index - 1] ? allKmpMatrixData[index - 1].datapointId.id : '' : '';
-                nextDatapoint = Number.isFinite(index) ? allKmpMatrixData[index + 1] ? allKmpMatrixData[index + 1].datapointId.id : '' : '';
+
+                prevDatapoint = Number.isFinite(index) ? allDatapoints[index - 1] ? allDatapoints[index - 1] : '' : '';
+                nextDatapoint = Number.isFinite(index) ? allDatapoints[index + 1] ? allDatapoints[index + 1] : '' : '';
 
 
                 historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
@@ -584,10 +575,11 @@ export const repDatapointDetails = async (req, res, next) => {
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
-                        dpCodeData: datapointsObject,
+
                         prevDatapoint,
                         nextDatapoint
-                    }
+                    },
+                    dpCodeData: datapointsObject,
                 });
             default:
                 return res.status(500).json({
