@@ -189,8 +189,16 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
         let index, prevDatapoint, nextDatapoint;
-        const allDatapoints = await Datapoints.distinct('_id', { status: true });
-        console.log(allDatapoints[0]);
+        const allDatapoints = await Datapoints.distinct('_id', {
+            dataCollection: 'Yes',
+            functionId: {
+                "$ne": functionId.id
+            },
+            dpType: req.body.memberType,
+            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+            categoryId: taskDetails.categoryId.id,
+            status: true
+        });
 
         for(let i=0;i<allDatapoints?.length;i++){
             if (allDatapoints[i] == req.body.datapointId) {

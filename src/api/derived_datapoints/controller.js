@@ -3083,8 +3083,23 @@ export const derivedCalculation = async ({
                   }
                 } else if (datapointDetail.finalUnit === 'Number' || datapointDetail.finalUnit === 'Number (Tonne)' || datapointDetail.finalUnit === 'Number (tCO2e)' || datapointDetail.finalUnit.trim() === 'Currency' || datapointDetail.finalUnit === 'Days' || datapointDetail.finalUnit === 'Hours' || datapointDetail.finalUnit === 'Miles' || datapointDetail.finalUnit === 'Million Hours Worked' || datapointDetail.finalUnit === 'No/Low/Medium/High/Very High' || datapointDetail.finalUnit === 'Number (tCFCe)' || datapointDetail.finalUnit === 'Number (Cubic meter)' || datapointDetail.finalUnit === 'Number (KWh)' || datapointDetail.finalUnit === 'Percentage' && datapointDetail.signal == 'No') {
                   performanceResult = foundResponse.response
-                } else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes') {
-                  performanceResult = foundResponse.response;
+                } else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes'){
+                  if (datapointDetail.code == 'EQUR013') {
+                    let responseValue = Number(foundResponse.response);
+                    if (responseValue > 0 && responseValue <= 0.39) {
+                      performanceResult = "0";
+                    }else if (responseValue >= 0.40 && responseValue <= 0.60) {
+                      performanceResult = "25";
+                    }else if (responseValue >= 0.61 && responseValue <= 0.75) {
+                      performanceResult = "50"
+                    }else if (responseValue >= 0.76 && responseValue <= 0.99) {
+                      performanceResult = "75"
+                    }else {
+                      performanceResult = "1";
+                    }
+                  } else {
+                    performanceResult = foundResponse.response;
+                  }
                 }
               }
             }
