@@ -19,7 +19,8 @@ export const create = ({ user, bodymen: { body } }, res, next) => {
   }
 }
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) =>
+export const index = ({ querymen: { query, select, cursor } }, res, next) => {
+  query.status = true;
   Taxonomies.count(query)
     .then(count => Taxonomies.find(query)
       .populate('createdBy')
@@ -30,6 +31,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     )
     .then(success(res))
     .catch(next)
+}
 
 export const show = ({ params }, res, next) =>
   Taxonomies.findById(params.id)

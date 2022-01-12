@@ -17,7 +17,7 @@ import {
   update,
   destroy,
   uploadCompanyESGFiles,
-  dataCollection
+  // dataCollection
 } from './controller'
 import {
   schema
@@ -25,7 +25,9 @@ import {
 export StandaloneDatapoints, {
   schema
 }
-from './model'
+from './model';
+
+import {dataCollection} from './data-collection';
 
 const router = new Router()
 const {
