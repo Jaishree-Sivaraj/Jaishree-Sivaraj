@@ -160,5 +160,6 @@ export const rejectRequest = async ({user, params, bodymen: { body } }, res, nex
     .catch((error) => {
       return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to send SLA extension reject notification!' });
     })
-  });
+  })
+  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to send SLA extension reject notification!' }) })
 }
