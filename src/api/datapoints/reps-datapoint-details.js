@@ -204,11 +204,11 @@ export const repDatapointDetails = async (req, res, next) => {
                 console.log(i);
                 console.log((i - 1) > 0);
                 prevDatapoint = (i - 1) > 0 ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (i + 1) < allDatapoints?.length ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
+                nextDatapoint = (i + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
                 break;
             }
         }
-       
+
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i] == datapointId) {
                 index = allDatapoints.indexOf(allDatapoints[i]);
