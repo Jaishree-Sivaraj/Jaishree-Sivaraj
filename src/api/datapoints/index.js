@@ -194,7 +194,7 @@ router.get('/import-from-json/categoryId',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.post('/list/pillarwise',
+router.get('/list/:taskId',
   token({ required: true }),
   body({ taskId, dpType, keyIssueId, memberId, memberName, page, limit }),
   getCategorywiseDatapoints)
