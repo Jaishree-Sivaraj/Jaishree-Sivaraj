@@ -14,7 +14,7 @@ import { schema } from './model';
 export Datapoints, { schema } from './model';
 import { datapointDetails } from './datapoint';
 import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
-import {repDatapointDetails} from './reps-datapoint-details';
+import { repDatapointDetails } from './reps-datapoint-details';
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
@@ -237,7 +237,7 @@ router.post('/dpDetails',
 */
 router.post('/repDpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName, role }),
+  body({ taskId, datapointId, memberType, memberName, role, year }),
   repDatapointDetails)
 
 /**
