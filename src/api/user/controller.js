@@ -349,20 +349,18 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
 
               } else {
-                res.status(400).json({
+               return  res.status(400).json({
                   status: "400",
                   message: `${roleObject.roleName} failed to create`
                 })
               }
 
             } else {
-              res.status(400).json({
+              return res.status(400).json({
                 status: "400",
                 message: 'User failed to create'
               })
             }
-
-            break;
           default:
             return res.status(400).json({
               status: "400",

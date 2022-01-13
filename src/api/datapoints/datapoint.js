@@ -189,14 +189,50 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
         let index, prevDatapoint, nextDatapoint;
-        const allDatapoints = await Datapoints.distinct('_id', { status: true });
-        console.log(allDatapoints[0]);
+        const allDatapoints = await Datapoints.distinct('_id', {
+            dataCollection: 'Yes',
+            functionId: {
+                "$ne": functionId.id
+            },
+            dpType: req.body.memberType,
+            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
+            categoryId: taskDetails.categoryId.id,
+            status: true
+        }).populate('keyIssueId').populate('categoryId');
 
         for(let i=0;i<allDatapoints?.length;i++){
             if (allDatapoints[i] == req.body.datapointId) {
                 index = allDatapoints.indexOf(allDatapoints[i]);
                 console.log(index);
                 console.log(allDatapoints[i])
+                // prevDatapoint = {
+                //     "dpCode":allDatapoints[i-1].code,
+                //     "dpCodeId":allDatapoints[i-1]._id,
+                //     "dpName":allDatapoints[i-1].name,
+                //     "companyId":taskDetails.companyId.id,
+                //     "companyName":"CEAT Limited",
+                //     "keyIssueId":allDatapoints[i-1].keyIssueId.id,
+                //     "keyIssue":allDatapoints[i-1].keyIssueId.keyIssueName,
+                //     "memberId": req.body.memberId ? req.body.memberId : '',
+                //     "memberName": req.body.memberName ? req.body.memberName : '',
+                //     "pillarId": taskDetails.categoryId.id,
+                //     "pillar":taskDetails.categoryId.categoryName,
+                //     "fiscalYear":req.body.year
+                // }
+                // nextDatapoint = {
+                //     "dpCode":allDatapoints[i+1].code,
+                //     "dpCodeId":allDatapoints[i+1]._id,
+                //     "dpName":allDatapoints[i+1].name,
+                //     "companyId":taskDetails.companyId.id,
+                //     "companyName":"CEAT Limited",
+                //     "keyIssueId":allDatapoints[i+1].keyIssueId.id,
+                //     "keyIssue":allDatapoints[i+1].keyIssueId.keyIssueName,
+                //     "memberId": req.body.memberId ? req.body.memberId : '',
+                //     "memberName": req.body.memberName ? req.body.memberName : '',
+                //     "pillarId": taskDetails.categoryId.id,
+                //     "pillar":taskDetails.categoryId.categoryName,
+                //     "fiscalYear":req.body.year
+                // }
                 break;
             }
         }
