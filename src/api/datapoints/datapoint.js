@@ -13,7 +13,7 @@ import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
-import {getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject,getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints} from './dp-detials-functions';
+import { getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
 
 export const datapointDetails = async (req, res, next) => {
     try {
@@ -158,10 +158,8 @@ export const datapointDetails = async (req, res, next) => {
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                console.log(i);
-                console.log((i - 1) > 0);
                 prevDatapoint = (i - 1) > 0 ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (i + 1) < allDatapoints?.length ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
+                nextDatapoint = (i + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
                 break;
             }
         }
