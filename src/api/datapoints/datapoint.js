@@ -50,7 +50,6 @@ const requiredFields = [
     "screenShot",
     "signal",
     "sourceName",
-    "standaloneOrMatrix",
     "isRequiredForJson",
     "textSnippet",
     "themeCode",
