@@ -93,13 +93,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     ];
 
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
-    if (keyIssueId !== '') {
-      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, keyIssueId }
-    }
-    if (memberName !== '') {
-      const datapointIDFromMemberId = await BoardMembers.findOne({ _id: memberId });
-      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, memberId, _id: datapointIDFromMemberId?.datapointId };
-    }
     // For Standalone and boardMatrix search
     let datapointCodeNameQueryId;
     if (dpName !== '' || dpCode !== '') {
@@ -243,7 +236,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssuesList,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
 
                 });
               case BOARD_MATRIX:
@@ -302,7 +295,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   repFinalSubmit: repFinalSubmit,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList?.dpCodesData?.length !== 0 ? count : 0
+                  count: datapointList?.dpCodesData?.length < 1 ? 0 : count
 
                 });
               case KMP_MATRIX:
@@ -357,7 +350,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   repFinalSubmit: repFinalSubmit,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList?.dpCodesData?.length !== 0 ? count : 0
+                  count: datapointList?.dpCodesData?.length < 1 ? 0 : count
 
                 });
               default:
@@ -406,7 +399,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssuesList,
             datapointList,
             isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-            count
+            count: datapointList?.dpCodesData?.length < 1 ? 0 : count
           });
 
         } catch (error) {
@@ -461,7 +454,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssuesList,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               case BOARD_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
@@ -536,7 +529,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               case KMP_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
@@ -615,7 +608,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               default:
                 return res.status(500).send({
@@ -663,7 +656,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssuesList,
             datapointList,
             isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-            count: datapointList.dpCodesData.length
+            count: datapointList.dpCodesData.length < 1 ? 0 : count
           });
         } catch (error) {
           return res.status(500).json({
@@ -675,7 +668,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             switch (dpType) {
               case STANDALONE:
-                errorQuery = keyIssueId === '' ? {...errorQuery,datapointId:datapointCodeNameQueryId} : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
+                errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
                   dpStatus: Correction
@@ -714,7 +707,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssuesList,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               case BOARD_MATRIX:
                 const boardMemberEq = await BoardMembers.find({
@@ -796,7 +789,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               case KMP_MATRIX:
                 const kmpMemberEq = await Kmp.find({
@@ -882,7 +875,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count: datapointList.dpCodesData.length
+                  count: datapointList.dpCodesData.length < 1 ? 0 : count
                 });
               default:
                 return res.status(500).send({
@@ -941,7 +934,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssuesList,
             datapointList,
             isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-            count: datapointList.dpCodesData.length
+            count: datapointList.dpCodesData.length < 1 ? 0 : count
           });
         } catch (error) {
           return res.status(500).json({
