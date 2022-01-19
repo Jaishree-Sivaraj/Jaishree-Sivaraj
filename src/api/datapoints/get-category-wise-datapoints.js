@@ -201,7 +201,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 .populate('keyIssueId')
                 .populate('categoryId');
             // This is to find the members in board-matrix and kmp-matrix.
-            const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0 };
+            const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0, status: true };
             switch (dpType) {
               case STANDALONE:
                 keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
@@ -252,7 +252,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
                   const boardMemberGt = await BoardMembers.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -311,7 +312,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
                   const kmpMemberGt = await Kmp.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
                   for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -484,7 +486,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
 
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -562,7 +564,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let yearSplit = currentYear[currentYearIndex].split('-');
                   let endDateString = yearSplit[1] + "-12-31";
                   let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   console.log(1614709800, yearTimeStamp)
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
@@ -717,12 +719,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               case BOARD_MATRIX:
                 const boardMemberEq = await BoardMembers.find({
                   companyId: taskDetails.companyId.id,
-                  endDateTimeStamp: 0
+                  endDateTimeStamp: 0,
+                  status: true
                 });
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex])
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
                     let boardNameValue = {
@@ -798,13 +801,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               case KMP_MATRIX:
                 const kmpMemberEq = await Kmp.find({
                   companyId: taskDetails.companyId.id,
-                  endDateTimeStamp: 0
+                  endDateTimeStamp: 0,
+                  status: true
                 });
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   let yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
                   let kmpMemberGt = await Kmp.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
