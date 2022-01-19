@@ -15,7 +15,7 @@ import { YetToStart } from '../../constants/task-status';
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
-    const { taskId, dpType, keyIssueId, memberId, memberName, categoryId, page, limit } = req.body;
+    const { taskId, dpType, keyIssueId, memberId, memberName, categoryId, page, limit, dpCode, dpName } = req.body;
 
     // Error message if page and limit is not present.
     if (!page || !limit) {
@@ -23,6 +23,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         status: 500,
         message: 'Limit and Page Missing'
       });
+    }
+
+    let generalMatchQuery = {};
+
+    if (dpCode !== '') {
+      generalMatchQuery.code = { $regex: new RegExp(dpCode, 'gi') };
+    }
+    if (dpName !== '') {
+      generalMatchQuery.name = { $regex: new RegExp(dpName, 'gi') };
     }
 
     // initialising variables.
@@ -83,12 +92,28 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       }
     ];
 
+    let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
+    if (keyIssueId !== '') {
+      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, keyIssueId }
+    }
+    if (memberName !== '') {
+      const datapointIDFromMemberId = await BoardMembers.findOne({ _id: memberId });
+      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, memberId, _id: datapointIDFromMemberId?.datapointId };
+    }
+    // For Standalone and boardMatrix search
+    let datapointCodeNameQueryId;
+    if (dpName !== '' || dpCode !== '') {
+      const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery });
+      datapointCodeNameQueryId = datapointListQuery._id
+    }
+    console.log('This datapoint Id', datapointCodeNameQueryId)
+
     // Counting datapoint just with keyIssueId filter as board-matrix and kmp-matrix dp codes will not be displayed without memberid.
-    const [dpTypeValues, count, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
+    let [dpTypeValues, count, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
       Datapoints.find(dptypeQuery).distinct('dpType'),
-      Datapoints.countDocuments(keyIssueId !== '' ? { ...dptypeQuery, keyIssueId } : dptypeQuery),
+      Datapoints.countDocuments(countQuery),
       // !Discuss pagination later. when priority dp more than 10. more than 10...
-      Datapoints.find({ ...dptypeQuery, isPriority: true })
+      Datapoints.find(keyIssueId !== '' ? { ...dptypeQuery, isPriority: true, keyIssueId, ...generalMatchQuery } : { ...dptypeQuery, isPriority: true, ...generalMatchQuery })
         .populate('keyIssueId')
         .populate('categoryId'),
       StandaloneDatapoints.find(query).populate('createdBy')
@@ -137,7 +162,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         });
 
         const totalUniquePriortyDpCollected = totalPriortyDataCollected.length / currentYear.length;
+        // If priority DP code have not been completed then show only priority Dp codes.
         if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
+          keyIssuesList = await getKeyIssues({ ...dptypeQuery, isPriority: true }, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < priorityDpCodes.length; datapointsIndex++) {
             let datapointsObject = getDpObjectDetailsForStandalone(priorityDpCodes[datapointsIndex], taskDetails);
             for (let currentYearIndex = datapointsIndex; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -152,7 +179,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).json({
             status: "200",
             message: "Data collection dp codes retrieved successfully!",
-            keyIssuesList: [],
+            keyIssuesList,
             datapointList,
             count: priorityDpCodes.length
           });
@@ -161,17 +188,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         // If all priority Dp codes are completed we get all Dp codes including Priority Dp codes.
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
-            const dpTypeDatapoints = await Datapoints.find({
-              ...dptypeQuery,
-              dpType: dpType
-            }
-            ).skip((page - 1) * limit)
-              .limit(+limit)
-              .sort({ code: 1 })
-              .populate('keyIssueId')
-              .populate('categoryId');
+
+            const dpTypeDatapoints = await
+              Datapoints.find({
+                ...dptypeQuery,
+                dpType: dpType,
+                ...generalMatchQuery
+              }
+              ).skip((page - 1) * limit)
+                .limit(+limit)
+                .sort({ code: 1 })
+                .populate('keyIssueId')
+                .populate('categoryId');
             // This is to find the members in board-matrix and kmp-matrix.
-            const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0 };
+            const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0, status: true };
             switch (dpType) {
               case STANDALONE:
                 keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
@@ -222,7 +252,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
                   const boardMemberGt = await BoardMembers.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -271,7 +302,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   repFinalSubmit: repFinalSubmit,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList?.dpCodesData?.length !== 0 ? count : 0
 
                 });
               case KMP_MATRIX:
@@ -281,7 +312,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
                   const kmpMemberGt = await Kmp.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
                   for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -318,13 +350,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                   }
                 }
+
                 return res.status(200).send({
                   status: "200",
                   message: "Data collection dp codes retrieved successfully!",
                   repFinalSubmit: repFinalSubmit,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList?.dpCodesData?.length !== 0 ? count : 0
 
                 });
               default:
@@ -335,7 +368,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             }
           } catch (error) {
             return res.status(500).json({
-              statsu: 500,
+              status: 500,
               message: error?.message ? error?.message : 'Failed to fetch all Dp code'
             })
           }
@@ -346,7 +379,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssueId,
           } : dptypeQuery;
 
-          const dpTypeDatapoints = await Datapoints.find(query)
+          const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
             .skip(((page - 1) * limit))
             .limit(+limit)
             .sort({ code: 1 })
@@ -387,10 +420,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             switch (dpType) {
               case STANDALONE:
-                errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId);
+                errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
-                  dpStatus: Error
+                  dpStatus: Error,
                 })
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -427,7 +460,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   keyIssuesList,
                   datapointList,
-                  isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted
+                  isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                  count: datapointList.dpCodesData.length
                 });
               case BOARD_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
@@ -437,7 +471,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     year: {
                       $in: currentYear
                     },
-                    dpStatus: Error
+                    dpStatus: Error,
+                    datapointId: datapointCodeNameQueryId
                   }).skip((page - 1) * limit)
                     .limit(+limit)
                     .populate([{
@@ -451,7 +486,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
 
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -501,7 +536,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList.dpCodesData.length
                 });
               case KMP_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
@@ -510,7 +545,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   year: {
                     $in: currentYear
                   },
-                  dpStatus: Error
+                  dpStatus: Error,
+                  datapointId: datapointCodeNameQueryId
                 }).skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -528,7 +564,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let yearSplit = currentYear[currentYearIndex].split('-');
                   let endDateString = yearSplit[1] + "-12-31";
                   let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   console.log(1614709800, yearTimeStamp)
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
@@ -578,7 +614,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   status: "200",
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
-                  isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted
+                  isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                  count: datapointList.dpCodesData.length
                 });
               default:
                 return res.status(500).send({
@@ -594,7 +631,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         }
         try {
-          errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId)
+          errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId)
           const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
             .skip((page - 1) * limit)
             .limit(+limit)
@@ -626,7 +663,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssuesList,
             datapointList,
             isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-            count
+            count: datapointList.dpCodesData.length
           });
         } catch (error) {
           return res.status(500).json({
@@ -638,7 +675,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             switch (dpType) {
               case STANDALONE:
-                errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId);
+                errorQuery = keyIssueId === '' ? {...errorQuery,datapointId:datapointCodeNameQueryId} : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
                   dpStatus: Correction
@@ -677,17 +714,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   keyIssuesList,
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList.dpCodesData.length
                 });
               case BOARD_MATRIX:
                 const boardMemberEq = await BoardMembers.find({
                   companyId: taskDetails.companyId.id,
-                  endDateTimeStamp: 0
+                  endDateTimeStamp: 0,
+                  status: true
                 });
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex])
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp } });
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
                     let boardNameValue = {
@@ -715,7 +753,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   year: {
                     $in: currentYear
                   },
-                  dpStatus: Correction
+                  dpStatus: Correction,
+                  datapointId: datapointCodeNameQueryId
                 }).skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -757,18 +796,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList.dpCodesData.length
                 });
               case KMP_MATRIX:
                 const kmpMemberEq = await Kmp.find({
                   companyId: taskDetails.companyId.id,
-                  endDateTimeStamp: 0
+                  endDateTimeStamp: 0,
+                  status: true
                 });
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   let yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
                   let kmpMemberGt = await Kmp.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp }
+                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    status: true
                   });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
@@ -799,7 +840,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   year: {
                     $in: currentYear
                   },
-                  dpStatus: Correction
+                  dpStatus: Correction,
+                  datapointId: datapointCodeNameQueryId
                 }).skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -840,7 +882,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   message: "Data correction dp codes retrieved successfully!",
                   datapointList,
                   isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                  count
+                  count: datapointList.dpCodesData.length
                 });
               default:
                 return res.status(500).send({
@@ -856,7 +898,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         }
         try {
-          errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId);
+          errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
 
           const errorDatapoints = await StandaloneDatapoints.find({
             ...errorQuery,
@@ -899,7 +941,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             keyIssuesList,
             datapointList,
             isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-            count
+            count: datapointList.dpCodesData.length
           });
         } catch (error) {
           return res.status(500).json({
@@ -1004,8 +1046,12 @@ async function getKeyIssues(dptypeQuery, keyIssuesList) {
   return keyIssuesList;
 }
 
-async function getQueryWithKeyIssue(errorQuery, keyIssueId) {
+async function getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId) {
   const datapointwithKeyIssue = await Datapoints.distinct('_id', { keyIssueId });
+  if (datapointCodeNameQueryId) {
+    datapointwithKeyIssue.push(datapointwithKeyIssue);
+  }
+
   errorQuery = {
     ...errorQuery,
     datapointId: { $in: datapointwithKeyIssue }

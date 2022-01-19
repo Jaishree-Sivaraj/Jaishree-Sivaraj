@@ -286,12 +286,12 @@ export const minusCalculation = async function (taskId, companyId, mergedDetails
   
     for (let i = 0; i < minusRules.length; i++) {
       let derivedResponse;
-      let boardMemberEq = await BoardMembers.find({companyId: companyId, endDateTimeStamp: 0});
+      let boardMemberEq = await BoardMembers.find({companyId: companyId, endDateTimeStamp: 0, status: true});
       for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
         let yearSplit = distinctYears[currentYearIndex].split('-');
         let endDateString = yearSplit[1]+"-12-31";
         let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-        let boardMemberGt = await BoardMembers.find({companyId: companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
+        let boardMemberGt = await BoardMembers.find({companyId: companyId, endDateTimeStamp: {$gt: yearTimeStamp}, status: true});
         console.log(1614709800 ,  yearTimeStamp);        
         let companyDetailObject = await Companies.findOne({
           _id: companyId

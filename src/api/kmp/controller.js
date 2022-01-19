@@ -13,7 +13,7 @@ export const create = async({ user, bodymen: { body } }, res, next) =>{
   //   .then(success(res, 201))
   //   .catch(next)
   try {
-    let checkKMPMember = await Kmp.find({companyId:body.companyId, MASP003: body.memberName})
+    let checkKMPMember = await Kmp.find({companyId:body.companyId, MASP003: body.memberName, status: true})
     if(checkKMPMember.length > 0){    
       return res.status(402).json({
         message: "KMPMember already exists",
@@ -137,8 +137,8 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
   try {
     let currentDate = Date.now();
     let yearTimeStamp = Math.floor(new Date(currentDate).getTime()/1000);
-    let kmpEq = await Kmp.find({companyId: params.companyId, endDateTimeStamp: 0});
-    let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
+    let kmpEq = await Kmp.find({companyId: params.companyId, endDateTimeStamp: 0, status: true});
+    let kmpGt = await Kmp.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}, status: true});
     let mergeKmpMemberList = _.concat(kmpEq,kmpGt);
     let kmpMemberlist = [];
     if(mergeKmpMemberList.length > 0){
