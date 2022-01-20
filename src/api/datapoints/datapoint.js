@@ -14,6 +14,8 @@ import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
 import { getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
+import { BoardMembers } from '../boardMembers';
+import { KmpMembers } from '../kmp';
 
 export const datapointDetails = async (req, res, next) => {
     try {
@@ -59,7 +61,7 @@ export const datapointDetails = async (req, res, next) => {
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id })
         ]);
-        let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues.measureType);
+        let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues?.measureType);
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
         let taxonomyUoms = await TaxonomyUoms.find({
             measureId: dpMeasureTypeId,
@@ -69,13 +71,13 @@ export const datapointDetails = async (req, res, next) => {
 
         let placeValues = [], uomValues = [];
 
-        if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {
+        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
                 uomValues.push({ value: element.measureUomId.id, label: element.measureUomId.uomName });
             }
         }
-        if (dpTypeValues && dpTypeValues.measureType == "Currency") {
+        if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
@@ -153,13 +155,18 @@ export const datapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId');
-        
+        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
+                // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberType, memberName) : {};
+                const prevmemberDetails = (index - 1) >= 0 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'prev', allDatapoints, i);
+                const nextmemberDetails = (index + 1) < allDatapoints?.length - 1 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'next', allDatapoints, i);
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year,
+                    prevmemberDetails?.memberId, prevmemberDetails?.memberName
+                ) : {};
+                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, nextmemberDetails?.memberId, nextmemberDetails?.memberName) : {};
                 break;
             }
         }
@@ -527,5 +534,29 @@ export const datapointDetails = async (req, res, next) => {
     }
 }
 
+
+async function getMemberIdAndMemberName(dpType, indexType, allDatapoints, i) {
+    let memberDetails, memberId;
+    switch (dpType) {
+        case BOARD_MATRIX:
+            memberDetails = indexType == 'prev' ?
+                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i - 1]._id }, { memberName: 1 }) :
+                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 });
+            memberId = await BoardMembers.findOne({ BOSP004: memberDetails.memberName }, { _id: 1 });
+            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
+
+        case KMP_MATRIX:
+            memberDetails = indexType == 'prev'
+                ? await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
+                : await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
+            memberId = await KmpMembers.findOne({ MASP003: nextmemberDetails.memberName }, { _id: 1 });
+            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
+
+        default:
+            console.log('Invalid response, please check getMemberIdAndMemberName() function params ');
+            return { memberName: '', memberId: '' };
+
+    }
+}
 
 
