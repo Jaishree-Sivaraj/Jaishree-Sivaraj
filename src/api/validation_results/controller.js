@@ -50,7 +50,7 @@ export const retrieveValidationResults = async(req, res, next) => {
   const [ keyIssuesList, resultsCount, results, memberList ] = await Promise.all([
     KeyIssues.aggregate([
       { $match: keyIssueFindQuery }, { $project: { _id: 0, value: "$_id", label: "$keyIssueName" } }]),
-    ValidationResults.count(resultQuery),
+    ValidationResults.countDocuments(resultQuery),
     ValidationResults.find(resultQuery).skip((page - 1) * limit)
     .limit(+limit)
     .sort({ dpCode: 1 }),
