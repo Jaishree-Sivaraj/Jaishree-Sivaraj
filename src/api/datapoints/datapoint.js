@@ -13,9 +13,8 @@ import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
-import { getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
-import { BoardMembers } from '../boardMembers';
-import { KmpMembers } from '../kmp';
+import { getError, getS3ScreenShot, getMemberIdAndMemberName, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
+
 
 export const datapointDetails = async (req, res, next) => {
     try {
@@ -67,7 +66,7 @@ export const datapointDetails = async (req, res, next) => {
             measureId: dpMeasureTypeId,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).sort({createdAt:1}).populate('measureUomId');
+        }).sort({ createdAt: 1 }).populate('measureUomId');
 
         let placeValues = [], uomValues = [];
 
@@ -535,28 +534,5 @@ export const datapointDetails = async (req, res, next) => {
 }
 
 
-async function getMemberIdAndMemberName(dpType, indexType, allDatapoints, i) {
-    let memberDetails, memberId;
-    switch (dpType) {
-        case BOARD_MATRIX:
-            memberDetails = indexType == 'prev' ?
-                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i - 1]._id }, { memberName: 1 }) :
-                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 });
-            memberId = await BoardMembers.findOne({ BOSP004: memberDetails.memberName }, { _id: 1 });
-            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
-
-        case KMP_MATRIX:
-            memberDetails = indexType == 'prev'
-                ? await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
-                : await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
-            memberId = await KmpMembers.findOne({ MASP003: nextmemberDetails.memberName }, { _id: 1 });
-            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
-
-        default:
-            console.log('Invalid response, please check getMemberIdAndMemberName() function params ');
-            return { memberName: '', memberId: '' };
-
-    }
-}
 
 

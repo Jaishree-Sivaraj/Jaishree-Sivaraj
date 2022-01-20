@@ -15,7 +15,7 @@ import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
 
-import { getS3ScreenShot, getSourceDetails, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot } from './dp-detials-functions';
+import { getS3ScreenShot, getSourceDetails, getMemberIdAndMemberName, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot } from './dp-detials-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -114,7 +114,7 @@ export const repDatapointDetails = async (req, res, next) => {
             measureId: dpMeasureTypeId,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).sort({createdAt: 1}).populate('measureUomId');
+        }).sort({ createdAt: 1 }).populate('measureUomId');
         let placeValues = [], uomValues = [];
 
         if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {
@@ -196,24 +196,18 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId');
+        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
+                // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                console.log(i);
-                console.log((i - 1) > 0);
-                prevDatapoint = (i - 1) > 0 ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (i + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
-                break;
-            }
-        }
-
-        for (let i = 0; i < allDatapoints?.length; i++) {
-            if (allDatapoints[i] == datapointId) {
-                index = allDatapoints.indexOf(allDatapoints[i]);
-                console.log(index);
-                console.log(allDatapoints[i])
+                const prevmemberDetails = (index - 1) >= 0 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'prev', allDatapoints, i);
+                const nextmemberDetails = (index + 1) < allDatapoints?.length - 1 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'next', allDatapoints, i);
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year,
+                    prevmemberDetails?.memberId, prevmemberDetails?.memberName
+                ) : {};
+                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, nextmemberDetails?.memberId, nextmemberDetails?.memberName) : {};
                 break;
             }
         }
