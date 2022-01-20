@@ -39,14 +39,18 @@ export const retrieveValidationResults = async(req, res, next) => {
   if (dpType != '' && dpType != 'Standalone') {
     if (memberId) {
       resultQuery.memberId = memberId;
+    } else {
+      resultQuery.memberId = '';
+      resultQuery.memberType = dpType ? dpType : '';
     }
     if (memberName) {
       resultQuery.memberName = memberName;
     }
   }
-  const [ keyIssueList, results, memberList ] = await Promise.all([
+  const [ keyIssuesList, resultsCount, results, memberList ] = await Promise.all([
     KeyIssues.aggregate([
       { $match: keyIssueFindQuery }, { $project: { _id: 0, value: "$_id", label: "$keyIssueName" } }]),
+    ValidationResults.count(resultQuery),
     ValidationResults.find(resultQuery).skip((page - 1) * limit)
     .limit(+limit)
     .sort({ dpCode: 1 }),
@@ -72,7 +76,8 @@ export const retrieveValidationResults = async(req, res, next) => {
   ]);
 
   let data = {
-    keyIssueList,
+    count: resultsCount,
+    keyIssuesList,
     datapointList : {
       dpCodesData: results,
       memberList: memberList.length > 0 ? _.uniqBy(memberList, 'memberId') : []
