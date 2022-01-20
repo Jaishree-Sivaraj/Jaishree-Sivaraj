@@ -114,7 +114,7 @@ export const repDatapointDetails = async (req, res, next) => {
             measureId: dpMeasureTypeId,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).populate('measureUomId');
+        }).sort({createdAt: 1}).populate('measureUomId');
         let placeValues = [], uomValues = [];
 
         if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {

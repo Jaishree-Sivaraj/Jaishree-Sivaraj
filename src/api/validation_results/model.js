@@ -44,7 +44,8 @@ const validationResultsSchema = new Schema({
     type: String
   },
   isValidResponse: {
-    type: String
+    type: Boolean,
+    default: false
   },
   description: {
     type: Array
