@@ -881,7 +881,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       }
                     }                
                   }  
-                } else if(validationDpType.dpType == 'Kmp Matrix'){
+                } else if(validationDpType.dpType == 'KMP Matrix' || validationDpType.dpType == 'Kmp Matrix'){
                   for (let kmpMemberIndex = 0; kmpMemberIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberIndex++) {
                     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                       try {
