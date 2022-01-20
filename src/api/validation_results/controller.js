@@ -60,7 +60,7 @@ export const retrieveValidationResults = async(req, res, next) => {
           taskId: taskId, 
           memberId: { $ne: '' }, 
           memberName: { $ne: '' }, 
-          memberType: { $ne: 'Standalone' }, 
+          memberType: dpType, 
           status: true 
         }
       },
