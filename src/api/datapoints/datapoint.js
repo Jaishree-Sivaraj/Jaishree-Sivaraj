@@ -154,12 +154,12 @@ export const datapointDetails = async (req, res, next) => {
             categoryId: taskDetails.categoryId.id,
             status: true
         }).populate('keyIssueId').populate('categoryId');
-
+        
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                prevDatapoint = (i - 1) > 0 ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (i + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberType, memberName) : {};
+                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberType, memberName) : {};
                 break;
             }
         }
