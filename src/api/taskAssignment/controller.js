@@ -156,7 +156,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
         await TaskAssignment.create(taskObject)
           .then(async (taskAssignment) => {
             if (taskAssignment.year) {
-              let years = taskAssignment.year.split(',');
+              let years = taskAssignment.year.split(', ');
               if (years.length > 1) {
                 for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
                   await CompaniesTasks.create({
