@@ -8,7 +8,7 @@ export const ACCESS_TO_LOGIN = 'ACCESS_TO_LOGIN';
 export function EmailContent(data, type) {
     switch (type) {
         case LINK_TO_ONBOARD_USER:
-            subject = 'ESGDS InfinData Platform Access form';
+            subject = 'ESGDS InfinData Platform Access form.';
             return {
                 subject,
                 message: ` Hi,<br/><br/>
@@ -20,7 +20,7 @@ export function EmailContent(data, type) {
             };
 
         case FAILED_TO_ONBOARD:
-            subject = 'ESGDS InfinData Platform Access Denied';
+            subject = 'ESGDS InfinData Platform Access Denied.';
             return {
                 subject,
                 message: `Hi,<br/><br/>
@@ -28,20 +28,20 @@ export function EmailContent(data, type) {
                 Kindly see the comments from the system admin – <br><br>
                 ${data}<br><br>
                 Kindly contact us at support@esgds.ai in case you need any support.<br><br>
-                Thanks<br/>
+                Regards,<br>
                 ESGDS Support Team.`
             };
 
         case ACCESS_TO_LOGIN:
-            subject = 'ESGDS InfinData Platform access enabled';
+            subject = 'ESGDS InfinData Platform access enabled.';
             return {
                 subject,
                 message: `Hi,<br/><br/>
-                ou now have access to the ESGDS InfinData Platform.<br/>
-                Kindly use your email id & the password set by you at the time of registration / on-boarding.<br/><br/><br/>
+                You now have access to the ESGDS InfinData Platform.<br/>
+                Kindly use your email id & the password set by you at the time of registration / on-boarding.<br/><br/>
                 Platform URL - <a href="${data}">${data}</a><br><br>       
                 Kindly contact us at support@esgds.ai in case you need any support. <br/><br/>                  
-                Thanks<br/>
+                Regards,<br>
                 ESGDS Support Team.`
             }
 
@@ -52,7 +52,7 @@ export function EmailContent(data, type) {
 
 // Email to send OTP
 export function otpEmail(name, otpNumber) {
-     subject = `OTP for ESGDS InfinData Platform`;
+     subject = `OTP for ESGDS InfinData Platform.`;
     return {
         subject,
         message: `Hi ${name},<br/><br/>
@@ -68,10 +68,10 @@ export function otpEmail(name, otpNumber) {
 
 // Email for Password reset.
 export function passwordResetEmail(name, link) {
-    subject = 'Reset Password for ESGDS InfinData Platform';
+    subject = 'Reset Password for ESGDS InfinData Platform.';
     return {
         subject,
-        message: ` Hi ${name},<br><br>
+        message: `Hi ${name},<br><br>
                 You requested for a password reset for your ESGDS InfinData Platform.<br><br>
                 Click on the link below or copy and paste it into a browser to reset password
                 This link will expire in 30 mins. <br><br>
@@ -87,7 +87,7 @@ export function passwordResetEmail(name, link) {
 
 // Email to Client and Company Representative after QA work on the error raised by the reps.
 export function RepEmail(companyName, pillar, year) {
-    subject = ` ${companyName} data updated on ESGDS InfinData Platform`;
+    subject = `${companyName} data updated on ESGDS InfinData Platform.`;
     return {
         subject,
         message: `Hi,<br><br>
@@ -101,7 +101,7 @@ export function RepEmail(companyName, pillar, year) {
 }
 
 export function getEmailForJsonGeneration(companyName, year) {
-    subject = `${companyName} data uploaded on ESGDS InfinData Platform`;
+    subject = `${companyName} data uploaded on ESGDS InfinData Platform.`;
     return {
         subject,
         message: `Hi,<br><br>
