@@ -62,7 +62,7 @@ let requiredFields = [
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
-        const { taskId, datapointId, memberType, memberName, role, year } = req.body;
+        const { taskId, datapointId, memberType, memberName, role, year, memberId } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -114,7 +114,7 @@ export const repDatapointDetails = async (req, res, next) => {
             measureId: dpMeasureTypeId,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).populate('measureUomId');
+        }).sort({ createdAt: 1 }).populate('measureUomId');
         let placeValues = [], uomValues = [];
 
         if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {
@@ -196,24 +196,14 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId');
+        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
+                // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                console.log(i);
-                console.log((i - 1) > 0);
-                prevDatapoint = (i - 1) > 0 ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberType, memberName) : {};
-                nextDatapoint = (i + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberType, memberName) : {};
-                break;
-            }
-        }
-
-        for (let i = 0; i < allDatapoints?.length; i++) {
-            if (allDatapoints[i] == datapointId) {
-                index = allDatapoints.indexOf(allDatapoints[i]);
-                console.log(index);
-                console.log(allDatapoints[i])
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName) : {};
+                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
                 break;
             }
         }

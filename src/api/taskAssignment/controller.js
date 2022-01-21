@@ -20,6 +20,7 @@ import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { Notifications } from '../notifications'
 import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
+import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
@@ -156,7 +157,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
         await TaskAssignment.create(taskObject)
           .then(async (taskAssignment) => {
             if (taskAssignment.year) {
-              let years = taskAssignment.year.split(',');
+              let years = taskAssignment.year.split(', ');
               if (years.length > 1) {
                 for (let yearIndex = 0; yearIndex < years.length; yearIndex++) {
                   await CompaniesTasks.create({
@@ -1879,6 +1880,12 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 
 export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next) => {
   try {
+    if (body.role == Analyst && !body.skipValidation) {
+      let failedCount = await ValidationResults.countDocuments({taskId: body.taskId, isValidResponse: false, status: true});
+      if (failedCount > 0) {
+        return res.status(400).json({ status: "400", message: "Few validations are still failed, Please check before submitting or skip the validation!" })
+      }
+    }
     // get all task details.
     const taskDetails = await TaskAssignment.findOne({
       _id: body.taskId

@@ -291,7 +291,7 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
         dpCodeId: allDatapoints?._id,
         dpName: allDatapoints?.name,
         companyId: taskDetails?.companyId.id,
-        companyName: taskDetails?.companyId.name,
+        companyName: taskDetails?.companyId.companyName,
         keyIssueId: allDatapoints?.keyIssueId.id,
         keyIssue: allDatapoints?.keyIssueId.keyIssueName,
         memberId: memberId ? memberId : '',
