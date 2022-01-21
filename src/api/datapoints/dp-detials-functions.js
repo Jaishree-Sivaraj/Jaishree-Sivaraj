@@ -4,11 +4,6 @@ import { CompanySources } from '../companySources';
 import { QA } from '../../constants/roles';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { YetToStart, Completed } from '../../constants/task-status';
-import { BoardMembers } from '../boardMembers';
-import { KmpMembers } from '../kmp';
-import { BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
-import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
-import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 
 const requiredFields = [
     "categoryCode",
@@ -304,28 +299,5 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
         pillarId: taskDetails?.categoryId.id,
         pillar: taskDetails?.categoryId.categoryName,
         fiscalYear: year
-    }
-}
-export async function getMemberIdAndMemberName(dpType, indexType, allDatapoints, i) {
-    let memberDetails, memberId;
-    switch (dpType) {
-        case BOARD_MATRIX:
-            memberDetails = indexType == 'prev' ?
-                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i - 1]._id }, { memberName: 1 }) :
-                await BoardMembersMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 });
-            memberId = await BoardMembers.findOne({ BOSP004: memberDetails.memberName }, { _id: 1 });
-            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
-
-        case KMP_MATRIX:
-            memberDetails = indexType == 'prev'
-                ? await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
-                : await KmpMatrixDataPoints.findOne({ datapointId: allDatapoints[i + 1]._id }, { memberName: 1 })
-            memberId = await KmpMembers.findOne({ MASP003: nextmemberDetails.memberName }, { _id: 1 });
-            return { memberName: memberDetails?.memberName, memberId: memberId?._id };
-
-        default:
-            console.log('Invalid response, please check getMemberIdAndMemberName() function params ');
-            return { memberName: '', memberId: '' };
-
     }
 }

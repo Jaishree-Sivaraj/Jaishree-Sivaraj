@@ -13,12 +13,12 @@ import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
-import { getError, getS3ScreenShot, getMemberIdAndMemberName, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
+import { getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-detials-functions';
 
 
 export const datapointDetails = async (req, res, next) => {
     try {
-        const { year, taskId, datapointId, memberType, memberName } = req.body;
+        const { year, taskId, datapointId, memberType, memberName, memberId } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -160,12 +160,8 @@ export const datapointDetails = async (req, res, next) => {
             if (allDatapoints[i].id == datapointId) {
                 // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                const prevmemberDetails = (index - 1) >= 0 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'prev', allDatapoints, i);
-                const nextmemberDetails = (index + 1) < allDatapoints?.length - 1 && await getMemberIdAndMemberName(allDatapoints[i]?.dpType, 'next', allDatapoints, i);
-                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year,
-                    prevmemberDetails?.memberId, prevmemberDetails?.memberName
-                ) : {};
-                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, nextmemberDetails?.memberId, nextmemberDetails?.memberName) : {};
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName) : {};
+                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
                 break;
             }
         }
