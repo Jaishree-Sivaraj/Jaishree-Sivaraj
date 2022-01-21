@@ -6,3 +6,5 @@ export const Completed = 'Completed';
 export const CollectionCompleted = 'Collection Completed';
 export const YetToStart = 'Yet to Start';
 export const Pending = 'Pending';
+export const Correction = 'Correction';
+export const Error = 'Error';

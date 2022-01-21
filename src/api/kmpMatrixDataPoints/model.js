@@ -142,6 +142,15 @@ const kmpMatrixDataPointsSchema = new Schema({
   screenShot1: {
     type: String,
     default: ''
+  },
+  placeValue: {
+    type: String,
+    default: null
+  },
+  uom: {
+    type: Schema.ObjectId,
+    ref: 'MeasureUoms',
+    default: null
   }
 }, {
   timestamps: true,
@@ -193,6 +202,8 @@ kmpMatrixDataPointsSchema.methods = {
       internalFileSource: this.internalFileSource,
       additionalComments: this.additionalComments,
       additionalDetails: this.additionalDetails ? this.additionalDetails : {},
+      placeValue: this.placeValue ? this.placeValue : '',
+      uom: this.uom ? this.uom.view(full) : null,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
