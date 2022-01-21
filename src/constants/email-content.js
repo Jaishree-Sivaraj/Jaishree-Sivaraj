@@ -11,7 +11,7 @@ export function EmailContent(data, type) {
             subject = 'ESGDS InfinData Platform Access form.';
             return {
                 subject,
-                message: ` Hi,<br/><br/>
+                message: `Hi,<br/><br/>
                 Click on the link below or copy and paste it into a browser to submit your onboarding details:<br></br>
                 <a href="${data}">${data}</a><br><br>
                 Kindly contact us at support@esgds.ai in case you need any support.<br/><br/>          
