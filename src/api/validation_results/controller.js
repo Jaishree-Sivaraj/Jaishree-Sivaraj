@@ -80,7 +80,7 @@ export const retrieveValidationResults = async(req, res, next) => {
     keyIssuesList,
     datapointList : {
       dpCodesData: results,
-      memberList: memberList.length > 0 ? _.uniqBy(memberList, 'memberId') : []
+      memberList: memberList.length > 0 ? _.uniqBy(memberList, 'value') : []
     }
   }
   return res.status(200).json({ status: "200", data, message: "Retrieved validation results successfully!" });
