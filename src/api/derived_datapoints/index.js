@@ -4,11 +4,11 @@ import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
 import {
   create, index, show, update, destroy, calculateForACompany, jsonGeneration, updateForAudr002
-  // , derivedCalculation
+  , derivedCalculation
 } from './controller'
 import { schema } from './model';
 export DerivedDatapoints, { schema } from './model';
-import { derivedCalculation } from './derived-calculation-function';
+// import { derivedCalculation } from './derived-calculation-function';
 const router = new Router()
 const { companyId, datapointId, response, performanceResult, memberName, activeStatus, dpStatus, year, fiscalYearEndDate, lastModifiedDate, additionalDetails, status } = schema.tree
 const taskId = "";
