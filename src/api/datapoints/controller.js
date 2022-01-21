@@ -1277,7 +1277,7 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -1683,7 +1683,7 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -1873,7 +1873,7 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -2275,7 +2275,7 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -2466,7 +2466,7 @@ export const datapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -2868,7 +2868,7 @@ export const datapointDetails = async (req, res, next) => {
             }
           }
         }
-        if (object.sourceName !== "" || object.sourceName !== " ") {
+        if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
           // let companySourceId = object.sourceName.split(';')[1];
           // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
           let companySourceId = object.sourceName.split(';')[1];
@@ -3137,7 +3137,7 @@ export const repDatapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1]
             // // let sourceValues = await CompanySources.findOne({ name: object.sourceName, companyId: object.companyId });
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
@@ -3320,7 +3320,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
+            if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
               // let companySourceId = object.sourceName.split(';')[1];
               // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
@@ -3471,7 +3471,7 @@ export const repDatapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -3647,7 +3647,7 @@ export const repDatapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // // let sourceValues = await CompanySources.findOne({ companyName: object.companyId, name: object.sourceName });
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
@@ -3830,7 +3830,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
+            if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
               // let companySourceId = object.sourceName.split(';')[1];
               // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
@@ -3975,7 +3975,7 @@ export const repDatapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
             let companySourceId = object.sourceName.split(';')[1];
@@ -4152,7 +4152,7 @@ export const repDatapointDetails = async (req, res, next) => {
               s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
           }
-          if (object.sourceName !== "" || object.sourceName !== " ") {
+          if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
             // let companySourceId = object.sourceName.split(';')[1];
             // // let sourceValues = await CompanySources.findOne({ companyId: object.companyId, name: object.sourceName });
             // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
@@ -4337,7 +4337,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
+            if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
               // let companySourceId = object.sourceName.split(';')[1];
               // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
@@ -4482,7 +4482,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
               }
             }
-            if (object.sourceName !== "" || object.sourceName !== " ") {
+            if (object.sourceName !== "" && object.sourceName !== " " && object.sourceName !== undefined ) {
               // let companySourceId = object.sourceName.split(';')[1];
               // let sourceValues = await CompanySources.findOne({ _id: companySourceId ? companySourceId : null });
               let companySourceId = object.sourceName.split(';')[1];
