@@ -5,7 +5,7 @@ import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
 import {
   create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints,
-  getCategorywiseDatapoints,
+  // getCategorywiseDatapoints,
   // datapointDetails, 
   // repDatapointDetails,
   uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony
@@ -13,7 +13,7 @@ import {
 import { schema } from './model';
 export Datapoints, { schema } from './model';
 import { datapointDetails } from './datapoint';
-// import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
+import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
 import {repDatapointDetails} from './reps-datapoint-details';
 
 const router = new Router()
