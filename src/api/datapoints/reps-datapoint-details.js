@@ -49,7 +49,6 @@ let requiredFields = [
     "screenShot",
     "signal",
     "sourceName",
-    "standaloneOrMatrix",
     "isRequiredForJson",
     "textSnippet",
     "themeCode",
