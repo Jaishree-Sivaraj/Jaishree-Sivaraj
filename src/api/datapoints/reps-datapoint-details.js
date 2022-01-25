@@ -76,7 +76,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true })
+            PlaceValues.find({ status: true }).sort({orderNumber: 1})
         ]);
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
