@@ -191,7 +191,7 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
 
 }
 
-export function getDisplayFields(displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
+export function getDisplayFields(dpTypeValues, displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
     displayFields.map(display => {
         if (!requiredFields.includes(display?.fieldName)) {
             let optionValues = [], optionVal = '', currentValue;
