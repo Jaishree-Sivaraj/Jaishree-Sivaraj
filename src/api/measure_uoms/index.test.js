@@ -20,12 +20,13 @@ beforeEach(async () => {
 test('POST /measure_uoms 201 (user)', async () => {
   const { status, body } = await request(app())
     .post(`${apiRoot}`)
-    .send({ access_token: userSession, measureId: 'test', uomName: 'test', description: 'test', status: 'test' })
+    .send({ access_token: userSession, measureId: 'test', uomName: 'test', description: 'test', orderNumber: 'test', status: 'test' })
   expect(status).toBe(201)
   expect(typeof body).toEqual('object')
   expect(body.measureId).toEqual('test')
   expect(body.uomName).toEqual('test')
   expect(body.description).toEqual('test')
+  expect(body.orderNumber).toEqual('test')
   expect(body.status).toEqual('test')
   expect(typeof body.createdBy).toEqual('object')
 })
@@ -78,13 +79,14 @@ test('GET /measure_uoms/:id 404 (user)', async () => {
 test('PUT /measure_uoms/:id 200 (user)', async () => {
   const { status, body } = await request(app())
     .put(`${apiRoot}/${measureUoms.id}`)
-    .send({ access_token: userSession, measureId: 'test', uomName: 'test', description: 'test', status: 'test' })
+    .send({ access_token: userSession, measureId: 'test', uomName: 'test', description: 'test', orderNumber: 'test', status: 'test' })
   expect(status).toBe(200)
   expect(typeof body).toEqual('object')
   expect(body.id).toEqual(measureUoms.id)
   expect(body.measureId).toEqual('test')
   expect(body.uomName).toEqual('test')
   expect(body.description).toEqual('test')
+  expect(body.orderNumber).toEqual('test')
   expect(body.status).toEqual('test')
   expect(typeof body.createdBy).toEqual('object')
 })
@@ -92,7 +94,7 @@ test('PUT /measure_uoms/:id 200 (user)', async () => {
 test('PUT /measure_uoms/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .put(`${apiRoot}/${measureUoms.id}`)
-    .send({ access_token: anotherSession, measureId: 'test', uomName: 'test', description: 'test', status: 'test' })
+    .send({ access_token: anotherSession, measureId: 'test', uomName: 'test', description: 'test', orderNumber: 'test', status: 'test' })
   expect(status).toBe(401)
 })
 
@@ -105,7 +107,7 @@ test('PUT /measure_uoms/:id 401', async () => {
 test('PUT /measure_uoms/:id 404 (user)', async () => {
   const { status } = await request(app())
     .put(apiRoot + '/123456789098765432123456')
-    .send({ access_token: anotherSession, measureId: 'test', uomName: 'test', description: 'test', status: 'test' })
+    .send({ access_token: anotherSession, measureId: 'test', uomName: 'test', description: 'test', orderNumber: 'test', status: 'test' })
   expect(status).toBe(404)
 })
 
