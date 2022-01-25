@@ -7,7 +7,7 @@ import { schema } from './model'
 export PlaceValues, { schema } from './model'
 
 const router = new Router()
-const { name, status } = schema.tree
+const { name, orderNumber, status } = schema.tree
 
 /**
  * @api {post} /place_values Create place values
@@ -16,6 +16,7 @@ const { name, status } = schema.tree
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam name Place values's name.
+ * @apiParam orderNumber Place values's orderNumber.
  * @apiSuccess {Object} placeValues Place values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Place values not found.
@@ -23,7 +24,7 @@ const { name, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ name }),
+  body({ name, orderNumber }),
   create)
 
 /**
@@ -65,6 +66,7 @@ router.get('/:id',
  * @apiPermission user
  * @apiParam {String} access_token user access token.
  * @apiParam name Place values's name.
+ * @apiParam orderNumber Place values's orderNumber.
  * @apiParam status Place values's status.
  * @apiSuccess {Object} placeValues Place values's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -73,7 +75,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, status }),
+  body({ name, orderNumber, status }),
   update)
 
 /**
