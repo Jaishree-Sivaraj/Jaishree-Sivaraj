@@ -384,9 +384,12 @@ export const calculateForACompany = async ({
           const year = distinctYears[yearIndex];
           // for (let companyIndex = 0; companyIndex < nicCompaniesList.length; companyIndex++) {
           let dataPointsIdList = await Datapoints.find({
-            standaloneOrMatrix: {
-              "$ne": "Matrix"
+            dpType: {
+              $nin: ["Board Matrix", "KMP Matrix"]
             },
+            // standaloneOrMatrix: {
+            //   "$ne": "Matrix"
+            // },
             percentile: {
               "$ne": "Yes"
             },
@@ -474,11 +477,16 @@ export const calculateForACompany = async ({
                   }
                 }
               } else {
-                if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                if (polarityRuleDetails.datapointId.dpType != "Board Matrix" && polarityRuleDetails.datapointId.dpType != "KMP Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
                   return res.status(500).json({
                     message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
                   });
                 }
+                // if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                //   return res.status(500).json({
+                //     message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+                //   });
+                // }
               }
             } else {
               let foundResponseIndex = allDerivedDatapoints.findIndex((object, index) => object.companyId == companyId && object.datapointId == polarityRuleDetails.datapointId.id && object.year == year);
@@ -514,11 +522,16 @@ export const calculateForACompany = async ({
                   }
                 }
               } else {
-                if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                if (polarityRuleDetails.datapointId.dpType != "Board Matrix" && polarityRuleDetails.datapointId.dpType != "KMP Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
                   return res.status(500).json({
                     message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
                   });
                 }
+                // if (polarityRuleDetails.datapointId.standaloneOrMatrix != "Matrix" && polarityRuleDetails.datapointId.percentile != "Yes") {
+                //   return res.status(500).json({
+                //     message: `No value present for ${polarityRuleDetails.datapointId.code} of ${year} year`
+                //   });
+                // }
               }
             }
             if (polarityRulesList.length - 1 == polarityRulesIndex) {
@@ -2964,7 +2977,7 @@ export const derivedCalculation = async ({
           });
       }
     }
-    let dataPointsIdList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, standaloneOrMatrix: { "$ne": "Matrix" }, percentile: { "$ne": "Yes" }, status: true });
+    let dataPointsIdList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, dpType: { "$ne": ["Board Matrix", "KMP Matrix"] }, percentile: { "$ne": "Yes" }, status: true });
     let percentileDataPointsList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, percentile: "Yes", status: true });
     let allStandaloneDatapoints = await StandaloneDatapoints.find({
       "companyId": taskDetailsObject.companyId.id,

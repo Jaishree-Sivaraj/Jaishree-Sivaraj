@@ -1,4 +1,4 @@
 'use strict';
 
 export const SELECT = 'Select';
-export const STATIC = 'STATIC';
+export const STATIC = 'Static';

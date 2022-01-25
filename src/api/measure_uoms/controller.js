@@ -10,6 +10,7 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   MeasureUoms.count(query)
     .then(count => MeasureUoms.find(query, select, cursor)
+      .populate('measureId')
       .populate('createdBy')
       .then((measureUoms) => ({
         count,
@@ -21,6 +22,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const show = ({ params }, res, next) =>
   MeasureUoms.findById(params.id)
+    .populate('measureId')
     .populate('createdBy')
     .then(notFound(res))
     .then((measureUoms) => measureUoms ? measureUoms.view() : null)
@@ -29,6 +31,7 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   MeasureUoms.findById(params.id)
+    .populate('measureId')
     .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))

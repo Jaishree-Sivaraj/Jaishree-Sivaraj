@@ -4,6 +4,9 @@ const placeValuesSchema = new Schema({
   name: {
     type: String
   },
+  orderNumber: {
+    type: Number
+  },
   status: {
     type: Boolean,
     default: true
@@ -22,6 +25,7 @@ placeValuesSchema.methods = {
       // simple view
       id: this.id,
       name: this.name,
+      orderNumber: this.orderNumber,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
