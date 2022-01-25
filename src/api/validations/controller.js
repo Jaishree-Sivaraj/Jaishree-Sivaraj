@@ -13,6 +13,7 @@ import * as fs from 'fs'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp'
 import { Ztables } from "../ztables";
+import { ValidationResults } from '../validation_results'
 
 
 export const create = ({ user, bodymen: { body } }, res, next) =>{
@@ -392,12 +393,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
               keyIssuesList.push(keyIssues);
             }   
-            let boardMemberEq = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
+            let boardMemberEq = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0, status: true});
             for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
               let yearSplit = distinctYears[currentYearIndex].split('-');
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-              let boardMemberGt = await BoardMembers.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
+              let boardMemberGt = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: {$gt: yearTimeStamp}, status: true});
               console.log(1614709800 ,  yearTimeStamp)
               let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
     
@@ -420,12 +421,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 }
               }
             }  
-            let kmpMemberEq = await Kmp.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0});
+            let kmpMemberEq = await Kmp.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0, status: true});
             for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
               let yearSplit = distinctYears[currentYearIndex].split('-');
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-              let kmpMemberGt = await Kmp.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}});
+              let kmpMemberGt = await Kmp.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}, status: true});
               console.log(1614709800 ,  yearTimeStamp)
               let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
       
@@ -456,8 +457,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                       try {
                         let dpCodeObject = {
+                          taskId: params.taskId ? params.taskId : '',
                           dpCode: validationRules[validationIndex].datapointId.code,
                           dpCodeId: validationRules[validationIndex].datapointId.id,
+                          datapointId: validationRules[validationIndex].datapointId.id,
                           companyId: taskDetailsObject.companyId.id,
                           companyName: taskDetailsObject.companyId.companyName,
                           keyIssueId: validationRules[validationIndex].datapointId.keyIssueId.id,
@@ -466,8 +469,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                           pillar: taskDetailsObject.categoryId.categoryName,
                           dataType: validationRules[validationIndex].datapointId.dataType,
                           fiscalYear: distinctYears[yearIndex],
+                          year: distinctYears[yearIndex],
                           memberName: boardDpCodesData.boardMemberList[boardMemberIndex].label,
                           memberId: boardDpCodesData.boardMemberList[boardMemberIndex].value,
+                          memberType: validationRules[validationIndex].datapointId.dpType,
                           isValidResponse: true,
                           description: []
                         }
@@ -876,25 +881,29 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       }
                     }                
                   }  
-                } else if(validationDpType.dpType == 'Kmp Matrix'){
+                } else if(validationDpType.dpType == 'KMP Matrix' || validationDpType.dpType == 'Kmp Matrix'){
                   for (let kmpMemberIndex = 0; kmpMemberIndex < kmpDpCodesData.kmpMemberList.length; kmpMemberIndex++) {
                     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                       try {
                         let dpCodeObject = {
-                        dpCode: validationRules[validationIndex].datapointId.code,
-                        dpCodeId: validationRules[validationIndex].datapointId.id,
-                        companyId: taskDetailsObject.companyId.id,
-                        companyName: taskDetailsObject.companyId.companyName,
-                        keyIssueId: validationRules[validationIndex].datapointId.keyIssueId.id,
-                        keyIssue: validationRules[validationIndex].datapointId.keyIssueId.keyIssueName,
-                        pillarId: taskDetailsObject.categoryId.id,
-                        pillar: taskDetailsObject.categoryId.categoryName,
-                        dataType: validationRules[validationIndex].datapointId.dataType,
-                        fiscalYear: distinctYears[yearIndex],
-                        memberName: kmpDpCodesData.kmpMemberList[kmpMemberIndex].label,
-                        memberId: kmpDpCodesData.kmpMemberList[kmpMemberIndex].value,
-                        isValidResponse: true,
-                        description: []
+                          taskId: params.taskId ? params.taskId : '',
+                          dpCode: validationRules[validationIndex].datapointId.code,
+                          dpCodeId: validationRules[validationIndex].datapointId.id,
+                          datapointId: validationRules[validationIndex].datapointId.id,
+                          companyId: taskDetailsObject.companyId.id,
+                          companyName: taskDetailsObject.companyId.companyName,
+                          keyIssueId: validationRules[validationIndex].datapointId.keyIssueId.id,
+                          keyIssue: validationRules[validationIndex].datapointId.keyIssueId.keyIssueName,
+                          pillarId: taskDetailsObject.categoryId.id,
+                          pillar: taskDetailsObject.categoryId.categoryName,
+                          dataType: validationRules[validationIndex].datapointId.dataType,
+                          fiscalYear: distinctYears[yearIndex],
+                          year: distinctYears[yearIndex],
+                          memberName: kmpDpCodesData.kmpMemberList[kmpMemberIndex].label,
+                          memberId: kmpDpCodesData.kmpMemberList[kmpMemberIndex].value,
+                          memberType: validationRules[validationIndex].datapointId.dpType,
+                          isValidResponse: true,
+                          description: []
                         }
                         if(validationRules[validationIndex].validationType == "3"){            
                           let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == previousYear);
@@ -1296,8 +1305,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 } else if (validationDpType.dpType == 'Standalone') {
                   for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                     let dpCodeObject = {
+                      taskId: params.taskId ? params.taskId : '',
                       dpCode: validationRules[validationIndex].datapointId.code,
                       dpCodeId: validationRules[validationIndex].datapointId.id,
+                      datapointId: validationRules[validationIndex].datapointId.id,
                       companyId: taskDetailsObject.companyId.id,
                       companyName: taskDetailsObject.companyId.companyName,
                       keyIssueId: validationRules[validationIndex].datapointId.keyIssueId.id,
@@ -1306,8 +1317,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       pillar: taskDetailsObject.categoryId.categoryName,
                       dataType: validationRules[validationIndex].datapointId.dataType,
                       fiscalYear: distinctYears[yearIndex],
+                      year: distinctYears[yearIndex],
                       isValidResponse: true,
-                      description: []
+                      description: [],
+                      memberId: '',
+                      memberName: '',
+                      memberType: validationRules[validationIndex].datapointId.dpType
                     }
                     if (validationRules[validationIndex].validationType == "3") {
                       let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == previousYear);
@@ -1715,6 +1730,14 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
               console.log(validationResponse, boardDpCodesData)
               if(validationIndex == validationRules.length - 1){
+                let allDpCodeData = _.concat(validationResponse, boardDpCodesData.dpCodesData, kmpDpCodesData.dpCodesData); 
+                await ValidationResults.deleteMany({ taskId: params.taskId ? params.taskId : "" });
+                await ValidationResults.insertMany(allDpCodeData).then(() => {
+                  console.log("Data inserted successfully!");
+                }).catch((err) => {
+                  console.log('err', err);
+                  return res.status(500).json({ status: "500", message: err.message ? err.message : "Failed to perform validation!" });
+                });
                 return res.status(200).send({
                   status: "200",
                   message: "Data correction dp codes retrieved successfully!",
@@ -1750,8 +1773,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
               try {
                 let dpCodeObject = {
+                taskId: params.taskId ? params.taskId : "",
                 dpCode: validationRules[validationIndex].datapointId.code,
                 dpCodeId: validationRules[validationIndex].datapointId.id,
+                datapointId: validationRules[validationIndex].datapointId.id,
                 companyId: taskDetailsObject.companyId.id,
                 companyName: taskDetailsObject.companyId.companyName,
                 keyIssueId: validationRules[validationIndex].datapointId.keyIssueId.id,
@@ -1760,6 +1785,8 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 pillar: taskDetailsObject.categoryId.categoryName,
                 dataType: validationRules[validationIndex].datapointId.dataType,
                 fiscalYear: distinctYears[yearIndex],
+                year: distinctYears[yearIndex],
+                memberType: validationRules[validationIndex].datapointId.dpType,
                 isValidResponse: true,
                 description: []
                 }
@@ -2168,12 +2195,20 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
             }
             if(validationIndex == validationRules.length - 1){
+              await ValidationResults.deleteMany({ taskId: params.taskId ? params.taskId : "" });
+              await ValidationResults.insertMany(validationResponse).then(() => {
+                console.log("Data inserted successfully!");
+              }).catch((err) => {
+                console.log('err', err);
+                return res.status(500).json({ status: "500", message: err.message ? err.message : "Failed to perform validation!" });
+              });
               return res.status(200).send({
                 status: "200",
                 message: "Data correction dp codes retrieved successfully!",
                 keyIssuesList: keyIssuesList,
-                standalone: {
-                  dpCodesData: validationResponse
+                datapointsList: {
+                  dpCodesData: validationResponse,
+                  membersList: []
                 }
               })
             }

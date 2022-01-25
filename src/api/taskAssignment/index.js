@@ -9,7 +9,7 @@ export TaskAssignment, { schema } from './model'
 const router = new Router()
 const { companyId, taskNumber, categoryId, groupId, batchId, analystSLA, qaSLA, taskStatus, analystId, qaId, status } = schema.tree;
 const batchid = '', role = '', company = [], analyst = {}, qa = {}, analystSla = '', qaSla = '', pillar = {}, year = [], taskDetails = {}, taskId = '', flag = '', clientTaxonomyId = "", companyTaskReports = [], controversyTaskReports = [];
-const isfromNotification = false;
+const isfromNotification = false, skipValidation = true;
 /**
  * @api {post} /taskAssignments Create task assignment
  * @apiName CreateTaskAssignment
@@ -272,7 +272,8 @@ router.put('/updateCompanyStatus',
     year,
     clientTaxonomyId,
     taskId,
-    role
+    role,
+    skipValidation
   }),
   updateCompanyStatus)
 /**
