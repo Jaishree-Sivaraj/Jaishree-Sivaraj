@@ -8,7 +8,7 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { ErrorDetails } from '../errorDetails'
 import { CompanySources } from '../companySources'
-import { TaxonomyUoms } from '../taxonomy_uoms'
+import { MeasureUoms } from '../measure_uoms'
 import { Measures } from '../measures'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
@@ -109,17 +109,17 @@ export const repDatapointDetails = async (req, res, next) => {
         ]);
         let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues.measureType);
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
-        let taxonomyUoms = await TaxonomyUoms.find({
+        let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
-            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).sort({ createdAt: 1 }).populate('measureUomId');
+        }).sort({ orderNumber: 1 });
+
         let placeValues = [], uomValues = [];
 
-        if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {
+        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
-                uomValues.push({ value: element.measureUomId.id, label: element.measureUomId.uomName });
+                uomValues.push({ value: element.id, label: element.uomName });
             }
         }
         if (dpTypeValues && dpTypeValues.measureType == "Currency") {
