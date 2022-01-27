@@ -204,6 +204,21 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                             label: option
                         })
                     }) : optionValues = [];
+                    if (isEmpty) {
+                        currentValue = display.inputType == 'Select' ?
+                            { value: '', label: '' } : '';
+                    } else {
+                        optionVal = display.inputValues;
+                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
+                        if (standaloneDetail) {
+                            currentValue = display.inputType == SELECT ?
+                                {
+                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
+                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                                }
+                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        }
+                    }
 
                     break;
                 case STATIC:
