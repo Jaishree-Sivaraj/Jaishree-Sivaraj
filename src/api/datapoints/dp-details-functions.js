@@ -191,7 +191,7 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
 
 }
 
-export function getDisplayFields(displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
+export function getDisplayFields(dpTypeValues, displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
     displayFields.map(display => {
         if (!requiredFields.includes(display?.fieldName)) {
             let optionValues = [], optionVal = '', currentValue;
@@ -204,6 +204,21 @@ export function getDisplayFields(displayFields, currentDpType, currentYear, curr
                             label: option
                         })
                     }) : optionValues = [];
+                    if (isEmpty) {
+                        currentValue = display.inputType == 'Select' ?
+                            { value: '', label: '' } : '';
+                    } else {
+                        optionVal = display.inputValues;
+                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
+                        if (standaloneDetail) {
+                            currentValue = display.inputType == SELECT ?
+                                {
+                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
+                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                                }
+                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        }
+                    }
 
                     break;
                 case STATIC:

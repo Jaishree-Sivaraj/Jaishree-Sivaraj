@@ -8,14 +8,13 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { ErrorDetails } from '../errorDetails'
 import { CompanySources } from '../companySources'
-import { TaxonomyUoms } from '../taxonomy_uoms'
 import { Measures } from '../measures'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
 
-import { getS3ScreenShot, getSourceDetails, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot } from './dp-detials-functions';
+import { getS3ScreenShot, getSourceDetails, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot } from './dp-details-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -76,7 +75,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true })
+            PlaceValues.find({ status: true }).sort({orderNumber: 1})
         ]);
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
@@ -109,17 +108,17 @@ export const repDatapointDetails = async (req, res, next) => {
         ]);
         let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues.measureType);
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
-        let taxonomyUoms = await TaxonomyUoms.find({
+        let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
-            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).sort({ createdAt: 1 }).populate('measureUomId');
+        }).sort({ orderNumber: 1 });
+
         let placeValues = [], uomValues = [];
 
-        if (dpTypeValues && dpTypeValues.measureType != null && dpTypeValues.measureType != "NA" && dpTypeValues.measureType) {
+        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
-                uomValues.push({ value: element.measureUomId.id, label: element.measureUomId.uomName });
+                uomValues.push({ value: element.id, label: element.uomName });
             }
         }
         if (dpTypeValues && dpTypeValues.measureType == "Currency") {
@@ -262,7 +261,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, false, uomValues, placeValues);
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject = getDisplayFields(displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false);
                             currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear[currentYearIndex]);
                             datapointsObject.status = object.correctionStatus;
                             datapointsObject.currentData.push(currentDatapointsObject);
@@ -289,7 +288,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                     }
                                 }
                                 currentDatapointsObject = currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
-                                currentDatapointsObject = getDisplayFields(displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
+                                currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                                 datapointsObject.status = object.correctionStatus;
                                 datapointsObject.currentData.push(currentDatapointsObject);
                             }
@@ -320,7 +319,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                 standaradDeviation: object.standaradDeviation,
                                 average: object.average
                             };
-                            historicalDatapointsObject = getDisplayFields(displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
+                            historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
                     }
@@ -394,7 +393,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, false, uomValues, placeValues);
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0].errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject = getDisplayFields(displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false)
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false)
                             currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear[currentYearIndex])
                             datapointsObject.status = object.correctionStatus;
                             datapointsObject.currentData.push(currentDatapointsObject);
@@ -418,7 +417,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
-                                currentDatapointsObject = getDisplayFields(displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true)
+                                currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true)
 
                                 datapointsObject.currentData.push(currentDatapointsObject);
                                 datapointsObject.status = object.correctionStatus;
@@ -444,7 +443,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         if (object.year == historyYear[hitoryYearIndex].year
                             && object.memberName == memberName) {
                             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
-                            historicalDatapointsObject = getDisplayFields(displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
+                            historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
 
@@ -515,7 +514,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, false, uomValues, placeValues);
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0].errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject = getDisplayFields(displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false);
                             currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear[currentYearIndex])
                             datapointsObject.status = object.correctionStatus;
                             datapointsObject.currentData.push(currentDatapointsObject);
@@ -539,7 +538,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
-                                currentDatapointsObject = getDisplayFields(displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
+                                currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                                 datapointsObject.status = object.correctionStatus;
                                 datapointsObject.currentData.push(currentDatapointsObject);
@@ -563,7 +562,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             ]);
                             if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
                                 historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
-                                historicalDatapointsObject = getDisplayFields(displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
+                                historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
                                 datapointsObject.historicalData.push(historicalDatapointsObject);
                             }
                         }

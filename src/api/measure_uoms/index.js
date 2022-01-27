@@ -7,7 +7,7 @@ import { schema } from './model'
 export MeasureUoms, { schema } from './model'
 
 const router = new Router()
-const { measureId, uomName, description, status } = schema.tree
+const { measureId, uomName, description, orderNumber, status } = schema.tree
 
 /**
  * @api {post} /measure_uoms Create measure uoms
@@ -18,6 +18,7 @@ const { measureId, uomName, description, status } = schema.tree
  * @apiParam measureId Measure uoms's measureId.
  * @apiParam uomName Measure uoms's uomName.
  * @apiParam description Measure uoms's description.
+ * @apiParam orderNumber Measure uoms's orderNumber.
  * @apiParam status Measure uoms's status.
  * @apiSuccess {Object} measureUoms Measure uoms's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -26,7 +27,7 @@ const { measureId, uomName, description, status } = schema.tree
  */
 router.post('/',
   token({ required: true }),
-  body({ measureId, uomName, description }),
+  body({ measureId, uomName, description, orderNumber }),
   create)
 
 /**
@@ -70,6 +71,7 @@ router.get('/:id',
  * @apiParam measureId Measure uoms's measureId.
  * @apiParam uomName Measure uoms's uomName.
  * @apiParam description Measure uoms's description.
+ * @apiParam orderNumber Measure uoms's orderNumber.
  * @apiParam status Measure uoms's status.
  * @apiSuccess {Object} measureUoms Measure uoms's data.
  * @apiError {Object} 400 Some parameters may contain invalid values.
@@ -78,7 +80,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ measureId, uomName, description, status }),
+  body({ measureId, uomName, description, orderNumber, status }),
   update)
 
 /**
