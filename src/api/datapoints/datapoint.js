@@ -8,7 +8,7 @@ import { Functions } from '../functions';
 import { TaskAssignment } from '../taskAssignment';
 import { ErrorDetails } from '../errorDetails';
 import { CompanySources } from '../companySources';
-import { TaxonomyUoms } from '../taxonomy_uoms';
+import { MeasureUoms } from '../measure_uoms';
 import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
@@ -33,7 +33,7 @@ export const datapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true })
+            PlaceValues.find({ status: true }).sort({orderNumber: 1})
         ]);
         const currentYear = year.split(',');
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields').lean();
@@ -62,18 +62,17 @@ export const datapointDetails = async (req, res, next) => {
         ]);
         let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues?.measureType);
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
-        let taxonomyUoms = await TaxonomyUoms.find({
+        let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
-            clientTaxonomyId: taskDetails.companyId.clientTaxonomyId.id,
             status: true
-        }).sort({ createdAt: 1 }).populate('measureUomId');
+        }).sort({ orderNumber: 1 });
 
         let placeValues = [], uomValues = [];
 
         if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
-                uomValues.push({ value: element.measureUomId.id, label: element.measureUomId.uomName });
+                uomValues.push({ value: element.id, label: element.uomName });
             }
         }
         if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
@@ -227,7 +226,7 @@ export const datapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
 
                         } else if (condition && !object.hasCorrection && !object.hasError) {
-                            currentDatapointsObject = currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = {
                                 ...currentDatapointsObject,
                                 comments: []

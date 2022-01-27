@@ -11,10 +11,10 @@ import {
   uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony
 } from './controller'
 import { schema } from './model';
-export Datapoints, { schema } from './model';
 import { datapointDetails } from './datapoint';
 import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
 import {repDatapointDetails} from './reps-datapoint-details';
+export Datapoints, { schema } from './model'; 
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree

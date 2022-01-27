@@ -7,9 +7,8 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
-import { Pending, CollectionCompleted, CorrectionPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
+import { YetToStart, Pending, CollectionCompleted, CorrectionPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
-import { YetToStart } from '../../constants/task-status';
 
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
@@ -382,7 +381,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
             let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
-            for (let currentYearIndex = datapointsIndex; currentYearIndex < currentYear.length; currentYearIndex++) {
+            for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
               _.filter(currentAllStandaloneDetails, (object) => {
                 if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
                   datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
