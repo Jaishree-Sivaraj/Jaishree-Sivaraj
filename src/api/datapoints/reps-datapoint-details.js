@@ -8,7 +8,6 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { ErrorDetails } from '../errorDetails'
 import { CompanySources } from '../companySources'
-import { MeasureUoms } from '../measure_uoms'
 import { Measures } from '../measures'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
