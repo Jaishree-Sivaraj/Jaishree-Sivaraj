@@ -314,7 +314,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             getSourceDetails(object, sourceDetails)
                         ]);
                         if (object.year == historyYear[historicalYearIndex].year) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year)
+                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year, uomValues, placeValues)
                             historicalDatapointsObject = {
                                 ...historicalDatapointsObject,
                                 standaradDeviation: object.standaradDeviation,
@@ -443,7 +443,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         ]);
                         if (object.year == historyYear[hitoryYearIndex].year
                             && object.memberName == memberName) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
+                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
@@ -562,7 +562,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                 getSourceDetails(object, sourceDetails)
                             ]);
                             if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
-                                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
+                                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                                 historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
                                 datapointsObject.historicalData.push(historicalDatapointsObject);
                             }
