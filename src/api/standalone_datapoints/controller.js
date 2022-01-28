@@ -1395,6 +1395,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1437,6 +1439,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1492,6 +1496,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1535,6 +1541,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1591,6 +1599,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1634,6 +1644,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1713,6 +1725,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1761,6 +1775,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1826,6 +1842,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1875,6 +1893,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1938,6 +1958,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1987,6 +2009,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],

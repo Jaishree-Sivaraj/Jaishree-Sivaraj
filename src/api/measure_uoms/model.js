@@ -17,6 +17,9 @@ const measureUomsSchema = new Schema({
   description: {
     type: String
   },
+  orderNumber: {
+    type: Number
+  },
   status: {
     type: Boolean,
     default: true
@@ -38,6 +41,7 @@ measureUomsSchema.methods = {
       measureId: this.measureId ? this.measureId.view(full) : null,
       uomName: this.uomName,
       description: this.description,
+      orderNumber: this.orderNumber,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
