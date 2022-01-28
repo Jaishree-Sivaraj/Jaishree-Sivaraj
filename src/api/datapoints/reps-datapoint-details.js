@@ -9,6 +9,7 @@ import { TaskAssignment } from '../taskAssignment'
 import { ErrorDetails } from '../errorDetails'
 import { CompanySources } from '../companySources'
 import { Measures } from '../measures'
+import { MeasureUoms } from '../measure_uoms'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
