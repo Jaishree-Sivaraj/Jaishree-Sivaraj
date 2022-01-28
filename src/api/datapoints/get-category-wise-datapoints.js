@@ -10,6 +10,7 @@ import { Kmp } from '../kmp';
 import { Pending, CollectionCompleted, CorrectionPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
+import { CompanyRepresentative , ClientRepresentative } from '../../constants/roles'
 
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
@@ -371,6 +372,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             ...dptypeQuery,
             keyIssueId,
           } : dptypeQuery;
+
+          // Filtering with the Reps
+          if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+            query.isRequiredForReps = true
+          }
 
           const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
             .skip(((page - 1) * limit))
