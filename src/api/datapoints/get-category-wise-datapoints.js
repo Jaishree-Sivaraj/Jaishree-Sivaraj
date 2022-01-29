@@ -181,6 +181,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         // If all priority Dp codes are completed we get all Dp codes including Priority Dp codes.
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
+            if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+              dptypeQuery.isRequiredForReps = true
+            }
 
             const dpTypeDatapoints = await
               Datapoints.find({
