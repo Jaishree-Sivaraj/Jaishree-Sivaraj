@@ -16,7 +16,15 @@ const clientTaxonomySchema = new Schema({
   status: {
     type: Boolean,
     default: true
-  }
+  },
+  hasChildDp: {
+    type: Boolean,
+    default: false
+  },
+  childFields: {
+    type: Array,
+    default: []
+  },
 }, {
   timestamps: true,
   toJSON: {
@@ -26,7 +34,7 @@ const clientTaxonomySchema = new Schema({
 })
 
 clientTaxonomySchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
