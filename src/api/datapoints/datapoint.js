@@ -152,6 +152,7 @@ export const datapointDetails = async (req, res, next) => {
             dpType: memberType,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
+            isPriority: true,
             status: true
         }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
 
@@ -160,7 +161,7 @@ export const datapointDetails = async (req, res, next) => {
                 // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
                 prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName) : {};
-                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
+                nextDatapoint = (index + 1) <= allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
                 break;
             }
         }

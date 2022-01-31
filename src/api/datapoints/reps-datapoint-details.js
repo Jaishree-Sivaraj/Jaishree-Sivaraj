@@ -82,7 +82,7 @@ export const repDatapointDetails = async (req, res, next) => {
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
         const [currentYear, displayFields] = [
             year?.split(','),
-            clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy')
+            clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
@@ -107,8 +107,8 @@ export const repDatapointDetails = async (req, res, next) => {
 
             CompanySources.find({ companyId: taskDetails.companyId.id })
         ]);
-        let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues.measureType);
-        let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
+        let dpMeasureType = measureTypes?.filter(obj => obj?.measureName == dpTypeValues?.measureType);
+        let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
             status: true
@@ -122,7 +122,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 uomValues.push({ value: element.id, label: element.uomName });
             }
         }
-        if (dpTypeValues && dpTypeValues.measureType == "Currency") {
+        if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
@@ -130,7 +130,7 @@ export const repDatapointDetails = async (req, res, next) => {
         }
 
         let sourceTypeDetails = [];
-        companySourceDetails.map(company => {
+        companySourceDetails?.map(company => {
             sourceTypeDetails.push({
                 sourceName: company.name,
                 value: company.id,
@@ -141,7 +141,7 @@ export const repDatapointDetails = async (req, res, next) => {
 
         const [currentQuery, historyQuery] = [{
             taskId: taskId,
-            companyId: taskDetails.companyId.id,
+            companyId: taskDetails?.companyId?.id,
             datapointId: datapointId,
             year: {
                 $in: currentYear
@@ -149,7 +149,7 @@ export const repDatapointDetails = async (req, res, next) => {
             isActive: true,
             status: true
         }, {
-            companyId: taskDetails.companyId.id,
+            companyId: taskDetails?.companyId?.id,
             datapointId: datapointId,
             year: {
                 $nin: currentYear
@@ -159,23 +159,23 @@ export const repDatapointDetails = async (req, res, next) => {
         }];
 
         let datapointsObject = {
-            dpCode: dpTypeValues.code,
-            dpCodeId: dpTypeValues.id,
-            dpName: dpTypeValues.name,
-            companyId: taskDetails.companyId.id,
-            companyName: taskDetails.companyId.companyName,
-            keyIssueId: dpTypeValues.keyIssueId.id,
-            keyIssue: dpTypeValues.keyIssueId.keyIssueName,
-            pillarId: dpTypeValues.categoryId.id,
-            pillar: dpTypeValues.categoryId.categoryName,
-            fiscalYear: taskDetails.year,
+            dpCode: dpTypeValues?.code,
+            dpCodeId: dpTypeValues?.id,
+            dpName: dpTypeValues?.name,
+            companyId: taskDetails?.companyId?.id,
+            companyName: taskDetails?.companyId?.companyName,
+            keyIssueId: dpTypeValues?.keyIssueId?.id,
+            keyIssue: dpTypeValues?.keyIssueId?.keyIssueName,
+            pillarId: dpTypeValues?.categoryId?.id,
+            pillar: dpTypeValues?.categoryId?.categoryName,
+            fiscalYear: taskDetails?.year,
             comments: [],
             currentData: [],
             historicalData: [],
         }
         let inputValues = [];
-        if (dpTypeValues.dataType == 'Select') {
-            let inputs = dpTypeValues.unit.split('/');
+        if (dpTypeValues?.dataType == 'Select') {
+            let inputs = dpTypeValues?.unit.split('/');
             for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
                 const element = {
                     label: inputs[inputIndex],
@@ -202,7 +202,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
                 prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName) : {};
-                nextDatapoint = (index + 1) < allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
+                nextDatapoint = (index + 1) <= allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
                 break;
             }
         }
@@ -314,7 +314,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             getSourceDetails(object, sourceDetails)
                         ]);
                         if (object.year == historyYear[historicalYearIndex].year) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year)
+                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year, uomValues, placeValues)
                             historicalDatapointsObject = {
                                 ...historicalDatapointsObject,
                                 standaradDeviation: object.standaradDeviation,
@@ -443,7 +443,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         ]);
                         if (object.year == historyYear[hitoryYearIndex].year
                             && object.memberName == memberName) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
+                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
@@ -562,7 +562,7 @@ export const repDatapointDetails = async (req, res, next) => {
                                 getSourceDetails(object, sourceDetails)
                             ]);
                             if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
-                                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year);
+                                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                                 historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
                                 datapointsObject.historicalData.push(historicalDatapointsObject);
                             }
