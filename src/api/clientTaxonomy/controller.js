@@ -3,6 +3,8 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { ClientTaxonomy } from '.'
 import { Categories } from '../categories'
 import { Companies } from '../companies'
+import { CompaniesTasks } from '../companies_tasks'
+// import { TaskAssignment } from '../taskAssignment'
 
 export const create = async({ user, bodymen: { body } }, res, next) =>{
     ClientTaxonomy.create({ ...body, createdBy: user })
@@ -44,7 +46,7 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
 
 export const index = async({ querymen: { query, select, cursor } }, res, next) =>{
   query.status = true;
-  await ClientTaxonomy.count(query)
+  await ClientTaxonomy.countDocuments(query)
     .then(count => ClientTaxonomy.find(query)
       .populate('createdBy')
       .then(async(clientTaxonomies) => {
@@ -52,7 +54,11 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
         for (let index = 0; index < clientTaxonomies.length; index++) {
           const item = clientTaxonomies[index];
           let pillarList = [];
-          let categoriesList = await Categories.find({ clientTaxonomyId: item.id, status: true });
+          const [ categoriesList, companiesList ] = await Promise.all([
+            Categories.find({ clientTaxonomyId: item.id, status: true }),
+            Companies.find({ clientTaxonomyId: item.id, status: true })
+          ]);
+          // let categoriesList = await Categories.find({ clientTaxonomyId: item.id, status: true });
           if (categoriesList.length > 0) {
             for (let cIndex = 0; cIndex < categoriesList.length; cIndex++) {
               const cItem = categoriesList[cIndex];
@@ -61,12 +67,20 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
           }
 
           let nicCodeList = [];
-          let companiesList = await Companies.find({ clientTaxonomyId: item.id, status: true });
+          // let companiesList = await Companies.find({ clientTaxonomyId: item.id, status: true });
           if (companiesList.length > 0) {
             for (let cmpIndex = 0; cmpIndex < companiesList.length; cmpIndex++) {
               const cmpItem = companiesList[cmpIndex];
               nicCodeList.push({ value: cmpItem.nic, label: cmpItem.nic });
             }
+          }
+
+          let years = [];
+          // let yearsList = await TaskAssignment.find({ companyId: { $in: companiesList }, taskStatus: {$in: [ "Verification Completed", "Completed" ] }, status: true }).distinct('year');
+          // let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
+          let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
+          for (let yListIndex = 0; yListIndex < yearsList.length; yListIndex++) {
+            years.push({ value: yearsList[yListIndex], label: yearsList[yListIndex] });
           }
           
           let nicList = _.uniqBy(nicCodeList, 'value');
@@ -76,18 +90,20 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
             headers: item.fields ? item.fields : [],
             nicList: nicList ? nicList : [],
             pillarList: pillarList ? pillarList : [],
+            yearsList: yearsList ? yearsList : [],
             status: item.status
           }
           responseList.push(objectToPush);          
         }
-        return ({
+        return res.status(200).json({
+          status: "200",
           message: "Client taxonomy retrieved successfully",
           count,
           rows: responseList
         })
       })
     )
-    .then(success(res))
+    // .then(success(res))
     .catch(next)
 }
 
