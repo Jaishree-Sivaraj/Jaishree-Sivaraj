@@ -45,6 +45,13 @@ import projectedValues from './projected_values'
 import jsonFiles from './json_files'
 import dashboards from './dashboards'
 import onboardingEmails from './onboarding-emails'
+import conversiontypes from './conversiontypes'
+import measures from './measures'
+import measureUoms from './measure_uoms'
+import uomConversions from './uom_conversions'
+import taxonomyUoms from './taxonomy_uoms'
+import placeValues from './place_values'
+import validationResults from './validation_results'
 
 const router = new Router()
 
@@ -117,6 +124,13 @@ router.use('/projected_values', projectedValues)
 router.use('/json_files', jsonFiles)
 router.use('/dashboards', dashboards)
 router.use('/onboarding-emails', onboardingEmails)
+router.use('/conversiontypes', conversiontypes)
+router.use('/measures', measures)
+router.use('/measure_uoms', measureUoms)
+router.use('/uom_conversions', uomConversions)
+router.use('/taxonomy_uoms', taxonomyUoms)
+router.use('/place_values', placeValues)
+router.use('/validation_results', validationResults)
 router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router

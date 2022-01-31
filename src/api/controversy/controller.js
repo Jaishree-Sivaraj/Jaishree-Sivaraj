@@ -130,7 +130,10 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
           let screenshotItem = body.screenShot[screenshotIndex];
           let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
           let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + body.controversyFiscalYear + '_' + screenshotIndex + '.' + screenShotFileType;
-          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+          .catch((error) => {
+            return res.status(400).json({ status: "400", message: "Failed to upload the screenshot" })
+          });
           formattedScreenShots.push(screenshotFileName);
         }
       }
@@ -645,7 +648,6 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               "screenShot",
               "signal",
               "sourceName",
-              "standaloneOrMatrix",
               "isRequiredForJson",
               "textSnippet",
               "themeCode",
@@ -796,7 +798,6 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               "screenShot",
               "signal",
               "sourceName",
-              "standaloneOrMatrix",
               "isRequiredForJson",
               "textSnippet",
               "themeCode",

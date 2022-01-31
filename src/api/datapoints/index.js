@@ -3,21 +3,22 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints,
-  getCategorywiseDatapoints,
-  datapointDetails, 
-  repDatapointDetails, 
+import {
+  create, index, show, update, destroy, includePolarityFromJson, includeCategoryIdsFromJson, includeExtraKeysFromJson, uploadTaxonomyDatapoints,
+  // getCategorywiseDatapoints,
+  // datapointDetails, 
+  // repDatapointDetails,
   uploadNewTaxonomyDatapoints, downloadSubsetTaxmonony
 } from './controller'
 import { schema } from './model';
-export Datapoints, { schema } from './model';
-// import { datapointDetails } from './datapoint';
-// import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
-// import {repDatapointDetails} from './reps-datapoint-details';
+import { datapointDetails } from './datapoint';
+import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
+import {repDatapointDetails} from './reps-datapoint-details';
+export Datapoints, { schema } from './model'; 
 
 const router = new Router()
-const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
-const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '';
+const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
+const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '';
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -122,8 +123,8 @@ router.get('/addExtraKeys/:clientTaxonomyId',
   includeExtraKeysFromJson)
 
 /**
-* @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
-* @apiName AddExtraKeysForAllDatapoints
+* @api {get} /datapoints/downloadSubsetTaxmonony/:clientTaxonomyId Add extraKeys for datapoints
+* @apiName DownloadSubsetTaxmononyDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
 * @apiParam {String} access_token user access token.
@@ -183,7 +184,7 @@ router.get('/import-from-json/categoryId',
   includeCategoryIdsFromJson)
 
 /**
-* @api {get} /datapoints/list/:taskId Get categorywise datapoints
+* @api {post} /datapoints/list/pillarwise Get categorywise datapoints
 * @apiName GetCategorywiseDatapoints
 * @apiGroup Datapoints
 * @apiPermission user
@@ -193,8 +194,9 @@ router.get('/import-from-json/categoryId',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.get('/list/:taskId',
+router.post('/list/pillarwise',
   token({ required: true }),
+  body({ taskId, dpType, keyIssueId, memberId, memberName, page, limit }),
   getCategorywiseDatapoints)
 
 /**
@@ -214,7 +216,7 @@ router.get('/list/:taskId',
 */
 router.post('/dpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName }),
+  body({ taskId, datapointId, memberType, memberName, year }),
   datapointDetails);
 
 /**
@@ -235,7 +237,7 @@ router.post('/dpDetails',
 */
 router.post('/repDpDetails',
   token({ required: true }),
-  body({ taskId, datapointId, memberType, memberName, role }),
+  body({ taskId, datapointId, memberType, memberName, role, year }),
   repDatapointDetails)
 
 /**

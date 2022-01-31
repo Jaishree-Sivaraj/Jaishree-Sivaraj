@@ -1378,12 +1378,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }        
           await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
-            { $set: {isActive: false} });       
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1393,6 +1395,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1418,12 +1422,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
-            { $set: {isActive: false} });   
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           dpHistoricalDpDetails.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1433,6 +1439,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1471,12 +1479,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot details!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           } 
           await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
-            { $set: {isActive: false} });
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1486,6 +1496,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1512,12 +1524,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot details!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           } 
           await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
-            { $set: {isActive: false} });
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           historyYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1527,6 +1541,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1566,12 +1582,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot details!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
-            { $set: {isActive: false} });  
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           currentYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1581,6 +1599,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1607,12 +1627,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot details!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true,status: true },
-            { $set: {isActive: false} });  
+            { $set: {isActive: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
           historyYearData.push({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1622,6 +1644,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1665,7 +1689,8 @@ export const dataCollection = async ({
           if(item.isAccepted == true) {
                      
             await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+            { $set: { isErrorAccepted: true, isErrorRejected: false} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the error details!" }) });
           } else{
             let comments = {            
             author: 'Analyst',
@@ -1674,7 +1699,8 @@ export const dataCollection = async ({
             content: item.rejectComment
             }
             await ErrorDetails.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} })
+            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update error details!" }) });
           }
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -1682,12 +1708,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }           
           await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-          { $set: {isActive: false} }); 
+          { $set: {isActive: false} })
+          .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update data!" }) });
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1697,6 +1725,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1728,12 +1758,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await StandaloneDatapoints.updateMany({ companyId: body.companyId, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-            { $set: {isActive: false} }); 
+            { $set: {isActive: false} })
+            .catch(error => { return res.status(400).json({ message: error.message ? error.message : "Failed to update data!" }) });
           await StandaloneDatapoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1743,6 +1775,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1772,7 +1806,8 @@ export const dataCollection = async ({
           if(item.isAccepted == true) {
          
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+            { $set: { isErrorAccepted: true, isErrorRejected: false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update error details!" }) });
           } else{
             let comments = {            
             author: 'Analyst',
@@ -1781,7 +1816,8 @@ export const dataCollection = async ({
             content: item.rejectComment
             }
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update error details!" }) });
           }
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -1789,12 +1825,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-            { $set: {isActive: false} });   
+            { $set: {isActive: false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update data!" }) });
           await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1804,6 +1842,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1836,12 +1876,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await BoardMembersMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive: true, status: true },
-            { $set: {isActive: false} });   
+            { $set: {isActive: false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update the data!" }) });
           await BoardMembersMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1851,6 +1893,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1878,7 +1922,8 @@ export const dataCollection = async ({
           if(item.isAccepted == true) {
          
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: { isErrorAccepted: true, isErrorRejected: false} });
+            { $set: { isErrorAccepted: true, isErrorRejected: false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update error details!" }) });
           } else{
             let comments = {            
             author: 'Analyst',
@@ -1887,7 +1932,8 @@ export const dataCollection = async ({
             content: item.rejectComment
             }
             await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], raisedBy: item.rejectedTo, status: true },
-            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} });
+            { $set: {rejectComment : comments, isErrorAccepted: false, isErrorRejected: true} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update error details!" }) });
           }
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -1895,12 +1941,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive:true, status: true },
-            { $set: {isActive : false} });  
+            { $set: {isActive : false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update the data!" }) });
           await KmpMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1910,6 +1958,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots,  //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],
@@ -1942,12 +1992,14 @@ export const dataCollection = async ({
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+              .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to store the screenshot!" }) });
               formattedScreenShots.push(screenshotFileName);
             }
           }
           await KmpMatrixDataPoints.updateMany({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'],isActive:true, status: true },
-            { $set: {isActive : false} });  
+            { $set: {isActive : false} })
+            .catch(error => { return res.status(500).json({ message: error.message ? error.message : "Failed to update the data!" }) });
           await KmpMatrixDataPoints.create({
             datapointId: body.dpCodeId,
             companyId: body.companyId,
@@ -1957,6 +2009,8 @@ export const dataCollection = async ({
             screenShot: formattedScreenShots, //aws filename todo
             textSnippet: item['textSnippet'],
             pageNumber: item['pageNo'],
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             optionalAnalystComment: item['optionalAnalystComment'],
             isRestated: item['isRestated'],
             restatedForYear: item['restatedForYear'],

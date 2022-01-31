@@ -49,94 +49,98 @@ export const getUsersApprovals = ({ params, querymen: { query, select, cursor },
 }
 
 export const show = ({ params }, res, next) => {
-  User.findById(params.id).populate('roleId').then(notFound(res)).then(async function (userDetails) {
-    var userType = '';
-    userDetails = userDetails.toObject();
-    delete userDetails.password;
-    if (userDetails.userType) {
-      userType = userDetails.userType;
-    } else {
-      if (userDetails.role) {
-        userType = userDetails.role;
+  try {
+    User.findById(params.id).populate('roleId').then(notFound(res)).then(async function (userDetails) {
+      var userType = '';
+      userDetails = userDetails.toObject();
+      delete userDetails.password;
+      if (userDetails.userType) {
+        userType = userDetails.userType;
+      } else {
+        if (userDetails.role) {
+          userType = userDetails.role;
+        }
       }
-    }
-    if (userType === 'Employee') {
-      await Employees.findOne({ userId: userDetails._id }).then(async function (employee) {
-        var pancardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.pancardUrl).catch((e) => {
-          pancardS3Url = "No image";
+      if (userType === 'Employee') {
+        await Employees.findOne({ userId: userDetails._id }).then(async function (employee) {
+          var pancardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.pancardUrl).catch((e) => {
+            pancardS3Url = "No image";
+          })
+          var aadharcardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.aadhaarUrl).catch((e) => {
+            aadharcardS3Url = "No image";
+          })
+          var cancelledChequeUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.cancelledChequeUrl).catch((e) => {
+            cancelledChequeUrl = "No image";
+          })
+          var employeeDocuments = {
+            pancardUrl: pancardS3Url, //employee && employee.pancardUrl ? employee.pancardUrl : '',
+            aadhaarUrl: aadharcardS3Url, //employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
+            cancelledChequeUrl: cancelledChequeUrl // employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
+          }
+          userDetails.documents = employeeDocuments;
+          userDetails.firstName = employee.firstName;
+          userDetails.middleName = employee.middleName;
+          userDetails.lastName = employee.lastName;
+          userDetails.panNumber = employee.panNumber;
+          userDetails.aadhaarNumber = employee.aadhaarNumber;
+          userDetails.bankAccountNumber = employee.bankAccountNumber;
+          userDetails.bankIFSCCode = employee.bankIFSCCode;
+          return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+        }).catch(err => {
+          return res.status(500).json({ message: "Failed to get user" })
         })
-        var aadharcardS3Url = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.aadhaarUrl).catch((e) => {
-          aadharcardS3Url = "No image";
+      } else if (userType === 'Company Representative') {
+        await CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (company) {
+          var authenticationLetterForCompanyUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.authenticationLetterForCompanyUrl).catch((e) => {
+            authenticationLetterForCompanyUrl = "No image";
+          })
+          var companyIdForCompany = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.companyIdForCompany).catch((e) => {
+            companyIdForCompany = "No image";
+          })
+          var companyDocuments = {
+            authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl, //company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
+            companyIdForCompany: companyIdForCompany //company && company.companyIdForCompany ? company.companyIdForCompany : ''
+          }
+          userDetails.documents = companyDocuments;
+          userDetails.companies = company.companiesList.map((rec) => {
+            return { label: rec.companyName, value: rec.id }
+          });
+          return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+        }).catch(err => {
+          return res.status(500).json({ message: "Failed to get user" })
         })
-        var cancelledChequeUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, employee.cancelledChequeUrl).catch((e) => {
-          cancelledChequeUrl = "No image";
+      } else if (userType === 'Client Representative') {
+        await ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (client) {
+          var authenticationLetterForClientUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.authenticationLetterForClientUrl).catch((e) => {
+            authenticationLetterForClientUrl = "No image";
+          })
+          var companyIdForClient = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.companyIdForClient).catch((e) => {
+            companyIdForClient = "No image";
+          })
+          var clientDocuments = {
+            authenticationLetterForClientUrl: authenticationLetterForClientUrl,//client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
+            companyIdForClient: companyIdForClient //client && client.companyIdForClient ? client.companyIdForClient : '',
+          }
+          userDetails.documents = clientDocuments;
+          // if(client.companiesList){
+          //   userDetails.companyName = client.companiesList.length > 0 ? { label: client.companiesList[0].companyName, value: 'companyName' } : null;
+          // }
+          userDetails.companies = client.companiesList.map((rec) => {
+            return { label: rec.companyName, value: rec.id }
+          });
+          return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
+        }).catch(err => {
+          return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
         })
-        var employeeDocuments = {
-          pancardUrl: pancardS3Url, //employee && employee.pancardUrl ? employee.pancardUrl : '',
-          aadhaarUrl: aadharcardS3Url, //employee && employee.aadhaarUrl ? employee.aadhaarUrl : '',
-          cancelledChequeUrl: cancelledChequeUrl // employee && employee.cancelledChequeUrl ? employee.cancelledChequeUrl : ''
-        }
-        userDetails.documents = employeeDocuments;
-        userDetails.firstName = employee.firstName;
-        userDetails.middleName = employee.middleName;
-        userDetails.lastName = employee.lastName;
-        userDetails.panNumber = employee.panNumber;
-        userDetails.aadhaarNumber = employee.aadhaarNumber;
-        userDetails.bankAccountNumber = employee.bankAccountNumber;
-        userDetails.bankIFSCCode = employee.bankIFSCCode;
+      } else {
         return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
-      }).catch(err => {
-        return res.status(500).json({ message: "Failed to get user" })
-      })
-    } else if (userType === 'Company Representative') {
-      await CompanyRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (company) {
-        var authenticationLetterForCompanyUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.authenticationLetterForCompanyUrl).catch((e) => {
-          authenticationLetterForCompanyUrl = "No image";
-        })
-        var companyIdForCompany = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, company.companyIdForCompany).catch((e) => {
-          companyIdForCompany = "No image";
-        })
-        var companyDocuments = {
-          authenticationLetterForCompanyUrl: authenticationLetterForCompanyUrl, //company && company.authenticationLetterForCompanyUrl ? company.authenticationLetterForCompanyUrl : '',
-          companyIdForCompany: companyIdForCompany //company && company.companyIdForCompany ? company.companyIdForCompany : ''
-        }
-        userDetails.documents = companyDocuments;
-        userDetails.companies = company.companiesList.map((rec) => {
-          return { label: rec.companyName, value: rec.id }
-        });
-        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
-      }).catch(err => {
-        return res.status(500).json({ message: "Failed to get user" })
-      })
-    } else if (userType === 'Client Representative') {
-      await ClientRepresentatives.findOne({ userId: userDetails._id }).populate('companiesList').then(async function (client) {
-        var authenticationLetterForClientUrl = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.authenticationLetterForClientUrl).catch((e) => {
-          authenticationLetterForClientUrl = "No image";
-        })
-        var companyIdForClient = await fetchFileFromS3(process.env.USER_DOCUMENTS_BUCKET_NAME, client.companyIdForClient).catch((e) => {
-          companyIdForClient = "No image";
-        })
-        var clientDocuments = {
-          authenticationLetterForClientUrl: authenticationLetterForClientUrl,//client && client.authenticationLetterForClientUrl ? client.authenticationLetterForClientUrl : '',
-          companyIdForClient: companyIdForClient //client && client.companyIdForClient ? client.companyIdForClient : '',
-        }
-        userDetails.documents = clientDocuments;
-        // if(client.companiesList){
-        //   userDetails.companyName = client.companiesList.length > 0 ? { label: client.companiesList[0].companyName, value: 'companyName' } : null;
-        // }
-        userDetails.companies = client.companiesList.map((rec) => {
-          return { label: rec.companyName, value: rec.id }
-        });
-        return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
-      }).catch(err => {
-        return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
-      })
-    } else {
-      return res.status(200).json({ status: 200, message: 'User fetched', user: userDetails })
-    }
-  }).catch(err => {
-    return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
-  })
+      }
+    }).catch(err => {
+      return res.status(500).json({ message: err.message ? err.message : "Failed to get user" })
+    })
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve the user" })
+  }
 }
 
 export const showMe = ({ user }, res) =>
@@ -345,20 +349,18 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
 
               } else {
-                res.status(400).json({
+               return  res.status(400).json({
                   status: "400",
                   message: `${roleObject.roleName} failed to create`
                 })
               }
 
             } else {
-              res.status(400).json({
+              return res.status(400).json({
                 status: "400",
                 message: 'User failed to create'
               })
             }
-
-            break;
           default:
             return res.status(400).json({
               status: "400",
@@ -508,86 +510,95 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
         return res.status(400).json({ message: "Invalid UserId" });
       }
     })
+    .catch((error) => { return  res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 
 }
 
 export const assignRole = ({ bodymen: { body }, user }, res, next) => {
-  var roles = body.roleDetails.role.map((rec) => rec.value);
-  var primaryRole = body.roleDetails.primaryRole.value;
-  var roleDetails = {
-    roles,
-    primaryRole
-  }
-  User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails, isRoleAssigned: true } }).then((updatedObject) => {
-    if (updatedObject) {
-      User.findById(body.userDetails.value).populate({
-        path: 'roleDetails.roles'
-      }).populate({
-        path: 'roleDetails.primaryRole'
-      }).then((userById) => {
-        var resObject = {
-          "userDetails": {
-            "value": userById._id,
-            "label": userById.name
-          },
-          "roleDetails": {
-            "role": userById.roleDetails.roles.map((rec) => {
-              return { value: rec.id, label: rec.roleName }
-            }),
-            "primaryRole": { value: userById.roleDetails.primaryRole.id, label: userById.roleDetails.primaryRole.roleName }
-          }
-        }
-        return res.status(200).send({ status: '200', message: 'Roles Updated Successfully', resObject });
-      }).catch((err) => {
-        next(err);
-      })
-    } else {
-      return res.status(500).json({ message: "Failed to update Role details" });
+  try {
+    var roles = body.roleDetails.role.map((rec) => rec.value);
+    var primaryRole = body.roleDetails.primaryRole.value;
+    var roleDetails = {
+      roles,
+      primaryRole
     }
-  }).catch((err) => {
-    //next(err);
-    return res.status(500).json({ message: "Failed to update Role details" });
-  })
+    User.updateOne({ _id: body.userDetails.value }, { $set: { roleDetails, isRoleAssigned: true } }).then((updatedObject) => {
+      if (updatedObject) {
+        User.findById(body.userDetails.value).populate({
+          path: 'roleDetails.roles'
+        }).populate({
+          path: 'roleDetails.primaryRole'
+        }).then((userById) => {
+          var resObject = {
+            "userDetails": {
+              "value": userById._id,
+              "label": userById.name
+            },
+            "roleDetails": {
+              "role": userById.roleDetails.roles.map((rec) => {
+                return { value: rec.id, label: rec.roleName }
+              }),
+              "primaryRole": { value: userById.roleDetails.primaryRole.id, label: userById.roleDetails.primaryRole.roleName }
+            }
+          }
+          return res.status(200).send({ status: '200', message: 'Roles Updated Successfully', resObject });
+        }).catch((err) => {
+          next(err);
+        })
+      } else {
+        return res.status(500).json({ message: "Failed to update Role details" });
+      }
+    }).catch((err) => {
+      //next(err);
+      return res.status(500).json({ message: "Failed to update Role details" });
+    })
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user roles" });
+  }
 }
 
 export const assignCompanies = async ({ bodymen: { body }, user }, res, next) => {
-  console.log('assignCompanies function called!');
-  if (body.type == "client") {
-    await ClientRepresentatives.findOne({ userId: body.userId })
-      .then(async (repDetail) => {
-        let companiesList = [];
-        for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
-          companiesList.push(body.companies[cmpIndex].value);
-        }
-        await ClientRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
-          .then((updateObj) => {
-            return res.status(200).json({ status: "200", message: "Companies assigned to the Client-Rep successfully!" });
-          })
-          .catch((error) => {
-            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
-          })
-      })
-      .catch((error) => {
-        return res.status(400).json({ status: "400", message: "User not found!" })
-      });
-  } else if (body.type == "company") {
-    await CompanyRepresentatives.findOne({ userId: body.userId })
-      .then(async (repDetail) => {
-        let companiesList = [];
-        for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
-          companiesList.push(body.companies[cmpIndex].value);
-        }
-        await CompanyRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
-          .then((updateObj) => {
-            return res.status(200).json({ status: "200", message: "Companies assigned to the Company-Rep successfully!" });
-          })
-          .catch((error) => {
-            return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
-          })
-      })
-      .catch((error) => {
-        return res.status(400).json({ status: "400", message: "User not found!" })
-      });
+  try {
+    console.log('assignCompanies function called!');
+    if (body.type == "client") {
+      await ClientRepresentatives.findOne({ userId: body.userId })
+        .then(async (repDetail) => {
+          let companiesList = [];
+          for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+            companiesList.push(body.companies[cmpIndex].value);
+          }
+          await ClientRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+            .then((updateObj) => {
+              return res.status(200).json({ status: "200", message: "Companies assigned to the Client-Rep successfully!" });
+            })
+            .catch((error) => {
+              return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+            })
+        })
+        .catch((error) => {
+          return res.status(400).json({ status: "400", message: "User not found!" })
+        });
+    } else if (body.type == "company") {
+      await CompanyRepresentatives.findOne({ userId: body.userId })
+        .then(async (repDetail) => {
+          let companiesList = [];
+          for (let cmpIndex = 0; cmpIndex < body.companies.length; cmpIndex++) {
+            companiesList.push(body.companies[cmpIndex].value);
+          }
+          await CompanyRepresentatives.updateOne({ _id: repDetail.id }, { $set: { companiesList: companiesList } })
+            .then((updateObj) => {
+              return res.status(200).json({ status: "200", message: "Companies assigned to the Company-Rep successfully!" });
+            })
+            .catch((error) => {
+              return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to update!" })
+            })
+        })
+        .catch((error) => {
+          return res.status(400).json({ status: "400", message: "User not found!" })
+        });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to assign the companies" })
   }
 }
 
@@ -724,6 +735,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       });
     }
   })
+  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 }
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
@@ -1006,72 +1018,40 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
 }
 
 export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, res, next) => {
-  const emailList = body.emailList;
-  let [activeUsers, rolesList] = await Promise.all([
-    User.find({ "status": true }),
-    Role.find({ "status": true })
-  ]);
-  if (emailList.length > 0) {
-    let existingEmails = [];
-    for (let index = 0; index < emailList.length; index++) {
-      const rowObject = emailList[index];
-      const emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
-      if (emailAlreadyExists) {
-        existingEmails.push(emailAlreadyExists.email);
+  try {
+    const emailList = body.emailList;
+    let [activeUsers, rolesList] = await Promise.all([
+      User.find({ "status": true }),
+      Role.find({ "status": true })
+    ]);
+    if (emailList.length > 0) {
+      let existingEmails = [];
+      for (let index = 0; index < emailList.length; index++) {
+        const rowObject = emailList[index];
+        const emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
+        if (emailAlreadyExists) {
+          existingEmails.push(emailAlreadyExists.email);
+        }
       }
-    }
-
-    for (let index = 0; index < emailList.length; index++) {
-      const rowObject = emailList[index];
-      let emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
-      let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
-      let link;
-      if (rolesDetails && rolesDetails.roleName == Employee) {
-        link = `/onboard/new-user?role=Employee`
-      } else if (rolesDetails && ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative"))) {
-        link = `/onboard/new-user?role=CompanyRepresentative`
-      } else {
-        link = `/onboard/new-user?role=ClientRepresentative`
-      }
-      if (!emailAlreadyExists) {
+  
+      for (let index = 0; index < emailList.length; index++) {
+        const rowObject = emailList[index];
+        let emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
+        let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
+        let link;
         if (rolesDetails && rolesDetails.roleName == Employee) {
-          let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
-          //nodemail code will come here to send OTP
-          const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER);
-          await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
-            .then((resp) => { console.log('Mail sent!'); });
-          let email = `${rowObject['email']}`;
-          await OnboardingEmails.updateOne({
-            emailId: email
-          }, {
-            $set: {
-              emailId: email, isOnboarded: false, createdBy: user.id
-            }
-          }, { upsert: true })
-
-        } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
-          || rolesDetails.roleName == "ClientRepresentative"
-          || rolesDetails.roleName == CompanyRepresentative
-          || rolesDetails.roleName == "CompanyRepresentative")) {
-          const adminRoleIds = await Role.find({ roleName: { $in: adminRoles }, status: true }).distinct('_id');
-          const allAdminUserEmailIds = await User.find({
-            $or: [{
-              "roleDetails.roles": { $in: adminRoleIds }
-            }, {
-              "roleDetails.primaryRole":
-                { $in: adminRoleIds }
-            }], status: true
-          }).distinct('email');
-
-          for (let index = 0; index < allAdminUserEmailIds.length; index++) {
-            console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
-            let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
-
-            const content = `
-              Email: ${rowObject['email']}<br/><br/>
-              Link: ${url}<br/><br/>`;
-
-            await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+          link = `/onboard/new-user?role=Employee`
+        } else if (rolesDetails && ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative"))) {
+          link = `/onboard/new-user?role=CompanyRepresentative`
+        } else {
+          link = `/onboard/new-user?role=ClientRepresentative`
+        }
+        if (!emailAlreadyExists) {
+          if (rolesDetails && rolesDetails.roleName == Employee) {
+            let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
+            //nodemail code will come here to send OTP
+            const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER);
+            await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
               .then((resp) => { console.log('Mail sent!'); });
             let email = `${rowObject['email']}`;
             await OnboardingEmails.updateOne({
@@ -1081,20 +1061,56 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                 emailId: email, isOnboarded: false, createdBy: user.id
               }
             }, { upsert: true })
+  
+          } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
+            || rolesDetails.roleName == "ClientRepresentative"
+            || rolesDetails.roleName == CompanyRepresentative
+            || rolesDetails.roleName == "CompanyRepresentative")) {
+            const adminRoleIds = await Role.find({ roleName: { $in: adminRoles }, status: true }).distinct('_id');
+            const allAdminUserEmailIds = await User.find({
+              $or: [{
+                "roleDetails.roles": { $in: adminRoleIds }
+              }, {
+                "roleDetails.primaryRole":
+                  { $in: adminRoleIds }
+              }], status: true
+            }).distinct('email');
+  
+            for (let index = 0; index < allAdminUserEmailIds.length; index++) {
+              console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
+              let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
+  
+              const content = `
+                Email: ${rowObject['email']}<br/><br/>
+                Link: ${url}<br/><br/>`;
+  
+              await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+                .then((resp) => { console.log('Mail sent!'); });
+              let email = `${rowObject['email']}`;
+              await OnboardingEmails.updateOne({
+                emailId: email
+              }, {
+                $set: {
+                  emailId: email, isOnboarded: false, createdBy: user.id
+                }
+              }, { upsert: true })
+            }
+          } else {
+            return res.status(400).json({ status: "400", message: "Invalid Role" })
           }
-        } else {
-          return res.status(400).json({ status: "400", message: "Invalid Role" })
         }
       }
-    }
-    if (existingEmails.length > 0) {
-      return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
+      if (existingEmails.length > 0) {
+        return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
+      } else {
+  
+        return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+      }
     } else {
-
-      return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
+      return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
     }
-  } else {
-    return res.status(400).json({ status: "400", message: "No Emails Present in the EmailList" })
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to send the Onboarding links" })
   }
 }
 

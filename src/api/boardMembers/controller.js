@@ -13,7 +13,7 @@ export const create = async({ user, bodymen: { body } }, res, next) =>{
   try {  
     let yearTimeStamp = 0;
   console.log(body.companyId, body.memberName, body.startDate, body.endDate, body.dob, body.gender, body.nationality, body.financialExp, body.industrialExp)
-  let checkBoardMember = await BoardMembers.find({companyId:body.companyId, BOSP004: body.memberName})
+  let checkBoardMember = await BoardMembers.find({companyId:body.companyId, BOSP004: body.memberName, status: true})
   if(checkBoardMember.length > 0){    
     return res.status(402).json({
       message: "BoardMember already exists",
@@ -132,8 +132,8 @@ export const activeMemberlist = async({ user, params }, res, next) =>{
  // try {
     let currentDate = Date.now();
     let yearTimeStamp = Math.floor(new Date(currentDate).getTime()/1000);
-    let boardMemberEq = await BoardMembers.find({companyId: params.companyId, endDateTimeStamp: 0});
-    let boardMemberGt = await BoardMembers.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}});
+    let boardMemberEq = await BoardMembers.find({companyId: params.companyId, endDateTimeStamp: 0, status: true});
+    let boardMemberGt = await BoardMembers.find({companyId: params.companyId,endDateTimeStamp:{$gt:yearTimeStamp}, status: true});
     let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
     let boardMemberListArray = [];
 
@@ -176,19 +176,23 @@ export const getDistinctBoardMembersCompanywise = async({ user, params }, res, n
       let uniqBoardMembers = _.uniqBy(allBoardMembersofYear, 'memberName');
       console.log('uniqBoardMembers length', uniqBoardMembers.length);
       for (let bmIndex = 0; bmIndex < uniqBoardMembers.length; bmIndex++) {
-        let memberDetail = uniqBoardMembers[bmIndex];
-        let memberObject = {
-          // boardMemberMatrixId: memberDetail.id,
-          companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
-          companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
-          memberName: memberDetail.memberName,
-          expectedName: memberDetail.memberName,
-          year: params.year
-        };
-        // console.log('memberObject', memberObject);
-        let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
-        if (foundBoardMemberIndex == -1) {
-          distinctBoardMembers.push(memberObject);
+        try {
+          let memberDetail = uniqBoardMembers[bmIndex];
+          let memberObject = {
+            // boardMemberMatrixId: memberDetail.id,
+            companyId: memberDetail.companyId ? memberDetail.companyId.id : '',
+            companyName: memberDetail.companyId ? memberDetail.companyId.companyName : '',
+            memberName: memberDetail.memberName,
+            expectedName: memberDetail.memberName,
+            year: params.year
+          };
+          // console.log('memberObject', memberObject);
+          let foundBoardMemberIndex = distinctBoardMembers.indexOf(memberObject);
+          if (foundBoardMemberIndex == -1) {
+            distinctBoardMembers.push(memberObject);
+          }
+        } catch (error) {
+          return next(error);
         }
       }
       // if (distinctYears.length-1 == yearIndex) {
