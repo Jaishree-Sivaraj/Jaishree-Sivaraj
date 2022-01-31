@@ -6,55 +6,57 @@ import { Companies } from '../companies'
 import { CompaniesTasks } from '../companies_tasks'
 // import { TaskAssignment } from '../taskAssignment'
 
-export const create = async({ user, bodymen: { body } }, res, next) =>{
-    ClientTaxonomy.create({ ...body, createdBy: user })
+export const create = async ({ user, bodymen: { body } }, res, next) => {
+  ClientTaxonomy.create({ ...body, createdBy: user })
     .then((clientTaxonomy) => clientTaxonomy.view(true))
     .then(success(res, 201))
     .catch(next)
 }
- 
 
-export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next) => {
+
+export const createClientTaxonomy = async ({ user, bodymen: { body } }, res, next) => {
   // let fields = [];
   // if (body.headers && body.headers.length > 0) {
   //   for (let index = 0; index < body.headers.length; index++) {
   //   }
   // }
+  const { taxonomyName, headers, hasChildDp } = body;
   let clientTaxonomyObject = {
-    taxonomyName: body.taxonomyName ? body.taxonomyName : '',
-    fields: body.headers ? body.headers : [],
+    taxonomyName: taxonomyName ? taxonomyName : '',
+    fields: headers ? headers : [],
+    hasChildDp: hasChildDp,
     status: true
   }
-  let taxonomyDetails = await ClientTaxonomy.find({taxonomyName: body.taxonomyName});
-  if(taxonomyDetails.length > 0){
+  let taxonomyDetails = await ClientTaxonomy.find({ taxonomyName: body.taxonomyName });
+  if (taxonomyDetails.length > 0) {
     res.status(409).json({
       message: 'TaxonomyName Already Exists'
     });
-  } else{
+  } else {
     await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
-    .then((clientTaxonomy) => {
-      return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy});
-    })
-    .catch((err) => {
-      res.status(400).json({
-        message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+      .then((clientTaxonomy) => {
+        return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy });
       })
-    })
-    
+      .catch((err) => {
+        res.status(400).json({
+          message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+        })
+      })
+
   }
 }
 
-export const index = async({ querymen: { query, select, cursor } }, res, next) =>{
+export const index = async ({ querymen: { query, select, cursor } }, res, next) => {
   query.status = true;
   await ClientTaxonomy.countDocuments(query)
     .then(count => ClientTaxonomy.find(query)
       .populate('createdBy')
-      .then(async(clientTaxonomies) => {
+      .then(async (clientTaxonomies) => {
         let responseList = [];
         for (let index = 0; index < clientTaxonomies.length; index++) {
           const item = clientTaxonomies[index];
           let pillarList = [];
-          const [ categoriesList, companiesList ] = await Promise.all([
+          const [categoriesList, companiesList] = await Promise.all([
             Categories.find({ clientTaxonomyId: item.id, status: true }),
             Companies.find({ clientTaxonomyId: item.id, status: true })
           ]);
@@ -82,7 +84,7 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
           for (let yListIndex = 0; yListIndex < yearsList.length; yListIndex++) {
             years.push({ value: yearsList[yListIndex], label: yearsList[yListIndex] });
           }
-          
+
           let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
@@ -93,7 +95,7 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
             yearsList: yearsList ? yearsList : [],
             status: item.status
           }
-          responseList.push(objectToPush);          
+          responseList.push(objectToPush);
         }
         return res.status(200).json({
           status: "200",
@@ -137,12 +139,12 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, res, next) => {
+export const updateClientTaxonomy = async ({ user, bodymen: { body }, params }, res, next) => {
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
-    .then(async(clientTaxonomy) => {
+    .then(async (clientTaxonomy) => {
       // let fields = [];
       // if (body.headers && body.headers.length > 0) {
       //   for (let index = 0; index < body.headers.length; index++) {
@@ -153,15 +155,15 @@ export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, r
         fields: body.headers ? body.headers : [],
         status: true
       }
-      await ClientTaxonomy.update({_id: params.id}, { $set: clientTaxonomyObject })
-      .then((err, result) => {
-        if (err) {
-          console.log('error', err);
-          return res.status(200).json({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
-        } else {
-          // 
-        }
-      })
+      await ClientTaxonomy.update({ _id: params.id }, { $set: clientTaxonomyObject })
+        .then((err, result) => {
+          if (err) {
+            console.log('error', err);
+            return res.status(200).json({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
+          } else {
+            // 
+          }
+        })
     })
     .then(success(res))
     .catch(next)
@@ -174,3 +176,41 @@ export const destroy = ({ user, params }, res, next) =>
     .then((clientTaxonomy) => clientTaxonomy ? clientTaxonomy.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+
+export const configureChildFields = async (req, res, next) => {
+  try {
+    const { id, childFields } = req.body;
+    const clientTaxDetails = await ClientTaxonomy.findOne({ _id: id });
+
+    if (!clientTaxDetails) {
+      return res.status(409).json({
+        status: 409,
+        message: 'Client Taxonomy id does not exists'
+      });
+    }
+
+    const updateClientTaxonomy = await ClientTaxonomy.findOneAndUpdate({
+      _id: id,
+    },
+      {
+        childFields
+      }, {
+      new: true
+    });
+
+    if (updateClientTaxonomy) {
+      return res.status(200).json({
+        status: 200,
+        message: 'Configured child Dp'
+      });
+    }
+
+  } catch (error) {
+    return res.status(500).json(
+      {
+        status: 500,
+        message: error?.message ? error?.message : 'failed to configure child data fields'
+      });
+  }
+}
