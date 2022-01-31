@@ -152,6 +152,7 @@ export const datapointDetails = async (req, res, next) => {
             dpType: memberType,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
+            isPriority: true,
             status: true
         }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
 

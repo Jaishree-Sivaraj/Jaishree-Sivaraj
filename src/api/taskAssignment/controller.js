@@ -34,6 +34,7 @@ import {
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
+import { CompanyRepresentative , ClientRepresentative } from '../../constants/roles'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1895,6 +1896,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     // Get distinct years
     const distinctYears = taskDetails.year.split(',');
     let datapointsCount = 0;
+    let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
     const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
     const query = {
       taskId: body.taskId,
@@ -1904,6 +1906,10 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       },
       isActive: true,
       status: true
+    }
+
+    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+      query.datapointId = { $in: reqDpCodes } 
     }
     // StandAlone, BoardMatrix and KMP are DpTypes.
     const [allStandaloneDetails, allBoardMemberMatrixDetails1, allKmpMatrixDetails1] = await Promise.all([
@@ -1931,12 +1937,19 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
     }
     datapointsCount += allStandaloneDetails.length;
-    let datapoints = await Datapoints.find({
+
+    let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
-    });
+    }
+
+    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+      datapointQuery.isRequiredForReps = true 
+    }
+
+    let datapoints = await Datapoints.find({...datapointQuery});
 
     // mergedDetails is the Dp codes of all Dp Types.
     const [hasError, hasCorrection, multipliedValue] = [
@@ -2027,7 +2040,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
-        await sendEmail(e, subject, content)
+        await sendEmail(e, subject, emailDetails)
           .then((resp) => { console.log('Mail sent!') })
           .catch(err => console.log(err))
       })
@@ -2104,7 +2117,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-        await sendEmail(e, subject, content)
+        await sendEmail(e, subject, emailDetails)
           .then((resp) => { console.log('Mail sent!') })
           .catch(err => console.log(err))
       })
