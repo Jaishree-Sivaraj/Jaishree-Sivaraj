@@ -13,8 +13,17 @@ import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { YetToStart } from '../../constants/task-status';
-import { getError, getS3ScreenShot, getSourceDetails, getCurrentDatapointObject, getCurrentEmptyObject, getS3RefScreenShot, getDisplayFields, getHistoryDataObject, getPreviousNextDataPoints } from './dp-details-functions';
-
+import {
+    getError,
+    getS3ScreenShot,
+    getSourceDetails,
+    getCurrentDatapointObject,
+    getCurrentEmptyObject,
+    getS3RefScreenShot,
+    getDisplayFields,
+    getHistoryDataObject,
+    getPreviousNextDataPoints
+} from './dp-details-functions';
 
 export const datapointDetails = async (req, res, next) => {
     try {

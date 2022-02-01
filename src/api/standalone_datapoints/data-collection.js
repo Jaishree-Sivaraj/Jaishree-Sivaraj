@@ -9,6 +9,15 @@ import { TaskAssignment } from '../taskAssignment';
 import { storeFileInS3 } from "../../services/utils/aws-s3";
 import { Pending, CorrectionPending, Completed } from '../../constants/task-status';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
+// Incoming payload
+// currentDatapoint:[
+//     {
+//         child-dp-code:[{}].
+//     }],
+//      historyDatapoint:[
+//     {
+//     child-dp-code:[{}] // last priority.
+//     }]
 
 export const dataCollection = async ({
     user, body,
@@ -21,8 +30,6 @@ export const dataCollection = async ({
 
         const dpCodesDetails = body.currentData;
         const dpHistoricalDpDetails = body.historicalData;
-        // const currentYearValues = [...new Set(dpCodesDetails.map(obj => obj.fiscalYear))];
-        // const historicalDataYear = [...new Set(dpHistoricalDpDetails.map(obj => obj.fiscalYear))];
         const updateQuery = {
             companyId: body.companyId,
             datapointId: body.dpCodeId,
@@ -31,7 +38,6 @@ export const dataCollection = async ({
         }
 
         let isUpdated;
-        console.log()
         switch (taskDetailsObject.taskStatus) {
             case Pending:
                 let historyYearData = [], currentYearData = [];
@@ -49,7 +55,8 @@ export const dataCollection = async ({
                                     year: item['fiscalYear'],
                                 },
                                 { $set: { isActive: false } });
-
+                            let childDp = item.childDp;
+                            childDp.length > 0 && await getChildDpData(childData, taskDetails.companyId.clientTaxonomyId.id, item)
                             let currenData = getData(body, item, user, formattedScreenShots);
                             currenData = { ...currenData, correctionStatus: Completed };
                             currentYearData.push(currenData);
@@ -526,6 +533,35 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
     } catch (error) {
         console.log(error);
         return error;
+
+    }
+}
+
+async function getChildDpData(childData, taxonomyId, item) {
+    try {
+
+        // const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taxonomyId }).lean();
+        // const additionalfield = clienttaxonomyFields?.childFields?.additionalDetails;
+        // let fields = {};
+
+        // additionalfield.map(addFields => {
+
+        //     fields = {
+        //         ...fields,
+        //         addFields?.fieldName : item.fieldName
+
+        //     }
+        // })
+        // for (let childIndex = 0; childIndex <= childData; childIndex++) {
+        //     let childDetails = childData[childIndex];
+        //     childDetails = {
+        //         ...childDetails,
+
+        //     }
+
+        // }
+
+    } catch (error) {
 
     }
 }
