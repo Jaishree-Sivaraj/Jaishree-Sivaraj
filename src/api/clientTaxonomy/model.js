@@ -1,5 +1,10 @@
 import mongoose, { Schema } from 'mongoose'
 
+const ACTUAL = 'Actual';
+const PROXY = 'Proxy';
+const DERIVED = 'Derived';
+export const dpResponseType = [ACTUAL, PROXY, DERIVED];
+
 const clientTaxonomySchema = new Schema({
   createdBy: {
     type: Schema.ObjectId,
@@ -22,8 +27,55 @@ const clientTaxonomySchema = new Schema({
     default: false
   },
   childFields: {
-    type: Array,
-    default: []
+    companyDataElementLabel: {
+      type: String,
+      default: ''
+    },
+    companyDataElementSubLabel: {
+      type: String,
+      default: ''
+    },
+    dataType: {
+      type: String,
+      default: ''
+    },
+    dataValue: {
+      type: Number,
+      default: ''
+    },
+    formatOfDataProvidedByCompany: {
+      type: String,
+      default: ''
+    },
+    keywordUsed: {
+      type: String,
+      default: ''
+    },
+    pageNumber: {
+      type: Number,
+      default: ''
+    },
+    sectionOfDocument: {
+      type: String,
+      default: ''
+    },
+    supportingNarrative: {
+      type: String,
+      default: ''
+    },
+    snapShot: {
+      type: String,
+      default: ''
+    },
+    typeOf: {
+      type: String,
+      default: ACTUAL,
+      enum: dpResponseType
+    },
+    additionalFields: {
+      type: Array,
+      default: []
+    }
   },
 }, {
   timestamps: true,

@@ -181,31 +181,28 @@ export const destroy = ({ user, params }, res, next) =>
 export const configureChildFields = async (req, res, next) => {
   try {
     const { id, childFields } = req.body;
-    const clientTaxDetails = await ClientTaxonomy.findOne({ _id: id });
+    const updateClientTaxonomy = await ClientTaxonomy.findOneAndUpdate({
+      _id: id,
+    },
+      {
+        $push:
+          { 'childFields.additionalFields': childFields }
 
-    if (!clientTaxDetails) {
+      }, {
+      new: true
+    });
+
+    if (!updateClientTaxonomy) {
       return res.status(409).json({
         status: 409,
         message: 'Client Taxonomy id does not exists'
       });
     }
-
-    const updateClientTaxonomy = await ClientTaxonomy.findOneAndUpdate({
-      _id: id,
-    },
-      {
-        childFields
-      }, {
-      new: true
+    
+    return res.status(200).json({
+      status: 200,
+      message: 'Configured child Dp'
     });
-
-    if (updateClientTaxonomy) {
-      return res.status(200).json({
-        status: 200,
-        message: 'Configured child Dp'
-      });
-    }
-
   } catch (error) {
     return res.status(500).json(
       {

@@ -33,11 +33,11 @@ export const datapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true }).sort({orderNumber: 1})
+            PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
         const currentYear = year.split(',');
-        const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields').lean();
-        const displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
+        const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        const displayFields = clienttaxonomyFields?.fields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
@@ -165,6 +165,14 @@ export const datapointDetails = async (req, res, next) => {
                 break;
             }
         }
+
+        let childFields = [];
+        for (const key in clienttaxonomyFields?.childFields) {
+            if (key !== 'additionalFields') {
+                childFields.push(key);
+            }
+        }
+        console.log(childFields);
 
         switch (memberType) {
             case STANDALONE:
