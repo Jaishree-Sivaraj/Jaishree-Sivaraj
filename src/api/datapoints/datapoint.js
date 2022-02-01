@@ -143,6 +143,17 @@ export const datapointDetails = async (req, res, next) => {
                 });
             });
         }
+
+        let childFields = [];
+        if (dpTypeValues?.dataType == 'Number') {
+            for (const key in clienttaxonomyFields?.childFields) {
+                if (key !== 'additionalFields') {
+                    childFields.push(key);
+                }
+            }
+        }
+
+
         let index, prevDatapoint = {}, nextDatapoint = {};
 
         const dpTypequery = {
@@ -212,14 +223,6 @@ export const datapointDetails = async (req, res, next) => {
                 break;
             }
         }
-
-        let childFields = [];
-        for (const key in clienttaxonomyFields?.childFields) {
-            if (key !== 'additionalFields') {
-                childFields.push(key);
-            }
-        }
-        console.log(childFields);
 
         switch (memberType) {
             case STANDALONE:
@@ -331,8 +334,9 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint },
-                    dpCodeData: datapointsObject
+                    response: { prevDatapoint, nextDatapoint, childFields },
+                    dpCodeData: datapointsObject,
+
                 });
             case BOARD_MATRIX:
                 const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails,] = await Promise.all([
@@ -447,7 +451,8 @@ export const datapointDetails = async (req, res, next) => {
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        childFields
                     },
                     dpCodeData: datapointsObject
                 });
@@ -567,7 +572,8 @@ export const datapointDetails = async (req, res, next) => {
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        childFields
                     },
                     dpCodeData: datapointsObject
                 });

@@ -79,10 +79,10 @@ export const repDatapointDetails = async (req, res, next) => {
             PlaceValues.find({ status: true }).sort({orderNumber: 1})
         ]);
 
-        const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
+        const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
         const [currentYear, displayFields] = [
             year?.split(','),
-            clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
+            clienttaxonomyFields?.fields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
@@ -182,6 +182,15 @@ export const repDatapointDetails = async (req, res, next) => {
                     value: inputs[inputIndex]
                 }
                 inputValues.push(element);
+            }
+        }
+
+        let childFields = [];
+        if (dpTypeValues?.dataType == 'Number') {
+            for (const key in clienttaxonomyFields?.childFields) {
+                if (key !== 'additionalFields') {
+                    childFields.push(key);
+                }
             }
         }
 
@@ -331,7 +340,8 @@ export const repDatapointDetails = async (req, res, next) => {
                     response: {
 
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        childFields
                     },
                     dpCodeData: datapointsObject
 
@@ -456,7 +466,8 @@ export const repDatapointDetails = async (req, res, next) => {
                     response: {
 
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        childFields
                     },
                     dpCodeData: datapointsObject,
 
@@ -573,9 +584,9 @@ export const repDatapointDetails = async (req, res, next) => {
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
-
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        childFields
                     },
                     dpCodeData: datapointsObject,
                 });
