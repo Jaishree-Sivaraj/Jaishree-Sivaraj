@@ -6,15 +6,15 @@ import { Companies } from '../companies'
 import { CompaniesTasks } from '../companies_tasks'
 // import { TaskAssignment } from '../taskAssignment'
 
-export const create = async({ user, bodymen: { body } }, res, next) =>{
-    ClientTaxonomy.create({ ...body, createdBy: user })
+export const create = async ({ user, bodymen: { body } }, res, next) => {
+  ClientTaxonomy.create({ ...body, createdBy: user })
     .then((clientTaxonomy) => clientTaxonomy.view(true))
     .then(success(res, 201))
     .catch(next)
 }
- 
 
-export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next) => {
+
+export const createClientTaxonomy = async ({ user, bodymen: { body } }, res, next) => {
   // let fields = [];
   // if (body.headers && body.headers.length > 0) {
   //   for (let index = 0; index < body.headers.length; index++) {
@@ -25,36 +25,36 @@ export const createClientTaxonomy = async({ user, bodymen: { body } }, res, next
     fields: body.headers ? body.headers : [],
     status: true
   }
-  let taxonomyDetails = await ClientTaxonomy.find({taxonomyName: body.taxonomyName});
-  if(taxonomyDetails.length > 0){
+  let taxonomyDetails = await ClientTaxonomy.find({ taxonomyName: body.taxonomyName });
+  if (taxonomyDetails.length > 0) {
     res.status(409).json({
       message: 'TaxonomyName Already Exists'
     });
-  } else{
+  } else {
     await ClientTaxonomy.create({ ...clientTaxonomyObject, createdBy: user })
-    .then((clientTaxonomy) => {
-      return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy});
-    })
-    .catch((err) => {
-      res.status(400).json({
-        message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+      .then((clientTaxonomy) => {
+        return res.status(200).json({ message: "Taxonomy created successfully!", data: clientTaxonomy });
       })
-    })
-    
+      .catch((err) => {
+        res.status(400).json({
+          message: err.message ? err.message : 'Failed to create Client Taxonomy, invalid details'
+        })
+      })
+
   }
 }
 
-export const index = async({ querymen: { query, select, cursor } }, res, next) =>{
+export const index = async ({ querymen: { query, select, cursor } }, res, next) => {
   query.status = true;
   await ClientTaxonomy.countDocuments(query)
     .then(count => ClientTaxonomy.find(query)
       .populate('createdBy')
-      .then(async(clientTaxonomies) => {
+      .then(async (clientTaxonomies) => {
         let responseList = [];
         for (let index = 0; index < clientTaxonomies.length; index++) {
           const item = clientTaxonomies[index];
           let pillarList = [];
-          const [ categoriesList, companiesList ] = await Promise.all([
+          const [categoriesList, companiesList] = await Promise.all([
             Categories.find({ clientTaxonomyId: item.id, status: true }),
             Companies.find({ clientTaxonomyId: item.id, status: true })
           ]);
@@ -82,7 +82,7 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
           for (let yListIndex = 0; yListIndex < yearsList.length; yListIndex++) {
             years.push({ value: yearsList[yListIndex], label: yearsList[yListIndex] });
           }
-          
+
           let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
@@ -93,7 +93,7 @@ export const index = async({ querymen: { query, select, cursor } }, res, next) =
             yearsList: yearsList ? yearsList : [],
             status: item.status
           }
-          responseList.push(objectToPush);          
+          responseList.push(objectToPush);
         }
         return res.status(200).json({
           status: "200",
@@ -137,12 +137,12 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, res, next) => {
+export const updateClientTaxonomy = async ({ user, bodymen: { body }, params }, res, next) => {
   ClientTaxonomy.findById(params.id)
     .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
-    .then(async(clientTaxonomy) => {
+    .then(async (clientTaxonomy) => {
       // let fields = [];
       // if (body.headers && body.headers.length > 0) {
       //   for (let index = 0; index < body.headers.length; index++) {
@@ -153,15 +153,15 @@ export const updateClientTaxonomy = async({ user, bodymen: { body }, params }, r
         fields: body.headers ? body.headers : [],
         status: true
       }
-      await ClientTaxonomy.update({_id: params.id}, { $set: clientTaxonomyObject })
-      .then((err, result) => {
-        if (err) {
-          console.log('error', err);
-          return res.status(200).json({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
-        } else {
-          // 
-        }
-      })
+      await ClientTaxonomy.update({ _id: params.id }, { $set: clientTaxonomyObject })
+        .then((err, result) => {
+          if (err) {
+            console.log('error', err);
+            return res.status(200).json({ status: "200", message: "Client Taxonomy updated successfuly!", data: clientTaxonomyObject });
+          } else {
+            // 
+          }
+        })
     })
     .then(success(res))
     .catch(next)
@@ -174,3 +174,37 @@ export const destroy = ({ user, params }, res, next) =>
     .then((clientTaxonomy) => clientTaxonomy ? clientTaxonomy.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+export const retrieveClientTaxonomies = async (req, res, next) => {
+  try {
+    const clientTaxonomies = await ClientTaxonomy.aggregate([{
+      $match: { status: true }
+    }, {
+      $project: {
+        value: '$_id',
+        label: '$taxonomyName',
+        _id: 0
+      }
+    }]);
+
+    if (!clientTaxonomies) {
+      return res.status(404).json({
+        status: 404,
+        message: 'Failed to retrive client taxonomy'
+      })
+    }
+
+    return res.status(200).json({
+      status: "200",
+      message: "Client taxonomy retrieved successfully!",
+      count: clientTaxonomies.length,
+      data: clientTaxonomies
+    });
+
+  } catch (error) {
+    return res.json(500).json({
+      status: 500,
+      message: error?.message ? error?.message : 'Failed to retrieve all taxonomies'
+    });
+  }
+}

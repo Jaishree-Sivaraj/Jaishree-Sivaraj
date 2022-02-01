@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy } from './controller'
+import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy ,retrieveClientTaxonomies} from './controller'
 import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
@@ -64,6 +64,20 @@ router.get('/',
   index)
 
 /**
+ * @api {get} /clientTaxonomies/retrieve/all Retrieve all client taxonomy
+ * @apiName RetrieveClientTaxonomy
+ * @apiGroup ClientTaxonomy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Client taxonomy not found.
+ * @apiError 401 user access only.
+ */
+router.get('/retrieve/all',
+token({required:true}),
+retrieveClientTaxonomies)
+/**
  * @api {get} /clientTaxonomies/:id Retrieve client taxonomy
  * @apiName RetrieveClientTaxonomy
  * @apiGroup ClientTaxonomy
@@ -74,6 +88,7 @@ router.get('/',
  * @apiError 404 Client taxonomy not found.
  * @apiError 401 user access only.
  */
+
 router.get('/:id',
   token({ required: true }),
   show)
