@@ -9,6 +9,7 @@ import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
 import { YetToStart, Pending, CollectionCompleted, CorrectionPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
+import { CompanyRepresentative , ClientRepresentative } from '../../constants/roles';
 
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
@@ -180,6 +181,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         // If all priority Dp codes are completed we get all Dp codes including Priority Dp codes.
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
+            if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+              dptypeQuery.isRequiredForReps = true
+            }
 
             const dpTypeDatapoints = await
               Datapoints.find({
@@ -370,6 +374,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             ...dptypeQuery,
             keyIssueId,
           } : dptypeQuery;
+
+          // Filtering with the Reps
+          if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+            query.isRequiredForReps = true
+          }
 
           const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
             .skip(((page - 1) * limit))

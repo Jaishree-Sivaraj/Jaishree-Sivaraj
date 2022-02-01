@@ -144,7 +144,46 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
         let index, prevDatapoint = {}, nextDatapoint = {};
-        const allDatapoints = await Datapoints.find({
+
+        const dpTypequery = {
+            taskId: taskId,
+            companyId: taskDetails.companyId.id,
+            year: {
+                $in: currentYear
+            },
+            isActive: true,
+            status: true
+        }
+
+        const [currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails, priorityDpCodes] = await Promise.all([
+            StandaloneDatapoints.find(dpTypequery)
+                .populate('datapointId'),
+            BoardMembersMatrixDataPoints.find(dpTypequery).populate('datapointId'),
+            KmpMatrixDataPoints.find(dpTypequery).populate('datapointId'),
+            Datapoints.find({
+                dataCollection: 'Yes',
+                functionId: {
+                    "$ne": functionId.id
+                },
+                clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
+                categoryId: taskDetails?.categoryId.id,
+                isPriority: true,
+                status: true
+            })
+        ]);
+
+        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
+        // comparing all  priority Dp code with merged DpCodes and getting total priority dp collection
+        const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
+            return priorityDpCodes.find(priortyDp => {
+                return priortyDp.id == mergedData.datapointId.id;
+            });
+        });
+
+        const totalUniquePriortyDpCollected = totalPriortyDataCollected?.length / currentYear?.length;
+
+        let datapointQuery =
+        {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
@@ -153,7 +192,16 @@ export const datapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        }
+
+        if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
+            datapointQuery = { ...datapointQuery, isPriority: true };
+        }
+
+        const allDatapoints = await Datapoints.find(datapointQuery)
+            .populate('keyIssueId')
+            .populate('categoryId').sort({ code: 1 });
+
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
