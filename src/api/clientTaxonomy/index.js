@@ -2,12 +2,12 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy, retrieveAll, retrieveDistinctDetails } from './controller'
+import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy, configureChildFields, getChildFields, retrieveAll, retrieveDistinctDetails } from './controller'
 import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
 const router = new Router()
-const { taxonomyName, fields, status } = schema.tree
+const { taxonomyName, fields, status, hasChildDp, id, childFields } = schema.tree
 const headers = [];
 
 /**
@@ -43,8 +43,27 @@ router.post('/',
  */
 router.post('/create',
   token({ required: true }),
-  body({ taxonomyName, headers }),
+  body({ taxonomyName, headers, hasChildDp }),
   createClientTaxonomy)
+
+/**
+* @api {post} /clientTaxonomies/configure-child-fields Create client taxonomy
+* @apiName CreateClientTaxonomy
+* @apiGroup ClientTaxonomy
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam taxonomyName Client taxonomy's taxonomyName.
+* @apiParam fields Client taxonomy's fields.
+* @apiSuccess {Object} clientTaxonomy Client taxonomy's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Client taxonomy not found.
+* @apiError 401 user access only.
+*/
+router.post('/configure-child-fields',
+  token({ required: true }),
+  body({ id, childFields }),
+  configureChildFields);
+
 
 /**
  * @api {get} /clientTaxonomies Retrieve client taxonomies
@@ -61,7 +80,24 @@ router.post('/create',
 router.get('/',
   token({ required: true }),
   query(),
-  index)
+  index);
+
+/**
+* @api {get} /clientTaxonomies/get-child-dp-fields Retrieve client taxonomies
+* @apiName RetrieveClientTaxonomies
+* @apiGroup ClientTaxonomy
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of client taxonomies.
+* @apiSuccess {Object[]} rows List of client taxonomies.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/get-child-dp-fields',
+  token({ required: true }),
+  query(),
+  getChildFields)
 
 /**
  * @api {get} /clientTaxonomies/retrieve/all Retrieve client taxonomies
