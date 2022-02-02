@@ -3,7 +3,8 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { ClientTaxonomy } from '.'
 import { Categories } from '../categories'
 import { Companies } from '../companies'
-import { CompaniesTasks } from '../companies_tasks'
+import { CompaniesTasks } from '../companies_tasks';
+import { Datapoints } from '../datapoints';
 // import { TaskAssignment } from '../taskAssignment'
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
@@ -198,7 +199,7 @@ export const configureChildFields = async (req, res, next) => {
         message: 'Client Taxonomy id does not exists'
       });
     }
-    
+
     return res.status(200).json({
       status: 200,
       message: 'Configured child Dp'
@@ -209,5 +210,37 @@ export const configureChildFields = async (req, res, next) => {
         status: 500,
         message: error?.message ? error?.message : 'failed to configure child data fields'
       });
+  }
+}
+
+export const getChildFields = async (req, res, next) => {
+  try {
+    const { clientTaxonomyId, datapointId } = req.query;
+
+    const [getChildField, datapointDetails] = await Promise.all([
+      ClientTaxonomy.findOne({ _id: clientTaxonomyId }).lean(),
+      Datapoints.findOne({ _id: datapointId }).lean()
+    ])
+    let childFields = [];
+    if (datapointDetails?.dataType !== 'Number') {
+      for (const key in getChildField?.childFields) {
+        if (key !== 'additionalFields' && getChildField?.childFields?.additionalFields.length !== 0) {
+          childFields.push(getChildField?.childFields[key]);
+        }
+        if (getChildField?.childFields?.additionalFields.length === 0) {
+          return res.status(409).json({
+            status: 409,
+            message: 'The parent headers are not configured'
+          })
+        }
+      }
+    }
+    res.status(200).json({
+      status: 200,
+      response: childFields
+    })
+
+  } catch (error) {
+
   }
 }

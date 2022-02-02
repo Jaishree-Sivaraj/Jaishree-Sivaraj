@@ -27,55 +27,13 @@ const clientTaxonomySchema = new Schema({
     default: false
   },
   childFields: {
-    companyDataElementLabel: {
-      type: String,
-      default: ''
+    type: Object,
+    default: {
+      additionalFields: {
+        type: Array,
+        default: []
+      }
     },
-    companyDataElementSubLabel: {
-      type: String,
-      default: ''
-    },
-    dataType: {
-      type: String,
-      default: ''
-    },
-    dataValue: {
-      type: Number,
-      default: ''
-    },
-    formatOfDataProvidedByCompany: {
-      type: String,
-      default: ''
-    },
-    keywordUsed: {
-      type: String,
-      default: ''
-    },
-    pageNumber: {
-      type: Number,
-      default: ''
-    },
-    sectionOfDocument: {
-      type: String,
-      default: ''
-    },
-    supportingNarrative: {
-      type: String,
-      default: ''
-    },
-    snapShot: {
-      type: String,
-      default: ''
-    },
-    typeOf: {
-      type: String,
-      default: ACTUAL,
-      enum: dpResponseType
-    },
-    additionalFields: {
-      type: Array,
-      default: []
-    }
   },
 }, {
   timestamps: true,
@@ -115,10 +73,9 @@ export default model
 //     type: String
 //   },
 //   fieldName: {
-//     type: String
-//   },
-//   description: {
-//     type: String
+//    type: String
+//   },/   description: {
+//     typString
 //   },
 //   isRequired: {
 //     type: Boolean,
@@ -136,3 +93,5 @@ export default model
 //     default: false
 //   }
 // }
+
+
