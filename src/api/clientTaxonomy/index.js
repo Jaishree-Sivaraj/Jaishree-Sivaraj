@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy } from './controller'
+import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy, retrieveAll, retrieveDistinctDetails } from './controller'
 import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
@@ -62,6 +62,40 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+ * @api {get} /clientTaxonomies/retrieve/all Retrieve client taxonomies
+ * @apiName RetrieveClientTaxonomies
+ * @apiGroup ClientTaxonomy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of client taxonomies.
+ * @apiSuccess {Object[]} rows List of client taxonomies.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/retrieve/all',
+  token({ required: true }),
+  query(),
+  retrieveAll)
+
+/**
+ * @api {get} /clientTaxonomies/retrieve/distinct-details/:id Retrieve client taxonomy distinct details
+ * @apiName RetrieveClientTaxonomyDistinctDetails
+ * @apiGroup ClientTaxonomy
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of client taxonomies.
+ * @apiSuccess {Object[]} rows List of client taxonomies.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/retrieve/distinct-details/:id',
+  token({ required: true }),
+  query(),
+  retrieveDistinctDetails)
 
 /**
  * @api {get} /clientTaxonomies/:id Retrieve client taxonomy
