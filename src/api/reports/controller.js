@@ -79,7 +79,7 @@ export const reportsFilter = async(req, res, next) => {
         "nicIndustry": "$companyDetails.nicIndustry",
         "year": "$year",
         "pillar": "$categoryDetails.categoryName",
-        "isChecked": "false"
+        "isChecked": { $toBool: false }
       }
     }
   ];
