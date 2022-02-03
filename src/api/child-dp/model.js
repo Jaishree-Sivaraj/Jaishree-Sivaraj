@@ -21,6 +21,10 @@ const childDpSchema = new Schema({
     type: Boolean,
     default: true
   },
+  parentFields: {
+    type: Object,
+    default: {}
+  },
   status: {
     type: Boolean,
     default: true
