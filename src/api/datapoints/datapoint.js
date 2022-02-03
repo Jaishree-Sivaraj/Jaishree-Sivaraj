@@ -44,7 +44,7 @@ export const datapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true }).sort({orderNumber: 1})
+            PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
         const currentYear = year.split(',');
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
@@ -204,9 +204,17 @@ export const datapointDetails = async (req, res, next) => {
             dpType: memberType,
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
-            isPriority: true,
             status: true
-        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        }
+
+        if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
+            datapointQuery = { ...datapointQuery, isPriority: true };
+        }
+
+        const allDatapoints = await Datapoints.find(datapointQuery)
+            .populate('keyIssueId')
+            .populate('categoryId').sort({ code: 1 });
+
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
