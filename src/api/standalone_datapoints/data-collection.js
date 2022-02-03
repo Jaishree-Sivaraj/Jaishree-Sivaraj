@@ -132,7 +132,7 @@ export const dataCollection = async ({
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                             await BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
                                 { $set: { isActive: false } });
-                            let currentData = getData(body, item, user, formattedScreenShots);
+                            currentData = getData(body, item, user, formattedScreenShots);
                             currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
                             currentYearData.push(currentData);
                         }
@@ -144,7 +144,7 @@ export const dataCollection = async ({
                                 childDp: item?.childDp
                             });
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
-                            let historyData = getData(body, item, user, formattedScreenShots);
+                            historyData = getData(body, item, user, formattedScreenShots);
                             historyData = { ...historyData, memberName: body.memberName }
                             historyYearData.push(historyData);
                         }
@@ -184,7 +184,7 @@ export const dataCollection = async ({
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                             await KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
                                 { $set: { isActive: false } });
-                            let currentData = getData(body, item, user, formattedScreenShots);
+                            currentData = getData(body, item, user, formattedScreenShots);
                             currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
                             currentYearData.push(currentData);
                         }
@@ -196,7 +196,7 @@ export const dataCollection = async ({
                                 childDp: item?.childDp
                             });
                             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
-                            let historyData = getData(body, item, user, formattedScreenShots);
+                            historyData = getData(body, item, user, formattedScreenShots);
                             historyData = { ...historyData, memberName: body.memberName };
                             historyYearData.push(historyData);
                         }
@@ -652,7 +652,6 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
 // check if child dp is empty or not 
 async function getChildData(body, taskDetailsObject, childDetails, data) { //current/history data
     try {
-        console.log(childDetails);
         let childData = [];
         // Updating all the prior data of the same fiscal year as inactive.
         for (let childDataIndex = 0; childDataIndex < childDetails.length; childDataIndex++) {
@@ -669,20 +668,6 @@ async function getChildData(body, taskDetailsObject, childDetails, data) { //cur
                     },
                     { $set: { isActive: false } });
 
-                // Getting parent configured headers.
-                const clientTaxDetails = await ClientTaxonomy.findOne({
-                    _id: taskDetailsObject?.companyId.clientTaxonomyId.id
-                }).lean();
-
-                let parentHeader = {};
-                // Comparing the key value for data and the key for additional fields from configured headers.
-                for (let key in data) {
-                    clientTaxDetails?.childFields?.additionalFields.map((additionalField) => {
-                        if (additionalField.fieldName == key) {
-                            parentHeader[key] = data[key]
-                        }
-                    })
-                }
                 // Formatting docs to save data.
                 for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                     let childDetailsData = childDp[childIndex];
@@ -693,8 +678,8 @@ async function getChildData(body, taskDetailsObject, childDetails, data) { //cur
                         year: childDpDetails.year,
                         childFields: {
                             ...childDetailsData,
-                            ...parentHeader
-                        }
+                        },
+                        parentFields: data
                     }
                     childData.push(childDetailsData);
                 }
@@ -709,3 +694,4 @@ async function getChildData(body, taskDetailsObject, childDetails, data) { //cur
     }
 }
 
+// current Year Data.
