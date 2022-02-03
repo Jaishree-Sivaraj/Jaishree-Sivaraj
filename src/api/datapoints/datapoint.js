@@ -22,7 +22,9 @@ import {
     getS3RefScreenShot,
     getDisplayFields,
     getHistoryDataObject,
-    getPreviousNextDataPoints
+    getPreviousNextDataPoints,
+    getChildDp,
+    getHeaders
 } from './dp-details-functions';
 
 export const datapointDetails = async (req, res, next) => {
@@ -45,8 +47,8 @@ export const datapointDetails = async (req, res, next) => {
             PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
         const currentYear = year.split(',');
-        const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields').lean();
-        const displayFields = clienttaxonomyFields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
+        const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
@@ -152,7 +154,7 @@ export const datapointDetails = async (req, res, next) => {
                 });
             });
         }
-       
+
         let index, prevDatapoint = {}, nextDatapoint = {};
 
         const dpTypequery = {
@@ -165,7 +167,7 @@ export const datapointDetails = async (req, res, next) => {
             status: true
         }
 
-        const [currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails, priorityDpCodes] = await Promise.all([
+        const [currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails, priorityDpCodes, chilDpHeaders] = await Promise.all([
             StandaloneDatapoints.find(dpTypequery)
                 .populate('datapointId'),
             BoardMembersMatrixDataPoints.find(dpTypequery).populate('datapointId'),
@@ -179,7 +181,8 @@ export const datapointDetails = async (req, res, next) => {
                 categoryId: taskDetails?.categoryId.id,
                 isPriority: true,
                 status: true
-            })
+            }),
+            getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
 
         const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
@@ -223,6 +226,7 @@ export const datapointDetails = async (req, res, next) => {
             }
         }
 
+        let childDp = [];
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
@@ -301,8 +305,13 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, true, false);
                         datapointsObject.status = YetToStart;
                     }
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+
+                    // datapointsObject.currentData.push({ childDp: childDp });
+                    currentDatapointsObject.childDp = childDp;
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
+
                 }
                 totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
                 for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
@@ -326,6 +335,8 @@ export const datapointDetails = async (req, res, next) => {
                                 average: object.average, ...historicalDatapointsObject
                             }
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
                     }
@@ -333,7 +344,7 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders },
                     dpCodeData: datapointsObject,
 
                 });
@@ -421,6 +432,8 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, '', currentDatapointsObject, true, false);
                         datapointsObject.status = YetToStart;
                     }
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                    currentDatapointsObject.childDp = childDp;
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
@@ -441,6 +454,8 @@ export const datapointDetails = async (req, res, next) => {
                         if (object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
                             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
                     }
@@ -451,7 +466,7 @@ export const datapointDetails = async (req, res, next) => {
                     response: {
                         prevDatapoint,
                         nextDatapoint,
-                        childFields
+                        chilDpHeaders
                     },
                     dpCodeData: datapointsObject
                 });
@@ -539,6 +554,8 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, '', currentDatapointsObject, true, false)
                         datapointsObject.status = YetToStart;
                     }
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                    currentDatapointsObject.childDp = childDp;
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
@@ -561,6 +578,8 @@ export const datapointDetails = async (req, res, next) => {
                             && object.memberName == memberName) {
                             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues)
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
 
@@ -572,7 +591,7 @@ export const datapointDetails = async (req, res, next) => {
                     response: {
                         prevDatapoint,
                         nextDatapoint,
-                        childFields
+                        chilDpHeaders
                     },
                     dpCodeData: datapointsObject
                 });
@@ -588,7 +607,4 @@ export const datapointDetails = async (req, res, next) => {
         });
     }
 }
-
-
-
 

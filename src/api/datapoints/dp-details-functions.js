@@ -4,6 +4,8 @@ import { CompanySources } from '../companySources';
 import { QA } from '../../constants/roles';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { YetToStart, Completed } from '../../constants/task-status';
+import { ChildDp } from '../child-dp';
+import { ClientTaxonomy } from '../clientTaxonomy';
 
 const requiredFields = [
     "categoryCode",
@@ -316,3 +318,44 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
         fiscalYear: year
     }
 }
+
+export async function getChildDp(datapointId, year, taskId, companyId) {
+    try {
+        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
+        let childDp = [];
+        getChildDpDetails.map(child => {
+            childDp.push(child.childFields);
+        });
+
+        return childDp;
+
+    } catch (error) {
+        console.log(error?.message);
+        return error?.message;
+    }
+}
+
+export async function getHeaders(clientTaxonomyId) {
+    try {
+
+        const clientTaxData = await ClientTaxonomy.findOne({
+            _id: clientTaxonomyId
+        });
+        let headers = [];
+        if (clientTaxData?.childFields?.additionalFields?.length > 0) {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            clientTaxData?.childFields?.additionalFields.map(field => {
+                headers.push(field);
+            });
+        } else {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+
+        }
+        return headers;
+
+
+    } catch (error) {
+        console.log(error?.message)
+    }
+}
+
