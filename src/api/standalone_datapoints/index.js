@@ -27,7 +27,7 @@ export StandaloneDatapoints, {
 }
 from './model';
 
-import {dataCollection} from './data-collection';
+import { dataCollection} from './data-collection';
 
 const router = new Router()
 const {

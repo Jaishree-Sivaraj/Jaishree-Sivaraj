@@ -85,15 +85,7 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
               }
             }
           }
-
-          let years = [];
-          // let yearsList = await TaskAssignment.find({ companyId: { $in: companiesList }, taskStatus: {$in: [ "Verification Completed", "Completed" ] }, status: true }).distinct('year');
-          // let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
-          let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
-          for (let yListIndex = 0; yListIndex < yearsList.length; yListIndex++) {
-            years.push({ value: yearsList[yListIndex], label: yearsList[yListIndex] });
-          }
-
+          
           let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
