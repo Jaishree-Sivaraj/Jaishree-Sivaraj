@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import mongoose, { Schema } from 'mongoose'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { ClientTaxonomy } from '.'
 import { Categories } from '../categories'
@@ -54,38 +55,32 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
       .populate('createdBy')
       .then(async (clientTaxonomies) => {
         let responseList = [];
+        const [ categoriesList, companiesList ] = await Promise.all([
+          Categories.find({ status: true }).populate('clientTaxonomyId'),
+          Companies.find({ status: true }).populate('clientTaxonomyId')
+        ]);
         for (let index = 0; index < clientTaxonomies.length; index++) {
           const item = clientTaxonomies[index];
           let pillarList = [];
-          const [categoriesList, companiesList] = await Promise.all([
-            Categories.find({ clientTaxonomyId: item.id, status: true }),
-            Companies.find({ clientTaxonomyId: item.id, status: true })
-          ]);
-          // let categoriesList = await Categories.find({ clientTaxonomyId: item.id, status: true });
           if (categoriesList.length > 0) {
             for (let cIndex = 0; cIndex < categoriesList.length; cIndex++) {
               const cItem = categoriesList[cIndex];
-              pillarList.push({ value: cItem.id, label: cItem.categoryName });
+              if (cItem.clientTaxonomyId.id == item.id) {
+                pillarList.push({ value: cItem.id, label: cItem.categoryName });
+              }
             }
           }
 
           let nicCodeList = [];
-          // let companiesList = await Companies.find({ clientTaxonomyId: item.id, status: true });
           if (companiesList.length > 0) {
             for (let cmpIndex = 0; cmpIndex < companiesList.length; cmpIndex++) {
               const cmpItem = companiesList[cmpIndex];
-              nicCodeList.push({ value: cmpItem.nic, label: cmpItem.nic });
+              if (cmpItem.clientTaxonomyId.id == item.id) {
+                nicCodeList.push({ value: cmpItem.nic, label: cmpItem.nic });
+              }
             }
           }
-
-          let years = [];
-          // let yearsList = await TaskAssignment.find({ companyId: { $in: companiesList }, taskStatus: {$in: [ "Verification Completed", "Completed" ] }, status: true }).distinct('year');
-          // let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
-          let yearsList = await CompaniesTasks.find({ companyId: { $in: companiesList }, overAllCompanyTaskStatus: true, status: true }).distinct('year');
-          for (let yListIndex = 0; yListIndex < yearsList.length; yListIndex++) {
-            years.push({ value: yearsList[yListIndex], label: yearsList[yListIndex] });
-          }
-
+          
           let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
@@ -93,7 +88,6 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
             headers: item.fields ? item.fields : [],
             nicList: nicList ? nicList : [],
             pillarList: pillarList ? pillarList : [],
-            yearsList: yearsList ? yearsList : [],
             status: item.status
           }
           responseList.push(objectToPush);
@@ -108,6 +102,71 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
     )
     // .then(success(res))
     .catch(next)
+}
+
+export const retrieveAll = (req, res, next) => {
+  ClientTaxonomy.countDocuments({status: true})
+  .then((count => ClientTaxonomy.aggregate([{$match: {status: true} }, {
+    $project: {
+      "value": "$_id",
+      "_id": 0,
+      "label": "$taxonomyName"
+    }
+  }])
+    .then((clientTaxonomies) => {
+      return res.status(200).json({ status: "200", message: "Retrieved all Client Taxonomies successfully!", count: count ? count : 0, data: clientTaxonomies ? clientTaxonomies : [] });
+    })
+    .catch((error) => {
+      return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to retrieve all client taxonomies!", count: 0});
+    })
+  ))
+}
+
+export const retrieveDistinctDetails = async(req, res, next) => {
+  const [ clientTaxonomyDetail, companyIds, categoriesList, companiesNicList ] = await Promise.all([
+    ClientTaxonomy.findById(req.params.id ? req.params.id : null),
+    Companies.find({ clientTaxonomyId: req.params.id ? req.params.id : null, status: true }).distinct('_id'),
+    Categories.aggregate([{$match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true} }, {
+      $project: {
+        "value": "$_id",
+        "_id": 0,
+        "label": "$categoryName"
+      }
+    }]),
+    Companies.aggregate([
+      {$match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true} }, 
+      { $group : { "_id" : "$nic" } }, 
+      {$project: { "_id": 0, "value": "$_id", "label": "$_id" } 
+    }])
+  ]);
+  const distinctYears = await CompaniesTasks.find({ companyId: { $in: companyIds }, status: true}).distinct('year');
+  let pillarList = [];
+  if (categoriesList.length > 0) {
+    pillarList = categoriesList;
+  }
+
+  let nicCodeList = [];
+  if (companiesNicList.length > 0) {
+    nicCodeList = companiesNicList
+  }
+  let yearList = [];
+  if (distinctYears.length > 0) {
+    for (let cmpIndex = 0; cmpIndex < distinctYears.length; cmpIndex++) {
+      yearList.push({ value: distinctYears[cmpIndex], label: distinctYears[cmpIndex] });
+    }
+  }
+  
+  let nicList = _.uniqBy(nicCodeList, 'value');
+  let objectToReturn = {
+    _id: req.params.id,
+    taxonomyName: clientTaxonomyDetail.taxonomyName ? clientTaxonomyDetail.taxonomyName : 'NA',
+    headers: clientTaxonomyDetail.fields ? clientTaxonomyDetail.fields : [],
+    nicList: nicList ? nicList : [],
+    yearList: yearList,
+    pillarList: pillarList ? pillarList : [],
+    status: clientTaxonomyDetail.status
+  }
+  return res.status(200).json({ status: "200", message: "Client taxonomy detail retrieved successfully!", data: objectToReturn });
 }
 
 export const show = ({ params }, res, next) =>
