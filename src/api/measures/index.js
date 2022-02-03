@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, retrieveMeasureDetails, retrieveMeasureById, createMeasure, updateMeasureById } from './controller'
 import { schema } from './model'
 export Measures, { schema } from './model'
 
@@ -23,10 +23,10 @@ const { measureName, measureDescription, status } = schema.tree
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
-router.post('/',
+router.post('/createMeasure',
   token({ required: true }),
   body({ measureName, measureDescription }),
-  create)
+  createMeasure)
 
 /**
  * @api {get} /measures Retrieve measures
@@ -40,10 +40,11 @@ router.post('/',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 user access only.
  */
-router.get('/',
+router.get('/retrieve/all',
   token({ required: true }),
   query(),
-  index)
+  retrieveMeasureDetails)
+  
 
 /**
  * @api {get} /measures/:id Retrieve measures
@@ -56,13 +57,13 @@ router.get('/',
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
-router.get('/:id',
+router.get('/retrieve/:id',
   token({ required: true }),
-  show)
+  retrieveMeasureById )
 
 /**
- * @api {put} /measures/:id Update measures
- * @apiName UpdateMeasures
+ * @api {get} /measures/retrieve/all retrieve measure details
+ * @apiName  retrieve measure details
  * @apiGroup Measures
  * @apiPermission user
  * @apiParam {String} access_token user access token.
@@ -74,10 +75,13 @@ router.get('/:id',
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
-router.put('/:id',
+
+
+
+router.put('/retrive/:id',
   token({ required: true }),
   body({ measureName, measureDescription, status }),
-  update)
+  updateMeasureById)
 
 /**
  * @api {delete} /measures/:id Delete measures
@@ -92,5 +96,25 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+
+
+/**
+* @api {get} /measures/retrieve/all retrieve measure details
+* @apiName  retrieve measure details
+* @apiGroup Measures
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam measureName Measures's measureName.
+* @apiParam measureDescription Measures's measureDescription.
+* @apiParam status Measures's status.
+* @apiSuccess {Object} measures Measures's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Measures not found.
+* @apiError 401 user access only.
+*/
+
+
+
 
 export default router
