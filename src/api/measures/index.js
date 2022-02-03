@@ -10,7 +10,7 @@ const router = new Router()
 const { measureName, measureDescription, status } = schema.tree
 
 /**
- * @api {post} /measures Create measures
+ * @api {post} /measures 
  * @apiName CreateMeasures
  * @apiGroup Measures
  * @apiPermission user
@@ -29,7 +29,7 @@ router.post('/',
   createMeasure)
 
 /**
- * @api {get} /measures Retrieve measures
+ * @api {get} /measures Retrieve all measures 
  * @apiName RetrieveMeasures
  * @apiGroup Measures
  * @apiPermission user
@@ -44,7 +44,7 @@ router.get('/',
   token({ required: true }),
   query(),
   retrieveMeasureDetails)
-  
+
 
 /**
  * @api {get} /measures/:id Retrieve measures
@@ -59,10 +59,10 @@ router.get('/',
  */
 router.get('/:id',
   token({ required: true }),
-  retrieveMeasureById )
+  retrieveMeasureById)
 
 /**
- * @api {get} /measures/retrieve/all retrieve measure details
+ * @api {put} /measures/:id retrieve measure details
  * @apiName  retrieve measure details
  * @apiGroup Measures
  * @apiPermission user
@@ -99,20 +99,7 @@ router.delete('/:id',
 
 
 
-/**
-* @api {get} /measures/retrieve/all retrieve measure details
-* @apiName  retrieve measure details
-* @apiGroup Measures
-* @apiPermission user
-* @apiParam {String} access_token user access token.
-* @apiParam measureName Measures's measureName.
-* @apiParam measureDescription Measures's measureDescription.
-* @apiParam status Measures's status.
-* @apiSuccess {Object} measures Measures's data.
-* @apiError {Object} 400 Some parameters may contain invalid values.
-* @apiError 404 Measures not found.
-* @apiError 401 user access only.
-*/
+
 
 
 
