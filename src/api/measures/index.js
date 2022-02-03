@@ -23,7 +23,7 @@ const { measureName, measureDescription, status } = schema.tree
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
-router.post('/createMeasure',
+router.post('/',
   token({ required: true }),
   body({ measureName, measureDescription }),
   createMeasure)
@@ -40,7 +40,7 @@ router.post('/createMeasure',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 user access only.
  */
-router.get('/retrieve/all',
+router.get('/',
   token({ required: true }),
   query(),
   retrieveMeasureDetails)
@@ -57,7 +57,7 @@ router.get('/retrieve/all',
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
-router.get('/retrieve/:id',
+router.get('/:id',
   token({ required: true }),
   retrieveMeasureById )
 
@@ -78,7 +78,7 @@ router.get('/retrieve/:id',
 
 
 
-router.put('/retrive/:id',
+router.put('/:id',
   token({ required: true }),
   body({ measureName, measureDescription, status }),
   updateMeasureById)
