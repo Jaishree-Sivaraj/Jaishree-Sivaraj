@@ -2,10 +2,10 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, reportsFilter } from './controller'
+import { create, index, reportsFilter, exportReport } from './controller'
 
 const { clientTaxonomyId, searchQuery, page, limit } = '';
-const { nicList, yearsList, pillarList } = [];
+const { selectedCompanies, nicList, yearsList, pillarList } = [];
 
 
 const router = new Router()
@@ -25,6 +25,22 @@ router.post('/filter',
   token({ required: true }),
   body({ clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit }),
   reportsFilter)
+  
+/**
+ * @api {post} /reports/filter Create reports
+ * @apiName CreateReports
+ * @apiGroup Reports
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} reports Reports's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Reports not found.
+ * @apiError 401 user access only.
+ */
+router.post('/export',
+token({ required: true }),
+body({ clientTaxonomyId, selectedCompanies, yearsList, pillarList }),
+exportReport)
 
 /**
  * @api {get} /reports Retrieve reports
