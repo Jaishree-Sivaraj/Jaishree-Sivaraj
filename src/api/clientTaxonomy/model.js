@@ -1,5 +1,10 @@
 import mongoose, { Schema } from 'mongoose'
 
+const ACTUAL = 'Actual';
+const PROXY = 'Proxy';
+const DERIVED = 'Derived';
+export const dpResponseType = [ACTUAL, PROXY, DERIVED];
+
 const clientTaxonomySchema = new Schema({
   createdBy: {
     type: Schema.ObjectId,
@@ -16,7 +21,20 @@ const clientTaxonomySchema = new Schema({
   status: {
     type: Boolean,
     default: true
-  }
+  },
+  hasChildDp: {
+    type: Boolean,
+    default: false
+  },
+  childFields: {
+    type: Object,
+    default: {
+      additionalFields: {
+        type: Array,
+        default: []
+      }
+    },
+  },
 }, {
   timestamps: true,
   toJSON: {
@@ -26,7 +44,7 @@ const clientTaxonomySchema = new Schema({
 })
 
 clientTaxonomySchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -55,10 +73,9 @@ export default model
 //     type: String
 //   },
 //   fieldName: {
-//     type: String
-//   },
-//   description: {
-//     type: String
+//    type: String
+//   },/   description: {
+//     typString
 //   },
 //   isRequired: {
 //     type: Boolean,
@@ -76,3 +93,5 @@ export default model
 //     default: false
 //   }
 // }
+
+
