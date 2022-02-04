@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, retrieveMeasureDetails, retrieveMeasureById, createMeasure, updateMeasureById } from './controller'
 import { schema } from './model'
 export Measures, { schema } from './model'
 
@@ -10,7 +10,7 @@ const router = new Router()
 const { measureName, measureDescription, status } = schema.tree
 
 /**
- * @api {post} /measures Create measures
+ * @api {post} /measures 
  * @apiName CreateMeasures
  * @apiGroup Measures
  * @apiPermission user
@@ -26,10 +26,10 @@ const { measureName, measureDescription, status } = schema.tree
 router.post('/',
   token({ required: true }),
   body({ measureName, measureDescription }),
-  create)
+  createMeasure)
 
 /**
- * @api {get} /measures Retrieve measures
+ * @api {get} /measures Retrieve all measures 
  * @apiName RetrieveMeasures
  * @apiGroup Measures
  * @apiPermission user
@@ -43,7 +43,8 @@ router.post('/',
 router.get('/',
   token({ required: true }),
   query(),
-  index)
+  retrieveMeasureDetails)
+
 
 /**
  * @api {get} /measures/:id Retrieve measures
@@ -58,11 +59,11 @@ router.get('/',
  */
 router.get('/:id',
   token({ required: true }),
-  show)
+  retrieveMeasureById)
 
 /**
- * @api {put} /measures/:id Update measures
- * @apiName UpdateMeasures
+ * @api {put} /measures/:id retrieve measure details
+ * @apiName  retrieve measure details
  * @apiGroup Measures
  * @apiPermission user
  * @apiParam {String} access_token user access token.
@@ -74,10 +75,13 @@ router.get('/:id',
  * @apiError 404 Measures not found.
  * @apiError 401 user access only.
  */
+
+
+
 router.put('/:id',
   token({ required: true }),
   body({ measureName, measureDescription, status }),
-  update)
+  updateMeasureById)
 
 /**
  * @api {delete} /measures/:id Delete measures
@@ -92,5 +96,12 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+
+
+
+
+
+
 
 export default router
