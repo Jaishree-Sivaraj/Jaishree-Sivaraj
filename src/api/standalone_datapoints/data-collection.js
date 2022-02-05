@@ -11,7 +11,6 @@ import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../.
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
-import { isAwaitExpression } from '@babel/types';
 // Incoming payload
 // currentDatapoint:
 // [
@@ -514,92 +513,6 @@ export const dataCollection = async ({
                             message: 'Invalid member type'
                         });
                 }
-
-            case CollectionCompleted:
-                // Get the current data of standalone and update the child data.
-                switch (body.memberType) {
-                    case STANDALONE:
-                        try {
-
-                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-                                let item = dpCodesDetails[dpIndex];
-                                const getCurrentData = await StandaloneDatapoints({ ...updateQuery, year: item.fiscalYear });
-                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
-                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
-                                if (!saveChildDp) {
-                                    return res.status(409).json({
-                                        status: 409,
-                                        message: 'Failed to save child dp'
-                                    });
-                                }
-                                return res.status(200).json({
-                                    status: 200,
-                                    message: 'Saved Child Dp'
-                                });
-                            }
-                        } catch (error) {
-                            return res.status(500).json({
-                                status: 500,
-                                message: error?.message ? error?.message : 'Failed to save data'
-                            });
-                        }
-                        break;
-                    case BOARD_MATRIX:
-                        try {
-                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-                                let item = dpCodesDetails[dpIndex];
-                                const getCurrentData = await BoardMembersMatrixDataPoints({ ...updateQuery, year: item.fiscalYear, memberName: body.memberName, });
-                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
-                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
-                                if (!saveChildDp) {
-                                    return res.status(409).json({
-                                        status: 409,
-                                        message: 'Failed to save child dp'
-                                    });
-                                }
-                                return res.status(200).json({
-                                    status: 200,
-                                    message: 'Saved Child Dp'
-                                });
-                            }
-                        } catch (error) {
-                            return res.status(500).json({
-                                status: 500,
-                                message: error?.message ? error?.message : 'Failed to save data'
-                            });
-                        }
-                        break;
-                    case KMP_MATRIX:
-                        try {
-                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
-                                let item = dpCodesDetails[dpIndex];
-                                const getCurrentData = await KmpMatrixDataPoints({ ...updateQuery, year: item.fiscalYear, memberName: body.memberName, });
-                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
-                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
-                                if (!saveChildDp) {
-                                    return res.status(409).json({
-                                        status: 409,
-                                        message: 'Failed to save child dp'
-                                    });
-                                }
-                                return res.status(200).json({
-                                    status: 200,
-                                    message: 'Saved Child Dp'
-                                });
-                            }
-                        } catch (error) {
-                            return res.status(500).json({
-                                status: 500,
-                                message: error?.message ? error?.message : 'Failed to save data'
-                            });
-                        }
-                        break;
-                    default:
-                        break;
-
-                }
-
-
             default:
                 return res.json({
                     status: 500,
@@ -627,7 +540,7 @@ async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
         }
     }
     if (screenShot && !Array.isArray(screenShot)) {
-        const screenShotFileType = screenShot.base64.split(';')[0].split('/')[1];
+        const screenShotFileType = screenShot?.base64?.split(';')[0].split('/')[1];
         let screenshotFileName = companyId + '_' + dpCodeId + '_' + fiscalYear + '.' + screenShotFileType;
         await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenShot.base64);
         return screenshotFileName;
@@ -749,7 +662,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
 }
 
 // check if child dp is empty or not 
-async function getChildData(body, taskDetailsObject, fiscalYear, childDp, data) { //current/history data
+export async function getChildData(body, taskDetailsObject, fiscalYear, childDp, data) { //current/history data
     try {
         let childData = [];
         if (childDp?.length >= 0) {
@@ -766,7 +679,7 @@ async function getChildData(body, taskDetailsObject, fiscalYear, childDp, data) 
             // Formatting docs to save data.
             for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                 let childDetailsDatas = childDp[childIndex];
-                if (childDetailsDatas?.screenShot) {
+                if (Array.isArray(childDetailsDatas?.screenShot)) {
                     const url = await saveScreenShot(childDetailsDatas.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
                     childDetailsDatas.screenShot = {
                         url,
