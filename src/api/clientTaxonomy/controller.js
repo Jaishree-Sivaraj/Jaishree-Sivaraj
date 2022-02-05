@@ -179,10 +179,6 @@ export const show = ({ params }, res, next) =>
     .populate('createdBy')
     .then(notFound(res))
     .then((clientTaxonomy) => {
-      // let headersList = [];
-      // item.fields.forEach(obj => {
-      //   headersList.push({value: obj.id, label: obj.name});
-      // })
       let responseObject = {
         _id: clientTaxonomy.id,
         taxonomyName: clientTaxonomy.taxonomyName,
@@ -241,7 +237,6 @@ export const destroy = ({ user, params }, res, next) =>
     .then((clientTaxonomy) => clientTaxonomy ? clientTaxonomy.remove() : null)
     .then(success(res, 204))
     .catch(next)
-
 
 export const configureChildFields = async (req, res, next) => {
   try {
@@ -302,9 +297,42 @@ export const getChildFields = async (req, res, next) => {
     res.status(200).json({
       status: 200,
       response: childFields
-    })
+    });
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "" });
+  }
+}
+
+export const retrieveClientTaxonomies = async (req, res, next) => {
+  try {
+    const clientTaxonomies = await ClientTaxonomy.aggregate([{
+      $match: { status: true }
+    }, {
+      $project: {
+        value: '$_id',
+        label: '$taxonomyName',
+        _id: 0
+      }
+    }]);
+
+    if (!clientTaxonomies) {
+      return res.status(404).json({
+        status: 404,
+        message: 'Failed to retrive client taxonomy'
+      })
+    }
+
+    return res.status(200).json({
+      status: "200",
+      message: "Client taxonomy retrieved successfully!",
+      count: clientTaxonomies.length,
+      data: clientTaxonomies
+    });
 
   } catch (error) {
-
+    return res.json(500).json({
+      status: 500,
+      message: error?.message ? error?.message : 'Failed to retrieve all taxonomies'
+    });
   }
 }
