@@ -13,11 +13,13 @@ import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
 // Incoming payload
-// currentDatapoint:[
+// currentDatapoint:
+// [
 //     {
 //         child-dp-code:[{}].
 //     }],
-//      historyDatapoint:[
+//  }
+//  historyDatapoint:[
 //     {
 //     child-dp-code:[{}] // last priority.
 //     }]
@@ -57,6 +59,49 @@ export const dataCollection = async ({
                             // For updating isDerviedDatapointCompleted.
                             isUpdated = await updateDerivedCalculationCompletedStatus(STANDALONE, updateQuery, body, dpCodesDetails);
                             //! Current Data
+
+                            /*
+                            *
+                            currentData:[{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }]
+                            },{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }]
+                            },{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }],
+                            historicalData:[{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }]
+                            },{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }]
+                            },{
+                                dpCode:'',
+                                dpName:'',
+                                childDp:[{
+
+                                }],
+                                
+                            
+
+                ]*/
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
                                 currentChildDetails.push({
@@ -525,6 +570,7 @@ export const dataCollection = async ({
     }
 }
 
+// AWS =  send an image in S3 bucket the gets saved and then there is a url 
 async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
     let formattedScreenShots = [];
     if (screenShot && screenShot.length > 0) {
@@ -535,6 +581,13 @@ async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
             await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
             formattedScreenShots.push(screenshotFileName);
         }
+    }
+    if (screenShot && !Array.isArray(screenShot)) {
+        const screenShotFileType = screenShot.base64.split(';')[0].split('/')[1];
+        let screenshotFileName = companyId + '_' + dpCodeId + '_' + fiscalYear + '.' + screenShotFileType;
+        await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenShot.base64);
+        return screenshotFileName;
+
     }
     return formattedScreenShots;
 }
@@ -655,7 +708,6 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
 async function getChildData(body, taskDetailsObject, childDetails, data) { //current/history data
     try {
         let childData = [];
-        // Updating all the prior data of the same fiscal year as inactive.
         for (let childDataIndex = 0; childDataIndex < childDetails.length; childDataIndex++) {
             let childDpDetails = childDetails[childDataIndex];
             let childDp = childDpDetails.childDp;
@@ -672,18 +724,24 @@ async function getChildData(body, taskDetailsObject, childDetails, data) { //cur
 
                 // Formatting docs to save data.
                 for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
-                    let childDetailsData = childDp[childIndex];
-                    childDetailsData = {
+                    let childDetailsDatas = childDp[childIndex];
+                    if (childDetailsDatas.screenShot) {
+                        const url = await saveScreenShot(childDetailsDatas.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, childDpDetails.year);
+                        childDetailsDatas.screenShot = {
+                            url,
+                            name: childDetailsDatas.screenShot.name,
+                            uid: childDetailsDatas.screenShot.uid
+
+                        }
+                    }
+                    childData.push({
                         parentDpId: body?.dpCodeId,
                         companyId: taskDetailsObject?.companyId?.id,
                         taskId: taskDetailsObject?.id,
                         year: childDpDetails.year,
-                        childFields: {
-                            ...childDetailsData,
-                        },
+                        childFields: childDetailsDatas,
                         parentFields: data
-                    }
-                    childData.push(childDetailsData);
+                    });
                 }
             }
         }
