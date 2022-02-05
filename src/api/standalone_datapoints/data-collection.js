@@ -688,6 +688,12 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
+                
+                childDetailsDatas.units = {
+                    measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
+                    placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],
+                    uoms: data?.subDataType?.uoms ? data?.subDataType?.uoms : []
+                }
                 childData.push({
                     parentDpId: body?.dpCodeId,
                     companyId: taskDetailsObject?.companyId?.id,
