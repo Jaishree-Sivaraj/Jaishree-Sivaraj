@@ -7,7 +7,7 @@ import { ErrorDetails } from '../errorDetails';
 import { Datapoints } from '../datapoints'
 import { TaskAssignment } from '../taskAssignment';
 import { storeFileInS3 } from "../../services/utils/aws-s3";
-import { Pending, CorrectionPending, Completed } from '../../constants/task-status';
+import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../../constants/task-status';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
@@ -514,6 +514,92 @@ export const dataCollection = async ({
                             message: 'Invalid member type'
                         });
                 }
+
+            case CollectionCompleted:
+                // Get the current data of standalone and update the child data.
+                switch (body.memberType) {
+                    case STANDALONE:
+                        try {
+
+                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
+                                let item = dpCodesDetails[dpIndex];
+                                const getCurrentData = await StandaloneDatapoints({ ...updateQuery, year: item.fiscalYear });
+                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
+                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
+                                if (!saveChildDp) {
+                                    return res.status(409).json({
+                                        status: 409,
+                                        message: 'Failed to save child dp'
+                                    });
+                                }
+                                return res.status(200).json({
+                                    status: 200,
+                                    message: 'Saved Child Dp'
+                                });
+                            }
+                        } catch (error) {
+                            return res.status(500).json({
+                                status: 500,
+                                message: error?.message ? error?.message : 'Failed to save data'
+                            });
+                        }
+                        break;
+                    case BOARD_MATRIX:
+                        try {
+                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
+                                let item = dpCodesDetails[dpIndex];
+                                const getCurrentData = await BoardMembersMatrixDataPoints({ ...updateQuery, year: item.fiscalYear, memberName: body.memberName, });
+                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
+                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
+                                if (!saveChildDp) {
+                                    return res.status(409).json({
+                                        status: 409,
+                                        message: 'Failed to save child dp'
+                                    });
+                                }
+                                return res.status(200).json({
+                                    status: 200,
+                                    message: 'Saved Child Dp'
+                                });
+                            }
+                        } catch (error) {
+                            return res.status(500).json({
+                                status: 500,
+                                message: error?.message ? error?.message : 'Failed to save data'
+                            });
+                        }
+                        break;
+                    case KMP_MATRIX:
+                        try {
+                            for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
+                                let item = dpCodesDetails[dpIndex];
+                                const getCurrentData = await KmpMatrixDataPoints({ ...updateQuery, year: item.fiscalYear, memberName: body.memberName, });
+                                childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, getCurrentData);
+                                const saveChildDp = await ChildDp.insertMany(childpDpDataDetails);
+                                if (!saveChildDp) {
+                                    return res.status(409).json({
+                                        status: 409,
+                                        message: 'Failed to save child dp'
+                                    });
+                                }
+                                return res.status(200).json({
+                                    status: 200,
+                                    message: 'Saved Child Dp'
+                                });
+                            }
+                        } catch (error) {
+                            return res.status(500).json({
+                                status: 500,
+                                message: error?.message ? error?.message : 'Failed to save data'
+                            });
+                        }
+                        break;
+                    default:
+                        break;
+
+                }
+
+
             default:
                 return res.json({
                     status: 500,
