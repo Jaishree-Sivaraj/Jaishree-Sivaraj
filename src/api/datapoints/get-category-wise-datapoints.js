@@ -59,7 +59,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       })
     ]);
 
-    const currentYear = taskDetails.year.split(",");
+    const currentYear = taskDetails.year.split(", ");
 
     // Generic Queries used all over files..
     let [query, dptypeQuery, errorQuery] = [
@@ -138,6 +138,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           });
         }
         let repFinalSubmit = false;
+        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
         const checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
         if (checkHasError.length > 0) { // only when rep raises error they can submit.
           repFinalSubmit = true;
@@ -146,7 +147,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
         // If priority Dp Codes are not collected then only priority Dp codes are responded.
-        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
         // comparing all  priority Dp code with merged DpCodes and getting total priority dp collection
         const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
           return priorityDpCodes.find(priortyDp => {

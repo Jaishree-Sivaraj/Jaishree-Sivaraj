@@ -52,6 +52,8 @@ import uomConversions from './uom_conversions'
 import taxonomyUoms from './taxonomy_uoms'
 import placeValues from './place_values'
 import validationResults from './validation_results'
+import childDp from './child-dp'
+import reports from './reports'
 
 const router = new Router()
 
@@ -131,6 +133,8 @@ router.use('/uom_conversions', uomConversions)
 router.use('/taxonomy_uoms', taxonomyUoms)
 router.use('/place_values', placeValues)
 router.use('/validation_results', validationResults)
+router.use('/child-dps', childDp)
+router.use('/reports', reports)
 router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router
