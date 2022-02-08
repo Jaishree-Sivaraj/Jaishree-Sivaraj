@@ -29,7 +29,7 @@ import {
 
 export const datapointDetails = async (req, res, next) => {
     try {
-        const { year, taskId, datapointId, memberType, memberName, memberId } = req.body;
+        const { year, taskId, datapointId, memberType, memberName, memberId, isPriority } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -155,45 +155,10 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
 
+        const chilDpHeaders = await getHeaders(taskDetails.companyId.clientTaxonomyId.id);
+
         let index, prevDatapoint = {}, nextDatapoint = {};
 
-        const dpTypequery = {
-            taskId: taskId,
-            companyId: taskDetails.companyId.id,
-            year: {
-                $in: currentYear
-            },
-            isActive: true,
-            status: true
-        }
-
-        const [currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails, priorityDpCodes, chilDpHeaders] = await Promise.all([
-            StandaloneDatapoints.find(dpTypequery)
-                .populate('datapointId'),
-            BoardMembersMatrixDataPoints.find(dpTypequery).populate('datapointId'),
-            KmpMatrixDataPoints.find(dpTypequery).populate('datapointId'),
-            Datapoints.find({
-                dataCollection: 'Yes',
-                functionId: {
-                    "$ne": functionId.id
-                },
-                clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
-                categoryId: taskDetails?.categoryId.id,
-                isPriority: true,
-                status: true
-            }),
-            getHeaders(taskDetails.companyId.clientTaxonomyId.id)
-        ]);
-
-        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
-        // comparing all  priority Dp code with merged DpCodes and getting total priority dp collection
-        const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
-            return priorityDpCodes.find(priortyDp => {
-                return priortyDp.id == mergedData.datapointId.id;
-            });
-        });
-
-        const totalUniquePriortyDpCollected = totalPriortyDataCollected?.length / currentYear?.length;
 
         let datapointQuery =
         {
@@ -207,7 +172,7 @@ export const datapointDetails = async (req, res, next) => {
             status: true
         }
 
-        if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
+        if (isPriority == true) {
             datapointQuery = { ...datapointQuery, isPriority: true };
         }
 
