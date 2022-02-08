@@ -202,12 +202,12 @@ export const exportReport  = async(req, res, next) => {
     for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
       let dpCodeDetails = datapointDetails.filter(obj =>  obj.id == allStandaloneDetails[stdIndex].datapointId['id']) 
         element["Item Code"] = dpCodeDetails[0].code ? dpCodeDetails[0].code : "NI",
-        element["Item Criteria"] = dpCodeDetails[0].themeId.themeName ? dpCodeDetails[0].themeId.themeName : "NI",
-        element["Category"] = dpCodeDetails[0].categoryId.categoryName ? dpCodeDetails[0].categoryId.categoryName : "NI",
+        element["Item Criteria"] = dpCodeDetails[0].themeId ? dpCodeDetails[0].themeId.themeName : "NI",
+        element["Category"] = dpCodeDetails[0].categoryId ? dpCodeDetails[0].categoryId.categoryName : "NI",
         element["bvd9"] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.cin : '',
         element["name_of_company"] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.companyName : '',
         element["year"] = allStandaloneDetails[stdIndex].year ? allStandaloneDetails[stdIndex].year : 'NI',
-        element["business_element_required_framework"] = dpCodeDetails[0].keyIssueId.keyIssueName ? dpCodeDetails[0].keyIssueId.keyIssueName : "NI",
+        element["business_element_required_framework"] = dpCodeDetails[0].keyIssueId ? dpCodeDetails[0].keyIssueId.keyIssueName : "NI",
         element["Description"] = dpCodeDetails[0].description ? dpCodeDetails[0].description : "NI",
         element["Expected Result"] = dpCodeDetails[0].unit ? dpCodeDetails[0].unit : "NI",
         element["data_value"] = allStandaloneDetails[stdIndex].response ? allStandaloneDetails[stdIndex].response : 'NI',
