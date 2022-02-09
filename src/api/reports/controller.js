@@ -162,79 +162,83 @@ export const exportReport  = async(req, res, next) => {
 ]);
 
   console.log('allStandaloneDetails', allStandaloneDetails.length);
-  let rows = [];
-  let element = {
-    "Item Code": "",
-    "Item Criteria" : "",
-    "Category" : "",
-    "bvd9" : "",
-    "name_of_company": "",
-    "year" : "",
-    "business_element_required_framework" : "",
-    "Description" : "",
-    "Expected Result" : "",
-    "data_value" : "",
-    "data_type (number, text, units)" : "",
-    "did_the_company_report" : "",
-    "date_of_data_capture" : "",
-    "type of value(actual/derived/Proxy)" : "",
-    "company_data_element_label (for numbers)" : "",
-    "company_data_element_sub_label (for numbers)" : "",
-    "relevant_standards_and_frameworks" : "",
-    "total_or_sub_line_item (for numbers)" : "",
-    "format_of_data_provided_by_company (chart, table, text)" : "",
-    "supporting_narrative" : "",
-    "section_of_document" : "",
-    "page_number" : "",
-    "name_of_document_as_saved" : "",
-    "name_of_document (as listed on title page)" : "",
-    "HTML Link of Document" : "",
-    "Snapshot" : "",
-    "Document Year" : "",
-    "keyword_used" : "",
-    "comment" : "",
-    "Error Type" : "",
-    "Error Comments" : "",
-    "Analyst Comment" : "",
-    "Addition Source Used?" : ""
-  }
   if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
+    let rows = [];
+    // let element = {
+    //   "Item Code": "",
+    //   "Item Criteria" : "",
+    //   "Category" : "",
+    //   "bvd9" : "",
+    //   "name_of_company": "",
+    //   "year" : "",
+    //   "business_element_required_framework" : "",
+    //   "Description" : "",
+    //   "Expected Result" : "",
+    //   "data_value" : "",
+    //   "data_type (number, text, units)" : "",
+    //   "did_the_company_report" : "",
+    //   "date_of_data_capture" : "",
+    //   "type of value(actual/derived/Proxy)" : "",
+    //   "company_data_element_label (for numbers)" : "",
+    //   "company_data_element_sub_label (for numbers)" : "",
+    //   "relevant_standards_and_frameworks" : "",
+    //   "total_or_sub_line_item (for numbers)" : "",
+    //   "format_of_data_provided_by_company (chart, table, text)" : "",
+    //   "supporting_narrative" : "",
+    //   "section_of_document" : "",
+    //   "page_number" : "",
+    //   "name_of_document_as_saved" : "",
+    //   "name_of_document (as listed on title page)" : "",
+    //   "HTML Link of Document" : "",
+    //   "Snapshot" : "",
+    //   "Document Year" : "",
+    //   "keyword_used" : "",
+    //   "comment" : "",
+    //   "Error Type" : "",
+    //   "Error Comments" : "",
+    //   "Analyst Comment" : "",
+    //   "Addition Source Used?" : ""
+    // }
     for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
       let dpCodeDetails = datapointDetails.filter(obj =>  obj.id == allStandaloneDetails[stdIndex].datapointId['id']) 
-        element["Item Code"] = dpCodeDetails[0].code ? dpCodeDetails[0].code : "NI",
-        element["Item Criteria"] = dpCodeDetails[0].themeId ? dpCodeDetails[0].themeId.themeName : "NI",
-        element["Category"] = dpCodeDetails[0].categoryId ? dpCodeDetails[0].categoryId.categoryName : "NI",
-        element["bvd9"] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.cin : '',
-        element["name_of_company"] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.companyName : '',
-        element["year"] = allStandaloneDetails[stdIndex].year ? allStandaloneDetails[stdIndex].year : 'NI',
-        element["business_element_required_framework"] = dpCodeDetails[0].keyIssueId ? dpCodeDetails[0].keyIssueId.keyIssueName : "NI",
-        element["Description"] = dpCodeDetails[0].description ? dpCodeDetails[0].description : "NI",
-        element["Expected Result"] = dpCodeDetails[0].unit ? dpCodeDetails[0].unit : "NI",
-        element["data_value"] = allStandaloneDetails[stdIndex].response ? allStandaloneDetails[stdIndex].response : 'NI',
-        element["data_type (number, text, units)"] = dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "NI",
-        element["did_the_company_report"] = allStandaloneDetails[stdIndex].did_the_company_report ? allStandaloneDetails[stdIndex].did_the_company_report : 'NI',
-        element["date_of_data_capture"] = allStandaloneDetails[stdIndex].date_of_data_capture ? allStandaloneDetails[stdIndex].date_of_data_capture : 'NI',
-        element["type of value(actual/derived/Proxy)"] = allStandaloneDetails[stdIndex].type_of_value ? allStandaloneDetails[stdIndex].type_of_value : 'NI',
-        element["company_data_element_label (for numbers)"] = allStandaloneDetails[stdIndex].company_data_element_label ? allStandaloneDetails[stdIndex].company_data_element_label : 'NI',
-        element["company_data_element_sub_label (for numbers)"] = allStandaloneDetails[stdIndex].company_data_element_sub_label ? allStandaloneDetails[stdIndex].company_data_element_sub_label : 'NI',
-        element["relevant_standards_and_frameworks"] = allStandaloneDetails[stdIndex].relevant_standards_and_frameworks ? allStandaloneDetails[stdIndex].relevant_standards_and_frameworks : 'NI',
-        element["total_or_sub_line_item (for numbers)"] = allStandaloneDetails[stdIndex].total_or_sub_line_item ? allStandaloneDetails[stdIndex].total_or_sub_line_item : 'NI',
-        element["format_of_data_provided_by_company (chart, table, text)"] = allStandaloneDetails[stdIndex].format_of_data_provided_by_company ? allStandaloneDetails[stdIndex].format_of_data_provided_by_company : 'NI',
-        element["supporting_narrative"] = allStandaloneDetails[stdIndex].textSnippet ? allStandaloneDetails[stdIndex].textSnippet : 'NI',
-        element["section_of_document"] = allStandaloneDetails[stdIndex].section_of_document ? allStandaloneDetails[stdIndex].section_of_document : 'NI',
-        element["page_number"] = allStandaloneDetails[stdIndex].pageNumber ? allStandaloneDetails[stdIndex].pageNumber : 'NI',
-        element["name_of_document_as_saved"] = allStandaloneDetails[stdIndex].sourceFile ? allStandaloneDetails[stdIndex].sourceFile : 'NI',
-        element["name_of_document (as listed on title page)"] = allStandaloneDetails[stdIndex].sourceName ? allStandaloneDetails[stdIndex].sourceName : 'NI',
-        element["HTML Link of Document"] = allStandaloneDetails[stdIndex].url ? allStandaloneDetails[stdIndex].url : 'NI',
-        element["Snapshot"] = allStandaloneDetails[stdIndex].screenShot ? allStandaloneDetails[stdIndex].screenShot : 'NI',
-        element["Document Year"] = allStandaloneDetails[stdIndex].documentYear ? allStandaloneDetails[stdIndex].documentYear : 'NI',
-        element["keyword_used"] = allStandaloneDetails[stdIndex].keyword_used ? allStandaloneDetails[stdIndex].keyword_used : 'NI',
-        element["comment"] = allStandaloneDetails[stdIndex].comment ? allStandaloneDetails[stdIndex].comment : 'NI',
-        element["Error Type"] = allStandaloneDetails[stdIndex].errorType ? allStandaloneDetails[stdIndex].errorType : 'NI',
-        element["Error Comments"] = allStandaloneDetails[stdIndex].errorComments ? allStandaloneDetails[stdIndex].errorComments : 'NI',
-        element["Analyst Comment"] = allStandaloneDetails[stdIndex].optionalAnalystComment ? allStandaloneDetails[stdIndex].optionalAnalystComment : 'NI',
-        element["Addition Source Used?"] = allStandaloneDetails[stdIndex].additionSourceUsed ? allStandaloneDetails[stdIndex].additionSourceUsed : 'NI',
-      // };
+
+       let Year =  allStandaloneDetails[stdIndex].year.split('-',);
+       
+        let resObj = {
+          "Item Code" : dpCodeDetails[0].code ? dpCodeDetails[0].code : "NI",
+          "Item Criteria" : dpCodeDetails[0].themeId ? dpCodeDetails[0].themeId.themeName : "NI",
+          "Category" : dpCodeDetails[0].categoryId ? dpCodeDetails[0].categoryId.categoryName : "NI",
+          "bvd9" : allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.cin : '',
+          "name_of_company" : allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.companyName : '',
+          "year" : Year.length > 1 ? Year[0].trim(' ') : 'NI',
+          "business_element_required_framework" : dpCodeDetails[0].keyIssueId ? dpCodeDetails[0].keyIssueId.keyIssueName : "NI",
+          "Description" : dpCodeDetails[0].description ? dpCodeDetails[0].description : "NI",
+          "Expected Result" : dpCodeDetails[0].unit ? dpCodeDetails[0].unit : "NI",
+          "data_value" : allStandaloneDetails[stdIndex].response ? allStandaloneDetails[stdIndex].response : 'NI',
+          "data_type (number, text, units)" : dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "NI",
+          "did_the_company_report" : allStandaloneDetails[stdIndex].did_the_company_report ? allStandaloneDetails[stdIndex].did_the_company_report : 'NI',
+          "date_of_data_capture" : allStandaloneDetails[stdIndex].date_of_data_capture ? allStandaloneDetails[stdIndex].date_of_data_capture : 'NI',
+          "type of value(actual/derived/Proxy)" : allStandaloneDetails[stdIndex].type_of_value ? allStandaloneDetails[stdIndex].type_of_value : 'NI',
+          "company_data_element_label (for numbers)" : allStandaloneDetails[stdIndex].company_data_element_label ? allStandaloneDetails[stdIndex].company_data_element_label : 'NI',
+          "company_data_element_sub_label (for numbers)" : allStandaloneDetails[stdIndex].company_data_element_sub_label ? allStandaloneDetails[stdIndex].company_data_element_sub_label : 'NI',
+          "relevant_standards_and_frameworks" : allStandaloneDetails[stdIndex].relevant_standards_and_frameworks ? allStandaloneDetails[stdIndex].relevant_standards_and_frameworks : 'NI',
+          "total_or_sub_line_item (for numbers)" : allStandaloneDetails[stdIndex].total_or_sub_line_item ? allStandaloneDetails[stdIndex].total_or_sub_line_item : 'NI',
+          "format_of_data_provided_by_company (chart, table, text)" : allStandaloneDetails[stdIndex].format_of_data_provided_by_company ? allStandaloneDetails[stdIndex].format_of_data_provided_by_company : 'NI',
+          "supporting_narrative" : allStandaloneDetails[stdIndex].textSnippet ? allStandaloneDetails[stdIndex].textSnippet : 'NI',
+          "section_of_document" : allStandaloneDetails[stdIndex].section_of_document ? allStandaloneDetails[stdIndex].section_of_document : 'NI',
+          "page_number" : allStandaloneDetails[stdIndex].pageNumber ? allStandaloneDetails[stdIndex].pageNumber : 'NI',
+          "name_of_document_as_saved" : allStandaloneDetails[stdIndex].sourceFile ? allStandaloneDetails[stdIndex].sourceFile : 'NI',
+          "name_of_document (as listed on title page)" : allStandaloneDetails[stdIndex].sourceName ? allStandaloneDetails[stdIndex].sourceName : 'NI',
+          "HTML Link of Document" : allStandaloneDetails[stdIndex].url ? allStandaloneDetails[stdIndex].url : 'NI',
+          "Snapshot" : allStandaloneDetails[stdIndex].screenShot ? allStandaloneDetails[stdIndex].screenShot : 'NI',
+          "Document Year" : allStandaloneDetails[stdIndex].documentYear ? allStandaloneDetails[stdIndex].documentYear : 'NI',
+          "keyword_used" : allStandaloneDetails[stdIndex].keyword_used ? allStandaloneDetails[stdIndex].keyword_used : 'NI',
+          "comment" : allStandaloneDetails[stdIndex].comment ? allStandaloneDetails[stdIndex].comment : 'NI',
+          "Error Type" : allStandaloneDetails[stdIndex].errorType ? allStandaloneDetails[stdIndex].errorType : 'NI',
+          "Error Comments" : allStandaloneDetails[stdIndex].errorComments ? allStandaloneDetails[stdIndex].errorComments : 'NI',
+          "Analyst Comment" : allStandaloneDetails[stdIndex].optionalAnalystComment ? allStandaloneDetails[stdIndex].optionalAnalystComment : 'NI',
+          "Addition Source Used?" : allStandaloneDetails[stdIndex].additionSourceUsed ? allStandaloneDetails[stdIndex].additionSourceUsed : 'NI',
+        }
 
       // objectToPush[clientTaxonomyDetail.outputFields['cin'].displayName] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.cin : '';
       // objectToPush[clientTaxonomyDetail.outputFields['companyName'].displayName] = allStandaloneDetails[stdIndex].companyId ? allStandaloneDetails[stdIndex].companyId.companyName : '';
@@ -250,7 +254,7 @@ export const exportReport  = async(req, res, next) => {
       //     objectToPush[clientTaxonomyDetail.outputFields.additionalFields[outIndex].displayName] = allStandaloneDetails[stdIndex].additionalDetails[clientTaxonomyDetail.outputFields.additionalFields[outIndex].fieldName];
       //   }
       // }
-      rows.push(element);
+      rows.push(resObj);
     }
     return res.status(200).json({ 
       status: "200", 
