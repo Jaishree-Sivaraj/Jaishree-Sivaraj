@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy, configureChildFields,retrieveClientTaxonomies, getChildFields, retrieveAll, retrieveDistinctDetails } from './controller'
+import { create, index, show, update, destroy, createClientTaxonomy, updateClientTaxonomy, retrieveClientTaxonomies, configureChildFields, getChildFields, retrieveAll, retrieveDistinctDetails } from './controller'
 import { schema } from './model'
 export ClientTaxonomy, { schema } from './model'
 
