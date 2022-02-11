@@ -367,7 +367,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                 let uomValues = [];
                 for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
                     const element = measureUoms[uomIndex];
-                    uomValues.push({ value: element.id, label: element.uomName });
+                    uomValues.push({ value: element.uomName, label: element.uomName });
                 }
                 if (uomValues.length > 0) {
                     headers.push({ 
