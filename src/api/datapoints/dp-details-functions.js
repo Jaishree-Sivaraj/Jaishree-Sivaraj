@@ -370,19 +370,6 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     uomValues.push({ value: element.uomName, label: element.uomName });
                 }
                 if (uomValues.length > 0) {
-                    headers.push({ 
-                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length, 
-                        "displayName": "Unit",
-                        "fieldName": "uom",
-                        "dataType": "Select",
-                        "options": uomValues,
-                        "isRequired": true,
-                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber 
-                        ? 
-                        clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber + 1
-                        :
-                        clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length 
-                    })
                     if (measureDtl.measureName == 'Currency') {
                         headers.push({ 
                             "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1, 
@@ -393,11 +380,25 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                             "isRequired": true,
                             "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber 
                             ? 
-                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber + 1
+                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
                             :
                             clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                         })
                     }
+                    
+                    headers.push({ 
+                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length, 
+                        "displayName": "Unit",
+                        "fieldName": "uom",
+                        "dataType": "Select",
+                        "options": uomValues,
+                        "isRequired": true,
+                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber 
+                        ? 
+                        clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                        :
+                        clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length 
+                    })
                 }
             }
         } else {
