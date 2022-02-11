@@ -203,7 +203,16 @@ export const exportReport  = async(req, res, next) => {
       let dpCodeDetails = datapointDetails.filter(obj =>  obj.id == allStandaloneDetails[stdIndex].datapointId['id']) 
 
        let Year =  allStandaloneDetails[stdIndex].year.split('-',);
-       
+
+       let dataType = '';
+       if (dpCodeDetails[0].dataType == 'Number' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ') &&  dpCodeDetails[0].measureType != 'Currency') {
+         dataType = dpCodeDetails[0].measureType;         
+       } else if (dpCodeDetails[0].dataType == 'Number' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ') &&  dpCodeDetails[0].measureType == 'Currency') {
+        dataType = allStandaloneDetails[stdIndex].placeValue ? allStandaloneDetails[stdIndex].placeValue : "Number";
+       } else {
+         dataType = dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "NI";
+       }
+
         let resObj = {
           "Item Code" : dpCodeDetails[0].code ? dpCodeDetails[0].code : "NI",
           "Item Criteria" : dpCodeDetails[0].themeId ? dpCodeDetails[0].themeId.themeName : "NI",
@@ -215,7 +224,7 @@ export const exportReport  = async(req, res, next) => {
           "Description" : dpCodeDetails[0].description ? dpCodeDetails[0].description : "NI",
           "Expected Result" : dpCodeDetails[0].unit ? dpCodeDetails[0].unit : "NI",
           "data_value" : allStandaloneDetails[stdIndex].response ? allStandaloneDetails[stdIndex].response : 'NI',
-          "data_type (number, text, units)" : dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "NI",
+          "data_type (number, text, units)" : dataType ? dataType : "NI",
           "did_the_company_report" : allStandaloneDetails[stdIndex].did_the_company_report ? allStandaloneDetails[stdIndex].did_the_company_report : 'NI',
           "date_of_data_capture" : allStandaloneDetails[stdIndex].date_of_data_capture ? allStandaloneDetails[stdIndex].date_of_data_capture : 'NI',
           "type of value(actual/derived/Proxy)" : allStandaloneDetails[stdIndex].type_of_value ? allStandaloneDetails[stdIndex].type_of_value : 'NI',
