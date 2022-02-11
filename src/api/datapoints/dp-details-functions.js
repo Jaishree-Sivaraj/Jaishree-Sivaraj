@@ -351,7 +351,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             Measures.find({ status: true }),
             MeasureUoms.find({ status: true }).populate('measureId'),
             PlaceValues.aggregate([
-                { $match: { status: true } }, { $project: { _id: 0, value: "$_id", label: "$name" } }])
+                { $match: { status: true } }, { $project: { _id: 0, value: "$name", label: "$name" } }])
         ]);
         let headers = [];
         if (clientTaxData?.childFields?.additionalFields?.length > 0) {
