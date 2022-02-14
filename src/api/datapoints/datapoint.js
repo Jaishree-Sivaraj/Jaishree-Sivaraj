@@ -71,7 +71,7 @@ export const datapointDetails = async (req, res, next) => {
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id })
         ]);
-        let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues?.measureType);
+        let dpMeasureType = measureTypes.filter(obj => obj.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,

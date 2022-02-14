@@ -362,7 +362,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                 headers.push(field);
             });
             if(dpDetails.measureType != ''){
-                let measureDtl = measureDetail.find(obj => obj.measureName == dpDetails.measureType);
+                let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
                 let uomValues = [];
                 for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
