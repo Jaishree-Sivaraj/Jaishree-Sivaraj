@@ -86,7 +86,7 @@ export const datapointDetails = async (req, res, next) => {
                 uomValues.push({ value: element.id, label: element.uomName });
             }
         }
-        if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
+        if (dpTypeValues && (dpTypeValues?.measureType == "Currency" || dpTypeValues?.dataType == 'Number')) {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
