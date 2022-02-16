@@ -35,6 +35,17 @@ const clientTaxonomySchema = new Schema({
       }
     },
   },
+  outputFields: {
+    type: Object,
+    default: {
+      cin: { displayName: 'bvd9', fieldName: 'cin', orderNumber: 4 },
+      companyName: { displayName: 'name_of_company', fieldName: 'companyName', orderNumber: 5  },
+      additionalFields: {
+        type: Array,
+        default: []
+      }
+    },
+  }
 }, {
   timestamps: true,
   toJSON: {
@@ -51,6 +62,7 @@ clientTaxonomySchema.methods = {
       createdBy: this.createdBy.view(full),
       taxonomyName: this.taxonomyName,
       fields: this.fields ? this.fields : [],
+      outputFields: this.outputFields ? this.outputFields : {},
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
