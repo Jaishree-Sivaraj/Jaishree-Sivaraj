@@ -132,7 +132,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     sourceFile: fileUrl,
     publicationDate: body.publicationDate,
     fiscalYear: body.fiscalYear,
-    name: body.name
+    name: body.name,
+    sourceTitle:body.sourceTitle
   }
   console.log('companySourceDetails', companySourceDetails);
   await CompanySources.create(companySourceDetails).then((detail) => {

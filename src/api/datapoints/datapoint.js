@@ -24,29 +24,31 @@ import {
     getHistoryDataObject,
     getPreviousNextDataPoints,
     getChildDp,
-    getHeaders
+    getHeaders,
+    getSortedYear
 } from './dp-details-functions';
 
 export const datapointDetails = async (req, res, next) => {
     try {
-        const { year, taskId, datapointId, memberType, memberName, memberId } = req.body;
+        const { year, taskId, datapointId, memberType, memberName, memberId, isPriority } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
             }).populate({
-                path: "companyId",
+                path: 'companyId',
                 populate: {
-                    path: "clientTaxonomyId"
+                    path: 'clientTaxonomyId'
                 }
             }).populate('categoryId'),
             Functions.findOne({
-                functionType: "Negative News",
+                functionType: 'Negative News',
                 status: true
             }),
             Measures.find({ status: true }),
             PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
-        const currentYear = year.split(',');
+        let currentYear = year.split(',');
+        currentYear = getSortedYear(currentYear);
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
         const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
@@ -71,7 +73,7 @@ export const datapointDetails = async (req, res, next) => {
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id })
         ]);
-        let dpMeasureType = measureTypes.filter(obj => obj.measureName == dpTypeValues?.measureType);
+        let dpMeasureType = measureTypes.filter(obj => obj.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
@@ -80,13 +82,13 @@ export const datapointDetails = async (req, res, next) => {
 
         let placeValues = [], uomValues = [];
 
-        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
+        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != 'NA' && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
                 uomValues.push({ value: element.id, label: element.uomName });
             }
         }
-        if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
+        if (dpTypeValues && (dpTypeValues?.measureType == 'Currency' || dpTypeValues?.dataType == 'Number')) {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
@@ -155,46 +157,9 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
 
+        const chilDpHeaders = await getHeaders(taskDetails.companyId.clientTaxonomyId.id, dpTypeValues.id ? dpTypeValues.id : '');
+
         let index, prevDatapoint = {}, nextDatapoint = {};
-
-        const dpTypequery = {
-            taskId: taskId,
-            companyId: taskDetails.companyId.id,
-            year: {
-                $in: currentYear
-            },
-            isActive: true,
-            status: true
-        }
-
-        const [currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails, priorityDpCodes, chilDpHeaders] = await Promise.all([
-            StandaloneDatapoints.find(dpTypequery)
-                .populate('datapointId'),
-            BoardMembersMatrixDataPoints.find(dpTypequery).populate('datapointId'),
-            KmpMatrixDataPoints.find(dpTypequery).populate('datapointId'),
-            Datapoints.find({
-                dataCollection: 'Yes',
-                functionId: {
-                    "$ne": functionId.id
-                },
-                clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
-                categoryId: taskDetails?.categoryId.id,
-                isPriority: true,
-                status: true
-            }),
-            getHeaders(taskDetails.companyId.clientTaxonomyId.id)
-        ]);
-
-        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
-        // comparing all  priority Dp code with merged DpCodes and getting total priority dp collection
-        const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
-            return priorityDpCodes.find(priortyDp => {
-                return priortyDp.id == mergedData.datapointId.id;
-            });
-        });
-
-        const totalUniquePriortyDpCollected = totalPriortyDataCollected?.length / currentYear?.length;
-
         let datapointQuery =
         {
             dataCollection: 'Yes',
@@ -207,7 +172,7 @@ export const datapointDetails = async (req, res, next) => {
             status: true
         }
 
-        if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
+        if (isPriority == true) {
             datapointQuery = { ...datapointQuery, isPriority: true };
         }
 
@@ -227,6 +192,7 @@ export const datapointDetails = async (req, res, next) => {
         }
 
         let childDp = [];
+        console.log(currentYear);
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
@@ -270,14 +236,14 @@ export const datapointDetails = async (req, res, next) => {
                         ]);
                         const condition = object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot); //here we need to update the errorCaughtbyRep screenshot
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         } else if (condition && object.hasCorrection) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = {
                                 ...currentDatapointsObject,
                                 comments: object.comments,
@@ -285,10 +251,10 @@ export const datapointDetails = async (req, res, next) => {
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         } else if (condition && !object.hasCorrection && !object.hasError) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = {
                                 ...currentDatapointsObject,
                                 comments: []
@@ -296,7 +262,7 @@ export const datapointDetails = async (req, res, next) => {
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         }
                         datapointsObject.status = 'Completed';
                     };
@@ -305,7 +271,7 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, true, false);
                         datapointsObject.status = YetToStart;
                     }
-                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
 
                     // datapointsObject.currentData.push({ childDp: childDp });
                     currentDatapointsObject.childDp = childDp;
@@ -335,7 +301,7 @@ export const datapointDetails = async (req, res, next) => {
                                 average: object.average, ...historicalDatapointsObject
                             }
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
-                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
                             historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
@@ -397,27 +363,27 @@ export const datapointDetails = async (req, res, next) => {
                         ]);
                         const condition = object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         } else if (condition && object.hasCorrection) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         } else if (condition && !object.hasCorrection && !object.hasError) {
-                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
+                            currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0] ? (errorDetailsObject[0]?.errorCaughtByRep ? (errorDetailsObject[0]?.errorCaughtByRep.screenShot ? errorDetailsObject[0]?.errorCaughtByRep.screenShot : []) : []) : []);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentIndex], currentDatapointsObject, false, true);
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         }
                         datapointsObject.status = 'Completed';
@@ -432,7 +398,7 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, '', currentDatapointsObject, true, false);
                         datapointsObject.status = YetToStart;
                     }
-                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
                     currentDatapointsObject.childDp = childDp;
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
@@ -454,7 +420,7 @@ export const datapointDetails = async (req, res, next) => {
                         if (object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
                             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
-                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
                             historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
@@ -554,7 +520,7 @@ export const datapointDetails = async (req, res, next) => {
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, '', currentDatapointsObject, true, false)
                         datapointsObject.status = YetToStart;
                     }
-                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                    childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
                     currentDatapointsObject.childDp = childDp;
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
@@ -578,7 +544,7 @@ export const datapointDetails = async (req, res, next) => {
                             && object.memberName == memberName) {
                             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues)
                             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
-                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id)
+                            childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
                             historicalDatapointsObject.childDp = childDp;
                             datapointsObject.historicalData.push(historicalDatapointsObject);
                         }
