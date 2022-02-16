@@ -11,6 +11,7 @@ import { Measures } from '../measures';
 import { MeasureUoms } from '../measure_uoms';
 import { PlaceValues } from '../place_values';
 import _ from "lodash";
+import { sortArray } from '../../services/utils/sorting-string';
 
 const requiredFields = [
     "categoryCode",
@@ -343,7 +344,7 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
 export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
 
-        const [ clientTaxData, dpDetails, measureDetail, uoms, placeValues ] = await Promise.all([
+        const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
             ClientTaxonomy.findOne({
                 _id: clientTaxonomyId
             }),
@@ -361,7 +362,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if(dpDetails.measureType != ''){
+            if (dpDetails.measureType != '') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
                 let uomValues = [];
@@ -371,33 +372,33 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                 }
                 if (uomValues.length > 0) {
                     if (measureDtl.measureName == 'Currency') {
-                        headers.push({ 
-                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1, 
+                        headers.push({
+                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
                             "displayName": "Place Value",
                             "fieldName": "placeValue",
                             "dataType": "Select",
                             "options": placeValues,
                             "isRequired": true,
-                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber 
-                            ? 
-                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                            :
-                            clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                ?
+                                clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                :
+                                clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                         })
                     }
-                    
-                    headers.push({ 
-                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length, 
+
+                    headers.push({
+                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
                         "displayName": "Unit",
                         "fieldName": "uom",
                         "dataType": "Select",
                         "options": uomValues,
                         "isRequired": true,
-                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber 
-                        ? 
-                        clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                        :
-                        clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length 
+                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            ?
+                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            :
+                            clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                     })
                 }
             }
@@ -412,5 +413,21 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
     } catch (error) {
         console.log(error?.message)
     }
+}
+
+export function getSortedYear(currentYear) {
+    let obj = [{}];
+    currentYear.map((year) => {
+        const y = year.split('-');
+        obj.push({ firstYear: y[0], lastYear: y[1] });
+    });
+    currentYear = sortArray(obj, 'lastYear', -1);
+    let newArray = [];
+    currentYear.map((arr) => {
+        if (Object.keys(arr).length > 0) {
+            newArray.push(arr.firstYear + '-' + arr.lastYear);
+        }
+    });
+    return newArray;
 }
 

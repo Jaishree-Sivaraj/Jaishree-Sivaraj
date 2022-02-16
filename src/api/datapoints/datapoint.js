@@ -24,7 +24,8 @@ import {
     getHistoryDataObject,
     getPreviousNextDataPoints,
     getChildDp,
-    getHeaders
+    getHeaders,
+    getSortedYear
 } from './dp-details-functions';
 
 export const datapointDetails = async (req, res, next) => {
@@ -34,19 +35,19 @@ export const datapointDetails = async (req, res, next) => {
             TaskAssignment.findOne({
                 _id: taskId
             }).populate({
-                path: "companyId",
+                path: 'companyId',
                 populate: {
-                    path: "clientTaxonomyId"
+                    path: 'clientTaxonomyId'
                 }
             }).populate('categoryId'),
             Functions.findOne({
-                functionType: "Negative News",
+                functionType: 'Negative News',
                 status: true
             }),
             Measures.find({ status: true }),
             PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
-        const currentYear = year.split(',');
+        let currentYear = year.split(',');
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
         const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
@@ -80,13 +81,13 @@ export const datapointDetails = async (req, res, next) => {
 
         let placeValues = [], uomValues = [];
 
-        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != "NA" && dpTypeValues?.measureType) {
+        if (dpTypeValues && dpTypeValues?.measureType != null && dpTypeValues?.measureType != 'NA' && dpTypeValues?.measureType) {
             for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
                 const element = taxonomyUoms[uomIndex];
                 uomValues.push({ value: element.id, label: element.uomName });
             }
         }
-        if (dpTypeValues && (dpTypeValues?.measureType == "Currency" || dpTypeValues?.dataType == 'Number')) {
+        if (dpTypeValues && (dpTypeValues?.measureType == 'Currency' || dpTypeValues?.dataType == 'Number')) {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
@@ -158,8 +159,6 @@ export const datapointDetails = async (req, res, next) => {
         const chilDpHeaders = await getHeaders(taskDetails.companyId.clientTaxonomyId.id, dpTypeValues.id ? dpTypeValues.id : '');
 
         let index, prevDatapoint = {}, nextDatapoint = {};
-
-
         let datapointQuery =
         {
             dataCollection: 'Yes',
@@ -192,6 +191,7 @@ export const datapointDetails = async (req, res, next) => {
         }
 
         let childDp = [];
+        currentYear = getSortedYear(currentYear);
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
