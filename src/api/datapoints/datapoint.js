@@ -157,7 +157,8 @@ export const datapointDetails = async (req, res, next) => {
             });
         }
 
-        const chilDpHeaders = await getHeaders(taskDetails.companyId.clientTaxonomyId.id, dpTypeValues.id ? dpTypeValues.id : '');
+        const chilDpHeaders1 = await getHeaders(taskDetails.companyId.clientTaxonomyId.id, dpTypeValues.id ? dpTypeValues.id : '');
+        let chilDpHeaders = _.sortBy(chilDpHeaders1, 'id')
 
         let index, prevDatapoint = {}, nextDatapoint = {};
         let datapointQuery =
