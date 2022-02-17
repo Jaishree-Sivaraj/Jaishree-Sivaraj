@@ -99,12 +99,12 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
     let subTypeName = body.newSubSourceTypeName;
     await SourceSubTypes.create({ subTypeName: subTypeName })
-      .then(async (response) => {
+      .then((response) => {
         if (response) {
           newSubSourceTypeId = response.id;
         }
       })
-      .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+      // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
   }
   if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
     let sourceObject = {
