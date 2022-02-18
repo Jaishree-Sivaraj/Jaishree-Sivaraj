@@ -91,8 +91,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         status: true
       }
     ];
-
-    let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
+    
     // For Standalone and boardMatrix search
     let datapointCodeNameQueryId;
     if (dpName !== '' || dpCode !== '') {
@@ -102,9 +101,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     console.log('This datapoint Id', datapointCodeNameQueryId)
 
     // Counting datapoint just with keyIssueId filter as board-matrix and kmp-matrix dp codes will not be displayed without memberid.
-    let [dpTypeValues, count, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
+    let [dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
       Datapoints.find(dptypeQuery).distinct('dpType'),
-      Datapoints.countDocuments(countQuery),
       // !Discuss pagination later. when priority dp more than 10. more than 10...
       Datapoints.find(keyIssueId !== '' ? { ...dptypeQuery, isPriority: true, keyIssueId, ...generalMatchQuery } : { ...dptypeQuery, isPriority: true, ...generalMatchQuery })
         .populate('keyIssueId')
@@ -243,7 +241,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssuesList,
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
                   }
 
@@ -305,7 +303,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     repFinalSubmit: repFinalSubmit,
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+                    count: datapointList?.dpCodesData?.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
                   }
 
@@ -363,7 +361,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     repFinalSubmit: repFinalSubmit,
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+                    count: datapointList?.dpCodesData?.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
 
                   }
@@ -420,7 +418,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               keyIssuesList,
               datapointList,
               isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-              count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+              count: datapointList?.dpCodesData?.length < 1 ? 0 : datapointList.dpCodesData.length,
               isPriority: false
 
             }
@@ -479,7 +477,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     keyIssuesList,
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
 
                   }
@@ -558,7 +556,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   response: {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
                   }
                 });
@@ -640,7 +638,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   response: {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : datapointList.dpCodesData.length,
                     isPriority: false
                   }
                 });
@@ -691,7 +689,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               keyIssuesList,
               datapointList,
               isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-              count: datapointList.dpCodesData.length < 1 ? 0 : count,
+              count: datapointList.dpCodesData.length < 1 ? 0 : datapointList.dpCodesData.length,
               isPriority: false
             }
           });
