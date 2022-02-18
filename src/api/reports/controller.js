@@ -6,6 +6,7 @@ import { ClientTaxonomy } from "../clientTaxonomy";
 import _ from 'lodash'
 import { Datapoints } from '../datapoints'
 import { ChildDp } from '../child-dp'
+import { CompanySources } from '../companySources'
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -131,13 +132,14 @@ export const exportReport = async (req, res, next) => {
     let taxonomyDetails = await ClientTaxonomy.find({ _id: clientTaxonomyId, status: true });
   
   
-    const [dsntDatapointIds, allChildDpDetails] = await Promise.all([
+    const [dsntDatapointIds, allChildDpDetails, allCompanySourceDetails] = await Promise.all([
       Datapoints.distinct('_id', {
         clientTaxonomyId: clientTaxonomyId,
         status: true,
         // isRequiredForJSON: true
       }),
-      ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} })
+      ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
+      CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
     ])
     matchQuery.datapointId = dsntDatapointIds;
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
@@ -264,6 +266,7 @@ export const exportReport = async (req, res, next) => {
           let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
           let stdData = allStandaloneDetails[stdIndex];
           let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
+          let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
           let childDpDetails = allChildDpDetails.filter((obj) =>
             obj.parentDpId == stdData.datapointId.id && obj.companyId == stdData.companyId.id && obj.year == stdData.year
           )
@@ -312,7 +315,8 @@ export const exportReport = async (req, res, next) => {
                   } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                     dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
                   } else {
-                    dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
+                    dataType = "Text";
+                    // dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
                   }
                   objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "NI";
                   break
@@ -327,6 +331,9 @@ export const exportReport = async (req, res, next) => {
                   break;
                 case 'dataProvider':
                   objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
+                  break;
+                case 'sourceTitle':
+                  objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "ESGDS";
                   break;
                 default:
                   objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
@@ -344,7 +351,7 @@ export const exportReport = async (req, res, next) => {
               } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                 dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
               } else {
-                dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
+                dataType = "Text";
               }
               objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
               objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
