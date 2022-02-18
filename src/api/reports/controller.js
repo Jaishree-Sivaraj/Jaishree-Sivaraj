@@ -356,7 +356,6 @@ export const exportReport = async (req, res, next) => {
               objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "NI";
               objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "NI";
               objectToPushAsChild['Snapshot'] = '';
-              objectToPushAsChild["section_of_document"] = item.childFields.section_of_document ? item.childFields.section_of_document : "NI";
               objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "NI";
               rows.push(objectToPushAsChild);
             }
