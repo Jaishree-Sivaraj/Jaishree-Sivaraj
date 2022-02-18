@@ -314,9 +314,10 @@ export const exportReport = async (req, res, next) => {
                     dataType = dpDetails[0].measureType;
                   } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                     dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
-                  } else {
-                    dataType = "Text";
-                    // dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
+                  } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                    dataType = "Number";
+                  }else{
+                    dataType = "Text"
                   }
                   objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "NI";
                   break
@@ -350,8 +351,10 @@ export const exportReport = async (req, res, next) => {
                 dataType = dpDetails[0].measureType;
               } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                 dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
-              } else {
-                dataType = "Text";
+              } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                dataType = "Number";
+              }else{
+                dataType = "Text"
               }
               objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
               objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
