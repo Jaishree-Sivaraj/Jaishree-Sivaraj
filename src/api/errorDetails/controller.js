@@ -547,7 +547,6 @@ export const saveErrorDetails = async ({
           if (item['screenShot'] && item['screenShot'].length > 0) {
             for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
               let screenshotItem = item['screenShot'][screenshotIndex];
-              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
               let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
               if (screenshotItem.base64) {
                 let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
