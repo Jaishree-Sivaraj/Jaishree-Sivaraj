@@ -1898,7 +1898,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       .populate('companyId')
       .populate('groupId')
     // Get distinct years
-    const distinctYears = taskDetails.year.split(',');
+    const distinctYears = taskDetails.year.split(', ');
     let datapointsCount = 0;
     let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
     const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
