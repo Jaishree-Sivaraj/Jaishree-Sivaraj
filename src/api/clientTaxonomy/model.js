@@ -18,6 +18,10 @@ const clientTaxonomySchema = new Schema({
     type: Array,
     default: []
   },
+  isDerivedCalculationRequired: {
+    type: Boolean,
+    default: true
+  },
   status: {
     type: Boolean,
     default: true
@@ -64,6 +68,7 @@ clientTaxonomySchema.methods = {
       fields: this.fields ? this.fields : [],
       outputFields: this.outputFields ? this.outputFields : {},
       status: this.status,
+      isDerivedCalculationRequired: this.isDerivedCalculationRequired,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

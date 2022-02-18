@@ -602,7 +602,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true; // datapoint response have been changed.
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 console.log(isDpDependent);
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
@@ -621,7 +621,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true;
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
                         _id: body.taskId,
@@ -639,7 +639,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true;
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
                         _id: body.taskId,
