@@ -324,6 +324,9 @@ export const exportReport = async (req, res, next) => {
               case 'nicIndustry':
                 objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "NI";
                 break;
+              case 'dataProvider':
+                objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "NI";
+                break;
               default:
                 objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
             }
