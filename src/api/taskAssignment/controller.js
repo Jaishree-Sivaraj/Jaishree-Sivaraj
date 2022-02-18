@@ -146,7 +146,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
     taskObject.companyId = body.company[index].id;
     taskObject.taskNumber = "DT1";
     let clientTaxDtl = await Companies.findOne({_id: taskObject.companyId}).populate('clientTaxonomyId');
-    if (clientTaxDtl.hasOwnProperty("isDerivedCalculationRequired") && clientTaxDtl.isDerivedCalculationRequired == false) {
+    if (clientTaxDtl.clientTaxonomyId && clientTaxDtl.clientTaxonomyId.isDerivedCalculationRequired == false) {
       taskObject.isDerviedCalculationCompleted = true;
     }
     await TaskAssignment.findOne({ status: true })
