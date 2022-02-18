@@ -310,7 +310,7 @@ export const exportReport = async (req, res, next) => {
                   if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                     dataType = dpDetails[0].measureType;
                   } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                    dataType = stdData?.placeValue ? `${stdData?.placeValue}" "${dpDetails[0].measureType}` : "Number";
+                    dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
                   } else {
                     dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
                   }
@@ -326,7 +326,7 @@ export const exportReport = async (req, res, next) => {
                   objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "NI";
                   break;
                 case 'dataProvider':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "NI";
+                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
                   break;
                 default:
                   objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
@@ -342,22 +342,22 @@ export const exportReport = async (req, res, next) => {
               if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                 dataType = dpDetails[0].measureType;
               } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}" "${dpDetails[0].measureType}` : "Number";
+                dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
               } else {
                 dataType = dpDetails[0].dataType ? dpDetails[0].dataType : "NI";
               }
               objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
-              objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.company_data_element_label ? item.childFields.company_data_element_label : " ";
-              objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.company_data_element_sub_label ? item.childFields.company_data_element_sub_label : " ";
-              objectToPushAsChild["data_value"] = item.childFields.data_value ? item.childFields.data_value : "NI";
+              objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
+              objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "NI";
+              objectToPushAsChild["data_value"] = item.childFields.response ? item.childFields.response : "NI";
               objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "NI";
-              objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.format_of_data_provided_by_company ? item.childFields.format_of_data_provided_by_company : "NI";
+              objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "NI";
               objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "NI";
-              objectToPushAsChild["section_of_document"] = item.childFields.section_of_document ? item.childFields.section_of_document : "NI";
+              objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "NI";
               objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "NI";
               objectToPushAsChild['Snapshot'] = '';
               objectToPushAsChild["section_of_document"] = item.childFields.section_of_document ? item.childFields.section_of_document : "NI";
-              objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.type_of_value ? item.childFields.type_of_value : "NI";
+              objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeO : "NI";
               rows.push(objectToPushAsChild);
             }
           }
