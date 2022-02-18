@@ -215,6 +215,8 @@ export const saveErrorDetails = async ({
               hasError: false,
               hasCorrection: false,
               correctionStatus: 'Completed',
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
             let childpDpDataDetails = await getChildData(body, { companyId: { id: body?.companyId }, id: body?.taskId }, item?.fiscalYear, item?.childDp, data);
@@ -245,6 +247,8 @@ export const saveErrorDetails = async ({
                 content: item.error.comment
               },
               status: true,
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
             await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true }, { $set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed' } });
@@ -282,6 +286,8 @@ export const saveErrorDetails = async ({
           correctionStatus: 'Completed',
           isActive: true,
           status: true,
+          uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+          placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
           createdBy: user
         })
       }
@@ -299,10 +305,12 @@ export const saveErrorDetails = async ({
             if (item['screenShot'] && item['screenShot'].length > 0) {
               for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
                 let screenshotItem = item['screenShot'][screenshotIndex];
-                let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-                formattedScreenShots.push(screenshotFileName);
+                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem.base64) {
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+                  formattedScreenShots.push(screenshotFileName);
+                }
               }
             }
             let data = {
@@ -331,6 +339,8 @@ export const saveErrorDetails = async ({
               hasCorrection: false,
               hasError: false,
               correctionStatus: 'Completed',
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
 
@@ -366,6 +376,8 @@ export const saveErrorDetails = async ({
                 content: item.error.comment
               },
               status: true,
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
             await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
@@ -389,10 +401,12 @@ export const saveErrorDetails = async ({
           if (item['screenShot'] && item['screenShot'].length > 0) {
             for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
               let screenshotItem = item['screenShot'][screenshotIndex];
-              let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-              formattedScreenShots.push(screenshotFileName);
+              let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+              if (screenshotItem.base64) {
+                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+                formattedScreenShots.push(screenshotFileName);
+              }
             }
           }
           await BoardMembersMatrixDataPoints.create({
@@ -418,6 +432,8 @@ export const saveErrorDetails = async ({
             memberStatus: true,
             isActive: true,
             status: true,
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             createdBy: user
           })
         } catch (error) {
@@ -438,10 +454,12 @@ export const saveErrorDetails = async ({
             if (item['screenShot'] && item['screenShot'].length > 0) {
               for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
                 let screenshotItem = item['screenShot'][screenshotIndex];
-                let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-                formattedScreenShots.push(screenshotFileName);
+                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem.base64) {
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+                  formattedScreenShots.push(screenshotFileName);
+                }
               }
             }
             let childpDpDataDetails = await getChildData(body, { companyId: { id: body?.companyId }, id: body?.taskId }, item?.fiscalYear, item?.childDp, data);
@@ -471,6 +489,8 @@ export const saveErrorDetails = async ({
               correctionStatus: 'Completed',
               status: true,
               isActive: true,
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
             await Promise.all([
@@ -502,6 +522,8 @@ export const saveErrorDetails = async ({
                 content: item.error.comment
               },
               status: true,
+              uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+              placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
               createdBy: user
             }
             await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
@@ -526,9 +548,12 @@ export const saveErrorDetails = async ({
             for (let screenshotIndex = 0; screenshotIndex < item['screenShot'].length; screenshotIndex++) {
               let screenshotItem = item['screenShot'][screenshotIndex];
               let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-              let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-              await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
-              formattedScreenShots.push(screenshotFileName);
+              let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+              if (screenshotItem.base64) {
+                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+                formattedScreenShots.push(screenshotFileName);
+              }
             }
           }
           await KmpMatrixDataPoints.create({
@@ -554,6 +579,8 @@ export const saveErrorDetails = async ({
             isActive: true,
             memberStatus: true,
             status: true,
+            uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
+            placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
             createdBy: user
           })
         } catch (error) {
@@ -589,11 +616,13 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
             if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
               for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
                 let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem.base64) {
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
                   .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
-                formattedScreenShots.push(screenshotFileName);
+                  formattedScreenShots.push(screenshotFileName);
+                }
               }
             }
             errorCaughtByRep = {
@@ -664,11 +693,13 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
             if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
               for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
                 let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem.base64) {
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
                   .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
-                formattedScreenShots.push(screenshotFileName);
+                  formattedScreenShots.push(screenshotFileName);
+                }
               }
             }
             errorCaughtByRep = {
@@ -740,11 +771,13 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
             if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
               for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
                 let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
-                let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
+                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem.base64) {
+                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
                   .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
-                formattedScreenShots.push(screenshotFileName);
+                  formattedScreenShots.push(screenshotFileName);
+                }
               }
             }
             errorCaughtByRep = {
