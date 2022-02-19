@@ -75,7 +75,7 @@ export const reportsFilter = async (req, res, next) => {
       }
     },
     { $unwind: "$categoryDetails" },
-    { $match: matchQuery },
+    { $match: {...matchQuery, "taskDetails.taskStatus": { $in: ["Verification Completed", "Completed"] } } },
     {
       $project: {
         "companyId": "$companyId",
@@ -118,6 +118,7 @@ export const exportReport = async (req, res, next) => {
           pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
         }
         datapointFindQuery.categoryId = { $in: pillars };
+        datapointFindQuery.isRequiredForJson = true;
         datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
         matchQuery.datapointId = { $in: datapointIds };
       }
@@ -132,16 +133,10 @@ export const exportReport = async (req, res, next) => {
     let taxonomyDetails = await ClientTaxonomy.find({ _id: clientTaxonomyId, status: true });
   
   
-    const [dsntDatapointIds, allChildDpDetails, allCompanySourceDetails] = await Promise.all([
-      Datapoints.distinct('_id', {
-        clientTaxonomyId: clientTaxonomyId,
-        status: true,
-        isRequiredForJson: true
-      }),
+    const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
       ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
       CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
     ])
-    matchQuery.datapointId = dsntDatapointIds;
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
       StandaloneDatapoints.find(matchQuery)
         .populate('companyId')
