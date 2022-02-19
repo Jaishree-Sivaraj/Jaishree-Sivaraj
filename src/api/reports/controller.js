@@ -140,6 +140,7 @@ export const exportReport = async (req, res, next) => {
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
       StandaloneDatapoints.find(matchQuery)
         .populate('companyId')
+        .populate('uom')
         .populate('datapointId')
         .populate([{
           path: "datapointId",
@@ -278,7 +279,25 @@ export const exportReport = async (req, res, next) => {
               } else if(outputFieldsData == 'screenShot'){
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.updatedAt ? stdData.updatedAt :  "NI";
+                var date = stdData.updatedAt ? stdData.updatedAt :  "NI";
+                let date_of_data_capture;
+                if (date != "NI") {
+                  let monthsList = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                  let day = date.getDate();
+                  let month = date.getMonth()+1;
+                  month = monthsList[month-1]
+                  let year = date.getFullYear();
+                  date_of_data_capture = `${month}-${day}-${year}`
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = date_of_data_capture;
+              } else if(outputFieldsData == 'response'){
+                let responseValue;
+                if(stdData.response == 'NA' || stdData.response == "NA"){
+                  responseValue = "NI"
+                } else {
+                  responseValue = stdData.response ? stdData.response :  "NI";
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = responseValue;
               } else if ( stdData[outputFieldsData]) {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "NI";
               } else if (stdData.additionalDetails[outputFieldsData]) {
@@ -309,7 +328,7 @@ export const exportReport = async (req, res, next) => {
                     if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                       dataType = dpDetails[0].measureType;
                     } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
+                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
                     } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
                       dataType = "Number";
                     }else{
@@ -346,16 +365,22 @@ export const exportReport = async (req, res, next) => {
                 if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
                   dataType = dpDetails[0].measureType;
                 } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
+                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${item.childFields?.uom}` : "Number";
                 } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
                   dataType = "Number";
                 }else{
                   dataType = "Text"
                 }
+                let responseValue;
+                if (item.childFields.response == 'NA' || item.childFields.response == "NA") {
+                  responseValue = "NI";
+                } else {
+                  responseValue = item.childFields.response ? item.childFields.response : "NI";
+                }
                 objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
                 objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
                 objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "NI";
-                objectToPushAsChild["data_value"] = item.childFields.response ? item.childFields.response : "NI";
+                objectToPushAsChild["data_value"] = responseValue;
                 objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "NI";
                 objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "NI";
                 objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "NI";
@@ -367,6 +392,7 @@ export const exportReport = async (req, res, next) => {
               }
             }
           }
+          // rows.sortBy('Item Criter')
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
