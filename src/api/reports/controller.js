@@ -136,7 +136,7 @@ export const exportReport = async (req, res, next) => {
       Datapoints.distinct('_id', {
         clientTaxonomyId: clientTaxonomyId,
         status: true,
-        isRequiredForJSON: true
+        isRequiredForJson: true
       }),
       ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
       CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
@@ -258,128 +258,136 @@ export const exportReport = async (req, res, next) => {
         data: rows.length > 0 ? rows : []
       });
     } else {
-      if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
-        let rows = [];
-        allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
-        for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
-          let objectToPush = {}, objectToPushAsChild = {};
-          let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
-          let stdData = allStandaloneDetails[stdIndex];
-          let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
-          let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
-          let childDpDetails = allChildDpDetails.filter((obj) =>
-            obj.parentDpId == stdData.datapointId.id && obj.companyId == stdData.companyId.id && obj.year == stdData.year
-          )
-          let Year = stdData.year.split('-',);
-          cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
-          cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
-          cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
-          cltTaxoDetails = _.sortBy(cltTaxoDetails, 'orderNumber');
-          for (let outIndex = 0; outIndex < cltTaxoDetails.length; outIndex++) {
-            let outputFieldsData = cltTaxoDetails[outIndex].fieldName;
-            if ( outputFieldsData == 'year') {
-              objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "NI";
-            } else if(outputFieldsData == 'screenShot'){
-              objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
-            } else if(outputFieldsData == 'date_of_data_capture'){
-              objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.updatedAt ? stdData.updatedAt :  "NI";
-            } else if ( stdData[outputFieldsData]) {
-              objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "NI";
-            } else if (stdData.additionalDetails[outputFieldsData]) {
-              objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.additionalDetails[outputFieldsData] ? stdData.additionalDetails[outputFieldsData] : "NI";
-            } else {
-              let item = cltTaxoDetails[outIndex].fieldName;
-              switch (item){
-                case 'code':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "NI";
-                  break;
-                case 'description':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "NI";
-                  break;
-                case 'keyIssueName':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "NI";
-                  break;
-                case 'themeName':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "NI";
-                  break;
-                case 'category':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "NI";
-                  break;
-                case 'unit':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "NI";
-                  break
-                case 'dataType':
-                  let dataType = '';
-                  if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                    dataType = dpDetails[0].measureType;
-                  } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                    dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
-                  } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
-                    dataType = "Number";
-                  }else{
-                    dataType = "Text"
-                  }
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "NI";
-                  break
-                case 'companyCin':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.cin : "NI";
-                  break;
-                case 'companyName':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.companyName : "NI";
-                  break;
-                case 'nicIndustry':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "NI";
-                  break;
-                case 'dataProvider':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
-                  break;
-                case 'sourceTitle':
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "ESGDS";
-                  break;
-                default:
-                  objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
+      if (allStandaloneDetails.length > 0) {
+        if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
+          let rows = [];
+          allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
+          for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
+            let objectToPush = {}, objectToPushAsChild = {};
+            let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
+            let stdData = allStandaloneDetails[stdIndex];
+            let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
+            let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
+            let childDpDetails = allChildDpDetails.filter((obj) =>
+              obj.parentDpId == stdData.datapointId.id && obj.companyId == stdData.companyId.id && obj.year == stdData.year
+            )
+            let Year = stdData.year.split('-',);
+            cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
+            cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
+            cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
+            cltTaxoDetails = _.sortBy(cltTaxoDetails, 'orderNumber');
+            for (let outIndex = 0; outIndex < cltTaxoDetails.length; outIndex++) {
+              let outputFieldsData = cltTaxoDetails[outIndex].fieldName;
+              if ( outputFieldsData == 'year') {
+                objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "NI";
+              } else if(outputFieldsData == 'screenShot'){
+                objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
+              } else if(outputFieldsData == 'date_of_data_capture'){
+                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.updatedAt ? stdData.updatedAt :  "NI";
+              } else if ( stdData[outputFieldsData]) {
+                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "NI";
+              } else if (stdData.additionalDetails[outputFieldsData]) {
+                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.additionalDetails[outputFieldsData] ? stdData.additionalDetails[outputFieldsData] : "NI";
+              } else {
+                let item = cltTaxoDetails[outIndex].fieldName;
+                switch (item){
+                  case 'code':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "NI";
+                    break;
+                  case 'description':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "NI";
+                    break;
+                  case 'keyIssueName':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "NI";
+                    break;
+                  case 'themeName':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "NI";
+                    break;
+                  case 'category':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "NI";
+                    break;
+                  case 'unit':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "NI";
+                    break
+                  case 'dataType':
+                    let dataType = '';
+                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                      dataType = dpDetails[0].measureType;
+                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${dpDetails[0].measureType}` : "Number";
+                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                      dataType = "Number";
+                    }else{
+                      dataType = "Text"
+                    }
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "NI";
+                    break
+                  case 'companyCin':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.cin : "NI";
+                    break;
+                  case 'companyName':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.companyName : "NI";
+                    break;
+                  case 'nicIndustry':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "NI";
+                    break;
+                  case 'dataProvider':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
+                    break;
+                  case 'sourceTitle':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "ESGDS";
+                    break;
+                  default:
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
+                }
+              }
+            }
+            rows.push(objectToPush);
+            if (childDpDetails.length > 0) {
+              for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
+                objectToPushAsChild = JSON.parse(JSON.stringify(objectToPush));
+                const item = childDpDetails[childIndex];
+                let dataType;
+                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                  dataType = dpDetails[0].measureType;
+                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
+                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                  dataType = "Number";
+                }else{
+                  dataType = "Text"
+                }
+                objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
+                objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
+                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "NI";
+                objectToPushAsChild["data_value"] = item.childFields.response ? item.childFields.response : "NI";
+                objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "NI";
+                objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "NI";
+                objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "NI";
+                objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "NI";
+                objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "NI";
+                objectToPushAsChild['Snapshot'] = '';
+                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "NI";
+                rows.push(objectToPushAsChild);
               }
             }
           }
-          rows.push(objectToPush);
-          if (childDpDetails.length > 0) {
-            for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
-              objectToPushAsChild = JSON.parse(JSON.stringify(objectToPush));
-              const item = childDpDetails[childIndex];
-              let dataType;
-              if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                dataType = dpDetails[0].measureType;
-              } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue} ${dpDetails[0].measureType}` : "Number";
-              } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
-                dataType = "Number";
-              }else{
-                dataType = "Text"
-              }
-              objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
-              objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
-              objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "NI";
-              objectToPushAsChild["data_value"] = item.childFields.response ? item.childFields.response : "NI";
-              objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "NI";
-              objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "NI";
-              objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "NI";
-              objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "NI";
-              objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "NI";
-              objectToPushAsChild['Snapshot'] = '';
-              objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "NI";
-              rows.push(objectToPushAsChild);
-            }
-          }
+          return res.status(200).json({
+            status: "200",
+            message: "Data exported successfully!",
+            data: rows.length > 0 ? rows : []
+          });
+        } else {
+          return res.status(500).json({
+            status: "500",
+            message: "Output fields not configured yet for this Client Taxonomy, Please configure now!",
+            data: []
+          });
         }
-        return res.status(200).json({
-          status: "200",
-          message: "Data exported successfully!",
-          data: rows.length > 0 ? rows : []
-        });
       } else {
         return res.status(500).json({
           status: "500",
-          message: "Output fields not configured yet for this Client Taxonomy, Please configure now!",
+          message: "No data found for the applied filter and selected companies!",
           data: []
         });
       }
