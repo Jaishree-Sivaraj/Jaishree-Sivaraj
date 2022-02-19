@@ -15,7 +15,7 @@ import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
 
-import { getS3ScreenShot, getSourceDetails, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot } from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -76,15 +76,15 @@ export const repDatapointDetails = async (req, res, next) => {
                 status: true
             }),
             Measures.find({ status: true }),
-            PlaceValues.find({ status: true }).sort({orderNumber: 1})
+            PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
-        const [currentYear, displayFields] = [
+        let [currentYear, displayFields] = [
             year?.split(','),
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
-        const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
+        const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
                 functionId: {
@@ -105,9 +105,10 @@ export const repDatapointDetails = async (req, res, next) => {
                 status: true
             }).populate('errorTypeId'),
 
-            CompanySources.find({ companyId: taskDetails.companyId.id })
+            CompanySources.find({ companyId: taskDetails.companyId.id }),
+            getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
-        let dpMeasureType = measureTypes?.filter(obj => obj?.measureName == dpTypeValues?.measureType);
+        let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
@@ -122,7 +123,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 uomValues.push({ value: element.id, label: element.uomName });
             }
         }
-        if (dpTypeValues && dpTypeValues?.measureType == "Currency") {
+        if (dpTypeValues && (dpTypeValues?.measureType == "Currency" || dpTypeValues?.dataType == 'Number')) {
             for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
                 const element = allPlaceValues[pvIndex];
                 placeValues.push({ value: element.name, label: element.name });
@@ -209,23 +210,24 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataScreenshot = [];
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
-        let historyYear;
+        let childDp = [];
+        currentYear = getSortedYear(currentYear);
         switch (memberType) {
             case STANDALONE:
-                const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
+                const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
                     StandaloneDatapoints.find(currentQuery).sort({ updatedAt: -1 }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    StandaloneDatapoints.find(historyQuery).populate('createdBy')
-                        .populate('datapointId')
-                        .populate('companyId')
-                        .populate('taskId')
-                        .populate('uom')
+                    // StandaloneDatapoints.find(historyQuery).populate('createdBy')
+                    //     .populate('datapointId')
+                    //     .populate('companyId')
+                    //     .populate('taskId')
+                    //     .populate('uom')
                 ]);
 
-                historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
+                // historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: ''
@@ -291,53 +293,62 @@ export const repDatapointDetails = async (req, res, next) => {
                                 currentDatapointsObject = currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
                                 currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                                 datapointsObject.status = object.correctionStatus;
+                                // !Fetching childDp
+                                childDp = await getChildDp(datapointId, currentDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id);
+                                currentDatapointsObject.childDp = childDp;
+
                                 datapointsObject.currentData.push(currentDatapointsObject);
                             }
                         };
                     }
+
+
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                 }
-                totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
+                // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
 
-                for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
-                    let historicalDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
-                    for (let historyStandaloneIndex = 0; historyStandaloneIndex < historyAllStandaloneDetails.length; historyStandaloneIndex++) {
-                        let object = historyAllStandaloneDetails[historyStandaloneIndex];
-                        [s3DataScreenshot, sourceDetails] = await Promise.all([
-                            getS3ScreenShot(object.screenShot),
-                            getSourceDetails(object, sourceDetails)
-                        ]);
-                        if (object.year == historyYear[historicalYearIndex].year) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year, uomValues, placeValues)
-                            historicalDatapointsObject = {
-                                ...historicalDatapointsObject,
-                                standaradDeviation: object.standaradDeviation,
-                                average: object.average
-                            };
-                            historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
-                            datapointsObject.historicalData.push(historicalDatapointsObject);
-                        }
-                    }
-                }
+                // for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
+                //     let historicalDatapointsObject = {};
+                //     let sourceDetails = {
+                //         url: '',
+                //         sourceName: "",
+                //         value: "",
+                //         publicationDate: ''
+                //     };
+                //     for (let historyStandaloneIndex = 0; historyStandaloneIndex < historyAllStandaloneDetails.length; historyStandaloneIndex++) {
+                //         let object = historyAllStandaloneDetails[historyStandaloneIndex];
+                //         [s3DataScreenshot, sourceDetails] = await Promise.all([
+                //             getS3ScreenShot(object.screenShot),
+                //             getSourceDetails(object, sourceDetails)
+                //         ]);
+                //         if (object.year == historyYear[historicalYearIndex].year) {
+                //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, object.year, uomValues, placeValues)
+                //             historicalDatapointsObject = {
+                //                 ...historicalDatapointsObject,
+                //                 standaradDeviation: object.standaradDeviation,
+                //                 average: object.average
+                //             };
+                //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllStandaloneDetails, historyYear[historicalYearIndex].year, historicalDatapointsObject, false, false);
+                //             childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id);
+                //             historicalDatapointsObject.childDp = childDp;
+                //             datapointsObject.historicalData.push(historicalDatapointsObject);
+                //         }
+                //     }
+                // }
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
 
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        chilDpHeaders
                     },
                     dpCodeData: datapointsObject
 
                 });
             case BOARD_MATRIX:
-                const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails] = await Promise.all([
+                const [currentAllBoardMemberMatrixDetails /*, historyAllBoardMemberMatrixDetails*/] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
                         memberName: memberName
@@ -346,24 +357,24 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    BoardMembersMatrixDataPoints.find({
-                        ...historyQuery,
-                        memberName: memberName,
-                    }).populate('createdBy')
-                        .populate('datapointId')
-                        .populate('companyId')
-                        .populate('taskId')
-                        .populate('uom')
+                    // BoardMembersMatrixDataPoints.find({
+                    //     ...historyQuery,
+                    //     memberName: memberName,
+                    // }).populate('createdBy')
+                    //     .populate('datapointId')
+                    //     .populate('companyId')
+                    //     .populate('taskId')
+                    //     .populate('uom')
                 ]);
 
 
-                historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
+                // historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: ''
                 }
 
-                totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
+                // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     let sourceDetails = {
@@ -397,6 +408,9 @@ export const repDatapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false)
                             currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear[currentYearIndex])
                             datapointsObject.status = object.correctionStatus;
+                            // !Fetching Child Dp
+                            childDp = await getChildDp(datapointId, currentDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                            currentDatapointsObject.childDp = childDp;
                             datapointsObject.currentData.push(currentDatapointsObject);
                         }
                     };
@@ -420,49 +434,58 @@ export const repDatapointDetails = async (req, res, next) => {
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
                                 currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true)
 
+                                // !Fetching Child Dp
+                                childDp = await getChildDp(datapointId, currentDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                                currentDatapointsObject.childDp = childDp;
+
                                 datapointsObject.currentData.push(currentDatapointsObject);
                                 datapointsObject.status = object.correctionStatus;
                             }
                         };
                     }
+
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                 }
-                for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
-                    let historicalDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
-                    for (let historyAllBoardMemberIndex = 0; historyAllBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyAllBoardMemberIndex++) {
-                        let object = historyAllBoardMemberMatrixDetails[historyAllBoardMemberIndex];
-                        [s3DataScreenshot, sourceDetails] = await Promise.all([
-                            getS3ScreenShot(object.screenShot),
-                            getSourceDetails(object, sourceDetails)
-                        ]);
-                        if (object.year == historyYear[hitoryYearIndex].year
-                            && object.memberName == memberName) {
-                            historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
-                            historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
-                            datapointsObject.historicalData.push(historicalDatapointsObject);
-                        }
+                // for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
+                //     let historicalDatapointsObject = {};
+                //     let sourceDetails = {
+                //         url: '',
+                //         sourceName: "",
+                //         value: "",
+                //         publicationDate: ''
+                //     };
+                //     for (let historyAllBoardMemberIndex = 0; historyAllBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyAllBoardMemberIndex++) {
+                //         let object = historyAllBoardMemberMatrixDetails[historyAllBoardMemberIndex];
+                //         [s3DataScreenshot, sourceDetails] = await Promise.all([
+                //             getS3ScreenShot(object.screenShot),
+                //             getSourceDetails(object, sourceDetails)
+                //         ]);
+                //         if (object.year == historyYear[hitoryYearIndex].year
+                //             && object.memberName == memberName) {
+                //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
+                //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
+                //             // !Fetching Child Dp
+                //             childDp = await getChildDp(datapointId, historicalDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                //             historicalDatapointsObject.childDp = childDp;
+                //             datapointsObject.historicalData.push(historicalDatapointsObject);
+                //         }
 
-                    }
-                }
+                //     }
+                // }
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
                     response: {
 
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        chilDpHeaders
                     },
                     dpCodeData: datapointsObject,
 
                 });
             case KMP_MATRIX:
-                const [currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] = await Promise.all([
+                const [currentAllKmpMatrixDetails /*, historyAllKmpMatrixDetails*/] = await Promise.all([
                     KmpMatrixDataPoints.find({
                         ...currentQuery, memberName: memberName,
                     }).populate('createdBy')
@@ -470,21 +493,21 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    KmpMatrixDataPoints.find({
-                        ...historyQuery,
-                        memberName: memberName,
-                    }).populate('createdBy')
-                        .populate('datapointId')
-                        .populate('companyId')
-                        .populate('taskId')
-                        .populate('uom')
+                    // KmpMatrixDataPoints.find({
+                    //     ...historyQuery,
+                    //     memberName: memberName,
+                    // }).populate('createdBy')
+                    //     .populate('datapointId')
+                    //     .populate('companyId')
+                    //     .populate('taskId')
+                    //     .populate('uom')
                 ]);
-                historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
+                // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: 'Yet to Start'
                 }
-                totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
+                // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
@@ -518,6 +541,9 @@ export const repDatapointDetails = async (req, res, next) => {
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, false);
                             currentDatapointsObject = getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear[currentYearIndex])
                             datapointsObject.status = object.correctionStatus;
+                            // !Fetching Child Dp
+                            childDp = await getChildDp(datapointId, currentDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                            currentDatapointsObject.childDp = childDp;
                             datapointsObject.currentData.push(currentDatapointsObject);
                         }
                     };
@@ -542,32 +568,39 @@ export const repDatapointDetails = async (req, res, next) => {
                                 currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                                 datapointsObject.status = object.correctionStatus;
+                                //! Fetching Child Dp
+                                childDp = await getChildDp(datapointId, currentDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                                currentDatapointsObject.childDp = childDp;
                                 datapointsObject.currentData.push(currentDatapointsObject);
                             }
                         };
                     }
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
-                    for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
-                        let sourceDetails = {
-                            url: '',
-                            sourceName: "",
-                            value: "",
-                            publicationDate: ''
-                        };
-                        let historicalDatapointsObject = {};
-                        for (let historyAllKMPMemberIndex = 0; historyAllKMPMemberIndex < historyAllKmpMatrixDetails.length; historyAllKMPMemberIndex++) {
-                            const object = historyAllKmpMatrixDetails[historyAllKMPMemberIndex];
-                            [s3DataScreenshot, sourceDetails] = await Promise.all([
-                                getS3ScreenShot(object.screenShot),
-                                getSourceDetails(object, sourceDetails)
-                            ]);
-                            if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
-                                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
-                                historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
-                                datapointsObject.historicalData.push(historicalDatapointsObject);
-                            }
-                        }
-                    }
+                    // for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
+                    //     let sourceDetails = {
+                    //         url: '',
+                    //         sourceName: "",
+                    //         value: "",
+                    //         publicationDate: ''
+                    //     };
+                    //     let historicalDatapointsObject = {};
+                    //     for (let historyAllKMPMemberIndex = 0; historyAllKMPMemberIndex < historyAllKmpMatrixDetails.length; historyAllKMPMemberIndex++) {
+                    //         const object = historyAllKmpMatrixDetails[historyAllKMPMemberIndex];
+                    //         [s3DataScreenshot, sourceDetails] = await Promise.all([
+                    //             getS3ScreenShot(object.screenShot),
+                    //             getSourceDetails(object, sourceDetails)
+                    //         ]);
+                    //         if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
+                    //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
+                    //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
+                    //             //! Fetching Child Dp
+                    //             childDp = await getChildDp(datapointId, currentDatapointsObject?.fiscalYear, taskId, taskDetails?.companyId?.id);
+                    //             currentDatapointsObject.childDp = childDp;
+                    //             datapointsObject.currentData.push(currentDatapointsObject);
+                    //             datapointsObject.historicalData.push(historicalDatapointsObject);
+                    //         }
+                    //     }
+                    // }
                 }
                 return res.status(200).send({
                     status: "200",
@@ -575,7 +608,8 @@ export const repDatapointDetails = async (req, res, next) => {
                     response: {
 
                         prevDatapoint,
-                        nextDatapoint
+                        nextDatapoint,
+                        chilDpHeaders
                     },
                     dpCodeData: datapointsObject,
                 });

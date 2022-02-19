@@ -1,5 +1,10 @@
 import mongoose, { Schema } from 'mongoose'
 
+const ACTUAL = 'Actual';
+const PROXY = 'Proxy';
+const DERIVED = 'Derived';
+export const dpResponseType = [ACTUAL, PROXY, DERIVED];
+
 const clientTaxonomySchema = new Schema({
   createdBy: {
     type: Schema.ObjectId,
@@ -13,9 +18,37 @@ const clientTaxonomySchema = new Schema({
     type: Array,
     default: []
   },
+  isDerivedCalculationRequired: {
+    type: Boolean,
+    default: true
+  },
   status: {
     type: Boolean,
     default: true
+  },
+  hasChildDp: {
+    type: Boolean,
+    default: false
+  },
+  childFields: {
+    type: Object,
+    default: {
+      additionalFields: {
+        type: Array,
+        default: []
+      }
+    },
+  },
+  outputFields: {
+    type: Object,
+    default: {
+      cin: { displayName: 'bvd9', fieldName: 'cin', orderNumber: 4 },
+      companyName: { displayName: 'name_of_company', fieldName: 'companyName', orderNumber: 5  },
+      additionalFields: {
+        type: Array,
+        default: []
+      }
+    },
   }
 }, {
   timestamps: true,
@@ -26,14 +59,16 @@ const clientTaxonomySchema = new Schema({
 })
 
 clientTaxonomySchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
       createdBy: this.createdBy.view(full),
       taxonomyName: this.taxonomyName,
       fields: this.fields ? this.fields : [],
+      outputFields: this.outputFields ? this.outputFields : {},
       status: this.status,
+      isDerivedCalculationRequired: this.isDerivedCalculationRequired,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
@@ -55,10 +90,9 @@ export default model
 //     type: String
 //   },
 //   fieldName: {
-//     type: String
-//   },
-//   description: {
-//     type: String
+//    type: String
+//   },/   description: {
+//     typString
 //   },
 //   isRequired: {
 //     type: Boolean,
@@ -76,3 +110,5 @@ export default model
 //     default: false
 //   }
 // }
+
+
