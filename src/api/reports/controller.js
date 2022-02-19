@@ -280,17 +280,22 @@ export const exportReport = async (req, res, next) => {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
                 var date = stdData.updatedAt ? stdData.updatedAt :  "NI";
+                let months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
                 let date_of_data_capture;
                 if (date != "NI") {
-                  let monthsList = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                  let day = date.getDate();
-                  let month = date.getMonth()+1;
-                  month = monthsList[month-1]
-                  let year = date.getFullYear();
-                  date_of_data_capture = `${month}-${day}-${year}`
+                  date_of_data_capture = `${months[date.getMonth()]}-${date.getDate()}-${date.getFullYear()}`
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = date_of_data_capture;
-              } else if(outputFieldsData == 'response'){
+              } else if(outputFieldsData == 'publicationDate'){
+                let date1 = stdData.publicationDate ? stdData.publicationDate :  "NI";
+                let documentYear;
+                if (date1 != "NI") {
+                  let date2 = date1.split('T');
+                  let formattedDate = date2[0].split('-');
+                  documentYear = `${formattedDate[1]}-${formattedDate[2]}-${formattedDate[0]}`
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
+              }else if(outputFieldsData == 'response'){
                 let responseValue;
                 if(stdData.response == 'NA' || stdData.response == "NA"){
                   responseValue = "NI"
@@ -392,7 +397,6 @@ export const exportReport = async (req, res, next) => {
               }
             }
           }
-          // rows.sortBy('Item Criter')
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
