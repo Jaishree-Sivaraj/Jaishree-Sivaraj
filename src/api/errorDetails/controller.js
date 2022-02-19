@@ -217,7 +217,9 @@ export const saveErrorDetails = async ({
               correctionStatus: 'Completed',
               uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
               placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
-              createdBy: user
+              createdBy: user,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
             }
             let childpDpDataDetails = await getChildData(body, { companyId: { id: body?.companyId }, id: body?.taskId }, item?.fiscalYear, item?.childDp, data);
 

@@ -136,7 +136,7 @@ export const exportReport = async (req, res, next) => {
       Datapoints.distinct('_id', {
         clientTaxonomyId: clientTaxonomyId,
         status: true,
-        // isRequiredForJSON: true
+        isRequiredForJSON: true
       }),
       ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
       CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
@@ -281,9 +281,9 @@ export const exportReport = async (req, res, next) => {
               objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "NI";
             } else if(outputFieldsData == 'screenShot'){
               objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
-            }else if(outputFieldsData == 'date_of_data_capture'){
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.createdAt ? stdData.createdAt :  "NI";
-            }else if ( stdData[outputFieldsData]) {
+            } else if(outputFieldsData == 'date_of_data_capture'){
+              objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.updatedAt ? stdData.updatedAt :  "NI";
+            } else if ( stdData[outputFieldsData]) {
               objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "NI";
             } else if (stdData.additionalDetails[outputFieldsData]) {
               objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.additionalDetails[outputFieldsData] ? stdData.additionalDetails[outputFieldsData] : "NI";
