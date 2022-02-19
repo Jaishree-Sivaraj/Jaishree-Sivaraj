@@ -47,9 +47,10 @@ export const datapointDetails = async (req, res, next) => {
             Measures.find({ status: true }),
             PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
-        const currentYear = year.split(', ');
-        const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields').lean();
-        const displayFields = clienttaxonomyFields.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
+        let currentYear = year.split(', ');
+        currentYear = getSortedYear(currentYear);
+        const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
