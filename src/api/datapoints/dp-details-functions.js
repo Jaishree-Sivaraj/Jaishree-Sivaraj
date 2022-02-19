@@ -403,7 +403,8 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                 }
             }
         } else {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            // headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            headers;
 
         }
         headers = _.sortBy(headers, 'orderNumber');
