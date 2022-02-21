@@ -402,10 +402,8 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     })
                 }
             }
-        } else {
-            // headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
-            headers;
-
+        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
         }
         headers = _.sortBy(headers, 'orderNumber');
         return headers;
