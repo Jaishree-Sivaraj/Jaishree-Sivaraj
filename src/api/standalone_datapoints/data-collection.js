@@ -573,6 +573,7 @@ function getData(body, item, user, formattedScreenShots) {
         uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
         placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
         createdBy: user,
+        createdAt: Date.now(),
         updatedAt: Date.now()
         // member name for other dptype except Standalone
         // correctionStatus for currentDataCorrection.
