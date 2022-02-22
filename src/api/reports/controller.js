@@ -354,7 +354,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "ESGDS";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "NI";
                     break;
                   default:
                     objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
