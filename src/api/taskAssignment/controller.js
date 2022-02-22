@@ -666,7 +666,7 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ])
                 // let totalNoOfControversy;
                 // let controCount = _.countBy(allControversyTasks, obj => obj.taskId ? obj.taskId._id < controversyTasks[cIndex].id : null).true;
@@ -1375,7 +1375,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
                 object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
