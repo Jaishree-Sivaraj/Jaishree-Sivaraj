@@ -114,3 +114,21 @@ export function getEmailForJsonGeneration(companyName, year) {
         ESGDS Support Team.`
     }
 }
+
+export function notifyControJsonUpdated(companiesList) {
+    let subject = 'Controversy data updated on ESGDS InfinData Platform.';
+    let message = `Below listed company/companies have been updated for controversy - <br/>`;
+    for(let i=0;i<companiesList.length;i++){
+        message += `${companiesList[i]} <br/>`;
+    }
+    message += `Please login into the ESGDS InfinData Platform and check the notifications within the system for additional details.<br/>
+    Kindly contact us at support@esgds.ai in case you need any support. <br/><br/>
+        
+    Regards,<br/>
+    ESGDS Support Team`;
+    
+    return {
+        subject,
+        message
+    }
+}
