@@ -30,9 +30,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     if (dpCode !== '') {
       generalMatchQuery.code = { $regex: new RegExp(dpCode, 'gi') };
     }
-    if (dpName !== '') {
-      generalMatchQuery.name = { $regex: new RegExp(dpName, 'gi') };
-    }
 
     // initialising variables.
     let [keyIssuesList, datapointList] = [
@@ -92,19 +89,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       }
     ];
 
-    let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
     // For Standalone and boardMatrix search
-    let datapointCodeNameQueryId;
-    if (dpName !== '' || dpCode !== '') {
+    let datapointCodeQuery;
+    if (dpCode !== '') {
       const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery });
-      datapointCodeNameQueryId = datapointListQuery._id
+      datapointCodeQuery = datapointListQuery._id
     }
-    console.log('This datapoint Id', datapointCodeNameQueryId)
 
+    let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
     // Counting datapoint just with keyIssueId filter as board-matrix and kmp-matrix dp codes will not be displayed without memberid.
-    let [dpTypeValues, count, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
-      Datapoints.find(dptypeQuery).distinct('dpType'),
+    let [count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
       Datapoints.countDocuments(countQuery),
+      Datapoints.find(dptypeQuery).distinct('dpType'),
       // !Discuss pagination later. when priority dp more than 10. more than 10...
       Datapoints.find(keyIssueId !== '' ? { ...dptypeQuery, isPriority: true, keyIssueId, ...generalMatchQuery } : { ...dptypeQuery, isPriority: true, ...generalMatchQuery })
         .populate('keyIssueId')
@@ -437,7 +433,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             switch (dpType) {
               case STANDALONE:
-                errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId);
+                errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
+                errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
                   dpStatus: Error,
@@ -486,14 +483,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
+                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...errorQuery,
                     year: {
                       $in: currentYear
                     },
-                    dpStatus: Error,
-                    datapointId: datapointCodeNameQueryId
+                    dpStatus: Error
                   }).skip((page - 1) * limit)
                     .limit(+limit)
                     .populate([{
@@ -564,13 +561,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
+                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...errorQuery,
                   year: {
                     $in: currentYear
                   },
-                  dpStatus: Error,
-                  datapointId: datapointCodeNameQueryId
+                  dpStatus: Error
                 }).skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -658,7 +655,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         }
         try {
-          errorQuery = keyIssueId === '' ? { ...errorQuery, datapointId: datapointCodeNameQueryId } : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId)
+          errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
+          errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
           const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
             .skip((page - 1) * limit)
             .limit(+limit)
@@ -798,9 +796,9 @@ async function getKeyIssues(dptypeQuery, keyIssuesList) {
   return keyIssuesList;
 }
 
-async function getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeNameQueryId) {
+async function getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery) {
   const datapointwithKeyIssue = await Datapoints.distinct('_id', { keyIssueId });
-  if (datapointCodeNameQueryId) {
+  if (datapointCodeQuery) {
     datapointwithKeyIssue.push(datapointwithKeyIssue);
   }
 

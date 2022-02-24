@@ -15,7 +15,7 @@ import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
 
-import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders } from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -80,7 +80,7 @@ export const repDatapointDetails = async (req, res, next) => {
         ]);
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
-        const [currentYear, displayFields] = [
+        let [currentYear, displayFields] = [
             year?.split(','),
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
@@ -108,7 +108,7 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
-        let dpMeasureType = measureTypes?.filter(obj => obj?.measureName == dpTypeValues?.measureType);
+        let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
@@ -210,8 +210,8 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataScreenshot = [];
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
-        let historyYear;
         let childDp = [];
+        currentYear = getSortedYear(currentYear);
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
