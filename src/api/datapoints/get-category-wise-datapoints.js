@@ -7,7 +7,7 @@ import { Functions } from '../functions'
 import { TaskAssignment } from '../taskAssignment'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
-import { YetToStart, Pending, CollectionCompleted, CorrectionPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
+import { YetToStart, Pending, CollectionCompleted, CorrectionPending, ReassignmentPending, Correction, CorrectionCompleted, VerificationCompleted, Completed, Error } from '../../constants/task-status';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { CompanyRepresentative, ClientRepresentative } from '../../constants/roles';
 
@@ -428,6 +428,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             message: error?.message ? error?.message : 'Failed to fetch all dp codes'
           });
         }
+      case ReassignmentPending:
       case CorrectionPending:
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
