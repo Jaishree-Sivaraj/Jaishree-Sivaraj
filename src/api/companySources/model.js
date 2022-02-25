@@ -31,6 +31,9 @@ const companySourcesSchema = new Schema({
   sourceFile: {
     type: String
   },
+  sourceTitle: {
+    type: String
+  },
   publicationDate: {
     type: Date,
     default: null

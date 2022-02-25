@@ -4,6 +4,14 @@ import { CompanySources } from '../companySources';
 import { QA } from '../../constants/roles';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { YetToStart, Completed } from '../../constants/task-status';
+import { ChildDp } from '../child-dp';
+import { ClientTaxonomy } from '../clientTaxonomy';
+import { Datapoints } from '../datapoints';
+import { Measures } from '../measures';
+import { MeasureUoms } from '../measure_uoms';
+import { PlaceValues } from '../place_values';
+import _ from "lodash";
+import { sortArray } from '../../services/utils/sorting-string';
 
 const requiredFields = [
     "categoryCode",
@@ -316,3 +324,109 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
         fiscalYear: year
     }
 }
+
+export async function getChildDp(datapointId, year, taskId, companyId) {
+    try {
+        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
+        let childDp = [];
+        getChildDpDetails.map(child => {
+            childDp.push(child.childFields);
+        });
+
+        return childDp;
+
+    } catch (error) {
+        console.log(error?.message);
+        return error?.message;
+    }
+}
+
+export async function getHeaders(clientTaxonomyId, datapointId) {
+    try {
+
+        const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
+            ClientTaxonomy.findOne({
+                _id: clientTaxonomyId
+            }),
+            Datapoints.findOne({ _id: datapointId }),
+            Measures.find({ status: true }),
+            MeasureUoms.find({ status: true }).populate('measureId'),
+            PlaceValues.aggregate([
+                { $match: { status: true } }, { $project: { _id: 0, value: "$name", label: "$name" } }])
+        ]);
+        let headers = [];
+        if (clientTaxData?.childFields?.additionalFields?.length > 0) {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            clientTaxData.childFields.additionalFields = _.sortBy(clientTaxData?.childFields?.additionalFields, 'orderNumber');
+            let responseIndex = clientTaxData?.childFields?.additionalFields.findIndex((obj) => obj.fieldName == 'response');
+            clientTaxData?.childFields?.additionalFields.map(field => {
+                headers.push(field);
+            });
+            if (dpDetails.measureType != '') {
+                let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
+                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
+                let uomValues = [];
+                for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
+                    const element = measureUoms[uomIndex];
+                    uomValues.push({ value: element.uomName, label: element.uomName });
+                }
+                if (uomValues.length > 0) {
+                    if (measureDtl.measureName == 'Currency') {
+                        headers.push({
+                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
+                            "displayName": "Place Value",
+                            "fieldName": "placeValue",
+                            "dataType": "Select",
+                            "options": placeValues,
+                            "isRequired": true,
+                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                ?
+                                clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                :
+                                clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                        })
+                    }
+
+                    headers.push({
+                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
+                        "displayName": "Unit",
+                        "fieldName": "uom",
+                        "dataType": "Select",
+                        "options": uomValues,
+                        "isRequired": true,
+                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            ?
+                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            :
+                            clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                    })
+                }
+            }
+        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
+        }
+        headers = _.sortBy(headers, 'orderNumber');
+        return headers;
+
+
+    } catch (error) {
+        console.log(error?.message)
+    }
+}
+
+export function getSortedYear(currentYear) {
+    let obj = [{}];
+    currentYear.map((year) => {
+        const y = year.split('-');
+        obj.push({ firstYear: y[0], lastYear: y[1] });
+    });
+    currentYear = sortArray(obj, 'lastYear', -1);
+    let newArray = [];
+    currentYear.map((arr) => {
+        if (Object.keys(arr).length > 0) {
+            newArray.push(arr.firstYear + '-' + arr.lastYear);
+        }
+    });
+    return newArray;
+}
+

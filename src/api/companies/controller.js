@@ -213,7 +213,7 @@ export const uploadCompaniesFile = async (req, res, next) => {
               }
             }
             for (let index = 0; index < companyInfo.length; index++) {
-              await Companies.updateOne({ cin: companyInfo[index].cin }, { $set: companyInfo[index] }, { upsert: true })
+              await Companies.updateOne({ cin: companyInfo[index].cin, clientTaxonomyId: companyInfo[index].clientTaxonomyId  }, { $set: companyInfo[index] }, { upsert: true })
                 .catch((error) => {
                   return res.status(400).json({
                     status: "400",
