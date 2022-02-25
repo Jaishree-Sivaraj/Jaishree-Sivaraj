@@ -183,7 +183,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
         if (!userFound.isUserApproved) {
           switch (roleObject.roleName) {
             case Employee:
-              userObject = getUserDetail(onboardingEmailDetails, roleObject);
+              userObject = getEmployeeUserDetail(onboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
                 const empDetails = await getEmployee(onBoardingDetails, userFound?.id);
@@ -275,7 +275,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       } else {
         switch (roleObject.roleName) {
           case Employee:
-            userObject = getUserDetail(onBoardingDetails, roleObject);
+            userObject = getEmployeeUserDetail(onBoardingDetails, roleObject);
             const userCreate = await User.create({
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
@@ -399,6 +399,14 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   function getUserDetail(onBoardingDetails, roleObject) {
     return {
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+      phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : ''
+    }
+  }
+
+  function getEmployeeUserDetail(onBoardingDetails, roleObject) {
+    return {
+      name: onBoardingDetails.firstName ? `${onBoardingDetails.firstName} ${onBoardingDetails.middleName} ${onBoardingDetails.lastName}` : ' ',
       userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : ''
     }
