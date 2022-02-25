@@ -5,10 +5,10 @@ import { notifyControJsonUpdated } from '../../constants/email-content';
 var cron = require('node-cron');
 
 //scheduling a job, daily once using cron
-cron.schedule('00 22 * * *', () => {
-    console.log('in cron job')
-    notifyControJsonUpdates();
-});
+// cron.schedule('00 19 * * *', () => {
+//     console.log('in cron job')
+//     notifyControJsonUpdates();
+// });
 
 async function notifyControJsonUpdates() {
     let yesterday = new Date();
