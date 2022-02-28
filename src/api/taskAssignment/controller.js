@@ -1603,7 +1603,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
           await Notifications.create({
             notifyToUser: result.groupId.groupAdmin,
             notificationType: "/tasklist",
-            content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+            content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
             notificationTitle: "Reassignment Pending",
             status: true,
             isRead: false
@@ -1616,7 +1616,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
             await Notifications.create({
               notifyToUser: allAdminUserIds[admIndex],
               notificationType: "/tasklist",
-              content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+              content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
               notificationTitle: "Reassignment Pending",
               status: true,
               isRead: false
@@ -2060,7 +2060,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (taskStatusValue == 'Reassignment Pending') {
       const query = {
         notificationType: "/tasklist",
-        content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
+        content: "Reassign the task for Analyst as it has some errors TaskID - " + `${taskDetails.taskNumber}, CompanyName - ${taskDetails.companyId.companyName}`,
         notificationTitle: "Reassignment Pending",
         status: true,
         isRead: false
