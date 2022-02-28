@@ -4,7 +4,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
-import { getSourceDetails, getHistoryDataObject, getDisplayFields, getChildDp } from './dp-details-functions';
+import { getSourceDetails, getHistoryDataObjectYearWise, getDisplayFields, getChildDp } from './dp-details-functions';
 /*
 I need to send all the historical years and send the data of the first historical year.
 */
@@ -50,7 +50,7 @@ export const getHistoricalData = async (req, res, next) => {
                 });
                 [historicalYearData] = currenthistoricalYear;
                 sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
-                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
+                historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData.standaradDeviation,
                     average: historicalYearData.average, ...historicalDatapointsObject
@@ -71,7 +71,7 @@ export const getHistoricalData = async (req, res, next) => {
                 });
                 [historicalYearData] = currenthistoricalYear;
                 sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
-                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
+                historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData?.standaradDeviation,
                     average: historicalYearData?.average, ...historicalDatapointsObject
@@ -90,7 +90,7 @@ export const getHistoricalData = async (req, res, next) => {
                 });
                 [historicalYearData] = currenthistoricalYear;
                 sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
-                historicalDatapointsObject = getHistoryDataObject(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
+                historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData?.standaradDeviation,
                     average: historicalYearData?.average, ...historicalDatapointsObject
