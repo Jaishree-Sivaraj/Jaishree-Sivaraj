@@ -268,7 +268,43 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
 
 }
 
-export function getHistoryDataObject(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType) {
+
+export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
+    return {
+        status: Completed,
+        dpCode: dpTypeValues?.code,
+        dpCodeId: dpTypeValues?.id,
+        dpName: dpTypeValues?.name,
+        taskId: object?.taskId,
+        fiscalYear: year,
+        description: dpTypeValues?.description,
+        dataType: dpTypeValues?.dataType,
+        subDataType: {
+            measure: dpTypeValues?.measureType,
+            placeValues: placeValues,
+            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : null,
+            uoms: uomValues,
+            selectedUom: object?.uom ? { value: object?.uom.id, label: object?.uom.uomName } : null
+        },
+        textSnippet: object?.textSnippet,
+        pageNo: object?.pageNumber,
+        optionalAnalystComment: object?.optionalAnalystComment ? object?.optionalAnalystComment : '',
+        isRestated: object?.isRestated ? object?.isRestated : '',
+        restatedForYear: object?.restatedForYear ? object?.restatedForYear : '',
+        restatedInYear: object?.restatedInYear ? object?.restatedInYear : '',
+        restatedValue: object?.restatedValue ? object?.restatedValue : '',
+        screenShot: s3DataScreenshot,
+        response: object?.response,
+        sourceList: sourceTypeDetails,
+        source: sourceDetails,
+        error: {},
+        comments: [],
+        additionalDetails: []
+    }
+}
+
+
+export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType) {
     return {
         status: Completed,
         dpCode: dpTypeValues?.code,
@@ -294,6 +330,8 @@ export function getHistoryDataObject(dpTypeValues, object, sourceTypeDetails, so
         additionalDetails: []
     }
 }
+
+
 
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
     return {
