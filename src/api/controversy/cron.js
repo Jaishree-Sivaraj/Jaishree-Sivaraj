@@ -1,11 +1,12 @@
 import { Companies } from '../companies';
 import { ClientRepresentatives } from '../client-representatives';
 import { Controversy } from '../controversy';
+import { Notifications } from '../notifications';
 import { notifyControJsonUpdated } from '../../constants/email-content';
 var cron = require('node-cron');
 
 //scheduling a job, daily once using cron
-cron.schedule('00 22 * * *', () => {
+cron.schedule('00 19 30 * *', () => {
     console.log('in cron job')
     notifyControJsonUpdates();
 });
@@ -55,6 +56,17 @@ async function notifyControJsonUpdates() {
             const mailContent = notifyControJsonUpdated(customArray.companies);
             await sendEmail(toMailAddress, mailContent.subject, mailContent.message)
             .then((resp) => { console.log('Mail sent!'); });
+            
+            await Notifications.create({
+                notifyToUser: customArray[k]?.userId,
+                notificationType: "/controversy-json",
+                content: mailContent.message,
+                notificationTitle: mailContent.subject,
+                status: true,
+                isRead: false
+            }).catch((error) => {
+                return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+            });
         }
     }
 }
