@@ -4,7 +4,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
-import { getSourceDetails, getHistoryDataObject, getDisplayFields, getChildDp } from './dp-details-functions';
+import { getSourceDetails, getHistoryDataObject, getDisplayFields, getChildDp, getS3ScreenShot } from './dp-details-functions';
 /*
 I need to send all the historical years and send the data of the first historical year.
 */
@@ -116,6 +116,30 @@ export const getHistoricalData = async (req, res, next) => {
     }
 }
 
+export const getScreenShot = async (req, res, next) => {
+    try {
+
+        const { screenShot } = req.query;
+        console.log(screenShot);
+        const screenShotData = await getS3ScreenShot(screenShot);
+        if (!screenShotData) {
+            res.status(409).json({
+                status: 409,
+                message: 'Screenshot does not exist'
+            });
+
+        }
+        res.status(200).json({
+            status: 200,
+            screenShot: screenShotData
+        });
+    } catch (error) {
+        res.status(409).json({
+            status: 409,
+            message: error?.message ? error?.message : 'Failed to fetch screenshot'
+        })
+    }
+}
 
 
 
