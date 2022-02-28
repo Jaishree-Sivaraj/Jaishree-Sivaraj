@@ -666,7 +666,7 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ])
                 // let totalNoOfControversy;
                 // let controCount = _.countBy(allControversyTasks, obj => obj.taskId ? obj.taskId._id < controversyTasks[cIndex].id : null).true;
@@ -1375,7 +1375,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
                 object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
@@ -1603,7 +1603,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
           await Notifications.create({
             notifyToUser: result.groupId.groupAdmin,
             notificationType: "/tasklist",
-            content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+            content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
             notificationTitle: "Reassignment Pending",
             status: true,
             isRead: false
@@ -1616,7 +1616,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
             await Notifications.create({
               notifyToUser: allAdminUserIds[admIndex],
               notificationType: "/tasklist",
-              content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+              content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
               notificationTitle: "Reassignment Pending",
               status: true,
               isRead: false
@@ -2060,7 +2060,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (taskStatusValue == 'Reassignment Pending') {
       const query = {
         notificationType: "/tasklist",
-        content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
+        content: "Reassign the task for Analyst as it has some errors TaskID - " + `${taskDetails.taskNumber}, CompanyName - ${taskDetails.companyId.companyName}`,
         notificationTitle: "Reassignment Pending",
         status: true,
         isRead: false

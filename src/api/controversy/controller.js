@@ -607,7 +607,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           additionalDetails: []
         };
 
-        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: false, status: true })
+        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, response: { $nin: ["", " "] }, isActive: false, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId')
@@ -757,7 +757,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
           .catch((error) => {
             return res.status(500).json({ status: "500", message: "Controversy history not found for the company and dpcode!" })
           })
-        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, isActive: true, status: true })
+        await Controversy.find({ companyId: params.companyId, datapointId: params.datapointId, response: { $nin: ["", " "] }, isActive: true, status: true })
           .populate('createdBy')
           .populate('companyId')
           .populate('datapointId')
