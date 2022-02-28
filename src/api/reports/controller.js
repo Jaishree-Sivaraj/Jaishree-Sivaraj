@@ -118,9 +118,11 @@ export const exportReport = async (req, res, next) => {
           pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
         }
         datapointFindQuery.categoryId = { $in: pillars };
+      } else {
         datapointFindQuery.isRequiredForJson = true;
         datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
         matchQuery.datapointId = { $in: datapointIds };
+
       }
     } else {
       if (!clientTaxonomyId) {
@@ -161,7 +163,7 @@ export const exportReport = async (req, res, next) => {
       Datapoints.find({
         clientTaxonomyId: clientTaxonomyId,
         status: true,
-        // isRequiredForJSON: true
+        isRequiredForJson: true
       })
         .populate('categoryId')
         .populate('themeId')

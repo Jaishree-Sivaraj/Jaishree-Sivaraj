@@ -85,16 +85,16 @@ export async function getS3ScreenShot(screenShot) {
 }
 
 export async function getSourceDetails(object, sourceDetails) {
-    if (object.sourceName !== "" || object.sourceName !== " ") {
-        let companySourceId = object.sourceName?.split(';')[1];
+    if (object?.sourceName !== "" || object?.sourceName !== " ") {
+        let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
-        findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object.companyId ? object.companyId.id : null, sourceFile: object.sourceFile ? object.sourceFile : null };
+        findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
         sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
         if (sourceValues != null) {
-            sourceDetails.url = sourceValues.sourceUrl;
-            sourceDetails.publicationDate = sourceValues.publicationDate;
-            sourceDetails.sourceName = sourceValues.name;
-            sourceDetails.value = sourceValues._id;
+            sourceDetails.url = sourceValues?.sourceUrl;
+            sourceDetails.publicationDate = sourceValues?.publicationDate;
+            sourceDetails.sourceName = sourceValues?.name;
+            sourceDetails.value = sourceValues?._id;
         }
     }
     return sourceDetails;
@@ -212,40 +212,34 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                             label: option
                         })
                     }) : optionValues = [];
+
                     if (isEmpty) {
-                        currentValue = display.inputType == 'Select' ?
-                            { value: '', label: '' } : '';
+                        currentValue = { value: '', label: '' };
                     } else {
                         optionVal = display.inputValues;
-                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
-                        if (standaloneDetail) {
-                            currentValue = display.inputType == SELECT ?
-                                {
-                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
-                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
-                                }
-                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj.year == currentYear);
+                        if (standaloneDetail || currentDpType == 'history') {
+                            currentValue = {
+                                value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
+                                label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                            }
                         }
                     }
 
                     break;
                 case STATIC:
-                    currentValue = dpTypeValues?.additionalDetails[display.fieldName];
+                    currentValue = dpTypeValues?.additionalDetails[display?.fieldName];
                     break;
                 default:
                     if (isEmpty) {
-                        currentValue = display.inputType == 'Select' ?
-                            { value: '', label: '' } : '';
+                        currentValue = '';
                     } else {
-                        optionVal = display.inputValues;
-                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
-                        if (standaloneDetail) {
-                            currentValue = display.inputType == SELECT ?
-                                {
-                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
-                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
-                                }
-                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        optionVal = display?.inputValues;
+                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj?.year == currentYear);
+                        if (standaloneDetail || currentDpType == 'history') {
+                            currentValue = standaloneDetail?.additionalDetails ? standaloneDetail?.additionalDetails[display?.fieldName] : '';
                         }
                     }
                     break;
@@ -273,6 +267,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
 
 
 }
+
 
 export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
     return {
@@ -308,6 +303,36 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
     }
 }
 
+
+export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType) {
+    return {
+        status: Completed,
+        dpCode: dpTypeValues?.code,
+        dpCodeId: dpTypeValues?.id,
+        dpName: dpTypeValues?.name,
+        taskId: object?.taskId,
+        fiscalYear: Array.isArray(year)&& year ? year[0] : year,
+        description: dpTypeValues?.description,
+        dataType: dpTypeValues?.dataType,
+        subDataType: subDataType,
+        textSnippet: object?.textSnippet,
+        pageNo: object?.pageNumber,
+        optionalAnalystComment: object?.optionalAnalystComment ? object?.optionalAnalystComment : '',
+        isRestated: object?.isRestated ? object?.isRestated : '',
+        restatedForYear: object?.restatedForYear ? object?.restatedForYear : '',
+        restatedInYear: object?.restatedInYear ? object?.restatedInYear : '',
+        restatedValue: object?.restatedValue ? object?.restatedValue : '',
+        response: object?.response,
+        sourceList: sourceTypeDetails,
+        source: sourceDetails,
+        error: {},
+        comments: [],
+        additionalDetails: []
+    }
+}
+
+
+
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
     return {
         dpCode: allDatapoints?.code,
@@ -329,10 +354,10 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
     try {
         const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
         let childDp = [];
-        getChildDpDetails.map(child => {
-            childDp.push(child.childFields);
+        getChildDpDetails?.map(child => {
+            childDp.push(child?.childFields);
         });
-
+        console.log(childDp);
         return childDp;
 
     } catch (error) {

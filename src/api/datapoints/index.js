@@ -13,12 +13,15 @@ import {
 import { schema } from './model';
 import { datapointDetails } from './datapoint';
 import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
-import {repDatapointDetails} from './reps-datapoint-details';
-export Datapoints, { schema } from './model'; 
+import { repDatapointDetails } from './reps-datapoint-details';
+import { getHistoricalData, getScreenShot } from './get-historical-data';
+import { saveHistoricalDatapoint } from './save-historical-data';
+export Datapoints, { schema } from './model';
+
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
-const taskId = '', year = '', datapointId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '';
+const taskId = '', year = '', datapointId = '', data = {}, dpCodeId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '', dpTypeValues = {}, sourceList = {}, displayFields = {}, subDataType = {}, companyId = '', screenShot = ''
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -53,6 +56,41 @@ router.post('/',
   token({ required: true }),
   body({ categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, keyIssueId, functionId, dpType, dpStatus }),
   create)
+
+/**
+* @api {post} /get-historical-data Get historical datapoints
+* @apiName HistoricalDatapoint
+* @apiGroup HistoricalDatapoint
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam categoryId Datapoints's categoryId.
+* @apiParam name Datapoints's name.
+* @apiParam code Datapoints's code.
+* @apiParam description Datapoints's description.
+* @apiParam polarity Datapoints's polarity.
+* @apiParam dataCollection Datapoints's dataCollection.
+* @apiParam dataCollectionGuide Datapoints's dataCollectionGuide.
+* @apiParam normalizedBy Datapoints's normalizedBy.
+* @apiParam weighted Datapoints's weighted.
+* @apiParam standaloneOrMatrix Datapoints's standaloneOrMatrix.
+* @apiParam reference Datapoints's reference.
+* @apiParam industryRelevant Datapoints's industryRelevant.
+* @apiParam unit Datapoints's unit.
+* @apiParam signal Datapoints's signal.
+* @apiParam percentile Datapoints's percentile.
+* @apiParam finalUnit Datapoints's finalUnit.
+* @apiParam keyIssueId Datapoints's keyIssueId.
+* @apiParam functionId Datapoints's functionId.
+* @apiParam dpType Datapoints's dpType.
+* @apiSuccess {Object} datapoints Datapoints's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Datapoints not found.
+* @apiError 401 user access only.
+*/
+router.post('/get-historical-data',
+  token({ required: true }),
+  body({ year, taskId, datapointId, memberType, memberName, memberId, dpTypeValues, sourceList, displayFields, subDataType, companyId }),
+  getHistoricalData)
 
 var storage = multer.diskStorage({ //multers disk storage settings
   destination: function (req, file, cb) {
@@ -89,6 +127,24 @@ router.post('/upload',
   uploadDatapoints.single('file'),
   uploadNewTaxonomyDatapoints)
 
+
+/**
+ * @api {post} /datapoints/save-historical-datapoints Upload datapoints for a taxonomy
+ * @apiName Save Historical Datapoint API
+ * @apiGroup Datapoints
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} datapoints Datapoints's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Datapoints not found.
+ * @apiError 401 user access only.
+ */
+router.post('/save-historical-datapoints',
+  token({ required: true }),
+  body({ memberType, taskId, companyId, dpCodeId, data }),
+  saveHistoricalDatapoint)
+
+
 /**
  * @api {get} /datapoints Retrieve datapoints
  * @apiName RetrieveDatapoints
@@ -105,6 +161,23 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+* @api {get} /datapoints/get-screenshot Retrieve datapoints
+* @apiName RetrieveScreenShot
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of datapoints.
+* @apiSuccess {Object[]} rows List of datapoints.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/get-screenshot',
+  token({ required: true }),
+  query(screenShot),
+  getScreenShot)
 
 /**
 * @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
