@@ -282,7 +282,7 @@ export const exportReport = async (req, res, next) => {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
                 var date = stdData.updatedAt ? stdData.updatedAt :  "";
-                let months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+                let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                 let date_of_data_capture;
                 if (date != "") {
                   date_of_data_capture = `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`
@@ -299,12 +299,12 @@ export const exportReport = async (req, res, next) => {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
-                // if(stdData.response == 'NA' || stdData.response == "NA"){
-                //   responseValue = ""
-                // } else {
-                //   responseValue = stdData.response ? stdData.response :  "";
-                // }
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.response;
+                if(stdData.response == 'NA' || stdData.response == "NA"){
+                  responseValue = "NI"
+                } else {
+                  responseValue = stdData.response ? stdData.response :  "";
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = responseValue;
               } else if ( stdData[outputFieldsData]) {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "";
               } else if (stdData.additionalDetails[outputFieldsData]) {
@@ -394,7 +394,7 @@ export const exportReport = async (req, res, next) => {
                 }
                 let responseValue;
                 if (item.childFields.response == 'NA' || item.childFields.response == "NA") {
-                  responseValue = "";
+                  responseValue = "NI";
                 } else {
                   responseValue = item.childFields.response ? item.childFields.response : "";
                 }
