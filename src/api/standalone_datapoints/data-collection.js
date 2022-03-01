@@ -11,6 +11,8 @@ import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../.
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
+
+
 // Incoming payload
 // currentDatapoint:
 // [
@@ -550,7 +552,8 @@ export async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear
 }
 
 export function getData(body, item, user, formattedScreenShots) {
-    console.log(item?.source?.publicationDate)
+    const { ...withoutPasswordUser } = user;
+    const { password, ...users } = withoutPasswordUser._doc
     return {
         datapointId: body.dpCodeId,
         companyId: body.companyId,
@@ -573,7 +576,7 @@ export function getData(body, item, user, formattedScreenShots) {
         additionalDetails: item['additionalDetails'],
         uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
         placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
-        createdBy: user,
+        createdBy: users,
         createdAt: Date.now(),
         updatedAt: Date.now()
         // member name for other dptype except Standalone

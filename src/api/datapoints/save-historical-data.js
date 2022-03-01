@@ -4,11 +4,13 @@ import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 import { saveScreenShot, getData, getChildData } from '../standalone_datapoints/data-collection';
 import { StandaloneDatapoints } from '../standalone_datapoints';
 import { ChildDp } from '../child-dp';
+import { TaskAssignment } from '../taskAssignment';
 
 export const saveHistoricalDatapoint = async ({ body, user }, res, next) => {
     try {
         const { memberType, taskId, companyId, dpCodeId, data } = body;
 
+        const taskDetailsObject = await TaskAssignment.findOne({ _id: taskId }).lean();
         let historyData, childpDpDataDetails, formattedScreenShots, childDp, create;
         const updateQuery = {
             companyId: companyId,

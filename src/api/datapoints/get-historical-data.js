@@ -4,16 +4,15 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
-import { getSourceDetails, getHistoryDataObjectYearWise, getDisplayFields, getChildDp , getS3ScreenShot } from './dp-details-functions';
+import { getSourceDetails, getHistoryDataObjectYearWise, getDisplayFields, getChildDp, getS3ScreenShot } from './dp-details-functions';
 /*
 I need to send all the historical years and send the data of the first historical year.
 */
 export const getHistoricalData = async (req, res, next) => {
     try {
-
         // send current year as an array and historical year as a single data.
         const { year, taskId, datapointId, memberType, memberName, memberId, dpTypeValues, sourceList, displayFields, subDataType, companyId } = req.body;
-        // This year can be current years of historical year.
+        // This year can be current years of historical year.        
         let historyQuery = {
             companyId,
             datapointId: datapointId,
@@ -36,7 +35,7 @@ export const getHistoricalData = async (req, res, next) => {
             value: "",
             publicationDate: ''
         };
-        let historicalDatapointsObject, historicalYears = [], childDp, currenthistoricalYear, historicalYearData;
+        let historicalDatapointsObject, historicalYears = [], childDp, currenthistoricalYear, historicalYearData, screen=[];
 
         switch (memberType) {
             case STANDALONE:
@@ -49,7 +48,7 @@ export const getHistoricalData = async (req, res, next) => {
                     historicalYears.push(history?.year)
                 });
                 [historicalYearData] = currenthistoricalYear;
-                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
+                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails);
                 historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData.standaradDeviation,
@@ -70,7 +69,7 @@ export const getHistoricalData = async (req, res, next) => {
                     historicalYears.push(history?.year)
                 });
                 [historicalYearData] = currenthistoricalYear;
-                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
+                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails);
                 historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData?.standaradDeviation,
@@ -89,13 +88,13 @@ export const getHistoricalData = async (req, res, next) => {
                     historicalYears.push(history?.year)
                 });
                 [historicalYearData] = currenthistoricalYear;
-                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails)
-                historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
+                sourceDetails = await getSourceDetails(historicalYearData, sourceDetails);
+                historicalDatapointsObject =  getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData?.standaradDeviation,
                     average: historicalYearData?.average, ...historicalDatapointsObject
                 }
-                historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, 'history', historicalYearData?.year, historicalDatapointsObject, false, false);
+                historicalDatapointsObject =  getDisplayFields(dpTypeValues, displayFields, 'history', historicalYearData?.year, historicalDatapointsObject, false, false);
                 childDp = await getChildDp(datapointId, historicalDatapointsObject?.fiscalYear, taskId, companyId)
                 historicalDatapointsObject.childDp = childDp;
                 break;
@@ -141,6 +140,27 @@ export const getScreenShot = async (req, res, next) => {
     }
 }
 
+function getShot(screenShot) {
+    console.log(screenShot);
+    let image = []
+    if (screenShot?.length > 0) {
+        for (let i = 0; i < screenShot?.length; i++) {
+            image.push({
+                id: i,
+                name: '',
+                url: screenShot[i]
+            });
+        }
+    } else {
+        image.push({
+            id: '',
+            name: '',
+            url: ''
+        });
+    }
+    return image;
+
+}
 
 
 

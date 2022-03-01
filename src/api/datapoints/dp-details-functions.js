@@ -304,14 +304,14 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
 }
 
 
-export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType) {
+export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType, screenShot) {
     return {
         status: Completed,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
         taskId: object?.taskId,
-        fiscalYear: Array.isArray(year)&& year ? year[0] : year,
+        fiscalYear: Array.isArray(year) && year ? year[0] : year,
         description: dpTypeValues?.description,
         dataType: dpTypeValues?.dataType,
         subDataType: subDataType,
@@ -324,6 +324,7 @@ export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDet
         restatedValue: object?.restatedValue ? object?.restatedValue : '',
         response: object?.response,
         sourceList: sourceTypeDetails,
+        screenShot: getShot(object?.screenShot),
         source: sourceDetails,
         error: {},
         comments: [],
@@ -331,6 +332,26 @@ export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDet
     }
 }
 
+function getShot(screenShot) {
+    let image = []
+    if (screenShot?.length > 0) {
+        for (let i = 0; i < screenShot?.length; i++) {
+            image.push({
+                id: i,
+                name: '',
+                url: screenShot[i]
+            });
+        }
+    } else {
+        image.push({
+            id: '',
+            name: '',
+            url: ''
+        });
+    }
+    return image;
+
+}
 
 
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
