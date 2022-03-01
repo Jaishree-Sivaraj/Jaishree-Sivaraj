@@ -75,7 +75,7 @@ export const reportsFilter = async (req, res, next) => {
       }
     },
     { $unwind: "$categoryDetails" },
-    { $match: {...matchQuery } },
+    { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
     {
       $project: {
         "companyId": "$companyId",
