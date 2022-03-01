@@ -299,7 +299,7 @@ export const exportReport = async (req, res, next) => {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
-                if(stdData.response == 'NA' || stdData.response == "NA"){
+                if(stdData.response == 'NA' || stdData.response == "NA" || stdData.response == "Na"){
                   responseValue = "NI"
                 } else {
                   responseValue = stdData.response ? stdData.response :  "";
@@ -364,7 +364,7 @@ export const exportReport = async (req, res, next) => {
               }
             }
             
-            if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "No") {
+            if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
               let responseObjectToPush = await getResponseObject(objectToPush);
               rows.push(responseObjectToPush);
             } else if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "Yes") {
@@ -393,7 +393,7 @@ export const exportReport = async (req, res, next) => {
                   dataType = "Text"
                 }
                 let responseValue;
-                if (item.childFields.response == 'NA' || item.childFields.response == "NA") {
+                if (item.childFields.response == 'NA' || item.childFields.response == "NA"  || item.childFields.response == "Na") {
                   responseValue = "NI";
                 } else {
                   responseValue = item.childFields.response ? item.childFields.response : "";
