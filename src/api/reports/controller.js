@@ -467,7 +467,7 @@ export async function getResponseObject (responseObject) {
   responseObject["Snapshot"] = "";
   responseObject["Document Year"] = "";
   responseObject["keyword_used"] = "";
-  responseObject["Additional source used?"] = "";
+  responseObject["Additional Source Used?"] = "";
 
   return responseObject;
 }
