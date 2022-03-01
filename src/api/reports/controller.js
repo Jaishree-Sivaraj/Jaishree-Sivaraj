@@ -371,9 +371,9 @@ export const exportReport = async (req, res, next) => {
               objectToPush['data_type (number, text, units)'] = "";
               rows.push(objectToPush);
             } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
-              objectToPush["company_data_element_label "] = "";
-              objectToPush["company_data_element_sub_label"] = "";
-              objectToPush["total_or_sub_line_item"] = "";
+              objectToPush["company_data_element_label (for numbers)"] = "";
+              objectToPush["company_data_element_sub_label (for numbers)"] = "";
+              objectToPush["total_or_sub_line_item (for numbers)"] = "";
               rows.push(objectToPush);
             } else {
               rows.push(objectToPush);
@@ -467,7 +467,7 @@ export async function getResponseObject (responseObject) {
   responseObject["Snapshot"] = "";
   responseObject["Document Year"] = "";
   responseObject["keyword_used"] = "";
-  responseObject["Addition source used?"] = "";
+  responseObject["Additional Source Used?"] = "";
 
   return responseObject;
 }
