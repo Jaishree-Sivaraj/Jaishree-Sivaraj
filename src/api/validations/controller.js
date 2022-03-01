@@ -344,7 +344,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
       if(dpTypeValues.length > 0){
         let previousYear = "";
         let historyYear = await StandaloneDatapoints.distinct('year',{companyId: taskDetailsObject.companyId.id,isActive: true, status: true});
-        let distinctYears = taskDetailsObject.year.split(',');
+        let distinctYears = taskDetailsObject.year.split(', ');
         distinctYears = distinctYears.sort();
         let previousYearIndex = historyYear.indexOf(distinctYears[0])
         if(previousYearIndex > 0){
