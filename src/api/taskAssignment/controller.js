@@ -1915,13 +1915,14 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       year: {
         "$in": distinctYears
       },
+      datapointId: { $in: reqDpCodes },
       isActive: true,
       status: true
     }
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
-      query.datapointId = { $in: reqDpCodes }
-    }
+    // if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+    //   query.datapointId = { $in: reqDpCodes }
+    // }
     // StandAlone, BoardMatrix and KMP are DpTypes.
     const [allStandaloneDetails, allBoardMemberMatrixDetails1, allKmpMatrixDetails1] = await Promise.all([
       StandaloneDatapoints.find(query)
@@ -1953,12 +1954,13 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId.id,
       dataCollection: "Yes",
+      isRequiredForReps: true,
       functionId: { "$ne": negativeNews.id }
     }
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
-      datapointQuery.isRequiredForReps = true
-    }
+    // if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+    //   datapointQuery.isRequiredForReps = true
+    // }
 
     let datapoints = await Datapoints.find({ ...datapointQuery });
 
