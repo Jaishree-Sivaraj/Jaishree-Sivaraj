@@ -81,7 +81,7 @@ export const repDatapointDetails = async (req, res, next) => {
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
         let [currentYear, displayFields] = [
-            year?.split(','),
+            year?.split(', '),
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
