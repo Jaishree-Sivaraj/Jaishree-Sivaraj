@@ -75,7 +75,7 @@ export const reportsFilter = async (req, res, next) => {
       }
     },
     { $unwind: "$categoryDetails" },
-    { $match: {...matchQuery } },
+    { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
     {
       $project: {
         "companyId": "$companyId",
@@ -282,7 +282,7 @@ export const exportReport = async (req, res, next) => {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
                 var date = stdData.updatedAt ? stdData.updatedAt :  "";
-                let months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+                let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                 let date_of_data_capture;
                 if (date != "") {
                   date_of_data_capture = `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`
@@ -291,20 +291,24 @@ export const exportReport = async (req, res, next) => {
               } else if(outputFieldsData == 'publicationDate'){
                 let date1 = stdData.publicationDate ? stdData.publicationDate :  "";
                 let documentYear;
-                if (date1 != "") {
+                if (date1 != "" && date1 != " " && date1 != '' && date1 != ' ') {
                   let date2 = date1.split('T');
+                  let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                   let formattedDate = date2[0].split('-');
-                  documentYear = `${formattedDate[1]}-${formattedDate[2]}-${formattedDate[0]}`
+                  let month = months[formattedDate[1]-1];
+                  documentYear = `${formattedDate[2]}-${month}-${formattedDate[0]}`
+                } else {
+                  documentYear = "";
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
-                // if(stdData.response == 'NA' || stdData.response == "NA"){
-                //   responseValue = ""
-                // } else {
-                //   responseValue = stdData.response ? stdData.response :  "";
-                // }
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.response;
+                if(stdData.response == 'NA' || stdData.response == "NA" || stdData.response == "Na"){
+                  responseValue = "NI"
+                } else {
+                  responseValue = stdData.response ? stdData.response :  "";
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = responseValue;
               } else if ( stdData[outputFieldsData]) {
                 objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "";
               } else if (stdData.additionalDetails[outputFieldsData]) {
@@ -364,16 +368,16 @@ export const exportReport = async (req, res, next) => {
               }
             }
             
-            if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "No") {
+            if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
               let responseObjectToPush = await getResponseObject(objectToPush);
               rows.push(responseObjectToPush);
             } else if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "Yes") {
               objectToPush['data_type (number, text, units)'] = "";
               rows.push(objectToPush);
             } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
-              objectToPush["company_data_element_label "] = "";
-              objectToPush["company_data_element_sub_label"] = "";
-              objectToPush["total_or_sub_line_item"] = "";
+              objectToPush["company_data_element_label (for numbers)"] = "";
+              objectToPush["company_data_element_sub_label (for numbers)"] = "";
+              objectToPush["total_or_sub_line_item (for numbers)"] = "";
               rows.push(objectToPush);
             } else {
               rows.push(objectToPush);
@@ -393,8 +397,8 @@ export const exportReport = async (req, res, next) => {
                   dataType = "Text"
                 }
                 let responseValue;
-                if (item.childFields.response == 'NA' || item.childFields.response == "NA") {
-                  responseValue = "";
+                if (item.childFields.response == 'NA' || item.childFields.response == "NA"  || item.childFields.response == "Na") {
+                  responseValue = "NI";
                 } else {
                   responseValue = item.childFields.response ? item.childFields.response : "";
                 }
@@ -467,7 +471,7 @@ export async function getResponseObject (responseObject) {
   responseObject["Snapshot"] = "";
   responseObject["Document Year"] = "";
   responseObject["keyword_used"] = "";
-  responseObject["Addition source used?"] = "";
+  responseObject["Additional Source Used?"] = "";
 
   return responseObject;
 }
