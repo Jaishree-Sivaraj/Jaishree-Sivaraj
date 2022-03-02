@@ -52,10 +52,6 @@ export const getHistoricalData = async (req, res, next) => {
         switch (memberType) {
             case STANDALONE:
                 currenthistoricalYear = await StandaloneDatapoints.find(historyQuery).lean();
-                BoardMembersMatrixDataPoints.find({
-                    ...historyQuery,
-                    memberName: memberName,
-                })
                 currenthistoricalYear.map(history => {
                     historicalYears.push(history?.year)
                 });
@@ -63,14 +59,13 @@ export const getHistoricalData = async (req, res, next) => {
                 sourceDetails = await getSourceDetails(historicalYearData, sourceDetails);
                 historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
-                    standaradDeviation: historicalYearData.standaradDeviation,
-                    average: historicalYearData.average, ...historicalDatapointsObject
+                    standaradDeviation: historicalYearData?.standaradDeviation,
+                    average: historicalYearData?.average, ...historicalDatapointsObject
                 }
                 historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, 'history', historicalYearData?.year, historicalDatapointsObject, false, false);
                 childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, companyId)
 
                 historicalDatapointsObject.childDp = childDp;
-                console.log(historicalDatapointsObject)
                 break;
             case BOARD_MATRIX:
                 currenthistoricalYear = await BoardMembersMatrixDataPoints.find({
@@ -95,7 +90,8 @@ export const getHistoricalData = async (req, res, next) => {
                 currenthistoricalYear = await KmpMatrixDataPoints.find({
                     ...historyQuery,
                     memberName: memberName,
-                })
+                });
+
                 currenthistoricalYear.map(history => {
                     historicalYears.push(history?.year)
                 });
