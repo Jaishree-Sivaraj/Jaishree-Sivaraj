@@ -81,7 +81,7 @@ export const repDatapointDetails = async (req, res, next) => {
 
         const clienttaxonomyFields = await ClientTaxonomy.find({ _id: taskDetails.companyId.clientTaxonomyId.id }).distinct('fields');
         let [currentYear, displayFields] = [
-            year?.split(','),
+            year?.split(', '),
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
@@ -719,10 +719,18 @@ function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, 
 
 
 function getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapointsObject, datapointId, taskId, currentYear) {
+    let additionalDetails = [];
     displayFields.map(display => {
-        if (!requiredFields.includes(display.fieldName)) {
+        if (display?.fieldName == 'keywordUsed') {
+            console.log(display?.fieldName)
+        }
+        if (!requiredFields.includes(display?.fieldName)) {
+            if (display?.fieldName == 'keywordUsed') {
+                console.log(display?.fieldName)
+            }
+            console.log('This is an error');
             let optionValues = [], optionVal = '', currentValue;
-            switch (display.inputType) {
+            switch (display?.inputType) {
                 case SELECT:
                     const options = display.inputValues.split(',');
                     options.length > 0 ? options.map(option => {
@@ -734,31 +742,34 @@ function getDisplayErrorDetails(displayFields, errorDetailsObject, currentDatapo
 
                     break;
                 case STATIC:
-                    currentValue = errorDetailsObject.additionalDetails[display.fieldName];
+                    errorDetailsObject.additionalDetails = errorDetailsObject?.additionalDetails ? errorDetailsObject?.additionalDetails : []
+                    currentValue = errorDetailsObject?.additionalDetails[display?.fieldName];
+                    console.log(currentValue);
                     break;
                 default:
-                    optionVal = display.inputValues;
-                    const standaloneDetail = errorDetailsObject.find((obj) => obj.datapointId == datapointId && obj.year == currentYear && obj.taskId == taskId);
-                    currentValue = display.inputType == SELECT ?
+                    optionVal = display?.inputValues;
+                    const standaloneDetail = errorDetailsObject.find((obj) => obj?.datapointId == datapointId && obj?.year == currentYear && obj?.taskId == taskId);
+                    currentValue = display?.inputType == SELECT ?
                         {
-                            value: standaloneDetail.errorCaughtByRep.additionalDetails ?
-                                standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : '',
-                            label: standaloneDetail.errorCaughtByRep.additionalDetails ?
-                                standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : ''
+                            value: standaloneDetail?.errorCaughtByRep?.additionalDetails ?
+                                standaloneDetail?.errorCaughtByRep?.additionalDetails[display?.fieldName] : '',
+                            label: standaloneDetail?.errorCaughtByRep?.additionalDetails ?
+                                standaloneDetail?.errorCaughtByRep?.additionalDetails[display?.fieldName] : ''
                         }
 
-                        : standaloneDetail.errorCaughtByRep.additionalDetails ? standaloneDetail.errorCaughtByRep.additionalDetails[display.fieldName] : '';
+                        : standaloneDetail?.errorCaughtByRep?.additionalDetails ? standaloneDetail?.errorCaughtByRep?.additionalDetails[display?.fieldName] : '';
                     break;
             }
-            currentDatapointsObject.error.refData.additionalDetails.push({
-                fieldName: display.fieldName,
-                name: display.name,
+            currentDatapointsObject?.error?.refData?.additionalDetails?.push({
+                fieldName: display?.fieldName,
+                name: display?.name,
                 value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
+                inputType: display?.inputType,
+                inputValues: optionValues?.length > 0 ? optionValues : optionVal
             });
         }
     });
+    console.log(currentDatapointsObject)
     return currentDatapointsObject;
 
 }

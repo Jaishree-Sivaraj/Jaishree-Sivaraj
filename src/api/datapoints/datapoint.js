@@ -310,7 +310,7 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields },
                     dpCodeData: datapointsObject,
 
                 });
@@ -432,7 +432,9 @@ export const datapointDetails = async (req, res, next) => {
                     response: {
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpTypeValues,
+                        displayFields
                     },
                     dpCodeData: datapointsObject
                 });
@@ -557,7 +559,9 @@ export const datapointDetails = async (req, res, next) => {
                     response: {
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpTypeValues,
+                        displayFields
                     },
                     dpCodeData: datapointsObject
                 });
@@ -573,4 +577,3 @@ export const datapointDetails = async (req, res, next) => {
         });
     }
 }
-

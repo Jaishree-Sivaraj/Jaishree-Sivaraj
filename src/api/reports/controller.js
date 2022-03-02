@@ -75,7 +75,7 @@ export const reportsFilter = async (req, res, next) => {
       }
     },
     { $unwind: "$categoryDetails" },
-    { $match: {...matchQuery, "taskDetails.taskStatus": { $in: ["Verification Completed", "Completed"] } } },
+    { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
     {
       $project: {
         "companyId": "$companyId",
@@ -209,7 +209,7 @@ export const exportReport = async (req, res, next) => {
         } else if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType == 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {
           dataType = data?.placeValue ? `${data?.placeValue}" "${dpCodeDetails[0].measureType}` : "Number";
         } else {
-          dataType = dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "NI";
+          dataType = dpCodeDetails[0].dataType ? dpCodeDetails[0].dataType : "";
         }
   
         //Implementing for the Child DPCodes
@@ -277,58 +277,62 @@ export const exportReport = async (req, res, next) => {
             for (let outIndex = 0; outIndex < cltTaxoDetails.length; outIndex++) {
               let outputFieldsData = cltTaxoDetails[outIndex].fieldName;
               if ( outputFieldsData == 'year') {
-                objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "NI";
+                objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "";
               } else if(outputFieldsData == 'screenShot'){
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
-                var date = stdData.updatedAt ? stdData.updatedAt :  "NI";
-                let months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+                var date = stdData.updatedAt ? stdData.updatedAt :  "";
+                let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                 let date_of_data_capture;
-                if (date != "NI") {
-                  date_of_data_capture = `${months[date.getMonth()]}-${date.getDate()}-${date.getFullYear()}`
+                if (date != "") {
+                  date_of_data_capture = `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = date_of_data_capture;
               } else if(outputFieldsData == 'publicationDate'){
-                let date1 = stdData.publicationDate ? stdData.publicationDate :  "NI";
+                let date1 = stdData.publicationDate ? stdData.publicationDate :  "";
                 let documentYear;
-                if (date1 != "NI") {
+                if (date1 != "" && date1 != " " && date1 != '' && date1 != ' ') {
                   let date2 = date1.split('T');
+                  let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                   let formattedDate = date2[0].split('-');
-                  documentYear = `${formattedDate[1]}-${formattedDate[2]}-${formattedDate[0]}`
+                  let month = months[formattedDate[1]-1];
+                  documentYear = `${formattedDate[2]}-${month}-${formattedDate[0]}`
+                } else {
+                  documentYear = "";
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
-                if(stdData.response == 'NA' || stdData.response == "NA"){
+                if(stdData.response == 'NA' || stdData.response == "NA" || stdData.response == "Na"){
                   responseValue = "NI"
                 } else {
-                  responseValue = stdData.response ? stdData.response :  "NI";
+                  responseValue = stdData.response ? stdData.response :  "";
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = responseValue;
               } else if ( stdData[outputFieldsData]) {
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "NI";
+                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData[outputFieldsData] ? stdData[outputFieldsData] : "";
               } else if (stdData.additionalDetails[outputFieldsData]) {
-                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.additionalDetails[outputFieldsData] ? stdData.additionalDetails[outputFieldsData] : "NI";
+                objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.additionalDetails[outputFieldsData] ? stdData.additionalDetails[outputFieldsData] : "";
               } else {
                 let item = cltTaxoDetails[outIndex].fieldName;
                 switch (item){
                   case 'code':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "";
                     break;
                   case 'description':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "";
                     break;
                   case 'themeName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "";
                     break;
                   case 'category':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "";
                     break;
                   case 'unit':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "";
                     break
                   case 'dataType':
                     let dataType = '';
@@ -341,29 +345,43 @@ export const exportReport = async (req, res, next) => {
                     }else{
                       dataType = "Text"
                     }
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dataType ? dataType : "";
                     break
                   case 'companyCin':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.cin : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.cin : "";
                     break;
                   case 'companyName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.companyName : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.companyName : "";
                     break;
                   case 'nicIndustry':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "";
                     break;
                   case 'dataProvider':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
                     break;
                   default:
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = "NI";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = "";
                 }
               }
             }
-            rows.push(objectToPush);
+            
+            if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
+              let responseObjectToPush = await getResponseObject(objectToPush);
+              rows.push(responseObjectToPush);
+            } else if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "Yes") {
+              objectToPush['data_type (number, text, units)'] = "";
+              rows.push(objectToPush);
+            } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
+              objectToPush["company_data_element_label (for numbers)"] = "";
+              objectToPush["company_data_element_sub_label (for numbers)"] = "";
+              objectToPush["total_or_sub_line_item (for numbers)"] = "";
+              rows.push(objectToPush);
+            } else {
+              rows.push(objectToPush);
+            }
             if (childDpDetails.length > 0) {
               for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPush));
@@ -379,22 +397,29 @@ export const exportReport = async (req, res, next) => {
                   dataType = "Text"
                 }
                 let responseValue;
-                if (item.childFields.response == 'NA' || item.childFields.response == "NA") {
+                if (item.childFields.response == 'NA' || item.childFields.response == "NA"  || item.childFields.response == "Na") {
                   responseValue = "NI";
                 } else {
-                  responseValue = item.childFields.response ? item.childFields.response : "NI";
+                  responseValue = item.childFields.response ? item.childFields.response : "";
                 }
-                objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "NI";
-                objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "NI";
-                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "NI";
+                objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "";
+                objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "";
+                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "";
                 objectToPushAsChild["data_value"] = responseValue;
-                objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "NI";
-                objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "NI";
-                objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "NI";
-                objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "NI";
-                objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "NI";
+                objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "";
+                objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "";
+                objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
+                objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
-                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "NI";
+                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
+              }
+              if (objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+                objectToPushAsChild["company_data_element_label "] = "";
+                objectToPushAsChild["company_data_element_sub_label"] = "";
+                objectToPushAsChild["total_or_sub_line_item"] = "";
+                rows.push(objectToPushAsChild);
+              } else {
                 rows.push(objectToPushAsChild);
               }
             }
@@ -402,6 +427,7 @@ export const exportReport = async (req, res, next) => {
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
+            rows: rows.length,
             data: rows.length > 0 ? rows : []
           });
         } else {
@@ -425,4 +451,27 @@ export const exportReport = async (req, res, next) => {
       message: error.message ? error.message : "Failed to exports the reports!"
     })
   }
+}
+
+export async function getResponseObject (responseObject) {
+  responseObject['data_type (number, text, units)'] = "";
+  responseObject["date_of_data_capture"] = "";
+  responseObject["type of value(actual/derived/Proxy)"] = "";
+  responseObject["company_data_element_label (for numbers)"] = "";
+  responseObject["company_data_element_sub_label (for numbers)"] = "";
+  responseObject["relevant_standards_and_frameworks"] = "";
+  responseObject["total_or_sub_line_item (for numbers)"] = "";
+  responseObject["format_of_data_provided_by_company (chart, table, text)"] = "";
+  responseObject["supporting_narrative"] = "";
+  responseObject["section_of_document"] = "";
+  responseObject["page_number"] = "";
+  responseObject["name_of_document_as_saved"] = "";
+  responseObject["name_of_document (as listed on title page)"] = "";
+  responseObject["HTML Link of Document"] = "";
+  responseObject["Snapshot"] = "";
+  responseObject["Document Year"] = "";
+  responseObject["keyword_used"] = "";
+  responseObject["Additional Source Used?"] = "";
+
+  return responseObject;
 }
