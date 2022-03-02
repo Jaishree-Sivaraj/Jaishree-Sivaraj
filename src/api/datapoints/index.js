@@ -58,7 +58,7 @@ router.post('/',
   create)
 
 /**
-* @api {post} /get-historical-data Get historical datapoints
+* @api {post} /datapoints/get-historical-datapoints Get historical datapoints
 * @apiName HistoricalDatapoint
 * @apiGroup HistoricalDatapoint
 * @apiPermission user
@@ -87,7 +87,7 @@ router.post('/',
 * @apiError 404 Datapoints not found.
 * @apiError 401 user access only.
 */
-router.post('/get-historical-data',
+router.post('/get-historical-datapoints',
   token({ required: true }),
   body({ year, taskId, datapointId, memberType, memberName, memberId, dpTypeValues, sourceList, displayFields, subDataType, companyId }),
   getHistoricalData)
