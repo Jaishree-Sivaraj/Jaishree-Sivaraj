@@ -291,10 +291,14 @@ export const exportReport = async (req, res, next) => {
               } else if(outputFieldsData == 'publicationDate'){
                 let date1 = stdData.publicationDate ? stdData.publicationDate :  "";
                 let documentYear;
-                if (date1 != "") {
+                if (date1 != "" && date1 != " " && date1 != '' && date1 != ' ') {
                   let date2 = date1.split('T');
+                  let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
                   let formattedDate = date2[0].split('-');
-                  documentYear = `${formattedDate[1]}-${formattedDate[2]}-${formattedDate[0]}`
+                  let month = months[formattedDate[1]-1];
+                  documentYear = `${formattedDate[2]}-${month}-${formattedDate[0]}`
+                } else {
+                  documentYear = "";
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               }else if(outputFieldsData == 'response'){
