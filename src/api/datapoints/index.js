@@ -14,14 +14,14 @@ import { schema } from './model';
 import { datapointDetails } from './datapoint';
 import { getCategorywiseDatapoints } from './get-category-wise-datapoints';
 import { repDatapointDetails } from './reps-datapoint-details';
-import { getHistoricalData } from './get-historical-data';
+import { getHistoricalData, getScreenShot } from './get-historical-data';
 import { saveHistoricalDatapoint } from './save-historical-data';
 export Datapoints, { schema } from './model';
 
 
 const router = new Router()
 const { clientTaxonomyId, categoryId, name, code, description, polarity, dataCollection, dataCollectionGuide, normalizedBy, weighted, standaloneOrMatrix, reference, industryRelevant, unit, signal, percentile, finalUnit, functionId, dpType, dpStatus, additionalDetails, status, isRequiredForJson } = schema.tree
-const taskId = '', year = '', datapointId = '', data = {}, dpCodeId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '', dpTypeValues = {}, sourceList = {}, displayFields = {}, subDataType = {}, companyId = ''
+const taskId = '', year = '', datapointId = '', data = {}, dpCodeId = '', memberType = '', memberName = '', role = '', memberId = '', page = '', limit = '', keyIssueId = '', dpTypeValues = {}, sourceList = {}, displayFields = {}, subDataType = {}, companyId = '', screenShot = ''
 /**
  * @api {post} /datapoints Create datapoints
  * @apiName CreateDatapoints
@@ -161,6 +161,23 @@ router.get('/',
   token({ required: true }),
   query(),
   index)
+
+/**
+* @api {get} /datapoints/get-screenshot Retrieve datapoints
+* @apiName RetrieveScreenShot
+* @apiGroup Datapoints
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of datapoints.
+* @apiSuccess {Object[]} rows List of datapoints.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/get-screenshot',
+  token({ required: true }),
+  query(screenShot),
+  getScreenShot)
 
 /**
 * @api {get} /datapoints/addExtraKeys/:clientTaxonomyId Add extraKeys for datapoints
