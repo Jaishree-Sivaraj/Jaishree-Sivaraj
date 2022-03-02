@@ -12,18 +12,30 @@ export const getHistoricalData = async (req, res, next) => {
     try {
         // send current year as an array and historical year as a single data.
         const { year, taskId, datapointId, memberType, memberName, memberId, dpTypeValues, sourceList, displayFields, subDataType, companyId } = req.body;
-        // This year can be current years of historical year.        
+        /*   
+         *  When incoming year is an array => Current Year
+        ? The incoming year will be in descending order 
+         *  When incoming year is a string => Historical Year.
+        */
+
+        if (Array.isArray(year) && year?.length < 0) {
+            return res.status(409).json({
+                status: 409,
+                message: 'Incorrect fiscal year'
+            });
+        }
+
         let historyQuery = {
             companyId,
             datapointId: datapointId,
             isActive: true,
             status: true
         }
+
         historyQuery = Array.isArray(year) ? {
             ...historyQuery,
-            year: {
-                $nin: year
-            }
+            $and: [{ year: { $nin: year } }, { year: { $lt: year[0] } }]
+
         } : {
             ...historyQuery,
             year: year
@@ -35,7 +47,7 @@ export const getHistoricalData = async (req, res, next) => {
             value: "",
             publicationDate: ''
         };
-        let historicalDatapointsObject, historicalYears = [], childDp, currenthistoricalYear, historicalYearData, screen=[];
+        let historicalDatapointsObject, historicalYears = [], childDp, currenthistoricalYear, historicalYearData, screen = [];
 
         switch (memberType) {
             case STANDALONE:
@@ -89,12 +101,12 @@ export const getHistoricalData = async (req, res, next) => {
                 });
                 [historicalYearData] = currenthistoricalYear;
                 sourceDetails = await getSourceDetails(historicalYearData, sourceDetails);
-                historicalDatapointsObject =  getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
+                historicalDatapointsObject = getHistoryDataObjectYearWise(dpTypeValues, historicalYearData, sourceList, sourceDetails, historicalYearData?.year, subDataType);
                 historicalDatapointsObject = {
                     standaradDeviation: historicalYearData?.standaradDeviation,
                     average: historicalYearData?.average, ...historicalDatapointsObject
                 }
-                historicalDatapointsObject =  getDisplayFields(dpTypeValues, displayFields, 'history', historicalYearData?.year, historicalDatapointsObject, false, false);
+                historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, 'history', historicalYearData?.year, historicalDatapointsObject, false, false);
                 childDp = await getChildDp(datapointId, historicalDatapointsObject?.fiscalYear, taskId, companyId)
                 historicalDatapointsObject.childDp = childDp;
                 break;
