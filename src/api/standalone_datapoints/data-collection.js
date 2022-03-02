@@ -11,6 +11,8 @@ import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../.
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
+
+
 // Incoming payload
 // currentDatapoint:
 // [
@@ -528,7 +530,7 @@ export const dataCollection = async ({
     }
 }
 
-async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
+export async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
     let formattedScreenShots = [];
     if (screenShot && screenShot.length > 0) {
         for (let screenshotIndex = 0; screenshotIndex < screenShot.length; screenshotIndex++) {
@@ -549,7 +551,9 @@ async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear) {
     return formattedScreenShots;
 }
 
-function getData(body, item, user, formattedScreenShots) {
+export function getData(body, item, user, formattedScreenShots) {
+    const { ...withoutPasswordUser } = user;
+    const { password, ...users } = withoutPasswordUser._doc
     return {
         datapointId: body.dpCodeId,
         companyId: body.companyId,
@@ -564,7 +568,7 @@ function getData(body, item, user, formattedScreenShots) {
         restatedForYear: item['restatedForYear'],
         restatedInYear: item['restatedInYear'],
         restatedValue: item['restatedValue'],
-        publicationDate: item?.source['publicationDate'],
+        publicationDate: item?.source?.publicationDate,
         url: item.source['url'],
         sourceName: item?.source['sourceName'] + ";" + item.source['value'],
         isActive: true,
@@ -572,7 +576,8 @@ function getData(body, item, user, formattedScreenShots) {
         additionalDetails: item['additionalDetails'],
         uom: item.subDataType ? (item.subDataType.selectedUom ? item.subDataType.selectedUom['value'] : null) : null,
         placeValue: item.subDataType ? (item.subDataType.selectedPlaceValue ? item.subDataType.selectedPlaceValue['value'] : null) : null,
-        createdBy: user,
+        createdBy: users,
+        createdAt: Date.now(),
         updatedAt: Date.now()
         // member name for other dptype except Standalone
         // correctionStatus for currentDataCorrection.
@@ -586,7 +591,7 @@ function getData(body, item, user, formattedScreenShots) {
     }
 }
 
-async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, dpCodesDetails) {
+export async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, dpCodesDetails) {
     try {
         let datapointDataBeenChanged, getDataPointCode, isDpDependent;
         let isDatapointChanged = false;
@@ -602,7 +607,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true; // datapoint response have been changed.
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 console.log(isDpDependent);
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
@@ -621,7 +626,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true;
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
                         _id: body.taskId,
@@ -639,7 +644,7 @@ async function updateDerivedCalculationCompletedStatus(type, updateQuery, body, 
                         isDatapointChanged = true;
                     }
                 });
-                isDpDependent = await Rules.find({ parameter: getDataPointCode?.code }).lean();
+                isDpDependent = await Rules.find({ parameter: { '$regex': getDataPointCode?.code, '$options': 'i' } }).lean();
                 if (isDpDependent.length > 0 && isDatapointChanged) {
                     await TaskAssignment.findOneAndUpdate({
                         _id: body.taskId,
@@ -680,7 +685,7 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
             for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                 let childDetailsDatas = childDp[childIndex];
                 if (Array.isArray(childDetailsDatas?.screenShot)) {
-                    const url = await saveScreenShot(childDetailsDatas.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
+                    const url = await saveScreenShot(childDetailsDatas?.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
                     childDetailsDatas.screenShot = {
                         url,
                         name: childDetailsDatas.screenShot.name,
@@ -688,7 +693,7 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
-                
+
                 childDetailsDatas.units = {
                     measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
                     placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],

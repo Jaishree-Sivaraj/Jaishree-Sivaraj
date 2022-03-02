@@ -2977,7 +2977,7 @@ export const derivedCalculation = async ({
           });
       }
     }
-    let dataPointsIdList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, dpType: { "$ne": ["Board Matrix", "KMP Matrix"] }, percentile: { "$ne": "Yes" }, status: true });
+    let dataPointsIdList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, dpType: { "$nin": ["Board Matrix", "KMP Matrix"] }, percentile: { "$ne": "Yes" }, status: true });
     let percentileDataPointsList = await Datapoints.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, percentile: "Yes", status: true });
     let allStandaloneDatapoints = await StandaloneDatapoints.find({
       "companyId": taskDetailsObject.companyId.id,

@@ -6,6 +6,12 @@ import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { YetToStart, Completed } from '../../constants/task-status';
 import { ChildDp } from '../child-dp';
 import { ClientTaxonomy } from '../clientTaxonomy';
+import { Datapoints } from '../datapoints';
+import { Measures } from '../measures';
+import { MeasureUoms } from '../measure_uoms';
+import { PlaceValues } from '../place_values';
+import _ from "lodash";
+import { sortArray } from '../../services/utils/sorting-string';
 
 const requiredFields = [
     "categoryCode",
@@ -79,16 +85,16 @@ export async function getS3ScreenShot(screenShot) {
 }
 
 export async function getSourceDetails(object, sourceDetails) {
-    if (object.sourceName !== "" || object.sourceName !== " ") {
-        let companySourceId = object.sourceName?.split(';')[1];
+    if (object?.sourceName !== "" || object?.sourceName !== " ") {
+        let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
-        findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object.companyId ? object.companyId.id : null, sourceFile: object.sourceFile ? object.sourceFile : null };
+        findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
         sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
         if (sourceValues != null) {
-            sourceDetails.url = sourceValues.sourceUrl;
-            sourceDetails.publicationDate = sourceValues.publicationDate;
-            sourceDetails.sourceName = sourceValues.name;
-            sourceDetails.value = sourceValues._id;
+            sourceDetails.url = sourceValues?.sourceUrl;
+            sourceDetails.publicationDate = sourceValues?.publicationDate;
+            sourceDetails.sourceName = sourceValues?.name;
+            sourceDetails.value = sourceValues?._id;
         }
     }
     return sourceDetails;
@@ -206,40 +212,34 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                             label: option
                         })
                     }) : optionValues = [];
+
                     if (isEmpty) {
-                        currentValue = display.inputType == 'Select' ?
-                            { value: '', label: '' } : '';
+                        currentValue = { value: '', label: '' };
                     } else {
                         optionVal = display.inputValues;
-                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
-                        if (standaloneDetail) {
-                            currentValue = display.inputType == SELECT ?
-                                {
-                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
-                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
-                                }
-                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj.year == currentYear);
+                        if (standaloneDetail || currentDpType == 'history') {
+                            currentValue = {
+                                value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
+                                label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                            }
                         }
                     }
 
                     break;
                 case STATIC:
-                    currentValue = dpTypeValues?.additionalDetails[display.fieldName];
+                    currentValue = dpTypeValues?.additionalDetails[display?.fieldName];
                     break;
                 default:
                     if (isEmpty) {
-                        currentValue = display.inputType == 'Select' ?
-                            { value: '', label: '' } : '';
+                        currentValue = '';
                     } else {
-                        optionVal = display.inputValues;
-                        let standaloneDetail = currentDpType.find((obj) => obj.year == currentYear);
-                        if (standaloneDetail) {
-                            currentValue = display.inputType == SELECT ?
-                                {
-                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
-                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
-                                }
-                                : standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '';
+                        optionVal = display?.inputValues;
+                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj?.year == currentYear);
+                        if (standaloneDetail || currentDpType == 'history') {
+                            currentValue = standaloneDetail?.additionalDetails ? standaloneDetail?.additionalDetails[display?.fieldName] : '';
                         }
                     }
                     break;
@@ -267,6 +267,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
 
 
 }
+
 
 export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
     return {
@@ -302,6 +303,57 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
     }
 }
 
+
+export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType, screenShot) {
+    return {
+        status: Completed,
+        dpCode: dpTypeValues?.code,
+        dpCodeId: dpTypeValues?.id,
+        dpName: dpTypeValues?.name,
+        taskId: object?.taskId ? object?.taskId : '',
+        fiscalYear: year ? Array.isArray(year) ? year[0] : year : '',
+        description: dpTypeValues?.description,
+        dataType: dpTypeValues?.dataType,
+        subDataType: subDataType,
+        textSnippet: object?.textSnippet,
+        pageNo: object?.pageNumber,
+        optionalAnalystComment: object?.optionalAnalystComment ? object?.optionalAnalystComment : '',
+        isRestated: object?.isRestated ? object?.isRestated : '',
+        restatedForYear: object?.restatedForYear ? object?.restatedForYear : '',
+        restatedInYear: object?.restatedInYear ? object?.restatedInYear : '',
+        restatedValue: object?.restatedValue ? object?.restatedValue : '',
+        response: object?.response ? object?.response : '',
+        sourceList: sourceTypeDetails,
+        screenShot: getShot(object?.screenShot),
+        source: sourceDetails,
+        error: {},
+        comments: [],
+        additionalDetails: []
+    }
+}
+
+function getShot(screenShot) {
+    let image = []
+    if (screenShot?.length > 0) {
+        for (let i = 0; i < screenShot?.length; i++) {
+            image.push({
+                id: i,
+                name: '',
+                url: screenShot[i]
+            });
+        }
+    } else {
+        image.push({
+            id: '',
+            name: '',
+            url: ''
+        });
+    }
+    return image;
+
+}
+
+
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
     return {
         dpCode: allDatapoints?.code,
@@ -323,10 +375,10 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
     try {
         const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
         let childDp = [];
-        getChildDpDetails.map(child => {
-            childDp.push(child.childFields);
+        getChildDpDetails?.map(child => {
+            childDp.push(child?.childFields);
         });
-
+        console.log(childDp);
         return childDp;
 
     } catch (error) {
@@ -335,27 +387,92 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
     }
 }
 
-export async function getHeaders(clientTaxonomyId) {
+export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
 
-        const clientTaxData = await ClientTaxonomy.findOne({
-            _id: clientTaxonomyId
-        });
+        const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
+            ClientTaxonomy.findOne({
+                _id: clientTaxonomyId
+            }),
+            Datapoints.findOne({ _id: datapointId }),
+            Measures.find({ status: true }),
+            MeasureUoms.find({ status: true }).populate('measureId'),
+            PlaceValues.aggregate([
+                { $match: { status: true } }, { $project: { _id: 0, value: "$name", label: "$name" } }])
+        ]);
         let headers = [];
         if (clientTaxData?.childFields?.additionalFields?.length > 0) {
             headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            clientTaxData.childFields.additionalFields = _.sortBy(clientTaxData?.childFields?.additionalFields, 'orderNumber');
+            let responseIndex = clientTaxData?.childFields?.additionalFields.findIndex((obj) => obj.fieldName == 'response');
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-        } else {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            if (dpDetails.measureType != '') {
+                let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
+                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
+                let uomValues = [];
+                for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
+                    const element = measureUoms[uomIndex];
+                    uomValues.push({ value: element.uomName, label: element.uomName });
+                }
+                if (uomValues.length > 0) {
+                    if (measureDtl.measureName == 'Currency') {
+                        headers.push({
+                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
+                            "displayName": "Place Value",
+                            "fieldName": "placeValue",
+                            "dataType": "Select",
+                            "options": placeValues,
+                            "isRequired": true,
+                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                ?
+                                clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                                :
+                                clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                        })
+                    }
 
+                    headers.push({
+                        "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
+                        "displayName": "Unit",
+                        "fieldName": "uom",
+                        "dataType": "Select",
+                        "options": uomValues,
+                        "isRequired": true,
+                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            ?
+                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            :
+                            clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                    })
+                }
+            }
+        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
+            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
         }
+        headers = _.sortBy(headers, 'orderNumber');
         return headers;
 
 
     } catch (error) {
         console.log(error?.message)
     }
+}
+
+export function getSortedYear(currentYear) {
+    let obj = [{}];
+    currentYear.map((year) => {
+        const y = year.split('-');
+        obj.push({ firstYear: y[0], lastYear: y[1] });
+    });
+    currentYear = sortArray(obj, 'lastYear', -1);
+    let newArray = [];
+    currentYear.map((arr) => {
+        if (Object.keys(arr).length > 0) {
+            newArray.push(arr.firstYear + '-' + arr.lastYear);
+        }
+    });
+    return newArray;
 }
 
