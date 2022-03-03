@@ -30,7 +30,9 @@ import {
 
 export const datapointDetails = async (req, res, next) => {
     try {
+        let timeDetails = [];
         const { year, taskId, datapointId, memberType, memberName, memberId, isPriority } = req.body;
+        const taskFunctionMeasurePlaceValuesStartTime = Date.now();
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -47,10 +49,26 @@ export const datapointDetails = async (req, res, next) => {
             Measures.find({ status: true }),
             PlaceValues.find({ status: true }).sort({ orderNumber: 1 })
         ]);
+        let taskFunctionMeasurePlaceValuesEndTime = Date.now();
+        console.log(taskFunctionMeasurePlaceValuesEndTime)
+        console.log(taskFunctionMeasurePlaceValuesStartTime)
+        timeDetails.push({
+            blockName: 'TaskDetails and Function Details and  Measure Details and PlaceValues Details Promise',
+            timeTaken: taskFunctionMeasurePlaceValuesEndTime - taskFunctionMeasurePlaceValuesStartTime
+        });
+
         let currentYear = year.split(', ');
         currentYear = getSortedYear(currentYear);
+        const clientTaxonomyPromiseStartTime = Date.now();
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        const clientTaxonomyPromiseEndTime = Date.now();
+        timeDetails.push({
+            blockName: 'Client Taxonomy ',
+            timeTaken: clientTaxonomyPromiseEndTime - clientTaxonomyPromiseStartTime
+        });
         const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
+
+        const dpTypeErrorDetailsCompanySourceStartTime = Date.now();
         const [dpTypeValues, errorDataDetails, companySourceDetails] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
@@ -73,8 +91,14 @@ export const datapointDetails = async (req, res, next) => {
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id })
         ]);
-        let dpMeasureType = measureTypes.filter(obj => obj.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
+        const dpTypeErrorDetailsCompanySourceEndTime = Date.now();
+        timeDetails.push({
+            blockName: 'DpType Details and Error Details and Source Details  Promise ',
+            timeTaken: dpTypeErrorDetailsCompanySourceEndTime - dpTypeErrorDetailsCompanySourceStartTime
+        });
+        let dpMeasureType = measureTypes.filter(obj => obj?.measureName?.toLowerCase() == dpTypeValues?.measureType?.toLowerCase());
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
+        const taxonomyStart = Date.now();
         let taxonomyUoms = await MeasureUoms.find({
             measureId: dpMeasureTypeId,
             status: true
@@ -104,6 +128,12 @@ export const datapointDetails = async (req, res, next) => {
                 publicationDate: company.publicationDate
             });
         });
+        let taxonomyEnd=Date.now()
+        timeDetails.push({
+            blockName: 'Measure Deatils and placeValues Details and Source Details  Promise ',
+            timeTaken: taxonomyEnd - taxonomyStart
+
+        })
 
         const [currentQuery, historyQuery] = [
             {
@@ -175,6 +205,7 @@ export const datapointDetails = async (req, res, next) => {
         if (isPriority == true) {
             datapointQuery = { ...datapointQuery, isPriority: true };
         }
+        let allDatapointsStartTime=Date.now()
 
         const allDatapoints = await Datapoints.find(datapointQuery)
             .populate('keyIssueId')
@@ -190,11 +221,17 @@ export const datapointDetails = async (req, res, next) => {
                 break;
             }
         }
+        let allDatapointsEndTime=Date.now()
+        timeDetails.push({
+            blockName:' All Datapoints Details',
+            timeTaken:allDatapointsEndTime-allDatapointsStartTime
+        })
 
         let childDp = [];
         console.log(currentYear);
         switch (memberType) {
             case STANDALONE:
+                let currentHistoryAllStandaloneDetailsStartTime=Date.now()
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
                     StandaloneDatapoints.find(currentQuery).populate('createdBy')
                         .populate('datapointId')
@@ -207,12 +244,19 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
+                let currentHistoryAllStandaloneDetailsEndTime=Date.now()
+                timeDetails.push({
+                    blockName:'Current and History All standalone Details',
+                    timeTaken:currentHistoryAllStandaloneDetailsEndTime-currentHistoryAllStandaloneDetailsStartTime
 
-                historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
+                })
+
+                historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: ''
                 }
+                let CurrentYearLoopStartTime = Date.now();
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     let sourceDetails = {
@@ -226,10 +270,14 @@ export const datapointDetails = async (req, res, next) => {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
-                    })
+                    });
+                   
+                     //let currentYearStandaloneLoopStartTime=Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
                         const object = currentAllStandaloneDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, currentYear[currentYearIndex], taskId, datapointId);
+                        
+                        
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
@@ -266,6 +314,20 @@ export const datapointDetails = async (req, res, next) => {
                         }
                         datapointsObject.status = 'Completed';
                     };
+                    let currentYearLoopEndTime=Date.now()
+                    timeDetails.push({
+                        blockName: `Current Year Standalone Loop ${currentYearIndex}`,
+                        timeTaken: currentYearLoopEndTime - CurrentYearLoopStartTime
+                    });
+
+                    // let currentYearStandaloneLoopEndTime=Date.now()
+                    // timeDetails.push({
+                    //     blockName: `Current Year Standalone Loop ${currentYearIndex}`,
+                    //     timeTaken: currentYearStandaloneLoopEndTime - currentYearStandaloneLoopStartTime
+                    // });
+
+
+
                     if (Object.keys(currentDatapointsObject).length == 0) {
                         currentDatapointsObject = getCurrentEmptyObject(dpTypeValues, currentYear[currentYearIndex], sourceTypeDetails, inputValues, uomValues, placeValues);
                         currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, true, false);
@@ -279,7 +341,10 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.currentData.push(currentDatapointsObject);
 
                 }
+               
+                
                 totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
+               let historyYearStartTime=Date.now()
                 for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
                     let historicalDatapointsObject = {};
                     let sourceDetails = {
@@ -288,6 +353,9 @@ export const datapointDetails = async (req, res, next) => {
                         value: "",
                         publicationDate: ''
                     };
+                    
+                     //let startHistoryStandloneLoop=Date.now()
+
                     for (let historicalDataIndex = 0; historicalDataIndex < historyAllStandaloneDetails.length; historicalDataIndex++) {
                         let object = historyAllStandaloneDetails[historicalDataIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -307,14 +375,21 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
+                let historyYearEndTime=Date.now()
+                timeDetails.push({
+                    blockName: `history Year Standalone Loop ${historyYear}`,
+                    timeTaken: historyYearEndTime -  historyYearStartTime
+                });
+
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, timeDetails },
                     dpCodeData: datapointsObject,
 
                 });
             case BOARD_MATRIX:
+                let currentHistoryAllBoardMemberMatrixDetailsStartTime=Date.now()
                 const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails,] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
@@ -333,12 +408,20 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
-                historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
+                let currentHistoryAllBoardMemberMatrixDetailsEndTime=Date.now()
+                timeDetails.push({
+                    blockName:'Current and History Board Member Matrix Details',
+                    timeTaken:currentHistoryAllBoardMemberMatrixDetailsEndTime-currentHistoryAllBoardMemberMatrixDetailsStartTime
+                })
+                historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: ''
                 }
+                
                 totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
+
+                let currentYearLoopBoardMemberStartTime=Date.now()
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
@@ -348,6 +431,8 @@ export const datapointDetails = async (req, res, next) => {
                             datapointsObject.comments.push(object.rejectComment)
                         }
                     });
+                    
+                    //let currentYearLoopBoardMemberStartTime=Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
                         let sourceDetails = {
                             url: '',
@@ -388,6 +473,11 @@ export const datapointDetails = async (req, res, next) => {
                         }
                         datapointsObject.status = 'Completed';
                     };
+                    let  currentYearLoopBoardMemberEndTime=Date.now()
+                    timeDetails.push({
+                        blockName: `Current Year Board Member Loop ${currentYearIndex}`,
+                        timeTaken:  currentYearLoopBoardMemberEndTime -  currentYearLoopBoardMemberStartTime
+                    })
                     if (Object.keys(currentDatapointsObject).length == 0) {
                         currentDatapointsObject = getCurrentEmptyObject(dpTypeValues, currentYear[currentYearIndex], sourceTypeDetails, inputValues, uomValues, placeValues)
                         currentDatapointsObject = {
@@ -403,6 +493,10 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
+                
+                
+
+    
                 for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     let historicalDatapointsObject = {};
                     for (let historyBoardMemberIndex = 0; historyBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyBoardMemberIndex++) {
@@ -426,6 +520,7 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
+                
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
@@ -434,11 +529,14 @@ export const datapointDetails = async (req, res, next) => {
                         nextDatapoint,
                         chilDpHeaders,
                         dpTypeValues,
-                        displayFields
+                        displayFields,
+                        timeDetails
                     },
                     dpCodeData: datapointsObject
                 });
+                
             case KMP_MATRIX:
+                let currentHistoryAllKmpMatrixDetailsStartTime=Date.now()
                 const [currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] =
                     await Promise.all([
                         KmpMatrixDataPoints.find({
@@ -459,9 +557,16 @@ export const datapointDetails = async (req, res, next) => {
                             .populate('taskId')
                             .populate('uom')
                     ]);
+                    let currentHistoryAllKmpMatrixDetailsEndTime=Date.now()
+                    timeDetails.push({
+                        blockName:' Current and History All Kmp Matrix Details',
+                        timeTaken:currentHistoryAllKmpMatrixDetailsEndTime-currentHistoryAllKmpMatrixDetailsStartTime
 
-                historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
-                datapointsObject = {
+                    })
+                                      
+
+                    historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
+                     datapointsObject = {
                     ...datapointsObject,
                     status: YetToStart
                 }
@@ -475,6 +580,7 @@ export const datapointDetails = async (req, res, next) => {
                             datapointsObject.comments.push(object.rejectComment)
                         }
                     });
+                    let currentYearLoopKmpMatrixDetailsLoopStartTime=Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
                         const object = currentAllKmpMatrixDetails[currentIndex];
                         let sourceDetails = {
@@ -527,6 +633,13 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
+                let currentYearLoopKmpMatrixDetailsLoopEndTime=Date.now()
+                timeDetails.push({
+                    blockName: `Current Year Kmp Matrix Loop ${currentYearIndex}`,
+                    timeTaken:  currentYearLoopKmpMatrixDetailsLoopStartTime -   currentYearLoopKmpMatrixDetailsLoopEndTime
+
+
+                })
                 for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     let historicalDatapointsObject = {};
                     for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
@@ -561,7 +674,8 @@ export const datapointDetails = async (req, res, next) => {
                         nextDatapoint,
                         chilDpHeaders,
                         dpTypeValues,
-                        displayFields
+                        displayFields,
+                        timeDetails
                     },
                     dpCodeData: datapointsObject
                 });
