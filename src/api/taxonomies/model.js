@@ -26,12 +26,16 @@ const taxonomiesSchema = new Schema({
   inputType: {
     type: String,
     default: 'Static'
-  }, 
+  },
   inputValues: {
     type: String,
     default: ''
-  }, 
+  },
   toDisplay: {
+    type: Boolean,
+    default: false
+  },
+  isMandatory: {
     type: Boolean,
     default: false
   },
@@ -48,7 +52,7 @@ const taxonomiesSchema = new Schema({
 })
 
 taxonomiesSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
@@ -56,11 +60,12 @@ taxonomiesSchema.methods = {
       fieldName: this.fieldName ? this.fieldName : '',
       isRequired: this.isRequired,
       applicableFor: this.applicableFor ? this.applicableFor : 'Only Collection',
-      inputType: this.inputType ? this.inputType : '', 
-      inputValues: this.inputValues ? this.inputValues : '', 
+      inputType: this.inputType ? this.inputType : '',
+      inputValues: this.inputValues ? this.inputValues : '',
       toDisplay: this.toDisplay ? this.toDisplay : false,
       status: this.status,
       createdBy: this.createdBy ? this.createdBy.view(full) : null,
+      isMandatory: this.isMandatory ? this.isMandatory : false,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
