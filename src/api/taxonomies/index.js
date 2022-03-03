@@ -28,7 +28,7 @@ const { name, fieldName, isRequired, applicableFor, inputType, inputValues, toDi
  */
 router.post('/',
   token({ required: true }),
-  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay }),
+  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay, isMandatory }),
   create)
 
 /**
