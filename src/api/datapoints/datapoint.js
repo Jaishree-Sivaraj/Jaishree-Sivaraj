@@ -118,9 +118,7 @@ export const datapointDetails = async (req, res, next) => {
             }, {
                 companyId: taskDetails.companyId.id,
                 datapointId: datapointId,
-                year: {
-                    $nin: currentYear
-                },
+                $and: [{ year: { $nin: currentYear } }, { year: { $lt: currentYear[0] } }],
                 isActive: true,
                 status: true
             }
@@ -192,6 +190,8 @@ export const datapointDetails = async (req, res, next) => {
         }
 
         let childDp = [];
+        let historicalYears = [];
+        let historyYearObject = {};
         console.log(currentYear);
         switch (memberType) {
             case STANDALONE:
@@ -201,12 +201,21 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    StandaloneDatapoints.find(historyQuery).populate('createdBy')
+                    StandaloneDatapoints.find(historyQuery)
+                        .populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom')
                 ]);
+
+                historyAllStandaloneDetails?.map((historyYearData) => {
+                    historyYearObject = {}
+                    console.log(historyYearData)
+                    historyYearObject[historyYearData?.year] = historyYearData?.response;
+                    historicalYears.push(historyYearObject)
+                });
+
 
                 historyYear = _.orderBy(_.uniqBy(historyAllStandaloneDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
@@ -310,7 +319,7 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears },
                     dpCodeData: datapointsObject,
 
                 });
@@ -333,6 +342,12 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
+                historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
+                    historyYearObject = {}
+                    console.log(historyYearData)
+                    historyYearObject[historyYearData?.year] = historyYearData?.response;
+                    historicalYears.push(historyYearObject)
+                });
                 historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
@@ -459,7 +474,12 @@ export const datapointDetails = async (req, res, next) => {
                             .populate('taskId')
                             .populate('uom')
                     ]);
-
+                historyAllKmpMatrixDetails?.map((historyYearData) => {
+                    historyYearObject = {}
+                    console.log(historyYearData)
+                    historyYearObject[historyYearData?.year] = historyYearData?.response;
+                    historicalYears.push(historyYearObject)
+                });
                 historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
