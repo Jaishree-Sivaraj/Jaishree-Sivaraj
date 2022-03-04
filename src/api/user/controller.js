@@ -348,7 +348,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
 
               } else {
-               return  res.status(400).json({
+                return res.status(400).json({
                   status: "400",
                   message: `${roleObject.roleName} failed to create`
                 })
@@ -400,7 +400,9 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     return {
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
       userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
-      phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : ''
+      phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+      isUserApproved: false,
+      isUserRejected: false
     }
   }
 
@@ -459,7 +461,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForClientUrl)
       : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
 
-      
+
     const companyIdForFiletype = role === ClientRepresentative ?
       onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1]
       : onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
@@ -520,7 +522,7 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
         return res.status(400).json({ message: "Invalid UserId" });
       }
     })
-    .catch((error) => { return  res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
+    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 
 }
 
@@ -745,7 +747,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       });
     }
   })
-  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
+    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 }
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
@@ -1042,7 +1044,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
           existingEmails.push(emailAlreadyExists.email);
         }
       }
-  
+
       for (let index = 0; index < emailList.length; index++) {
         const rowObject = emailList[index];
         let emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
@@ -1070,7 +1072,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                 emailId: email, isOnboarded: false, createdBy: user.id
               }
             }, { upsert: true })
-  
+
           } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
             || rolesDetails.roleName == "ClientRepresentative"
             || rolesDetails.roleName == CompanyRepresentative
@@ -1084,15 +1086,15 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                   { $in: adminRoleIds }
               }], status: true
             }).distinct('email');
-  
+
             for (let index = 0; index < allAdminUserEmailIds.length; index++) {
               console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
               let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
-  
+
               const content = `
                 Email: ${rowObject['email']}<br/><br/>
                 Link: ${url}<br/><br/>`;
-  
+
               await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
                 .then((resp) => { console.log('Mail sent!'); });
               let email = `${rowObject['email']}`;
@@ -1112,7 +1114,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
       if (existingEmails.length > 0) {
         return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
       } else {
-  
+
         return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
       }
     } else {
