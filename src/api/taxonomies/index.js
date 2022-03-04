@@ -7,7 +7,7 @@ import { schema } from './model'
 export Taxonomies, { schema } from './model'
 
 const router = new Router()
-const { name, fieldName, isRequired, applicableFor, inputType, inputValues, toDisplay, status } = schema.tree
+const { name, fieldName, isRequired, applicableFor, inputType, inputValues, toDisplay, isMandatory, status } = schema.tree
 
 /**
  * @api {post} /taxonomies Create taxonomies
@@ -28,7 +28,7 @@ const { name, fieldName, isRequired, applicableFor, inputType, inputValues, toDi
  */
 router.post('/',
   token({ required: true }),
-  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay }),
+  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay, isMandatory }),
   create)
 
 /**
@@ -83,7 +83,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay }),
+  body({ name, fieldName, applicableFor, inputType, inputValues, toDisplay, isMandatory }),
   update)
 
 /**
