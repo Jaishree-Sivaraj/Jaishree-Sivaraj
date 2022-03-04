@@ -269,6 +269,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
+                isMandatory: display?.isMandatory?display?.isMandatory:false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
             !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
@@ -276,6 +277,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
+                isMandatory: display?.isMandatory?display?.isMandatory:false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
 
@@ -287,7 +289,6 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
 
 
 }
-
 
 export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
     return {
