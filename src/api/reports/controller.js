@@ -384,7 +384,7 @@ export const exportReport = async (req, res, next) => {
             } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
               objectToPush["company_data_element_label (for numbers)"] = "";
               objectToPush["company_data_element_sub_label (for numbers)"] = "";
-              objectToPush["total_or_sub_line_item (for numbers)"] = "";
+              objectToPush["Total_or_sub_line_item (for numbers)"] = "";
               rows.push(objectToPush);
             } else {
               rows.push(objectToPush);
