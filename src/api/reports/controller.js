@@ -7,6 +7,7 @@ import _ from 'lodash'
 import { Datapoints } from '../datapoints'
 import { ChildDp } from '../child-dp'
 import { CompanySources } from '../companySources'
+import { TaskAssignment } from '../taskAssignment'
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -101,7 +102,7 @@ export const reportsFilter = async (req, res, next) => {
 export const exportReport = async (req, res, next) => {
   try {
     const { clientTaxonomyId, selectedCompanies, yearsList, pillarList } = req.body;
-    let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [];
+    let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
     if (clientTaxonomyId && selectedCompanies.length > 0) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
       matchQuery.companyId = { $in: selectedCompanies };
@@ -119,11 +120,17 @@ export const exportReport = async (req, res, next) => {
         }
         datapointFindQuery.categoryId = { $in: pillars };
       } else {
-        datapointFindQuery.isRequiredForJson = true;
-        datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
-        matchQuery.datapointId = { $in: datapointIds };
-
+        dsnctTaskIds = await TaskAssignment.find({
+          companyId: {$in: selectedCompanies},
+          taskStatus: { $ne: "Pending" },
+          status: true
+        }).distinct('_id')
+      matchQuery.taskId = { $in: dsnctTaskIds };
+      // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
       }
+      datapointFindQuery.isRequiredForJson = true;
+      datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
+      matchQuery.datapointId = { $in: datapointIds };
     } else {
       if (!clientTaxonomyId) {
         return res.status(400).json({ status: "400", message: "clientTaxonomyId is missing!", count: 0, rows: [] });
@@ -357,7 +364,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "";
                     break;
                   case 'dataProvider':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].dataProvider ? dpDetails[0].dataProvider : "ESGDS";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].additionalDetails.dataProvider ? dpDetails[0].additionalDetails.dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
@@ -377,7 +384,7 @@ export const exportReport = async (req, res, next) => {
             } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
               objectToPush["company_data_element_label (for numbers)"] = "";
               objectToPush["company_data_element_sub_label (for numbers)"] = "";
-              objectToPush["total_or_sub_line_item (for numbers)"] = "";
+              objectToPush["Total_or_sub_line_item (for numbers)"] = "";
               rows.push(objectToPush);
             } else {
               rows.push(objectToPush);
@@ -407,17 +414,17 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "";
                 objectToPushAsChild["data_value"] = responseValue;
                 objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "";
-                objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
                 objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "";
                 objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
                 objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
               }
-              if (objectToPushAsChild["format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+              if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
                 objectToPushAsChild["company_data_element_label "] = "";
                 objectToPushAsChild["company_data_element_sub_label"] = "";
-                objectToPushAsChild["total_or_sub_line_item"] = "";
+                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
                 rows.push(objectToPushAsChild);
               } else {
                 rows.push(objectToPushAsChild);
@@ -460,8 +467,8 @@ export async function getResponseObject (responseObject) {
   responseObject["company_data_element_label (for numbers)"] = "";
   responseObject["company_data_element_sub_label (for numbers)"] = "";
   responseObject["relevant_standards_and_frameworks"] = "";
-  responseObject["total_or_sub_line_item (for numbers)"] = "";
-  responseObject["format_of_data_provided_by_company (chart, table, text)"] = "";
+  responseObject["Total_or_sub_line_item (for numbers)"] = "";
+  responseObject["Format_of_data_provided_by_company (chart, table, text)"] = "";
   responseObject["supporting_narrative"] = "";
   responseObject["section_of_document"] = "";
   responseObject["page_number"] = "";
@@ -470,7 +477,7 @@ export async function getResponseObject (responseObject) {
   responseObject["HTML Link of Document"] = "";
   responseObject["Snapshot"] = "";
   responseObject["Document Year"] = "";
-  responseObject["keyword_used"] = "";
+  responseObject["Keyword_used"] = "";
   responseObject["Additional Source Used?"] = "";
 
   return responseObject;
