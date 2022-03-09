@@ -265,7 +265,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let boardMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
                       if (boardMemberValues.length > 0) {
                         let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
-                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
                       } else {
                         datapointList.memberList.push(boardNameValue);
                       }
@@ -327,7 +327,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let kmpMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
                       if (kmpMemberValues.length > 0) {
                         let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
                       } else {
                         datapointList.memberList.push(kmpNameValue);
                       }
@@ -462,7 +462,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   if (datapointList.dpCodesData.length > 0) {
                     let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code);
                     if (yearfind > -1) {
-                      datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(",", orderedDpCodes[errorDpIndex].year)
+                      datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
                     } else {
                       datapointList.dpCodesData.push(datapointsObject);
                     }
@@ -518,7 +518,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let boardMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
                       if (boardMemberValues.length > 0) {
                         let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
-                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
                       } else {
                         datapointList.memberList.push(boardNameValue);
                       }
@@ -539,7 +539,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       if (datapointList.dpCodesData.length > 0) {
                         let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
                         if (yearfind > -1) {
-                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(",", orderedDpCodes[errorDpIndex].year)
+                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
                         } else {
                           datapointList.dpCodesData.push(boardDatapointsObject);
                         }
@@ -600,7 +600,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let kmpMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
                       if (kmpMemberValues.length > 0) {
                         let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ',' + currentYear[currentYearIndex];
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
                       } else {
                         datapointList.memberList.push(kmpNameValue);
                       }
@@ -622,7 +622,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       if (datapointList.dpCodesData.length > 0) {
                         let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
                         if (yearfind > -1) {
-                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(",", orderedDpCodes[errorDpIndex].year)
+                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
                         } else {
                           datapointList.dpCodesData.push(kmpDatapointsObject);
                         }
@@ -675,7 +675,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if (datapointList.dpCodesData.length > 0) {
               let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code);
               if (yearfind > -1) {
-                datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(",", orderedDpCodes[errorDpIndex].year)
+                datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
               } else {
                 datapointList.dpCodesData.push(datapointsObject);
               }

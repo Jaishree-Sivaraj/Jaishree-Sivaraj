@@ -1919,7 +1919,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       status: true
     }
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+    if (body.skipValidation) {
       query.datapointId = { $in: reqDpCodes }
     }
     // StandAlone, BoardMatrix and KMP are DpTypes.
@@ -1956,7 +1956,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       functionId: { "$ne": negativeNews.id }
     }
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
+    if (body.skipValidation) {
       datapointQuery.isRequiredForReps = true
     }
 
