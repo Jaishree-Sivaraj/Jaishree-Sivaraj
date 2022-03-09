@@ -706,7 +706,7 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
             // Formatting docs to save data.
             for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                 let childDetailsDatas = childDp[childIndex];
-                childDetailsDatas.dpName = data?.dpName;
+                childDetailsDatas.dpName = data?.dpName ? data?.dpName : childDetailsDatas?.dpName;
                 if (Array.isArray(childDetailsDatas?.screenShot)) {
                     const url = await saveScreenShot(childDetailsDatas?.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
                     childDetailsDatas.screenShot = {
@@ -716,13 +716,11 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
-                childDetailsDatas.dpName=data?.dpName,
-
                 childDetailsDatas.units = {
                     measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
                     placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],
                     uoms: data?.subDataType?.uoms ? data?.subDataType?.uoms : [],
-                    
+
                 }
                 childData.push({
                     parentDpId: body?.dpCodeId,
