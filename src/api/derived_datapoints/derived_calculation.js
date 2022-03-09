@@ -873,6 +873,89 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
               createdBy: userDetail
             }
             allDerivedDatapoints.push(derivedDatapointsObject);
+          } else if(ratioRules[i].dpCode == "BOIR015") {
+            let allNumeratorValues = [];
+            _.filter(mergedDetails, (object, index) => {
+              console.log();
+              if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year) {
+                allNumeratorValues.push(object.response ? object.response.toString() : object.response);
+              } else if (object.datapointId.id == denominatorDpId && object.companyId.id == companyId && object.year == year) {
+                denominatorValues = object.response ? object.response.toString() : object.response;
+              }
+              if (object.datapointId == numeratorDpId && object.companyId == companyId && object.year == year) {
+                allNumeratorValues.push(object.response ? object.response.toString() : object.response);
+              }
+              if (object.datapointId == denominatorDpId && object.companyId == companyId && object.year == year) {
+                denominatorValues = object.response ? object.response.toString() : object.response;
+              }
+            });let sumValue;
+            if (allNumeratorValues.length > 0) {
+              allNumeratorValues = allNumeratorValues.filter(e => e.trim());
+              allNumeratorValues = allNumeratorValues.filter(e => e.toLowerCase() != "na");
+              if (allNumeratorValues.length > 0) {
+                sumValue = allNumeratorValues.reduce(function (prev, next) {
+                  if (prev && next) {
+                    let prevResponse = prev.replace(/[^\d.]/g, '');
+                    let nextResponse = next.replace(/[^\d.]/g, '');
+                    let sum = Number(prevResponse) + Number(nextResponse);
+                    return sum.toFixed(4);
+                  }
+                });
+              }
+              let percentValue = 0.5 * Number(denominatorValues ? denominatorValues : '0').toFixed(4);
+              if (allNumeratorValues.length < percentValue || denominatorValues == " ") {
+                let derivedDatapointsObject = {
+                  companyId: companyId,
+                  datapointId: ruleDatapointId,
+                  year: year,
+                  response: 'NA',
+                  memberName: '',
+                  memberStatus: true,
+                  status: true,
+                  createdBy: userDetail
+                }
+                allDerivedDatapoints.push(derivedDatapointsObject);
+              } else {
+                let resValue;
+                if (sumValue === " " || sumValue == "" || sumValue == 'NA') {
+                  resValue = 'NA';
+                } else if (sumValue == 0) {
+                  resValue = 0;
+                } else if (allNumeratorValues.length == 0) {
+                  resValue = 'NA';
+                } else {
+                  let stringValue = sumValue ? sumValue.toString().replace(/[^\d.]/g, '').trim() : 0;
+                  let divisor = Number(stringValue).toFixed(4);
+                  let dividend = allNumeratorValues.length;
+                  let answer = divisor / dividend;
+                  resValue = answer ? answer.toString() : answer;
+                  resValue = Number(resValue).toFixed(4);
+                }
+                let derivedDatapointsObject = {
+                  companyId: companyId,
+                  datapointId: ruleDatapointId,
+                  year: year,
+                  response: resValue ? resValue.toString() : resValue,
+                  memberName: '',
+                  memberStatus: true,
+                  status: true,
+                  createdBy: userDetail
+                }
+                allDerivedDatapoints.push(derivedDatapointsObject);
+              }
+            } else {
+              let derivedDatapointsObject = {
+                companyId: companyId,
+                datapointId: ruleDatapointId,
+                year: year,
+                response: 'NA',
+                memberName: '',
+                memberStatus: true,
+                status: true,
+                createdBy: userDetail
+              }
+              allDerivedDatapoints.push(derivedDatapointsObject);
+            }
           } else {
             let activeMemberValues = [];
             _.filter(mergedDetails, (object, index) => {

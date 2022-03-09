@@ -445,14 +445,14 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             });
             if (dpDetails.measureType != '' && dpDetails.measureType != 'NA') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
-                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
+                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl?.id);
                 let uomValues = [];
                 for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
                     const element = measureUoms[uomIndex];
                     uomValues.push({ value: element.uomName, label: element.uomName });
                 }
                 if (uomValues.length > 0) {
-                    if (measureDtl.measureName == 'Currency') {
+                    // if (measureDtl.measureName == 'Currency') {
                         headers.push({
                             "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
                             "displayName": "Place Value",
@@ -466,7 +466,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                                 :
                                 clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                         })
-                    }
+                    // }
 
                     headers.push({
                         "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
