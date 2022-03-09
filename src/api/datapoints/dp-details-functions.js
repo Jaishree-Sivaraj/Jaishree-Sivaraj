@@ -443,7 +443,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if (dpDetails.measureType != '') {
+            if (dpDetails.measureType != '' && dpDetails.measureType != 'NA') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
                 let uomValues = [];
