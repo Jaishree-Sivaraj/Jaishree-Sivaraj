@@ -437,13 +437,13 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
         // })
         let headers = [];
         if (clientTaxData?.childFields?.additionalFields?.length > 0) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            headers.push(clientTaxData?.childFields.dpCode)
             clientTaxData.childFields.additionalFields = _.sortBy(clientTaxData?.childFields?.additionalFields, 'orderNumber');
             let responseIndex = clientTaxData?.childFields?.additionalFields.findIndex((obj) => obj.fieldName == 'response');
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if (dpDetails.measureType != '') {
+            if (dpDetails.measureType != '' && dpDetails.measureType != 'NA') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
                 let uomValues = [];
@@ -483,8 +483,8 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     })
                 }
             }
-        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
+        } else if (clientTaxData?.childFields.dpCode) {
+            headers.push(clientTaxData?.childFields.dpCode);
         }
         headers = _.sortBy(headers, 'orderNumber');
         return headers;

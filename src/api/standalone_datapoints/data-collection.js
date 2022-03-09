@@ -12,7 +12,6 @@ import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
 
-
 // Incoming payload
 // currentDatapoint:
 // [
@@ -29,8 +28,6 @@ export const dataCollection = async ({
     user, body,
 }, res) => {
     try {
-        // let timeDetails=[]
-        const taskDetailsObjectStartTime=Date.now()
         const taskDetailsObject = await TaskAssignment.findOne({
             _id: body.taskId
         }).populate({
@@ -39,11 +36,6 @@ export const dataCollection = async ({
                 path: "clientTaxonomyId"
             }
         }).populate('categoryId');
-        // let taskDetailsObjectEndTime=Date.now()
-        // timeDetails.push({
-        //     blockName:'task Details,company Details,Clienttaxonomy Details and category Details',
-        //     timeTaken:taskDetailsObjectEndTime-taskDetailsObjectStartTime
-        // })
 
         const dpCodesDetails = body.currentData;
         const dpHistoricalDpDetails = body.historicalData;
@@ -62,36 +54,14 @@ export const dataCollection = async ({
                     case STANDALONE:
                         try {
                             // For updating isDerviedDatapointCompleted.
-                            let isUpdatedDetailsStandaloneStartTime=Date.now()
                             isUpdated = await updateDerivedCalculationCompletedStatus(STANDALONE, updateQuery, body, dpCodesDetails);
-                            // let isUpdatedDetailsStandaloneEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:' To Update the dervied Caluculation status of Standalone DataPoints',
-                            //     timeTaken:isUpdatedDetailsStandaloneEndTime-isUpdatedDetailsStandaloneStartTime
-                            // })
                             //! Current Data
-                            let dpCodeDetailsStandaloneLoopStartTime=Date.now()
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
-
-                                // Getting the screenShot for current Data 
-                                let formattedScreenShotsStandaloneStartTime=Date.now()
-
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
-                                let formattedScreenShotsStandaloneEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'Getting Formated ScreenShot for Current Data',
-                                //     timeTaken:formattedScreenShotsStandaloneEndTime-formattedScreenShotsStandaloneStartTime
-                                // })
                                 currentData = { ...currentData, correctionStatus: Completed };
-                                let dpCodeDetailsStandaloneLoopEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:`Current Data for Standalone Datapoints ${dpIndex}`,
-                                //     timeTaken:dpCodeDetailsStandaloneLoopEndTime-dpCodeDetailsStandaloneLoopStartTime
-                                // })
                                 // Getting Child dp to insert using fiscal year and current Data and ofcourse array of child Dp.
-                               let  childDpDataDetailsInsertStandaloneStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
                                 await Promise.all([
                                     StandaloneDatapoints.updateMany(
@@ -105,35 +75,17 @@ export const dataCollection = async ({
                                 currentYearData.push(currentData);
 
                             }
-                            // let childpDpDataDetailsInsertStandaloneEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:`childDpDataDetails inseration od Standalone Datapoints ${currentData}`,
-                            //     timeTaken:childDpDataDetailsInsertStandaloneStartTime-childpDpDataDetailsInsertStandaloneEndTime
-                            // })
 
                             //! History Data //can history data be 
-                            let historyYearStandalneLoopStartTime=Date.now()
                             for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                                 let item = dpHistoricalDpDetails[dpHistoryIndex];
 
                                 // Getting formatted screenShot for current Data.
-                                let historyFormattedScreenShotsStandaloneStartTime=Date.now()
+                                let historyFormattedScreenShotsStandaloneStartTime = Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyData = getData(body, item, user, formattedScreenShots);
-                                // let historyFormattedScreenShotsStandaloneEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'Getting Formated ScreenShot for Current Data of Standalone Datapoints ',
-                                //     timeTaken:historyFormattedScreenShotsStandaloneEndTime-historyFormattedScreenShotsStandaloneStartTime
-                                // })
-                                // let historyYearStandalneLoopEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:`History Data for Standalone Datapoints${dpHistoryIndex}`,
-                                //     timeTaken:historyYearStandalneLoopEndTime-historyYearStandalneLoopStartTime
-                                // })
-                                // Getting child dp using fiscal year, childDp array and historyData.
-                                
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item.fiscalYear, item?.childDp, historyData);
-                                let histroyChildDpDetailsStandaloneStartTime=Date.now()
+                                let histroyChildDpDetailsStandaloneStartTime = Date.now()
 
                                 await Promise.all([
                                     StandaloneDatapoints.updateMany({ year: item['fiscalYear'], ...updateQuery },
@@ -142,16 +94,11 @@ export const dataCollection = async ({
                                 ])
                                 historyYearData.push(historyData);
                             }
-                            // let histroyChildDpDetailsStandaloneEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'Histroy childDpDeatils Inseration of Standalone Datapoints',
-                            //     timeTaken:histroyChildDpDetailsStandaloneStartTime-histroyChildDpDetailsStandaloneEndTime
-                            // })
 
                             //! concatinating history and current data
                             const structuredStandaloneDetails = _.concat(currentYearData, historyYearData);
                             // ! Inserting new Data
-                            let standaloneDatapointsDetailsStartTime=Date.now()
+                            let standaloneDatapointsDetailsStartTime = Date.now()
                             const standaloneDp = await StandaloneDatapoints.insertMany(structuredStandaloneDetails);
                             if (standaloneDp) {
                                 return res.status(200).json({
@@ -160,11 +107,6 @@ export const dataCollection = async ({
                                     isDerviedCalculationCompleted: isUpdated ? false : true
                                 });
                             }
-                            // let standaloneDatapointsDetailsEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'Inserting a New Data of Standalone Datapoints',
-                            //     timeTaken:standaloneDatapointsDetailsEndTime-standaloneDatapointsDetailsStartTime
-                            // })
                             return res.status(409).json({
                                 status: 409,
                                 message: 'Failed to save the data'
@@ -179,39 +121,18 @@ export const dataCollection = async ({
                         break;
                     case BOARD_MATRIX:
                         try {
-                            let isUpdatedBoardMatrixDetailsStartTime=Date.now()
                             isUpdated = await updateDerivedCalculationCompletedStatus(BOARD_MATRIX, updateQuery, body, dpCodesDetails);
-                            // let isUpdatedBoardMatrixDetailsEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'To Update the Dervied Calculation Status for Board Matrix',
-                            //     timeTaken:isUpdatedBoardMatrixDetailsEndTime-isUpdatedBoardMatrixDetailsStartTime
-                            // })
                             //! Current Data
-                            let dpCodeDetailsBoardMemberLoopStartTime=Date.now()
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
-                            
-                               
                                 // Getting formatted screenShot for current Data.
-                                let formattedScreenShotsBoardMemberStartTime=Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
                                 currentData = getData(body, item, user, formattedScreenShots);
-                                // let formattedScreenShotsBoardMemberEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'Getting Formated ScreenShot for Current Data of Board Member',
-                                //     timeTaken:formattedScreenShotsBoardMemberEndTime-formattedScreenShotsBoardMemberStartTime
-                                // })
 
                                 currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
-                                // let dpCodeDetailsBoardMemberLoopEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:`Current Data for Board Matrix ${dpIndex}`,
-                                //     timeTaken:dpCodeDetailsBoardMemberLoopEndTime-dpCodeDetailsBoardMemberLoopStartTime
-                                // })
                                 // Getting childDp to insert using array of child Dp, current Data and fiscal year.
 
-                                let childDpDataDetailsBoardMemberStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
@@ -220,18 +141,11 @@ export const dataCollection = async ({
                                 ])
                                 currentYearData.push(currentData);
                             }
-                            // let childpDpDataDetailsBoardMemberEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:`childDpDataDetails inseration  of Board Member ${currentData}`,
-                            //     timeTaken:childDpDataDetailsBoardMemberStartTime-childpDpDataDetailsBoardMemberEndTime
-                            // })
                             //! History
-                                let historyYearBoardMatrixLoopStartTime=Date.now()
-
                             for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                                 let item = dpHistoricalDpDetails[dpHistoryIndex];
                                 // getting formatted image for history data.
-                                let historyFormattedScreenShotsBoardMemberStartTime=Date.now()
+                                let historyFormattedScreenShotsBoardMemberStartTime = Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyData = getData(body, item, user, formattedScreenShots);
                                 // let historyFormattedScreenShotsBoardMemberEndTime=Date.now()
@@ -241,7 +155,7 @@ export const dataCollection = async ({
                                 // })
                                 historyData = { ...historyData, memberName: body.memberName };
                                 // getting child dp using history data, child Dp and fiscal year.
-                                let historyChildDpDataDetailsBoardMemberStartTime=Date.now()
+                                let historyChildDpDataDetailsBoardMemberStartTime = Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyData);
                                 // let historyChildpDpDataDetailsBoardMemberEndTime=Date.now()
                                 // timeDetails.push({
@@ -256,15 +170,9 @@ export const dataCollection = async ({
                                 ])
                                 historyYearData.push(historyData);
                             }
-                            // let historyYearBoardMatrixLoopEndTime=Date.now()
-                            //     timeDetails.push({
-                            //         blockName:`History Data for Board Matrix Datapoints${historyData}`,
-                            //         timeTaken:historyYearBoardMatrixLoopEndTime-historyYearBoardMatrixLoopStartTime
-                            //     })
 
                             //! Saving new data
                             const boardMemberDetails = _.concat(currentYearData, historyYearData);
-                            let saveBoardMatrixDetailsStartTime=Date.now()
                             const saveBoardMatrix = await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails);
 
                             if (saveBoardMatrix) {
@@ -274,11 +182,6 @@ export const dataCollection = async ({
                                     isDerviedCalculationCompleted: isUpdated ? false : true
                                 });
                             }
-                            // let saveBoardMatrixDetailsEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'Inserting a New Data for BoardMatrix',
-                            //     timeTaken:saveBoardMatrixDetailsEndTime-saveBoardMatrixDetailsStartTime
-                            // })
                             return res.status(409).json({
                                 status: 409,
                                 message: 'Failed to save the data'
@@ -292,42 +195,15 @@ export const dataCollection = async ({
                         }
                     case KMP_MATRIX:
                         try {
-                            let isUpdatedKmpMatrixDetailsStartTime=Date.now()
                             isUpdated = await updateDerivedCalculationCompletedStatus(KMP_MATRIX, updateQuery, body, dpCodesDetails);
-                            // let isUpdatedKmpMatrixDetailsEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'Updating Dervied Data Calculaion for KMp Matrix',
-                            //     timeTaken:isUpdatedKmpMatrixDetailsEndTime-isUpdatedKmpMatrixDetailsStartTime
-                            // })
                             //! Current Data
-                            let currentYearLoopKMpMatrixStartTime=Date.now()
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
                                 // Getting formatted screenShot for currentData.
-                                let formattedScreenShotsKmpMatrixStartTime=Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
-                                // let formattedScreenShotsKmpMatrixEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:' Getting Formatted Screnshot for Current Data',
-                                //     timeTaken:formattedScreenShotsKmpMatrixEndTime-formattedScreenShotsKmpMatrixStartTime
-                                // })
                                 currentData = { ...currentData, memberName: body.memberName, correctionStatus: Completed };
-                                // let currentYearLoopKMpMatrixEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:`Curent Year Data for Kmp Matrix${dpIndex}`,
-                                //     timeTaken:currentYearLoopKMpMatrixEndTime-currentYearLoopKMpMatrixStartTime
-                                // })
-                                // Getting child dp using current Data, array of child dp and fiscal year.
-                                let childDpDataDetailsKmpMatrixStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
-                                // let childDpDataDetailsKmpMatrixEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'Getting Child Dp using Current Data for KMp Matrix',
-                                //     timeTaken:childDpDataDetailsStartTime-childDpDataDetailsEndTime
-
-                                // })
-
                                 // Updating and inserting data to KmpMatrixDataPoints and ChildDp respectively.
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
@@ -340,13 +216,8 @@ export const dataCollection = async ({
                             for (let dpHistoryIndex = 0; dpHistoryIndex < dpHistoricalDpDetails.length; dpHistoryIndex++) {
                                 let item = dpHistoricalDpDetails[dpHistoryIndex];
                                 // Getting formatted screenShot for history data.
-                                // let formattedScreenShotsKmpMatrixStartTime=Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyData = getData(body, item, user, formattedScreenShots);
-                                // timeDetails.push({
-                                //     blockName:'Getting Formated ScreenShot for Current Data of Kmp Matrix',
-                                //     timeTaken:formattedScreenShotsKmpMatrixEndTime-formattedScreenShotsKmpMatrixStartTime
-                                // })
                                 historyData = { ...historyData, memberName: body.memberName };
                                 // Getting child dp using current data, fiscal year,array of child dp.
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyData);
@@ -391,16 +262,8 @@ export const dataCollection = async ({
                 switch (body.memberType) {
                     case STANDALONE:
                         try {
-                            // let isUpdatedDetailsStandaloneStartTime=Date.now()
-                        
                             isUpdated = await updateDerivedCalculationCompletedStatus(STANDALONE, updateQuery, body, dpCodesDetails);
-                            // let isUpdatedDetailsStandaloneEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:' To Update the dervied Caluculation status of Standalone DataPoints',
-                            //     timeTaken:isUpdatedDetailsStandaloneEndTime-isUpdatedDetailsStandaloneStartTime
-                            // })
                             // ! Current Data
-                            let currentDpDetailsForCorrectionPendingStartTime=Date.now()
 
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
                                 let item = dpCodesDetails[dpDetailsIndex]
@@ -412,7 +275,6 @@ export const dataCollection = async ({
                                     raisedBy: item.rejectedTo,
                                     status: true
                                 }
-                                let errorDetailsStartTime=Date.now()
                                 item?.isAccepted
                                     ? await ErrorDetails.updateOne(query,
                                         { $set: { isErrorAccepted: true, isErrorRejected: false } })
@@ -428,22 +290,7 @@ export const dataCollection = async ({
                                                 }
                                             }, isErrorAccepted: false, isErrorRejected: true
                                         });
-                                        // let errorDetailsEndTime=Date.now()
-                                        // timeDetails.push({
-                                        //     blockName:'To update the Error Details',
-                                        //     timeTaken:errorDetailsEndTime-errorDetailsStartTime
-                                        // })
-                                        // let currentDpDetailsForCorrectionPendingEndTime=Date.now()
-                                        // timeDetails.push({
-                                        //     blockName:'current Data for Standalone Datapoints for correction Pending',
-                                        //     timeTaken:currentDpDetailsForCorrectionPendingEndTime-currentDpDetailsForCorrectionPendingStartTime
-                                        // })
-
-                                        let formattedScreenShotsForCorrectionPendingStartTime=Date.now()
-
-
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
-
                                 currentDataCorrection = getData(body, item, user, formattedScreenShots);
                                 currentDataCorrection = {
                                     ...currentDataCorrection,
@@ -451,15 +298,9 @@ export const dataCollection = async ({
                                     hasCorrection: hasCorrectionValue,
                                     correctionStatus: Completed,
                                 }
-                                // let formattedScreenShotsForCorrectionPendingEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'getting screenshot of standalone Datapoints for Correction Pending',
-                                //     timeTaken:formattedScreenShotsForCorrectionPendingEndTime-formattedScreenShotsForCorrectionPendingStartTime
-                                // })
+
                                 //! Saving current  Child Data
-                                let childDpDataDetailsStandaloneatapointsCorrectionPendingStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
-                                let standaloneDatapointsDetailsStartTime=Date.now()
                                 await Promise.all([
                                     StandaloneDatapoints.updateMany({
                                         ...updateQuery,
@@ -468,7 +309,7 @@ export const dataCollection = async ({
                                         $set: { isActive: false }
                                     }),
                                     StandaloneDatapoints.create(currentDataCorrection)
-                                    
+
                                         .catch(err => {
                                             return res.status('500').json({
                                                 message: err.message ? err.message : "Failed to save the data"
@@ -477,26 +318,14 @@ export const dataCollection = async ({
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
                             }
-                            // let childDpDataDetailsStandaloneatapointsCorrectionPendingEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'child DP Details for standalone Datapoints for Correction Pending',
-                            //     timeTaken:childDpDataDetailsStandaloneatapointsCorrectionPendingStartTime-childDpDataDetailsStandaloneatapointsCorrectionPendingEndTime
-                            // })
-                            let standaloneDatapointsDetailsEndTime=Date.now()
-                            timeDetails.push({
-                                blockName:'To Update the Standalone Datapoints',
-                                timeTaken:standaloneDatapointsDetailsEndTime-standaloneDatapointsDetailsStartTime
-                            })
 
                             //! Historical Data
-                            let historyDetailsOfStandaloneDatapointsStartTime=Date.now()
                             for (let historyDetails = 0; historyDetails < dpHistoricalDpDetails.length; historyDetails++) {
                                 let item = dpHistoricalDpDetails[historyDetails];
                                 //   Getting formatted screenShot for historyData.
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyDataCorrection = getData(body, item, user, formattedScreenShots)
                                 //    Getting history child Dp.
-                                let histroyChildDpDetailsStandaloneStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyDataCorrection);
                                 await Promise.all([
                                     StandaloneDatapoints.updateMany({ ...updateQuery, year: item['fiscalYear'] },
@@ -506,16 +335,6 @@ export const dataCollection = async ({
 
                                 ]);
                             }
-                            // let histroyChildDpDetailsStandaloneEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'history child Dp details for Standalone Details for Correction Pending',
-                            //     timeTaken:histroyChildDpDetailsStandaloneStartTime-historyChildpDpDataDetailsBoardMemberEndTime
-                            // })
-                            // let historyDetailsOfStandaloneDatapointsEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'History Data for Standalone Datapoints For corretion Pending',
-                            //     timeTaken:historyDetailsOfStandaloneDatapointsEndTime-historyDetailsOfStandaloneDatapointsStartTime
-                            // })
 
                             return res.status(200).json({
                                 status: 200,
@@ -533,7 +352,6 @@ export const dataCollection = async ({
 
                     case BOARD_MATRIX:
                         try {
-                            let isUpdatedBoardMatrixForCorrectionPendingStartTime=Date.now()
                             isUpdated = await updateDerivedCalculationCompletedStatus(BOARD_MATRIX, updateQuery, body, dpCodesDetails);
                             //! Current Data
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
@@ -561,13 +379,7 @@ export const dataCollection = async ({
                                                 }
                                             }, isErrorAccepted: false, isErrorRejected: true
                                         });
-                                        // let isUpdatedBoardMatrixForCorrectionPendingEndTime=Dtae.now()
-                                        // timeDetails.push({
-                                        //     blockName:'update Dervied Calculation for Board Matrix of Correction Pending',
-                                        //     timeTaken:isUpdatedBoardMatrixForCorrectionPendingEndTime-isUpdatedBoardMatrixForCorrectionPendingStartTime
-                                        // })
                                 // Getting formatted screenShot 
-                                let formattedScreenShotsBoardMemberForCorrectionPendingStartTime=Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentDataCorrection = getData(body, item, user, formattedScreenShots);
                                 currentDataCorrection = {
@@ -578,13 +390,7 @@ export const dataCollection = async ({
                                     hasCorrection: hasCorrectionValue,
                                     correctionStatus: 'Completed',
                                 }
-                                // let formattedScreenShotsBoardMemberForCorrectionPendingEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'Formatted screenshots for current data for Correction Pending',
-                                //     timeTaken:formattedScreenShotsForCorrectionPendingEndTime-formattedScreenShotsBoardMemberForCorrectionPendingStartTime
-                                // })
                                 // Getting child Dp.
-                                let childDpDataDetailsBoardMemberCorrectionPendingStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
 
                                 await Promise.all([
@@ -598,33 +404,15 @@ export const dataCollection = async ({
                                     })
                                 ])
                             }
-                            // let childDpDataDetailsBoardMemberCorrectionPendingEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'getting child Dp for Board member for correction pending',
-                            //     timeTaken:childDpDataDetailsBoardMemberCorrectionPendingStartTime-childDpDataDetailsBoardMemberCorrectionPendingEndTime
-                            // })
                             //! Historical Data
-                            let historyDataForBoardMemberOfCorrectionPendingStartTime=Date.now()
                             for (let historyIndex = 0; historyIndex < dpHistoricalDpDetails.length; historyIndex++) {
                                 let item = dpHistoricalDpDetails[historyIndex];
-                                // let historyDataForBoardMemberOfCorrectionPendingEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'History Year data for Board Matrix for Correction Pending',
-                                //     timeTaken:historyDataForBoardMemberOfCorrectionPendingEndTime-historyDataForBoardMemberOfCorrectionPendingStartTime
-                                // })
                                 // Getting formatted screenShot 
-                                historyFormattedScreenShotsBoardMemberForCorrectionPendingStartTime=Date.now()
+                                historyFormattedScreenShotsBoardMemberForCorrectionPendingStartTime = Date.now()
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyDataCorrection = getData(body, item, user, formattedScreenShots);
                                 historyDataCorrection = { ...historyDataCorrection, memberName: body.memberName };
-                                // let historyFormattedScreenShotsBoardMemberForCorrectinPendingEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:'History data for Formatted ScreenShot  for BoardMember for correction pending',
-
-                                //     timeTaken:historyFormattedScreenShotsBoardMemberForCorrectinPendingEndTime-historyDataForBoardMemberOfCorrectionPendingStartTime
-                                // })
                                 // Getting child Dp.
-                                let historicalChildDpDataDetailsForBoardMemberForCorrectionPendingStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyDataCorrection);
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
@@ -633,11 +421,6 @@ export const dataCollection = async ({
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
                             }
-                            // let historicalChildDpDataDetailsForBoardMemberForCorrectionPendingEndTime=Date.now()
-                            // timeDetails.push({
-                            //     blockName:'geeting child Dp for Board Member for Correction pending',
-                            //     timeTaken:historicalChildDpDataDetailsForBoardMemberForCorrectionPendingStartTime-historicalChildDpDataDetailsForBoardMemberForCorrectionPendingEndTime
-                            // })
 
                             return res.status(200).json({
                                 status: 200,
@@ -654,7 +437,6 @@ export const dataCollection = async ({
 
                     case KMP_MATRIX:
                         try {
-                            let isUpdatedKmpMatrixForCorrectionPendingStartTime=Date.now()
                             isUpdated = await updateDerivedCalculationCompletedStatus(KMP_MATRIX, updateQuery, body, dpCodesDetails);
                             //! Current Data
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
@@ -667,6 +449,7 @@ export const dataCollection = async ({
                                     raisedBy: item.rejectedTo,
                                     status: true
                                 }
+
                                 item?.isAccepted
                                     ? await ErrorDetails.updateOne({ ...query, memberName: body.memberName },
                                         { $set: { isErrorAccepted: true, isErrorRejected: false } })
@@ -682,13 +465,6 @@ export const dataCollection = async ({
                                                 }
                                             }, isErrorAccepted: false, isErrorRejected: true
                                         });
-                                        // let isUpdatedKmpMatrixForCorrectionPendingEndTime=Date.now()
-                                        // timeDetails.push({
-                                        //     blockName:'Updating the dervied calculation for KmpMatrix for Correction Pending',
-                                        //     timeTaken:isUpdatedKmpMatrixForCorrectionPendingEndTime-isUpdatedKmpMatrixForCorrectionPendingStartTime
-                                        // })
-                                // getting screenShot
-                                //let formattedScreenShotsForCorrectionPendingEndTime
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentDataCorrection = getData(body, item, user, formattedScreenShots);
                                 currentDataCorrection = {
@@ -700,10 +476,6 @@ export const dataCollection = async ({
                                 };
                                 // Getting Child Dp.
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
-                                // timeDetails.push({
-                                //     blockName:`childDpDataDetails inseration ${currentData}`,
-                                //     timeTaken:childDpDataDetailsStartTime-childpDpDataDetailsEndTime
-                                // })
 
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
@@ -714,7 +486,7 @@ export const dataCollection = async ({
                                         }),
                                             ChildDp.insertMany(childpDpDataDetails)
                                     })
-                                ])
+                                ]);
 
                             }
                             //! Historical Data
@@ -725,24 +497,13 @@ export const dataCollection = async ({
                                     year: item?.fiscalYear,
                                     childDp: item?.childDp
                                 });
-                                // let historyYearKmpMatrixLoopEndTime=Date.now()
-                                // timeDetails.push({
-                                //     blockName:`History Year Data for KMPmATRIX ${historyIndex}`,
-                                //     timeTaken:historyYearKmpMatrixLoopEndTime-historyYearKmpMatrixLoopStartTime
-                                // })
-                                // Getting formatted ScreenShot 
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 historyDataCorrection = getData(body, item, user, formattedScreenShots);
 
                                 historyDataCorrection = { ...historyDataCorrection, memberName: body.memberName };
-                                
+
                                 // Getting Child Dp.
-                                // let childDpDat.aDetailsStartTime=Date.now()
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyDataCorrection);
-                                // timeDetails.push({
-                                //     blockName:'Histroy childDpDeatils Inseration of Kmp Matrix',
-                                //     timeTaken:histroyChildDpDetailsStartTime-histroyChildDpDetailsEndTime
-                                // })
 
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
@@ -823,6 +584,7 @@ export function getData(body, item, user, formattedScreenShots) {
         screenShot: formattedScreenShots, //aws filename todo
         textSnippet: item['textSnippet'],
         pageNumber: item['pageNo'],
+        dpName: item['dpName'],
         optionalAnalystComment: item['optionalAnalystComment'],
         isRestated: item['isRestated'],
         restatedForYear: item['restatedForYear'],
@@ -939,11 +701,12 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
                     status: true,
                     year: fiscalYear,
                 },
-                { $set: { isActive: false } });
+                { $set: { status: false } });
 
             // Formatting docs to save data.
             for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                 let childDetailsDatas = childDp[childIndex];
+                childDetailsDatas.dpName = data?.dpName;
                 if (Array.isArray(childDetailsDatas?.screenShot)) {
                     const url = await saveScreenShot(childDetailsDatas?.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
                     childDetailsDatas.screenShot = {
@@ -953,11 +716,13 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
+                childDetailsDatas.dpName=data?.dpName,
 
                 childDetailsDatas.units = {
                     measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
                     placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],
-                    uoms: data?.subDataType?.uoms ? data?.subDataType?.uoms : []
+                    uoms: data?.subDataType?.uoms ? data?.subDataType?.uoms : [],
+                    
                 }
                 childData.push({
                     parentDpId: body?.dpCodeId,
