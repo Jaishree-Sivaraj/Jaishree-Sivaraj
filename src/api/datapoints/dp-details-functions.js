@@ -451,22 +451,22 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     const element = measureUoms[uomIndex];
                     uomValues.push({ value: element.uomName, label: element.uomName });
                 }
+                headers.push({
+                    "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
+                    "displayName": "Place Value",
+                    "fieldName": "placeValue",
+                    "dataType": "Select",
+                    "options": placeValues,
+                    "isRequired": true,
+                    "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                        ?
+                        clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                        :
+                        clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                })
                 if (uomValues.length > 0) {
                     // if (measureDtl.measureName == 'Currency') {
-                        headers.push({
-                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
-                            "displayName": "Place Value",
-                            "fieldName": "placeValue",
-                            "dataType": "Select",
-                            "options": placeValues,
-                            "isRequired": true,
-                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                                ?
-                                clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                                :
-                                clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
-                        })
-                    // }
+                        // }
 
                     headers.push({
                         "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
