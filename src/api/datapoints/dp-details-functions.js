@@ -389,7 +389,6 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
 
 export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
-
         const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
             ClientTaxonomy.findOne({
                 _id: clientTaxonomyId
@@ -408,7 +407,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if (dpDetails.measureType != '') {
+            if (dpDetails.measureType != '' && dpDetails.measureType != 'NA') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
                 let uomValues = [];
