@@ -706,6 +706,7 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
             // Formatting docs to save data.
             for (let childIndex = 0; childIndex < childDp.length; childIndex++) {
                 let childDetailsDatas = childDp[childIndex];
+                childDetailsDatas.dpName = data?.dpName;
                 if (Array.isArray(childDetailsDatas?.screenShot)) {
                     const url = await saveScreenShot(childDetailsDatas?.screenShot, taskDetailsObject?.companyId?.id, body?.dpCodeId, fiscalYear);
                     childDetailsDatas.screenShot = {
