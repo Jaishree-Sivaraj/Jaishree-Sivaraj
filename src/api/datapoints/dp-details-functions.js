@@ -437,7 +437,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
         // })
         let headers = [];
         if (clientTaxData?.childFields?.additionalFields?.length > 0) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            headers.push(clientTaxData?.childFields.dpCode)
             clientTaxData.childFields.additionalFields = _.sortBy(clientTaxData?.childFields?.additionalFields, 'orderNumber');
             let responseIndex = clientTaxData?.childFields?.additionalFields.findIndex((obj) => obj.fieldName == 'response');
             clientTaxData?.childFields?.additionalFields.map(field => {
@@ -483,8 +483,8 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     })
                 }
             }
-        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
+        } else if (clientTaxData?.childFields.dpCode) {
+            headers.push(clientTaxData?.childFields.dpCode);
         }
         headers = _.sortBy(headers, 'orderNumber');
         return headers;
