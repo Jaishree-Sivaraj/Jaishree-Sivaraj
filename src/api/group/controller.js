@@ -292,8 +292,6 @@ export const show = async({ params }, res, next) => {
               }
             }
             membersForPillar.push(pillarMember);
-          } else {
-            memberObjects.push({ userDetails: { value: obj.id, label: obj.name } });
           }
         }
         let allAnalystAndQaMembers = await User.find({

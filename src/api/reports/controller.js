@@ -102,7 +102,7 @@ export const reportsFilter = async (req, res, next) => {
 export const exportReport = async (req, res, next) => {
   try {
     const { clientTaxonomyId, selectedCompanies, yearsList, pillarList } = req.body;
-    let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [];
+    let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
     if (clientTaxonomyId && selectedCompanies.length > 0) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
       matchQuery.companyId = { $in: selectedCompanies };
@@ -120,14 +120,15 @@ export const exportReport = async (req, res, next) => {
         }
         datapointFindQuery.categoryId = { $in: pillars };
       } else {
-        let dsnctCategoryIds = await TaskAssignment.find({
+        dsnctTaskIds = await TaskAssignment.find({
           companyId: {$in: selectedCompanies},
           taskStatus: { $ne: "Pending" },
           status: true
-        }).distinct('categoryId')
-        datapointFindQuery.isRequiredForJson = true;
-        datapointFindQuery.categoryId = { $in: dsnctCategoryIds };
+        }).distinct('_id')
+      matchQuery.taskId = { $in: dsnctTaskIds };
+      // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
       }
+      datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
       matchQuery.datapointId = { $in: datapointIds };
     } else {
@@ -383,7 +384,7 @@ export const exportReport = async (req, res, next) => {
             } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
               objectToPush["company_data_element_label (for numbers)"] = "";
               objectToPush["company_data_element_sub_label (for numbers)"] = "";
-              objectToPush["total_or_sub_line_item (for numbers)"] = "";
+              objectToPush["Total_or_sub_line_item (for numbers)"] = "";
               rows.push(objectToPush);
             } else {
               rows.push(objectToPush);

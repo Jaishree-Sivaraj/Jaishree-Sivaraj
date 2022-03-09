@@ -125,7 +125,7 @@ export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, curren
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : null,
+            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: object?.uom ? { value: object?.uom.id, label: object?.uom.uomName } : null
         },
@@ -167,7 +167,7 @@ export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetai
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: null,
+            selectedPlaceValue: { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: null
         },
@@ -303,7 +303,7 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : null,
+            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: object?.uom ? { value: object?.uom.id, label: object?.uom.uomName } : null
         },
@@ -437,7 +437,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
         // })
         let headers = [];
         if (clientTaxData?.childFields?.additionalFields?.length > 0) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName)
+            headers.push(clientTaxData?.childFields.dpCode)
             clientTaxData.childFields.additionalFields = _.sortBy(clientTaxData?.childFields?.additionalFields, 'orderNumber');
             let responseIndex = clientTaxData?.childFields?.additionalFields.findIndex((obj) => obj.fieldName == 'response');
             clientTaxData?.childFields?.additionalFields.map(field => {
@@ -483,8 +483,8 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     })
                 }
             }
-        } else if (clientTaxData?.childFields.dpCode && clientTaxData?.childFields?.dpName) {
-            headers.push(clientTaxData?.childFields.dpCode, clientTaxData?.childFields?.dpName);
+        } else if (clientTaxData?.childFields.dpCode) {
+            headers.push(clientTaxData?.childFields.dpCode);
         }
         headers = _.sortBy(headers, 'orderNumber');
         return headers;
