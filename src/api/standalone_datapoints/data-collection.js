@@ -306,17 +306,17 @@ export const dataCollection = async ({
                                         ...updateQuery,
                                         year: item['fiscalYear']
                                     }, {
-                                        $set: { isActive: false }
+                                        $set: { status: false }
                                     }),
-                                    StandaloneDatapoints.create(currentDataCorrection)
-
-                                        .catch(err => {
-                                            return res.status('500').json({
-                                                message: err.message ? err.message : "Failed to save the data"
-                                            });
-                                        }),
+                                    
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
+                                await StandaloneDatapoints.create(currentDataCorrection)
+                                .catch(err => {
+                                    return res.status('500').json({
+                                        message: err.message ? err.message : "Failed to save the data"
+                                    });
+                                })
                             }
 
                             //! Historical Data
