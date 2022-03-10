@@ -1988,7 +1988,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     } else if (
       datapointsCount == multipliedValue &&
       hasCorrection) {
-      taskStatusValue = CorrectionCompleted;
+      taskStatusValue = body.role == QA ? VerificationCompleted : Completed
+      taskStatusValue = body.role == Analyst ? CorrectionCompleted : Completed
+      // taskStatusValue = CorrectionCompleted;
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
         { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
