@@ -420,14 +420,15 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
-              }
-              if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
-                objectToPushAsChild["company_data_element_label "] = "";
-                objectToPushAsChild["company_data_element_sub_label"] = "";
-                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
-                rows.push(objectToPushAsChild);
-              } else {
-                rows.push(objectToPushAsChild);
+
+                if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+                  objectToPushAsChild["company_data_element_label "] = "";
+                  objectToPushAsChild["company_data_element_sub_label"] = "";
+                  objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
+                  rows.push(objectToPushAsChild);
+                } else {
+                  rows.push(objectToPushAsChild);
+                }
               }
             }
           }
