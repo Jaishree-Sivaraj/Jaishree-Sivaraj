@@ -145,9 +145,25 @@ export const retrieveDistinctDetails = async (req, res, next) => {
         $project: { "_id": 0, "value": "$_id", "label": "$_id" }
       }])
   ]);
-  const [batchList, distinctYears] = await Promise.all([Batches.find({ clientTaxonomy: req.params.id, isAssignedToGroup : true}),
+  const [batchList, distinctYears] = await Promise.all([Batches.find({ clientTaxonomy: req.params.id, isAssignedToGroup: true }),
   CompaniesTasks.find({ companyId: { $in: companyIds }, status: true }).distinct('year')
   ]);
+  let batch =[]
+  batchList.map((batchDetails) => {
+    let batches=[];
+    if (batchDetails?._id && batchDetails?.batchName) {
+      batches.push({
+        label: 'id',
+        value: batchDetails?._id,
+      },
+        {
+          label: 'batchName',
+          value: batchDetails?.batchName
+        });
+        batch.push(batches)
+    }
+
+  });
   let pillarList = [];
   if (categoriesList.length > 0) {
     pillarList = categoriesList;
@@ -173,7 +189,7 @@ export const retrieveDistinctDetails = async (req, res, next) => {
     yearList: yearList,
     pillarList: pillarList ? pillarList : [],
     status: clientTaxonomyDetail.status,
-    batchList
+    batch
   }
   return res.status(200).json({ status: "200", message: "Client taxonomy detail retrieved successfully!", data: objectToReturn });
 }
