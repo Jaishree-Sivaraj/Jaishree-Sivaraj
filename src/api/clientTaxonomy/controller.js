@@ -6,7 +6,7 @@ import { Categories } from '../categories'
 import { Companies } from '../companies'
 import { CompaniesTasks } from '../companies_tasks';
 import { Datapoints } from '../datapoints';
-// import { TaskAssignment } from '../taskAssignment'
+import { Batches } from '../batches';
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   ClientTaxonomy.create({ ...body, createdBy: user })
@@ -55,7 +55,7 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
       .populate('createdBy')
       .then(async (clientTaxonomies) => {
         let responseList = [];
-        const [ categoriesList, companiesList ] = await Promise.all([
+        const [categoriesList, companiesList] = await Promise.all([
           Categories.find({ status: true }).populate('clientTaxonomyId'),
           Companies.find({ status: true }).populate('clientTaxonomyId')
         ]);
@@ -85,7 +85,7 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
               }
             }
           }
-          
+
           let nicList = _.uniqBy(nicCodeList, 'value');
           let objectToPush = {
             _id: item.id,
@@ -110,28 +110,28 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
 }
 
 export const retrieveAll = (req, res, next) => {
-  ClientTaxonomy.countDocuments({status: true})
-  .then((count => ClientTaxonomy.aggregate([{$match: {status: true} }, {
-    $project: {
-      "value": "$_id",
-      "_id": 0,
-      "label": "$taxonomyName"
-    }
-  }])
-    .then((clientTaxonomies) => {
-      return res.status(200).json({ status: "200", message: "Retrieved all Client Taxonomies successfully!", count: count ? count : 0, data: clientTaxonomies ? clientTaxonomies : [] });
-    })
-    .catch((error) => {
-      return res.status(500).json({status: "500", message: error.message ? error.message : "Failed to retrieve all client taxonomies!", count: 0});
-    })
-  ))
+  ClientTaxonomy.countDocuments({ status: true })
+    .then((count => ClientTaxonomy.aggregate([{ $match: { status: true } }, {
+      $project: {
+        "value": "$_id",
+        "_id": 0,
+        "label": "$taxonomyName"
+      }
+    }])
+      .then((clientTaxonomies) => {
+        return res.status(200).json({ status: "200", message: "Retrieved all Client Taxonomies successfully!", count: count ? count : 0, data: clientTaxonomies ? clientTaxonomies : [] });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve all client taxonomies!", count: 0 });
+      })
+    ))
 }
 
-export const retrieveDistinctDetails = async(req, res, next) => {
-  const [ clientTaxonomyDetail, companyIds, categoriesList, companiesNicList ] = await Promise.all([
+export const retrieveDistinctDetails = async (req, res, next) => {
+  const [clientTaxonomyDetail, companyIds, categoriesList, companiesNicList] = await Promise.all([
     ClientTaxonomy.findById(req.params.id ? req.params.id : null),
     Companies.find({ clientTaxonomyId: req.params.id ? req.params.id : null, status: true }).distinct('_id'),
-    Categories.aggregate([{$match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true} }, {
+    Categories.aggregate([{ $match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true } }, {
       $project: {
         "value": "$_id",
         "_id": 0,
@@ -139,12 +139,25 @@ export const retrieveDistinctDetails = async(req, res, next) => {
       }
     }]),
     Companies.aggregate([
-      {$match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true} }, 
-      { $group : { "_id" : "$nic" } }, 
-      {$project: { "_id": 0, "value": "$_id", "label": "$_id" } 
-    }])
+      { $match: { clientTaxonomyId: req.params.id ? mongoose.mongo.ObjectId(req.params.id) : null, status: true } },
+      { $group: { "_id": "$nic" } },
+      {
+        $project: { "_id": 0, "value": "$_id", "label": "$_id" }
+      }])
   ]);
-  const distinctYears = await CompaniesTasks.find({ companyId: { $in: companyIds }, status: true}).distinct('year');
+  const [batchList, distinctYears] = await Promise.all([Batches.find({ clientTaxonomy: req.params.id, isAssignedToGroup: true }),
+  CompaniesTasks.find({ companyId: { $in: companyIds }, status: true }).distinct('year')
+  ]);
+  let batches =[]
+  batchList.map((batchDetails) => {
+    if (batchDetails?._id && batchDetails?.batchName) {
+      batches.push({
+        label: batchDetails?.batchName,
+        value: batchDetails?._id,
+      });
+    }
+
+  });
   let pillarList = [];
   if (categoriesList.length > 0) {
     pillarList = categoriesList;
@@ -160,7 +173,7 @@ export const retrieveDistinctDetails = async(req, res, next) => {
       yearList.push({ value: distinctYears[cmpIndex], label: distinctYears[cmpIndex] });
     }
   }
-  
+
   let nicList = _.uniqBy(nicCodeList, 'value');
   let objectToReturn = {
     _id: req.params.id,
@@ -169,7 +182,8 @@ export const retrieveDistinctDetails = async(req, res, next) => {
     nicList: nicList ? nicList : [],
     yearList: yearList,
     pillarList: pillarList ? pillarList : [],
-    status: clientTaxonomyDetail.status
+    status: clientTaxonomyDetail.status,
+    batches
   }
   return res.status(200).json({ status: "200", message: "Client taxonomy detail retrieved successfully!", data: objectToReturn });
 }
