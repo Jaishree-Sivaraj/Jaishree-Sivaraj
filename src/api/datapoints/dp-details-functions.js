@@ -72,7 +72,7 @@ export async function getS3ScreenShot(screenShot) {
     if (screenShot && screenShot.length > 0) {
         for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
             let obj = screenShot[screenShotIndex];
-            let screenShotFileNameStartTime=Date.now()
+            let screenShotFileNameStartTime = Date.now()
             let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                 screenShotFileName = "No screenshot";
             });
@@ -96,7 +96,7 @@ export async function getSourceDetails(object, sourceDetails) {
         let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
         findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
-        let sourceValuesStartTime=Date.now()
+        let sourceValuesStartTime = Date.now()
         sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
         // let sourceValuesEndTime=Date.now()
         // timeDetails.push({
@@ -199,7 +199,7 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
     if (errorDetailLength > 0 && screenshot && screenshot.length > 0) {
         for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < screenshot.length; refErrorScreenShotIndex++) {
             let obj = screenshot[refErrorScreenShotIndex];
-            let screenshotFileNameDetailsStartTime=Date.now()
+            let screenshotFileNameDetailsStartTime = Date.now()
             let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                 screenShotFileName = "No screenshot";
             });
@@ -269,7 +269,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
-                isMandatory: display?.isMandatory?display?.isMandatory:false,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
             !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
@@ -277,7 +277,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
-                isMandatory: display?.isMandatory?display?.isMandatory:false,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
 
@@ -395,7 +395,7 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
 export async function getChildDp(datapointId, year, taskId, companyId) {
     try {
         // let childDpDetailsStartTime=Date.now()
-        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
+        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true, status: true });
         // let childDpDetailsEndTime=Date.now()
         // timeDetails.push({
         //     blockName:'child dp Details',
@@ -412,13 +412,13 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
         console.log(error?.message);
         return error?.message;
     }
-    
+
 }
 
 export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
         // let timeDetails=[]
-        let clientTaxDpMeasurePlaceValueDetailsStartTime=Date.now()
+        let clientTaxDpMeasurePlaceValueDetailsStartTime = Date.now()
 
         const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
             ClientTaxonomy.findOne({
@@ -466,7 +466,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                 })
                 if (uomValues.length > 0) {
                     // if (measureDtl.measureName == 'Currency') {
-                        // }
+                    // }
 
                     headers.push({
                         "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
