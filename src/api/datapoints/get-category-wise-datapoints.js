@@ -125,6 +125,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       case Pending:
       case CollectionCompleted:
       case VerificationCompleted:
+      case CorrectionCompleted:
       case Completed:
         // Error message if there is no dpTypes.
         if (dpTypeValues.length < 0) {

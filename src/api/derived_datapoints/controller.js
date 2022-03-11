@@ -3110,7 +3110,21 @@ export const derivedCalculation = async ({
                     }else {
                       performanceResult = "1";
                     }
-                  } else {
+                  } else if (datapointDetail.code == 'WASR017') {
+                    let performanceResponse;
+                    if (foundResponse.response >= 100) {
+                      performanceResponse = "100";
+                    } else {
+                      performanceResponse = foundResponse.response; 
+                    }
+                    await StandaloneDatapoints.updateOne({
+                      _id: foundResponse.id
+                    }, {
+                      $set: {
+                        performanceResult: performanceResponse
+                      }
+                    });
+                   } else {
                     performanceResult = foundResponse.response;
                   }
                 }
