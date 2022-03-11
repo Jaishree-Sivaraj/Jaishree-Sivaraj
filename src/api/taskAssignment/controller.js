@@ -510,7 +510,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     if (query.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else {
+  } else if(params.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
   if (userRoles.includes(params.role)) {
