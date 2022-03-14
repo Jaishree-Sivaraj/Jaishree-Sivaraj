@@ -128,7 +128,7 @@ export const datapointDetails = async (req, res, next) => {
                 publicationDate: company.publicationDate
             });
         });
-        let taxonomyEnd=Date.now()
+        let taxonomyEnd = Date.now()
         timeDetails.push({
             blockName: 'Measure Deatils and placeValues Details and Source Details  Promise ',
             timeTaken: taxonomyEnd - taxonomyStart
@@ -203,7 +203,7 @@ export const datapointDetails = async (req, res, next) => {
         if (isPriority == true) {
             datapointQuery = { ...datapointQuery, isPriority: true };
         }
-        let allDatapointsStartTime=Date.now()
+        let allDatapointsStartTime = Date.now()
 
         const allDatapoints = await Datapoints.find(datapointQuery)
             .populate('keyIssueId')
@@ -219,19 +219,26 @@ export const datapointDetails = async (req, res, next) => {
                 break;
             }
         }
-        let allDatapointsEndTime=Date.now()
+        let allDatapointsEndTime = Date.now()
         timeDetails.push({
-            blockName:' All Datapoints Details',
-            timeTaken:allDatapointsEndTime-allDatapointsStartTime
+            blockName: ' All Datapoints Details',
+            timeTaken: allDatapointsEndTime - allDatapointsStartTime
         })
 
         let childDp = [];
         let historicalYears = [];
         let historyYearObject = {};
+        let sourceDetails = {
+            url: '',
+            sourceName: "",
+            value: "",
+            publicationDate: '',
+            s3Url: ''
+        };
         console.log(currentYear);
         switch (memberType) {
             case STANDALONE:
-                let currentHistoryAllStandaloneDetailsStartTime=Date.now()
+                let currentHistoryAllStandaloneDetailsStartTime = Date.now()
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] = await Promise.all([
                     StandaloneDatapoints.find(currentQuery).populate('createdBy')
                         .populate('datapointId')
@@ -245,10 +252,10 @@ export const datapointDetails = async (req, res, next) => {
                         .populate('taskId')
                         .populate('uom')
                 ]);
-                let currentHistoryAllStandaloneDetailsEndTime=Date.now()
+                let currentHistoryAllStandaloneDetailsEndTime = Date.now()
                 timeDetails.push({
-                    blockName:'Current and History All standalone Details',
-                    timeTaken:currentHistoryAllStandaloneDetailsEndTime-currentHistoryAllStandaloneDetailsStartTime
+                    blockName: 'Current and History All standalone Details',
+                    timeTaken: currentHistoryAllStandaloneDetailsEndTime - currentHistoryAllStandaloneDetailsStartTime
 
                 })
 
@@ -260,25 +267,19 @@ export const datapointDetails = async (req, res, next) => {
                 let CurrentYearLoopStartTime = Date.now();
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     _.filter(errorDataDetails, function (object) {
                         if (object.year == currentYear[currentYearIndex]) {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
                     });
-                   
-                     //let currentYearStandaloneLoopStartTime=Date.now()
+
+                    //let currentYearStandaloneLoopStartTime=Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
                         const object = currentAllStandaloneDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, currentYear[currentYearIndex], taskId, datapointId);
-                        
-                        
+
+
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
@@ -315,7 +316,7 @@ export const datapointDetails = async (req, res, next) => {
                         }
                         datapointsObject.status = 'Completed';
                     };
-                    let currentYearLoopEndTime=Date.now()
+                    let currentYearLoopEndTime = Date.now()
                     timeDetails.push({
                         blockName: `Current Year Standalone Loop ${currentYearIndex}`,
                         timeTaken: currentYearLoopEndTime - CurrentYearLoopStartTime
@@ -342,20 +343,13 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.currentData.push(currentDatapointsObject);
 
                 }
-               
-                
+
+
                 totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
-               let historyYearStartTime=Date.now()
+                let historyYearStartTime = Date.now()
                 for (let historicalYearIndex = 0; historicalYearIndex < totalHistories; historicalYearIndex++) {
                     let historicalDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
-                    
-                     //let startHistoryStandloneLoop=Date.now()
+                    //let startHistoryStandloneLoop=Date.now()
 
                     for (let historicalDataIndex = 0; historicalDataIndex < historyAllStandaloneDetails.length; historicalDataIndex++) {
                         let object = historyAllStandaloneDetails[historicalDataIndex];
@@ -376,10 +370,10 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
-                let historyYearEndTime=Date.now()
+                let historyYearEndTime = Date.now()
                 timeDetails.push({
                     blockName: `history Year Standalone Loop ${historyYear}`,
-                    timeTaken: historyYearEndTime -  historyYearStartTime
+                    timeTaken: historyYearEndTime - historyYearStartTime
                 });
 
                 return res.status(200).send({
@@ -390,7 +384,7 @@ export const datapointDetails = async (req, res, next) => {
 
                 });
             case BOARD_MATRIX:
-                let currentHistoryAllBoardMemberMatrixDetailsStartTime=Date.now()
+                let currentHistoryAllBoardMemberMatrixDetailsStartTime = Date.now()
                 const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails,] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
@@ -420,10 +414,10 @@ export const datapointDetails = async (req, res, next) => {
                     ...datapointsObject,
                     status: ''
                 }
-                
+
                 totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
 
-                let currentYearLoopBoardMemberStartTime=Date.now()
+                let currentYearLoopBoardMemberStartTime = Date.now()
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
@@ -433,15 +427,9 @@ export const datapointDetails = async (req, res, next) => {
                             datapointsObject.comments.push(object.rejectComment)
                         }
                     });
-                    
+
                     //let currentYearLoopBoardMemberStartTime=Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
-                        let sourceDetails = {
-                            url: '',
-                            sourceName: "",
-                            value: "",
-                            publicationDate: ''
-                        };
                         const object = currentAllBoardMemberMatrixDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, currentYear[currentYearIndex], taskId, datapointId);
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -475,10 +463,10 @@ export const datapointDetails = async (req, res, next) => {
                         }
                         datapointsObject.status = 'Completed';
                     };
-                    let  currentYearLoopBoardMemberEndTime=Date.now()
+                    let currentYearLoopBoardMemberEndTime = Date.now()
                     timeDetails.push({
                         blockName: `Current Year Board Member Loop ${currentYearIndex}`,
-                        timeTaken:  currentYearLoopBoardMemberEndTime -  currentYearLoopBoardMemberStartTime
+                        timeTaken: currentYearLoopBoardMemberEndTime - currentYearLoopBoardMemberStartTime
                     })
                     if (Object.keys(currentDatapointsObject).length == 0) {
                         currentDatapointsObject = getCurrentEmptyObject(dpTypeValues, currentYear[currentYearIndex], sourceTypeDetails, inputValues, uomValues, placeValues)
@@ -495,20 +483,14 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
-                
-                
 
-    
+
+
+
                 for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     let historicalDatapointsObject = {};
                     for (let historyBoardMemberIndex = 0; historyBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyBoardMemberIndex++) {
                         let object = historyAllBoardMemberMatrixDetails[historyBoardMemberIndex];
-                        let sourceDetails = {
-                            url: '',
-                            sourceName: "",
-                            value: "",
-                            publicationDate: ''
-                        };
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
@@ -522,7 +504,7 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
-                
+
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
@@ -536,9 +518,9 @@ export const datapointDetails = async (req, res, next) => {
                     },
                     dpCodeData: datapointsObject
                 });
-                
+
             case KMP_MATRIX:
-                let currentHistoryAllKmpMatrixDetailsStartTime=Date.now()
+                let currentHistoryAllKmpMatrixDetailsStartTime = Date.now()
                 const [currentAllKmpMatrixDetails, historyAllKmpMatrixDetails] =
                     await Promise.all([
                         KmpMatrixDataPoints.find({
@@ -580,15 +562,9 @@ export const datapointDetails = async (req, res, next) => {
                             datapointsObject.comments.push(object.rejectComment)
                         }
                     });
-                    let currentYearLoopKmpMatrixDetailsLoopStartTime=Date.now()
+                    let currentYearLoopKmpMatrixDetailsLoopStartTime = Date.now()
                     for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
                         const object = currentAllKmpMatrixDetails[currentIndex];
-                        let sourceDetails = {
-                            url: '',
-                            sourceName: "",
-                            value: "",
-                            publicationDate: ''
-                        };
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, currentYear[currentYearIndex], taskId, datapointId);
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object.screenShot),
@@ -633,10 +609,10 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
-                let currentYearLoopKmpMatrixDetailsLoopEndTime=Date.now()
+                let currentYearLoopKmpMatrixDetailsLoopEndTime = Date.now()
                 timeDetails.push({
                     blockName: `Current Year Kmp Matrix Loop ${currentYearIndex}`,
-                    timeTaken:  currentYearLoopKmpMatrixDetailsLoopStartTime -   currentYearLoopKmpMatrixDetailsLoopEndTime
+                    timeTaken: currentYearLoopKmpMatrixDetailsLoopStartTime - currentYearLoopKmpMatrixDetailsLoopEndTime
 
 
                 })
@@ -644,12 +620,6 @@ export const datapointDetails = async (req, res, next) => {
                     let historicalDatapointsObject = {};
                     for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
                         let object = historyAllKmpMatrixDetails[historyKMPMemerIndex];
-                        let sourceDetails = {
-                            url: '',
-                            sourceName: "",
-                            value: "",
-                            publicationDate: ''
-                        };
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)

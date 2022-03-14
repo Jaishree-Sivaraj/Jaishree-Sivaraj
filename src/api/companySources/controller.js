@@ -83,10 +83,11 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //   }
   // });
   var fileUrl = '';
+  let s3Url = ''
   if (body.sourcePDF) {
     const fileType = body.sourcePDF.split(';')[0].split('/')[1];
     fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
-    var s3Insert = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
+    s3Url = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
     console.log('s3insert', s3Insert);
   }
   let sourceDetails = {
@@ -104,7 +105,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
           newSubSourceTypeId = response.id;
         }
       })
-      // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+    // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
   }
   if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
     let sourceObject = {
@@ -133,7 +134,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     publicationDate: body.publicationDate,
     fiscalYear: body.fiscalYear,
     name: body.name,
-    sourceTitle:body.sourceTitle
+    sourceTitle: body.sourceTitle,
+    s3url
   }
   console.log('companySourceDetails', companySourceDetails);
   await CompanySources.create(companySourceDetails).then((detail) => {

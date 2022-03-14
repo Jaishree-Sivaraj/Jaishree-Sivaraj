@@ -212,6 +212,14 @@ export const repDatapointDetails = async (req, res, next) => {
         let totalHistories = 0;
         let childDp = [];
         currentYear = getSortedYear(currentYear);
+        let sourceDetails = {
+            url: '',
+            sourceName:'',
+            value:'',
+            publicationDate: '',
+            sourceUrl:''
+        };
+
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
@@ -234,12 +242,6 @@ export const repDatapointDetails = async (req, res, next) => {
                 }
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
                         const object = currentAllStandaloneDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -377,12 +379,6 @@ export const repDatapointDetails = async (req, res, next) => {
                 // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
                         let object = currentAllBoardMemberMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -511,12 +507,6 @@ export const repDatapointDetails = async (req, res, next) => {
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
                         let object = currentAllKmpMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
