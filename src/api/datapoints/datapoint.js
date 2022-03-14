@@ -125,7 +125,8 @@ export const datapointDetails = async (req, res, next) => {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
-                publicationDate: company.publicationDate
+                publicationDate: company.publicationDate,
+                s3Url: company?.s3Url ? company?.s3Url : ''
             });
         });
         let taxonomyEnd = Date.now()
