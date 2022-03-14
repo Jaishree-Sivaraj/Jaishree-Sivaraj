@@ -5,7 +5,7 @@ import { token } from '../../services/passport'
 import { create, index, reportsFilter, exportReport } from './controller'
 
 const { clientTaxonomyId, searchQuery, page, limit } = '';
-const { selectedCompanies, nicList, yearsList, pillarList } = [];
+const { selectedCompanies, nicList, yearsList, pillarList, batchList } = [];
 
 
 const router = new Router()
@@ -23,7 +23,7 @@ const router = new Router()
  */
 router.post('/filter',
   token({ required: true }),
-  body({ clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit }),
+  body({ clientTaxonomyId, nicList, yearsList, pillarList, batchList, page, limit }),
   reportsFilter)
   
 /**
