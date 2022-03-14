@@ -517,17 +517,29 @@ export const addCalculation = async function (taskId, companyId, distinctYears, 
           status: true
         });
         if (ruleResponseObject) {
-          if (ruleResponseObject.response == '' || ruleResponseObject.response == ' ') {
+          if (ruleResponseObject.response == '' || ruleResponseObject.response == ' ' || ruleResponseObject.response == 'NA') {
             //perform calc
-            if (numeratorValue.response == 0) {
+            if (numeratorValue.response == 0 && denominatorValue.response == 0) {
               derivedResponse = 0;
-            } else if (numeratorValue.response == '' || numeratorValue.response == ' ' || numeratorValue.response == 'NA') {
-              derivedResponse = 'NA';
-            } else if (denominatorValue.response == 0 || denominatorValue.response == '' || denominatorValue.response == ' ' || denominatorValue.response == 'NA') {
-              derivedResponse = 'NA';
             } else {
-              derivedResponse = Number(numeratorValue.response) + Number(denominatorValue.response);
-              derivedResponse = Number(derivedResponse).toFixed(4);
+              let numeratorDerivedResponse;
+              let denominatorDerivedResponse;
+              if (numeratorValue.response == '' || numeratorValue.response == ' ' || numeratorValue.response == 'NA') {
+                numeratorDerivedResponse = 0;
+              } else {
+                numeratorDerivedResponse = Number(numeratorValue.response); 
+              }
+              if (denominatorValue.response == 0 || denominatorValue.response == '' || denominatorValue.response == ' ' || denominatorValue.response == 'NA') {
+                denominatorDerivedResponse = 0;
+              } else {
+                denominatorDerivedResponse = Number(denominatorValue.response);
+              }
+              derivedResponse = Number(numeratorDerivedResponse) + Number(denominatorDerivedResponse);
+              if (derivedResponse == 0) {
+                derivedResponse = "NA";
+              } else {
+                derivedResponse = Number(derivedResponse).toFixed(4);
+              }
             }
             await StandaloneDatapoints.updateOne({
               _id: ruleResponseObject.id
