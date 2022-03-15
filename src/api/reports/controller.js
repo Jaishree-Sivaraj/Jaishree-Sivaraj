@@ -21,14 +21,14 @@ export const reportsFilter = async (req, res, next) => {
   let matchQuery = { status: true };
   if (clientTaxonomyId) {
     let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true };
-    if (nicList.length > 0) {
+    if (nicList && nicList?.length > 0) {
       let nics = [];
       for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
         nics.push(nicList[nicIndex].value);
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (batchList.length > 0) {
+    if (batchList && batchList?.length > 0) {
       let batchIds = [];
       for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
         batchIds.push(batchList[nicIndex].value);
@@ -48,14 +48,14 @@ export const reportsFilter = async (req, res, next) => {
     }
     let companyIds = await Companies.find(companyFindQuery).distinct('_id');
     matchQuery.companyId = { $in: companyIds };
-    if (yearsList.length > 0) {
+    if (yearsList && yearsList?.length > 0) {
       let years = [];
       for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
         years.push(yearsList[yearIndex].value);
       }
       matchQuery.year = { $in: years };
     }
-    if (pillarList.length > 0) {
+    if (pillarList && pillarList?.length > 0) {
       let pillars = [];
       for (let pillarIndex = 0; pillarIndex < pillarList.length; pillarIndex++) {
         pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
@@ -359,11 +359,11 @@ export const exportReport = async (req, res, next) => {
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
                       dataType = "Number";
                     }else{
                       dataType = "Text"
@@ -390,6 +390,8 @@ export const exportReport = async (req, res, next) => {
                 }
               }
             }
+            let objectToPushAsChildCopy = JSON.parse(JSON.stringify(objectToPush));
+            // console.log(objectToPushAsChildCopy);
             
             if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
               let responseObjectToPush = await getResponseObject(objectToPush);
@@ -407,14 +409,14 @@ export const exportReport = async (req, res, next) => {
             }
             if (childDpDetails.length > 0) {
               for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
-                objectToPushAsChild = JSON.parse(JSON.stringify(objectToPush));
+                objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
+                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
+                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
                   dataType = "Number";
                 }else{
                   dataType = "Text"
@@ -436,8 +438,30 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["did_the_company_report"] = item.childFields.didTheCompanyReport ? item.childFields.didTheCompanyReport : "";
+                objectToPushAsChild["name_of_document_as_saved"] = item.childFields.sourceName ? item.childFields.sourceName : "";
+                objectToPushAsChild["name_of_document (as listed on title page)"] = item.childFields.sourceTitle ? item.childFields.sourceTitle : "";
+                objectToPushAsChild["HTML Link of Document"] = item.childFields.url ? item.childFields.url : "";
+                objectToPushAsChild["Document Year"] = item.childFields.publicationDate ? item.childFields.publicationDate : "";
+                objectToPushAsChild["Comment_G"] = item.childFields.commentG ? item.childFields.commentG : "";
 
-                if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+                // if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+                //   objectToPushAsChild["company_data_element_label "] = "";
+                //   objectToPushAsChild["company_data_element_sub_label"] = "";
+                //   objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
+                //   rows.push(objectToPushAsChild);
+                // } else {
+                //   rows.push(objectToPushAsChild);
+                // }
+
+                if ((responseValue == 'NI' || responseValue == 'NA' || responseValue == 'Na') && item.childFields.didTheCompanyReport == "No") {
+                  let responseObjectToPush = await getResponseObject(objectToPushAsChild);
+                  rows.push(responseObjectToPush);
+                } else if ((responseValue == 'NI' || responseValue == 'NA') && item.childFields.didTheCompanyReport == "Yes") {
+                  objectToPushAsChild['data_type (number, text, units)'] = "";
+                  rows.push(objectToPushAsChild);
+                } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
                   objectToPushAsChild["company_data_element_label "] = "";
                   objectToPushAsChild["company_data_element_sub_label"] = "";
                   objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";

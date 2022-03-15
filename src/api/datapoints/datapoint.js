@@ -375,7 +375,16 @@ export const datapointDetails = async (req, res, next) => {
                 timeDetails.push({
                     blockName: `history Year Standalone Loop ${historyYear}`,
                     timeTaken: historyYearEndTime - historyYearStartTime
-                });
+                })
+                chilDpHeaders.push({
+                    "id": chilDpHeaders.length + 2,
+                    "displayName": "Source",
+                    "fieldName": "source",
+                    "dataType": "Select",
+                    "options": sourceTypeDetails,
+                    "isRequired": true,
+                    "orderNumber": chilDpHeaders.length + 2
+                })
 
                 return res.status(200).send({
                     status: "200",
@@ -505,6 +514,16 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
+
+                chilDpHeaders.push({
+                    "id": chilDpHeaders.length + 2,
+                    "displayName": "Source",
+                    "fieldName": "source",
+                    "dataType": "Select",
+                    "options": sourceTypeDetails,
+                    "isRequired": true,
+                    "orderNumber": chilDpHeaders.length + 2
+                })
 
                 return res.status(200).send({
                     status: "200",
@@ -637,6 +656,17 @@ export const datapointDetails = async (req, res, next) => {
 
                     }
                 }
+
+                chilDpHeaders.push({
+                    "id": chilDpHeaders.length + 2,
+                    "displayName": "Source",
+                    "fieldName": "source",
+                    "dataType": "Select",
+                    "options": sourceTypeDetails,
+                    "isRequired": true,
+                    "orderNumber": chilDpHeaders.length + 2
+                })
+
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
