@@ -535,10 +535,7 @@ export const companySearch = async (req, res, next) => {
   const { clientTaxonomyId, nicList, batchList, companyName } = req.body;
   try {
     if (clientTaxonomyId && companyName) {
-      let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true, $or: [
-        { companyName: { '$regex': companyName, '$options': 'i' } },
-        { cin: { '$regex': companyName, '$options': 'i' } }
-      ] };
+      let companyFindQuery = { clientTaxonomyId: mongoose.mongo.ObjectId(clientTaxonomyId), status: true };
       if (nicList && nicList?.length > 0) {
         let nics = [];
         for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
@@ -557,12 +554,27 @@ export const companySearch = async (req, res, next) => {
           let cmpItem = batchCompanyDetails[batchIndex].companiesList;
           for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
             let companyItem = cmpItem[cmpIndex];
-            if(!batchCompanyIds.includes(companyItem.id)){
-              batchCompanyIds.push(companyItem.id);
+            if(!batchCompanyIds.includes(mongoose.mongo.ObjectId(companyItem.id))){
+              batchCompanyIds.push(mongoose.mongo.ObjectId(companyItem.id));
             }
           }
         }
-        companyFindQuery._id = { $in: batchCompanyIds };
+        companyFindQuery.$and = [
+          {
+            $or : [
+              { companyName: { '$regex': companyName, '$options': 'i' } },
+              { cin: { '$regex': companyName, '$options': 'i' } }
+            ]
+          },
+          {
+            _id: { $in: batchCompanyIds }
+          }
+        ]
+      } else {
+        companyFindQuery.$or = [
+          { companyName: { '$regex': companyName, '$options': 'i' } },
+          { cin: { '$regex': companyName, '$options': 'i' } }
+        ];
       }
       await Companies.aggregate([{ $match: companyFindQuery }, { $limit: 10 }, 
         {
