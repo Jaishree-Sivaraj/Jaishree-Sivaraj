@@ -175,7 +175,7 @@ router.get('/',
 * @apiError 401 user access only.
 */
 router.get('/get-screenshot',
-  token({ required: true }),
+  // token({ required: true }),
   query(screenShot),
   getScreenShot)
 
