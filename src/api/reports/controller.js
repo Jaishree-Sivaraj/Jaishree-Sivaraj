@@ -359,9 +359,9 @@ export const exportReport = async (req, res, next) => {
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
+                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
+                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
                     } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
                       dataType = "Number";
@@ -412,9 +412,9 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
+                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ' || dpDetails[0].measureType != 'NA')) {
+                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
                 } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
                   dataType = "Number";
@@ -461,9 +461,9 @@ export const exportReport = async (req, res, next) => {
                 } else if ((responseValue == 'NI' || responseValue == 'NA') && item.childFields.didTheCompanyReport == "Yes") {
                   objectToPushAsChild['data_type (number, text, units)'] = "";
                   rows.push(objectToPushAsChild);
-                } else if(stdData.additionalDetails.formatOfDataProvidedByCompanyChartTableText == "Text"){
-                  objectToPushAsChild["company_data_element_label "] = "";
-                  objectToPushAsChild["company_data_element_sub_label"] = "";
+                } else if(item.childFields.formatOfDataProvidedByCompanyChartTableText == "Text"){
+                  objectToPushAsChild["company_data_element_label (for numbers)"] = "";
+                  objectToPushAsChild["company_data_element_sub_label (for numbers)"] = "";
                   objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
                   rows.push(objectToPushAsChild);
                 } else {
