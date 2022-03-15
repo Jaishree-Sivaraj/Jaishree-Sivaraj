@@ -125,7 +125,8 @@ export const datapointDetails = async (req, res, next) => {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
-                publicationDate: company.publicationDate
+                publicationDate: company.publicationDate,
+                sourceTitle: company.sourceTitle
             });
         });
         let taxonomyEnd=Date.now()
@@ -381,6 +382,16 @@ export const datapointDetails = async (req, res, next) => {
                     blockName: `history Year Standalone Loop ${historyYear}`,
                     timeTaken: historyYearEndTime -  historyYearStartTime
                 });
+                // let childDpSourceObject = {
+                //     "id": chilDpHeaders.length + 2,
+                //     "displayName": "Source",
+                //     "fieldName": "source",
+                //     "dataType": "Select",
+                //     "options": sourceTypeDetails,
+                //     "isRequired": true,
+                //     "orderNumber": chilDpHeaders.length + 2
+                // }
+                // chilDpHeaders.push(childDpSourceObject)
 
                 return res.status(200).send({
                     status: "200",
