@@ -17,7 +17,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   res.status(200).json([])
 
 export const reportsFilter = async (req, res, next) => {
-  const { clientTaxonomyId, nicList, yearsList, pillarList, batchList, page, limit } = req.body;
+  const { clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit } = req.body;
   let matchQuery = { status: true };
   if (clientTaxonomyId) {
     let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true };
@@ -28,7 +28,13 @@ export const reportsFilter = async (req, res, next) => {
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (batchList && batchList?.length > 0) {
+    if (filteredCompanies && filteredCompanies.length > 0) {
+      let filteredCompanyIds = [];
+      for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+        filteredCompanyIds.push(filteredCompanies[filtCmpIndex].value);
+      }
+      companyFindQuery._id = { $in: filteredCompanyIds };
+    } else if (batchList && batchList?.length > 0) {
       let batchIds = [];
       for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
         batchIds.push(batchList[nicIndex].value);
@@ -528,30 +534,58 @@ export async function getResponseObject (responseObject) {
 }
 
 export const companySearch = async (req, res, next) => {
+  
+  const { clientTaxonomyId, nicList, batchList, companyName } = req.body;
   try {
-    await Companies.aggregate([{ $match: { 
-      status: true,
-      $or: [
-        { companyName: { '$regex': req?.body?.companyName, '$options': 'i' } },
-        { cin: { '$regex': req?.body?.companyName, '$options': 'i' } }
-      ]
-     }
-    },{
-      $limit: 10
-    }, {
-      $project: {
-        "value": "$_id",
-        "_id": 0,
-        "label": "$companyName"
+    if (clientTaxonomyId && companyName) {
+      let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true, $or: [
+        { companyName: { '$regex': companyName, '$options': 'i' } },
+        { cin: { '$regex': companyName, '$options': 'i' } }
+      ] };
+      if (nicList && nicList?.length > 0) {
+        let nics = [];
+        for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
+          nics.push(nicList[nicIndex].value);
+        }
+        companyFindQuery.nic = { $in: nics };
       }
-    }])
-    .then((companies) => {
-      return res.status(200).json({ status: "200", 
-      message: "Retrieved matching companies successfully!", data: companies ? companies : [] });
-    })
-    .catch((error) => {
+      if (batchList && batchList?.length > 0) {
+        let batchIds = [];
+        for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+          batchIds.push(batchList[nicIndex].value);
+        }
+        let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+        let batchCompanyIds = [];
+        for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+          let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+          for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+            let companyItem = cmpItem[cmpIndex];
+            if(!batchCompanyIds.includes(companyItem.id)){
+              batchCompanyIds.push(companyItem.id);
+            }
+          }
+        }
+        companyFindQuery._id = { $in: batchCompanyIds };
+      }
+      await Companies.aggregate([{ $match: companyFindQuery }, { $limit: 10 }, 
+        {
+          $project: {
+            "value": "$_id",
+            "_id": 0,
+            "label": "$companyName"
+          }
+        }
+      ])
+      .then((companies) => {
+        return res.status(200).json({ status: "200", 
+        message: "Retrieved matching companies successfully!", data: companies ? companies : [] });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "No Companies found!" });
+      })
+    } else {
       return res.status(500).json({ status: "500", message: error.message ? error.message : "No Companies found!" });
-    })
+    }
   } catch (error) {
     return res.status(500).json({
       status: "500",

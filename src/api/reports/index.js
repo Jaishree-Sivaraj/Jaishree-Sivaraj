@@ -5,14 +5,14 @@ import { token } from '../../services/passport'
 import { create, index, reportsFilter, exportReport, companySearch } from './controller'
 
 const { clientTaxonomyId, searchQuery, page, limit, companyName } = '';
-const { selectedCompanies, nicList, yearsList, pillarList, batchList } = [];
+const { selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
 
 
 const router = new Router()
 
 /**
- * @api {post} /reports/filter Create reports
- * @apiName CreateReports
+ * @api {post} /reports/filter Filter reports
+ * @apiName FilterReports
  * @apiGroup Reports
  * @apiPermission user
  * @apiParam {String} access_token user access token.
@@ -23,7 +23,7 @@ const router = new Router()
  */
 router.post('/filter',
   token({ required: true }),
-  body({ clientTaxonomyId, nicList, yearsList, pillarList, batchList, page, limit }),
+  body({ clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit }),
   reportsFilter)
   
 /**
@@ -55,7 +55,7 @@ exportReport)
  */
 router.post('/company-search',
 token({ required: true }),
-body({ companyName }),
+body({ clientTaxonomyId, companyName, batchList, nicList }),
 companySearch)
 
 /**
