@@ -137,7 +137,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 value: company.id,
                 url: company.sourceUrl,
                 publicationDate: company.publicationDate,
-                sourceFile: company?.sourceFile ? sourceFile : ''
+                sourceFile: company?.sourceFile ? company?.sourceFile : ''
             })
         });
 

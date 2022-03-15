@@ -233,7 +233,8 @@ export const datapointDetails = async (req, res, next) => {
             url: '',
             sourceName: "",
             value: "",
-            publicationDate: ''
+            publicationDate: '',
+            sourceFile:''
         };
         console.log(currentYear);
         switch (memberType) {
