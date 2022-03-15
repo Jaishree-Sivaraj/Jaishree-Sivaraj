@@ -21,14 +21,14 @@ export const reportsFilter = async (req, res, next) => {
   let matchQuery = { status: true };
   if (clientTaxonomyId) {
     let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true };
-    if (nicList.length > 0) {
+    if (nicList && nicList?.length > 0) {
       let nics = [];
       for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
         nics.push(nicList[nicIndex].value);
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (batchList.length > 0) {
+    if (batchList && batchList?.length > 0) {
       let batchIds = [];
       for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
         batchIds.push(batchList[nicIndex].value);
@@ -48,14 +48,14 @@ export const reportsFilter = async (req, res, next) => {
     }
     let companyIds = await Companies.find(companyFindQuery).distinct('_id');
     matchQuery.companyId = { $in: companyIds };
-    if (yearsList.length > 0) {
+    if (yearsList && yearsList?.length > 0) {
       let years = [];
       for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
         years.push(yearsList[yearIndex].value);
       }
       matchQuery.year = { $in: years };
     }
-    if (pillarList.length > 0) {
+    if (pillarList && pillarList?.length > 0) {
       let pillars = [];
       for (let pillarIndex = 0; pillarIndex < pillarList.length; pillarIndex++) {
         pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
