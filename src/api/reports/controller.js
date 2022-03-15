@@ -437,6 +437,7 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
                 objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
+                objectToPushAsChild["Keyword_used"] = item.childFields.keywordUsed ? item.childFields.keywordUsed : "";
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
                 objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
                 objectToPushAsChild["did_the_company_report"] = item.childFields.didTheCompanyReport ? item.childFields.didTheCompanyReport : "";
@@ -445,6 +446,8 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["HTML Link of Document"] = item.childFields.url ? item.childFields.url : "";
                 objectToPushAsChild["Document Year"] = item.childFields.publicationDate ? item.childFields.publicationDate : "";
                 objectToPushAsChild["Comment_G"] = item.childFields.commentG ? item.childFields.commentG : "";
+                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "subline";
+
 
                 // if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
                 //   objectToPushAsChild["company_data_element_label "] = "";
