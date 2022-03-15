@@ -69,25 +69,31 @@ export function getError(errorDataDetails, currentYear, taskId, datapointId) {
 
 export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
-    if (screenShot && screenShot.length > 0) {
-        for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
-            let obj = screenShot[screenShotIndex];
-            let screenShotFileNameStartTime = Date.now()
-            let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                screenShotFileName = "No screenshot";
-            });
-            // let screenShotFileNameEndTime=Date.now()
-            // timeDetails.push({
-            //     blockName:'screenshot FileName',
-            //     timeTaken:screenShotFileNameEndTime-screenShotFileNameStartTime
-
-            // })
-            if (screenShotFileName == undefined) {
-                screenShotFileName = "";
+    if (Array.isArray(screenShot)) {
+        if (screenShot && screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
+                let obj = screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                }
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
-            s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
         }
+    } else {
+        let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
+            screenShotFileName = "No screenshot";
+        });
+        if (screenShotFileName == undefined) {
+            screenShotFileName = "";
+        }
+        return { uid: 1, name: screenShot, url: screenShotFileName }
+
     }
+
+
     return s3DataScreenshot;
 }
 
@@ -108,8 +114,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
-            sourceDetails.s3Url = sourceValues?.s3Url ? sourceValues?.s3Url : '';
-            sourceDetails.sourceTitle = sourceValues?.sourceTitle ? sourceValues?.sourceTitle : '';
+            sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
     return sourceDetails;
