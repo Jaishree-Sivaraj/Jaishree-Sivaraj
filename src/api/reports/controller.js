@@ -526,3 +526,36 @@ export async function getResponseObject (responseObject) {
 
   return responseObject;
 }
+
+export const companySearch = async (req, res, next) => {
+  try {
+    await Companies.aggregate([{ $match: { 
+      status: true,
+      $or: [
+        { companyName: { '$regex': req?.body?.companyName, '$options': 'i' } },
+        { cin: { '$regex': req?.body?.companyName, '$options': 'i' } }
+      ]
+     }
+    },{
+      $limit: 10
+    }, {
+      $project: {
+        "value": "$_id",
+        "_id": 0,
+        "label": "$companyName"
+      }
+    }])
+    .then((companies) => {
+      return res.status(200).json({ status: "200", 
+      message: "Retrieved matching companies successfully!", data: companies ? companies : [] });
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "No Companies found!" });
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status: "500",
+      message: error.message ? error.message : "No Companies found!"
+    })
+  }
+}
