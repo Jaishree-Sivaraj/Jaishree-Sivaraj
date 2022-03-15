@@ -83,11 +83,10 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //   }
   // });
   var fileUrl = '';
-  let s3Url = '';
   if (body.sourcePDF) {
     const fileType = body.sourcePDF.split(';')[0].split('/')[1];
     fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
-    s3Url = await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
+    await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
 
   }
   let sourceDetails = {
@@ -133,7 +132,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
     fiscalYear: body.fiscalYear,
     name: body.name,
     sourceTitle: body.sourceTitle,
-    s3Url: s3Url?.data?.Location ? s3Url?.data?.Location : ''
   }
   await CompanySources.create(companySourceDetails).then((detail) => {
     res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })

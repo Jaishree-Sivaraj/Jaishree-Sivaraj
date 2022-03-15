@@ -136,7 +136,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
-                publicationDate: company.publicationDate
+                publicationDate: company.publicationDate,
+                sourceFile:company?.sourceFile
             })
         });
 
@@ -217,7 +218,7 @@ export const repDatapointDetails = async (req, res, next) => {
             sourceName:'',
             value:'',
             publicationDate: '',
-            sourceUrl:''
+            sourceFile:''
         };
 
         switch (memberType) {
