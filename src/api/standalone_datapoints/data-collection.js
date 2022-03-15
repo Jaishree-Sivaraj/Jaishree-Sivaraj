@@ -11,6 +11,7 @@ import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../.
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
+import { CompanySources } from '../companySources'
 
 // Incoming payload
 // currentDatapoint:
@@ -716,6 +717,18 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
+
+                if (childDetailsDatas?.source) {
+                    let sourceDetails = await CompanySources.findOne({_id: childDetailsDatas?.source , status: true});
+                    
+                    if (sourceDetails) {
+                        childDetailsDatas.sourceName = sourceDetails?.name ? sourceDetails?.name : "";
+                        childDetailsDatas.url = sourceDetails?.sourceUrl ? sourceDetails?.sourceUrl : "";
+                        childDetailsDatas.publicationDate = sourceDetails?.publicationDate ? sourceDetails?.publicationDate : "";
+                        childDetailsDatas.sourceTitle = sourceDetails?.sourceTitle ? sourceDetails?.sourceTitle : "";
+                    }
+                }
+
                 childDetailsDatas.units = {
                     measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
                     placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],
