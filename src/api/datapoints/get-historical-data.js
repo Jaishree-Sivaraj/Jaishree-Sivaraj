@@ -136,7 +136,9 @@ export const getScreenShot = async (req, res, next) => {
             });
 
         }
-        return res.redirect(screenShotData?.url)
+        return res.status(200).json({
+            url: screenShotData?.url
+        })
     } catch (error) {
         res.status(409).json({
             status: 409,
