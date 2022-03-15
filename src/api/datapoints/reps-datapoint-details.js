@@ -136,7 +136,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
-                publicationDate: company.publicationDate
+                publicationDate: company.publicationDate,
+                sourceFile: company?.sourceFile ? sourceFile : ''
             })
         });
 
@@ -214,10 +215,10 @@ export const repDatapointDetails = async (req, res, next) => {
         currentYear = getSortedYear(currentYear);
         let sourceDetails = {
             url: '',
-            sourceName:'',
-            value:'',
+            sourceName: '',
+            value: '',
             publicationDate: '',
-            sourceUrl:''
+            sourceFile:'',
         };
 
         switch (memberType) {

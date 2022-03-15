@@ -108,8 +108,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
-            sourceDetails.s3Url = sourceValues?.s3Url ? sourceValues?.s3Url : '';
-            sourceDetails.sourceTitle = sourceValues?.sourceTitle ? sourceValues?.sourceTitle : '';
+            sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
     return sourceDetails;

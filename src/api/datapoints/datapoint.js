@@ -126,8 +126,7 @@ export const datapointDetails = async (req, res, next) => {
                 value: company.id,
                 url: company.sourceUrl,
                 publicationDate: company.publicationDate,
-                s3Url: company?.s3Url ? company?.s3Url : '',
-                sourceTitle: company.sourceTitle
+                sourceFile: company?.sourceFile ? company?.sourceFile : ''
             });
         });
         let taxonomyEnd = Date.now()
@@ -234,8 +233,7 @@ export const datapointDetails = async (req, res, next) => {
             url: '',
             sourceName: "",
             value: "",
-            publicationDate: '',
-            s3Url: ''
+            publicationDate: ''
         };
         console.log(currentYear);
         switch (memberType) {
