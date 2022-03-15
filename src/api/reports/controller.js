@@ -28,7 +28,13 @@ export const reportsFilter = async (req, res, next) => {
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (batchList && batchList?.length > 0) {
+    if (filteredCompanies && filteredCompanies.length > 0) {
+      let filteredCompanyIds = [];
+      for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+        filteredCompanyIds.push(filteredCompanies[filtCmpIndex].value);
+      }
+      companyFindQuery._id = { $in: filteredCompanyIds };
+    } else if (batchList && batchList?.length > 0) {
       let batchIds = [];
       for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
         batchIds.push(batchList[nicIndex].value);
