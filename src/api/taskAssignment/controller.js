@@ -35,7 +35,7 @@ import {
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
 import { CompanyRepresentative, ClientRepresentative } from '../../constants/roles'
-
+import { Incomplete } from '../../constants/task-status';
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
     .sort({ createdAt: -1 })
@@ -510,7 +510,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     if (query.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else if(params.role !== "GroupAdmin") {
+  } else if (params.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
   if (userRoles.includes(params.role)) {
@@ -1963,12 +1963,13 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     let datapoints = await Datapoints.find({ ...datapointQuery });
 
     // mergedDetails is the Dp codes of all Dp Types.
-    const [hasError, hasCorrection, multipliedValue] = [
+    const [hasError, hasCorrection, isCorrectionCompleted, multipliedValue] = [
       mergedDetails.find(object => object.hasError == true),
       mergedDetails.find(object => object.hasCorrection == true),
+      mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
     let taskStatusValue = "";
-    if (datapointsCount == multipliedValue && hasError) {
+    if (datapointsCount == multipliedValue && hasError && !isCorrectionCompleted) {
       taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
 
       const [query, update, query1, update1] = [
@@ -1987,14 +1988,14 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
     } else if (
       datapointsCount == multipliedValue &&
-      hasCorrection) {
-        if (body.role == QA) {
-          taskStatusValue = VerificationCompleted;
-        } else if(body.role == Analyst){
-          taskStatusValue = CorrectionCompleted;
-        } else {
-          taskStatusValue = Completed;
-        }
+      hasCorrection && !isCorrectionCompleted) {
+      if (body.role == QA) {
+        taskStatusValue = VerificationCompleted;
+      } else if (body.role == Analyst) {
+        taskStatusValue = CorrectionCompleted;
+      } else {
+        taskStatusValue = Completed;
+      }
       // taskStatusValue = body.role == QA ? VerificationCompleted : Completed
       // taskStatusValue = body.role == Analyst ? CorrectionCompleted : Completed
       // taskStatusValue = CorrectionCompleted;
@@ -2012,7 +2013,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     else if (
       datapointsCount == multipliedValue &&
       hasError == undefined &&
-      hasCorrection == undefined
+      hasCorrection == undefined && !isCorrectionCompleted
     ) {
       taskStatusValue = body.role == QA ? VerificationCompleted : Completed
       taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
