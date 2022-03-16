@@ -28,9 +28,9 @@ export const reportsFilter = async (req, res, next) => {
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (searchQuery != '') {
-      companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
-    }
+    // if (searchQuery != '') {
+    //   companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
+    // }
     // if (filteredCompanies && filteredCompanies.length > 0) {
     //   let filteredCompanyIds = [];
     //   for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
