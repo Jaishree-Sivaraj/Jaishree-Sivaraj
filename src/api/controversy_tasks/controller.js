@@ -162,17 +162,20 @@ export const show = async ({ params }, res, next) => {
             .populate('keyIssueId')
             .then(async (datapoints) => {
               if (datapoints.length > 0) {
+                let totalControversies = await Controversy.find({taskId: controversyTasks.id, status: true, isActive: true, response: { $nin: ["", " "] }})
                 for (let index = 0; index < datapoints.length; index++) {
                   let yesterday = new Date();
                   yesterday.setDate(yesterday.getDate() - 1);
                   let reassessmentDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reassessmentDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reassessmentDate: 1});
                   let reviewDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
                   let fiscalYearEndDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id , status:true, isActive: true}).limit(1).sort({fiscalYearEndDate: -1});
+                  let countOfControversies = totalControversies.filter(obj => obj.datapointId == datapoints[index].id && obj.taskId == controversyTasks.id)
                   let objectToPush = {
                     dpCode: datapoints[index].code,
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
                     keyIssueId: datapoints[index].keyIssueId.id,
+                    controversiesCount: countOfControversies.length > 0 ? countOfControversies.length : 0,
                     reassessmentDate: reassessmentDate[0] ? reassessmentDate[0].reassessmentDate : '',
                     reviewDate: reviewDate[0] ? reviewDate[0].reviewDate : '',
                     controversyFiscalYearEndDate: fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : ""
