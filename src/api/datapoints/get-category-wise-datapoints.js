@@ -96,7 +96,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     }
 
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
-    if (taskDetails.taskStatus = CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+    if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
       let allDpDetails;
       const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
       switch (dpType) {
@@ -462,7 +462,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
-                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
+                errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
                   dpStatus: Error,
@@ -511,7 +511,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
-                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
+                errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...errorQuery,
@@ -589,7 +589,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
-                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
+                errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...errorQuery,
                   year: {
@@ -684,7 +684,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         } else if (dpType == STANDALONE) {
           try {
             errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
-            errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
+            errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
             const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
               .skip((page - 1) * limit)
               .limit(+limit)
