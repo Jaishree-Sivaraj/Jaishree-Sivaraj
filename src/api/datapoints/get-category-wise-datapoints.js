@@ -91,11 +91,31 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // For Standalone and boardMatrix search
     let datapointCodeQuery;
     if (dpCode !== '') {
-      const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery });
-      datapointCodeQuery = datapointListQuery._id
+      const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery, categoryId: taskDetails?.categoryId });
+      datapointCodeQuery = datapointListQuery?._id
     }
 
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
+    if (taskDetails.taskStatus = CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+      let allDpDetails;
+      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
+      switch (dpType) {
+        case STANDALONE:
+          allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
+          break;
+        case BOARD_MATRIX:
+          allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          break;
+        case KMP_MATRIX:
+          allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          break;
+        default:
+          break;
+
+      }
+      countQuery = { ...countQuery, _id: { $in: allDpDetails } }
+
+    }
     // Counting datapoint just with keyIssueId filter as board-matrix and kmp-matrix dp codes will not be displayed without memberid.
     let [count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
       Datapoints.countDocuments(countQuery),
@@ -442,7 +462,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
-                errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
+                errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
                 const errorDatapoints = await StandaloneDatapoints.find({
                   ...errorQuery,
                   dpStatus: Error,
@@ -664,7 +684,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         } else if (dpType == STANDALONE) {
           try {
             errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
-            errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
+            errorQuery = datapointCodeQuery === '' ? errorQuery : { ...errorQuery, datapointId: datapointCodeQuery };
             const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
               .skip((page - 1) * limit)
               .limit(+limit)
