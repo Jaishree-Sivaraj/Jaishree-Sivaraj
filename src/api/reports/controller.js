@@ -17,7 +17,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   res.status(200).json([])
 
 export const reportsFilter = async (req, res, next) => {
-  const { clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit } = req.body;
+  const { clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit } = req.body;
   let matchQuery = { status: true };
   if (clientTaxonomyId) {
     let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true };
@@ -28,33 +28,33 @@ export const reportsFilter = async (req, res, next) => {
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (searchQuery != '') {
-      companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
-    }
-    // if (filteredCompanies && filteredCompanies.length > 0) {
-    //   let filteredCompanyIds = [];
-    //   for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
-    //     filteredCompanyIds.push(filteredCompanies[filtCmpIndex].value);
-    //   }
-    //   companyFindQuery._id = { $in: filteredCompanyIds };
-    // } else if (batchList && batchList?.length > 0) {
-    //   let batchIds = [];
-    //   for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
-    //     batchIds.push(batchList[nicIndex].value);
-    //   }
-    //   let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
-    //   let batchCompanyIds = [];
-    //   for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
-    //     let cmpItem = batchCompanyDetails[batchIndex].companiesList;
-    //     for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
-    //       let companyItem = cmpItem[cmpIndex];
-    //       if(!batchCompanyIds.includes(companyItem.id)){
-    //         batchCompanyIds.push(companyItem.id);
-    //       }
-    //     }
-    //   }
-    //   companyFindQuery._id = { $in: batchCompanyIds };
+    // if (searchQuery != '') {
+    //   companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
     // }
+    if (filteredCompanies && filteredCompanies.length > 0) {
+      let filteredCompanyIds = [];
+      for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+        filteredCompanyIds.push(filteredCompanies[filtCmpIndex].value);
+      }
+      companyFindQuery._id = { $in: filteredCompanyIds };
+    } else if (batchList && batchList?.length > 0) {
+      let batchIds = [];
+      for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+        batchIds.push(batchList[nicIndex].value);
+      }
+      let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+      let batchCompanyIds = [];
+      for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+        let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+        for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+          let companyItem = cmpItem[cmpIndex];
+          if(!batchCompanyIds.includes(companyItem.id)){
+            batchCompanyIds.push(companyItem.id);
+          }
+        }
+      }
+      companyFindQuery._id = { $in: batchCompanyIds };
+    }
     let companyIds = await Companies.find(companyFindQuery).distinct('_id');
     matchQuery.companyId = { $in: companyIds };
     if (yearsList && yearsList?.length > 0) {

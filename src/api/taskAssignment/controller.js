@@ -1970,7 +1970,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
     let taskStatusValue = "";
-    if (datapointsCount == multipliedValue && hasError && !isCorrectionCompleted) {
+    if (datapointsCount == multipliedValue && hasError) {
       taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
 
       const [query, update, query1, update1] = [
@@ -1989,7 +1989,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
     } else if (
       datapointsCount == multipliedValue &&
-      hasCorrection && !isCorrectionCompleted) {
+      hasCorrection) {
       if (body.role == QA) {
         taskStatusValue = VerificationCompleted;
       } else if (body.role == Analyst) {
@@ -2014,7 +2014,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     else if (
       datapointsCount == multipliedValue &&
       hasError == undefined &&
-      hasCorrection == undefined && !isCorrectionCompleted
+      hasCorrection == undefined
     ) {
       taskStatusValue = body.role == QA ? VerificationCompleted : Completed
       taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed

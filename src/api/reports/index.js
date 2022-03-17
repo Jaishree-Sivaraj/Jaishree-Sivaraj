@@ -23,7 +23,7 @@ const router = new Router()
  */
 router.post('/filter',
   token({ required: true }),
-  body({ clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit }),
+  body({ clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit }),
   reportsFilter)
   
 /**
