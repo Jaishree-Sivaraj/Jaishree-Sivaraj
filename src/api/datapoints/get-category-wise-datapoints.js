@@ -154,7 +154,17 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           });
         }
         let repFinalSubmit = false;
-        const mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
+        let mergedDatapoints, distinctDpIds = [];
+        if (taskDetails.taskStatus == CorrectionCompleted) {
+          currentAllStandaloneDetails = _.filter(currentAllStandaloneDetails, function (o) { return o.dpStatus == "Correction"; });
+          currentAllBoardMemberMatrixDetails = _.filter(currentAllBoardMemberMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
+          currentAllKmpMatrixDetails = _.filter(currentAllKmpMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
+          mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
+          distinctDpIds = _.uniq(_.map(mergedDatapoints, 'datapointId'));
+          console.log('distinctDpIds', distinctDpIds);
+        } else {
+          mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
+        }
         const checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
         if (checkHasError.length > 0) { // only when rep raises error they can submit.
           repFinalSubmit = true;
@@ -203,6 +213,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
               dptypeQuery.isRequiredForReps = true
+            }
+            if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds?.length > 0) {
+              query._id = { $in: distinctDpIds };
             }
 
             const dpTypeDatapoints = await
@@ -407,6 +420,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             // Filtering with the Reps
             if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
               query.isRequiredForReps = true
+            }
+            if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds.length > 0) {
+              query._id = { $in: distinctDpIds };
             }
 
             const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
