@@ -654,13 +654,6 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
-                let currentYearLoopKmpMatrixDetailsLoopEndTime = Date.now()
-                timeDetails.push({
-                    blockName: `Current Year Kmp Matrix Loop ${currentYearIndex}`,
-                    timeTaken: currentYearLoopKmpMatrixDetailsLoopStartTime - currentYearLoopKmpMatrixDetailsLoopEndTime
-
-
-                })
                 for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     let historicalDatapointsObject = {};
                     for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
