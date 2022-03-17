@@ -27,7 +27,7 @@ router.post('/filter',
   reportsFilter)
   
 /**
- * @api {post} /reports/export Create reports
+ * @api {post} /reports/export Create reports.
  * @apiName CreateReports
  * @apiGroup Reports
  * @apiPermission user

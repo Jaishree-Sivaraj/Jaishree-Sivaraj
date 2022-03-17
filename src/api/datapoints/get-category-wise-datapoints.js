@@ -11,7 +11,6 @@ import { YetToStart, Pending, CollectionCompleted, CorrectionPending, Reassignme
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { CompanyRepresentative, ClientRepresentative } from '../../constants/roles';
 
-
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
@@ -153,6 +152,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
         const totalUniquePriortyDpCollected = totalPriortyDataCollected.length / currentYear.length;
         // If priority DP code have not been completed then show only priority Dp codes.
+        console.log(totalUniquePriortyDpCollected);
         if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
           keyIssuesList = await getKeyIssues({ ...dptypeQuery, isPriority: true }, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < priorityDpCodes.length; datapointsIndex++) {
@@ -377,56 +377,62 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               message: error?.message ? error?.message : 'Failed to fetch all Dp code'
             })
           }
-        }
-        try {
-          let query = keyIssueId ? {
-            ...dptypeQuery,
-            keyIssueId,
-          } : dptypeQuery;
+        } else if (dpType == STANDALONE) {
+          try {
+            let query = keyIssueId ? {
+              ...dptypeQuery,
+              keyIssueId,
+            } : dptypeQuery;
 
-          // Filtering with the Reps
-          if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
-            query.isRequiredForReps = true
-          }
-
-          const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
-            .skip(((page - 1) * limit))
-            .limit(+limit)
-            .sort({ code: 1 })
-            .populate('keyIssueId')
-            .populate('categoryId');
-
-          keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
-          for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-            let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
-            for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-              _.filter(currentAllStandaloneDetails, (object) => {
-                if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
-                  datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-                }
-              })
+            // Filtering with the Reps
+            if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+              query.isRequiredForReps = true
             }
-            datapointList.dpCodesData.push(datapointsObject);
-          }
 
+            const dpTypeDatapoints = await Datapoints.find({ ...query, ...generalMatchQuery })
+              .skip(((page - 1) * limit))
+              .limit(+limit)
+              .sort({ code: 1 })
+              .populate('keyIssueId')
+              .populate('categoryId');
+
+            keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
+            for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
+              let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
+              for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                _.filter(currentAllStandaloneDetails, (object) => {
+                  if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
+                    datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                  }
+                })
+              }
+              datapointList.dpCodesData.push(datapointsObject);
+            }
+
+            return res.status(200).json({
+              status: "200",
+              message: "Data collection dp codes retrieved successfully!",
+              response: {
+                repFinalSubmit,
+                keyIssuesList,
+                datapointList,
+                isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+                isPriority: false
+
+              }
+            });
+
+          } catch (error) {
+            return res.status(409).json({
+              status: 409,
+              message: error?.message ? error?.message : 'Failed to fetch all dp codes'
+            });
+          }
+        } else {
           return res.status(200).json({
-            status: "200",
-            message: "Data collection dp codes retrieved successfully!",
-            response: {
-              repFinalSubmit,
-              keyIssuesList,
-              datapointList,
-              isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-              count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-              isPriority: false
-
-            }
-          });
-
-        } catch (error) {
-          return res.status(500).json({
-            status: 500,
-            message: error?.message ? error?.message : 'Failed to fetch all dp codes'
+            status: 200,
+            message: 'No datapoints available'
           });
         }
       case ReassignmentPending:
@@ -655,54 +661,61 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               message: error?.message ? error?.message : 'Failed to fetch all dp codes'
             });
           }
-        }
-        try {
-          errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
-          errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
-          const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
-            .skip((page - 1) * limit)
-            .limit(+limit)
-            .populate({
-              path: 'datapointId',
-              populate: {
-                path: 'keyIssueId'
-              }
-            });
+        } else if (dpType == STANDALONE) {
+          try {
+            errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
+            errorQuery = datapointCodeQuery === '' ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
+            const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
+              .skip((page - 1) * limit)
+              .limit(+limit)
+              .populate({
+                path: 'datapointId',
+                populate: {
+                  path: 'keyIssueId'
+                }
+              });
 
-          orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-          keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
-          for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
-            let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
-            if (datapointList.dpCodesData.length > 0) {
-              let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code);
-              if (yearfind > -1) {
-                datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
+            orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
+            keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
+            for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
+              let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
+              if (datapointList.dpCodesData.length > 0) {
+                let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code);
+                if (yearfind > -1) {
+                  datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
+                } else {
+                  datapointList.dpCodesData.push(datapointsObject);
+                }
               } else {
                 datapointList.dpCodesData.push(datapointsObject);
               }
-            } else {
-              datapointList.dpCodesData.push(datapointsObject);
             }
+            return res.status(200).send({
+              status: "200",
+              message: "Data correction dp codes retrieved successfully!",
+              response: {
+                keyIssuesList,
+                datapointList,
+                isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                isPriority: false
+              }
+            });
+          } catch (error) {
+            return res.status(500).json({
+              message: error
+            });
           }
-          return res.status(200).send({
-            status: "200",
-            message: "Data correction dp codes retrieved successfully!",
-            response: {
-              keyIssuesList,
-              datapointList,
-              isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-              count: datapointList.dpCodesData.length < 1 ? 0 : count,
-              isPriority: false
-            }
-          });
-        } catch (error) {
-          return res.status(500).json({
-            message: error
+        } else {
+          return res.status(200).json({
+            status: 200,
+            message: 'No datapoints available'
           });
         }
+
       default:
-        return res.status(500).json({
-          status: 500,
+        return res.status(409).json({
+          status: 409,
           message: 'Invalid Task Status'
         });
     }
@@ -810,3 +823,5 @@ async function getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery) 
   }
   return errorQuery;
 }
+
+

@@ -1378,6 +1378,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
                 object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0].reassessmentDate : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
