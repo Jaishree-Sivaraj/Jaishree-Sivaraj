@@ -206,7 +206,7 @@ export const datapointDetails = async (req, res, next) => {
         }
         let allDatapointsStartTime = Date.now()
 
-        if (taskDetails.taskStatus = CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
             let allDpDetails;
             const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
             switch (memberType) {
