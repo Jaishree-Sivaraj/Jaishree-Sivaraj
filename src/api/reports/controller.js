@@ -28,6 +28,9 @@ export const reportsFilter = async (req, res, next) => {
       }
       companyFindQuery.nic = { $in: nics };
     }
+    // if (searchQuery != '') {
+    //   companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
+    // }
     if (filteredCompanies && filteredCompanies.length > 0) {
       let filteredCompanyIds = [];
       for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
@@ -442,6 +445,22 @@ export const exportReport = async (req, res, next) => {
                 } else {
                   responseValue = item.childFields.response ? item.childFields.response : "";
                 }
+
+                let date1 = item.childFields.publicationDate ? item.childFields.publicationDate :  "";
+                let documentYear;
+                if (date1 != "" && date1 != " " && date1 != '' && date1 != ' ') {
+                  var month1 = date1.getUTCMonth(); //months from 1-12
+                  var day = date1.getUTCDate();
+                  var year = date1.getUTCFullYear()
+                  // let date2 = date1.split('T');
+                  let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
+                  // let formattedDate = date2[0].split('-');
+                  let month = months[month1];
+                  documentYear = `${day}-${month}-${year}`
+                } else {
+                  documentYear = "";
+                }
+
                 objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "";
                 objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "";
                 objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "";
@@ -452,14 +471,17 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
                 objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
+                objectToPushAsChild["Keyword_used"] = item.childFields.keywordUsed ? item.childFields.keywordUsed : "";
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
                 objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
                 objectToPushAsChild["did_the_company_report"] = item.childFields.didTheCompanyReport ? item.childFields.didTheCompanyReport : "";
                 objectToPushAsChild["name_of_document_as_saved"] = item.childFields.sourceName ? item.childFields.sourceName : "";
                 objectToPushAsChild["name_of_document (as listed on title page)"] = item.childFields.sourceTitle ? item.childFields.sourceTitle : "";
                 objectToPushAsChild["HTML Link of Document"] = item.childFields.url ? item.childFields.url : "";
-                objectToPushAsChild["Document Year"] = item.childFields.publicationDate ? item.childFields.publicationDate : "";
+                objectToPushAsChild["Document Year"] = documentYear;
                 objectToPushAsChild["Comment_G"] = item.childFields.commentG ? item.childFields.commentG : "";
+                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "subline";
+
 
                 // if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
                 //   objectToPushAsChild["company_data_element_label "] = "";

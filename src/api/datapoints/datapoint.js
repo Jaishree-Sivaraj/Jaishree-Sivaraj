@@ -12,7 +12,7 @@ import { MeasureUoms } from '../measure_uoms';
 import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
-import { YetToStart } from '../../constants/task-status';
+import { CorrectionPending, ReassignmentPending, YetToStart } from '../../constants/task-status';
 import {
     getError,
     getS3ScreenShot,
@@ -206,6 +206,26 @@ export const datapointDetails = async (req, res, next) => {
         }
         let allDatapointsStartTime = Date.now()
 
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+            let allDpDetails;
+            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
+            switch (memberType) {
+                case STANDALONE:
+                    allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
+                    break;
+                case BOARD_MATRIX:
+                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                case KMP_MATRIX:
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                default:
+                    break;
+
+            }
+            datapointQuery = { ...datapointQuery, _id: { $in: allDpDetails } }
+
+        }
         const allDatapoints = await Datapoints.find(datapointQuery)
             .populate('keyIssueId')
             .populate('categoryId').sort({ code: 1 });
@@ -220,6 +240,8 @@ export const datapointDetails = async (req, res, next) => {
                 break;
             }
         }
+
+
         let allDatapointsEndTime = Date.now()
         timeDetails.push({
             blockName: ' All Datapoints Details',
@@ -234,7 +256,7 @@ export const datapointDetails = async (req, res, next) => {
             sourceName: "",
             value: "",
             publicationDate: '',
-            sourceFile:''
+            sourceFile: ''
         };
         console.log(currentYear);
         switch (memberType) {
@@ -376,15 +398,17 @@ export const datapointDetails = async (req, res, next) => {
                     blockName: `history Year Standalone Loop ${historyYear}`,
                     timeTaken: historyYearEndTime - historyYearStartTime
                 })
-                chilDpHeaders.push({
-                    "id": chilDpHeaders.length + 2,
-                    "displayName": "Source",
-                    "fieldName": "source",
-                    "dataType": "Select",
-                    "options": sourceTypeDetails,
-                    "isRequired": true,
-                    "orderNumber": chilDpHeaders.length + 2
-                })
+                if (chilDpHeaders && chilDpHeaders.length > 2) {
+                    chilDpHeaders.push({
+                        "id": chilDpHeaders.length + 2,
+                        "displayName": "Source",
+                        "fieldName": "source",
+                        "dataType": "Select",
+                        "options": sourceTypeDetails,
+                        "isRequired": true,
+                        "orderNumber": chilDpHeaders.length + 2
+                    })
+                }
 
                 return res.status(200).send({
                     status: "200",
@@ -514,16 +538,17 @@ export const datapointDetails = async (req, res, next) => {
                         }
                     }
                 }
-
-                chilDpHeaders.push({
-                    "id": chilDpHeaders.length + 2,
-                    "displayName": "Source",
-                    "fieldName": "source",
-                    "dataType": "Select",
-                    "options": sourceTypeDetails,
-                    "isRequired": true,
-                    "orderNumber": chilDpHeaders.length + 2
-                })
+                if (chilDpHeaders && chilDpHeaders.length > 2) {
+                    chilDpHeaders.push({
+                        "id": chilDpHeaders.length + 2,
+                        "displayName": "Source",
+                        "fieldName": "source",
+                        "dataType": "Select",
+                        "options": sourceTypeDetails,
+                        "isRequired": true,
+                        "orderNumber": chilDpHeaders.length + 2
+                    })
+                }
 
                 return res.status(200).send({
                     status: "200",
@@ -629,13 +654,6 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.comments = datapointsObject.comments.filter(value => Object.keys(value).length !== 0);
                     datapointsObject.currentData.push(currentDatapointsObject);
                 }
-                let currentYearLoopKmpMatrixDetailsLoopEndTime = Date.now()
-                timeDetails.push({
-                    blockName: `Current Year Kmp Matrix Loop ${currentYearIndex}`,
-                    timeTaken: currentYearLoopKmpMatrixDetailsLoopStartTime - currentYearLoopKmpMatrixDetailsLoopEndTime
-
-
-                })
                 for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     let historicalDatapointsObject = {};
                     for (let historyKMPMemerIndex = 0; historyKMPMemerIndex < historyAllKmpMatrixDetails.length; historyKMPMemerIndex++) {
@@ -656,16 +674,18 @@ export const datapointDetails = async (req, res, next) => {
 
                     }
                 }
+                if (chilDpHeaders && chilDpHeaders.length > 2) {
+                    chilDpHeaders.push({
+                        "id": chilDpHeaders.length + 2,
+                        "displayName": "Source",
+                        "fieldName": "source",
+                        "dataType": "Select",
+                        "options": sourceTypeDetails,
+                        "isRequired": true,
+                        "orderNumber": chilDpHeaders.length + 2
+                    })
+                }
 
-                chilDpHeaders.push({
-                    "id": chilDpHeaders.length + 2,
-                    "displayName": "Source",
-                    "fieldName": "source",
-                    "dataType": "Select",
-                    "options": sourceTypeDetails,
-                    "isRequired": true,
-                    "orderNumber": chilDpHeaders.length + 2
-                })
 
                 return res.status(200).send({
                     status: "200",

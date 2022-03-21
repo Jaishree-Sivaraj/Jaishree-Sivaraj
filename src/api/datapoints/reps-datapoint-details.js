@@ -13,7 +13,8 @@ import { MeasureUoms } from '../measure_uoms'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
-import { Completed } from '../../constants/task-status';
+import { Completed, CorrectionPending, ReassignmentPending } from '../../constants/task-status';
+
 
 import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 let requiredFields = [
@@ -187,8 +188,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }
         }
 
-        let index, prevDatapoint = {}, nextDatapoint = {};
-        const allDatapoints = await Datapoints.find({
+        let allDpPointQuery = {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
@@ -197,7 +197,30 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        }
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+            let allDpDetails;
+            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
+            switch (memberType) {
+                case STANDALONE:
+                    allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
+                    break;
+                case BOARD_MATRIX:
+                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                case KMP_MATRIX:
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                default:
+                    break;
+
+            }
+            allDpPointQuery = { ...allDpPointQuery, _id: { $in: allDpDetails } }
+
+        }
+
+        let index, prevDatapoint = {}, nextDatapoint = {};
+        const allDatapoints = await Datapoints.find(allDpPointQuery).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
@@ -218,7 +241,7 @@ export const repDatapointDetails = async (req, res, next) => {
             sourceName: '',
             value: '',
             publicationDate: '',
-            sourceFile:'',
+            sourceFile: '',
         };
 
         switch (memberType) {
