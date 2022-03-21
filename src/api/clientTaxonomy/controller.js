@@ -55,18 +55,15 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
       .populate('createdBy')
       .then(async (clientTaxonomies) => {
         let responseList = [];
-        const [categoriesList, companiesList] = await Promise.all([
+        const [allCategoriesList, allCompaniesList] = await Promise.all([
           Categories.find({ status: true }).populate('clientTaxonomyId'),
           Companies.find({ status: true }).populate('clientTaxonomyId')
         ]);
         for (let index = 0; index < clientTaxonomies.length; index++) {
           const item = clientTaxonomies[index];
           let pillarList = [];
-          const [categoriesList, companiesList] = await Promise.all([
-            Categories.find({ clientTaxonomyId: item.id, status: true }),
-            Companies.find({ clientTaxonomyId: item.id, status: true })
-          ]);
-          // let categoriesList = await Categories.find({ clientTaxonomyId: item.id, status: true });
+          let categoriesList = allCategoriesList.filter(obj => obj.clientTaxonomyId.id == item.id);
+          let companiesList = allCompaniesList.filter(obj => obj.clientTaxonomyId.id == item.id);
           if (categoriesList.length > 0) {
             for (let cIndex = 0; cIndex < categoriesList.length; cIndex++) {
               const cItem = categoriesList[cIndex];
