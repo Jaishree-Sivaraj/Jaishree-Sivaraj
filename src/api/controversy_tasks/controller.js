@@ -220,6 +220,31 @@ export const updateControversyTask = ({ user, bodymen: { body }, params }, res, 
   })
 } 
 
+export const updateReassesmentDate = (req, res, next) => {
+  // console.log(req.body);
+  if (req.body) {
+    let reassessmentDate = req.body.reassesmentDate;
+    reassessmentDate = new Date(reassessmentDate).toISOString()
+    Controversy.updateMany({
+      taskId: req.body.taskId,
+      status: true,
+      isActive: true,
+      "controversyDetails.sourceName": { $exists: true }
+    },
+    {
+      $set: { reassessmentDate: reassessmentDate }
+    })
+    .then((result) => {
+      return res.status(200).json({ status: "200", message: "Reassesment date is updated sucessfully" });
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: "Falied to update Reassesment date " });
+    })
+  } else {
+    return res.status(500).json({ status: "500", message: "No details found in the body...!" })
+  }
+}
+
 export const destroy = ({ user, params }, res, next) =>
   ControversyTasks.findById(params.id)
     .then(notFound(res))
