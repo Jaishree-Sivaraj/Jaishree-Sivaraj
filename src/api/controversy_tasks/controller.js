@@ -172,9 +172,9 @@ export const show = async ({ params }, res, next) => {
                   let countOfControversies = totalControversies.filter(obj => obj.datapointId == datapoints[index].id && obj.taskId == controversyTasks.id)
 
                   let convertedFiscalYearEndDate = fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : "";
-                  if (convertedFiscalYearEndDate != "") {
-                    convertedFiscalYearEndDate = new Date(convertedFiscalYearEndDate).toISOString()
-                  }
+                  // if (convertedFiscalYearEndDate != "") {
+                  //   convertedFiscalYearEndDate = new Date(convertedFiscalYearEndDate).toISOString()
+                  // }
 
                   let objectToPush = {
                     dpCode: datapoints[index].code,
