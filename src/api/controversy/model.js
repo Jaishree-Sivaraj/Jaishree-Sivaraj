@@ -116,6 +116,12 @@ const controversySchema = new Schema({
   screenShot1: {
     type: String,
     default: ''
+  },
+  analystComments: {
+    type: String
+  },
+  additionalComments: {
+    type: String
   }
 }, {
   timestamps: true,
@@ -147,6 +153,8 @@ controversySchema.methods = {
       sourceURL: this.sourceURL ? this.sourceURL : '',
       sourceFile: this.sourceFile ? this.sourceFile : '',
       textSnippet: this.textSnippet ? this.textSnippet : '',
+      analystComments: this.analystComments ? this.analystComments : '',
+      additionalComments: this.additionalComments ? this.additionalComments : '',
       screenShot: this.screenShot ? this.screenShot : [],
       sourcePublicationDate: this.sourcePublicationDate ? this.sourcePublicationDate : '',
       publicationDate: this.publicationDate ? this.publicationDate : '',
