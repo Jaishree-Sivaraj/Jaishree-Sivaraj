@@ -170,6 +170,12 @@ export const show = async ({ params }, res, next) => {
                   let reviewDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
                   let fiscalYearEndDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id , status:true, isActive: true}).limit(1).sort({fiscalYearEndDate: -1});
                   let countOfControversies = totalControversies.filter(obj => obj.datapointId == datapoints[index].id && obj.taskId == controversyTasks.id)
+
+                  let convertedFiscalYearEndDate = fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : "";
+                  if (convertedFiscalYearEndDate != "") {
+                    convertedFiscalYearEndDate = new Date(convertedFiscalYearEndDate).toISOString()
+                  }
+
                   let objectToPush = {
                     dpCode: datapoints[index].code,
                     dpCodeId: datapoints[index].id,
@@ -178,7 +184,7 @@ export const show = async ({ params }, res, next) => {
                     controversiesCount: countOfControversies.length > 0 ? countOfControversies.length : 0,
                     reassessmentDate: reassessmentDate[0] ? reassessmentDate[0].reassessmentDate : '',
                     reviewDate: reviewDate[0] ? reviewDate[0].reviewDate : '',
-                    controversyFiscalYearEndDate: fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : ""
+                    controversyFiscalYearEndDate: convertedFiscalYearEndDate
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
