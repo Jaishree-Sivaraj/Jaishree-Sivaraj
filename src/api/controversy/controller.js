@@ -657,8 +657,19 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
               "weighted",
               "year"
             ];
+
+            
+            
             if (controversyList && controversyList.length > 0) {
               for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
+                let mergedComments;
+                if (controversyList[cIndex]?.analystComments != '' && controversyList[cIndex]?.additonalComments != '') {
+                  mergedComments = `${controversyList[cIndex]?.analystComments};${controversyList[cIndex]?.additionalComments}`
+                } else if(controversyList[cIndex]?.analystComments == '' || controversyList[cIndex]?.additonalComments == ''){
+                  mergedComments = controversyList[cIndex]?.analystComments != ''  ? controversyList[cIndex]?.analystComments : controversyList[cIndex]?.additionalComments ? controversyList[cIndex]?.analystComments : "";
+                } else {
+                  mergedComments = "";
+                }
                 let controversyObject = {};
                 controversyObject.id = controversyList[cIndex].id;
                 controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
@@ -671,7 +682,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
                 controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : [];
                 controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
-                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
+                // controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : mergedComments;
                 controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
                 controversyObject.reviewDate = controversyList[cIndex].reviewDate ? controversyList[cIndex].reviewDate : '';
                 controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
@@ -747,7 +758,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                   url: controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
                   publicationDate: controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
                 }
-                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : "";
+                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex]?.comments : mergedComments;
                 historicalData.push(controversyObject);
               }
             } else {
@@ -810,33 +821,41 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
             if (controversyList && controversyList.length > 0) {
               let responseValue = 0, responseList = [0];
               for (let cIndex = 0; cIndex < controversyList.length; cIndex++) {
+                let mergedComments;
+                if (controversyList[cIndex]?.analystComments != '' && controversyList[cIndex]?.additonalComments != '') {
+                  mergedComments = `${controversyList[cIndex]?.analystComments};${controversyList[cIndex]?.additionalComments}`
+                } else if(controversyList[cIndex]?.analystComments == '' || controversyList[cIndex]?.additonalComments == ''){
+                  mergedComments = controversyList[cIndex]?.analystComments != ''  ? controversyList[cIndex]?.analystComments : controversyList[cIndex]?.additionalComments ? controversyList[cIndex]?.analystComments : "";
+                } else {
+                  mergedComments = "";
+                }
                 let controversyObject = {};
-                controversyObject.id = controversyList[cIndex].id;
-                controversyObject.controversyNumber = controversyList[cIndex].controversyNumber ? controversyList[cIndex].controversyNumber : '-';
+                controversyObject.id = controversyList[cIndex]?.id;
+                controversyObject.controversyNumber = controversyList[cIndex]?.controversyNumber ? controversyList[cIndex]?.controversyNumber : '-';
                 controversyObject.dpCode = datapointDetail.code;
                 controversyObject.dpCodeId = datapointDetail.id;
                 controversyObject.indicator = datapointDetail.indicator;
                 controversyObject.description = datapointDetail.description;
                 controversyObject.dataType = datapointDetail.dataType;
-                controversyObject.textSnippet = controversyList[cIndex].textSnippet ? controversyList[cIndex].textSnippet : '';
-                controversyObject.pageNo = controversyList[cIndex].pageNumber ? controversyList[cIndex].pageNumber : '';
-                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : '';
-                controversyObject.screenShot = controversyList[cIndex].screenShot ? controversyList[cIndex].screenShot : [];
-                controversyObject.response = controversyList[cIndex].response ? controversyList[cIndex].response : '';
-                // controversyObject.additionalDetails = controversyList[cIndex].additionalDetails ? controversyList[cIndex].additionalDetails : '';
-                controversyObject.nextReviewDate = controversyList[cIndex].nextReviewDate ? controversyList[cIndex].nextReviewDate : '';
-                controversyObject.reviewDate = controversyList[cIndex].reviewDate ? controversyList[cIndex].reviewDate : '';
-                controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
-                controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
-                controversyObject.sourcePublicationDate = controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : '';
-                controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
-                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : "";
-                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                controversyObject.textSnippet = controversyList[cIndex]?.textSnippet ? controversyList[cIndex]?.textSnippet : '';
+                controversyObject.pageNo = controversyList[cIndex]?.pageNumber ? controversyList[cIndex]?.pageNumber : '';
+                controversyObject.comments = controversyList[cIndex]?.comments ? controversyList[cIndex]?.comments : '';
+                controversyObject.screenShot = controversyList[cIndex]?.screenShot ? controversyList[cIndex]?.screenShot : [];
+                controversyObject.response = controversyList[cIndex]?.response ? controversyList[cIndex]?.response : '';
+                // controversyObject.comments = controversyList[cIndex]?.comments ? controversyList[cIndex]?.comments : mergedComments;
+                controversyObject.nextReviewDate = controversyList[cIndex]?.nextReviewDate ? controversyList[cIndex]?.nextReviewDate : '';
+                controversyObject.reviewDate = controversyList[cIndex]?.reviewDate ? controversyList[cIndex]?.reviewDate : '';
+                controversyObject.assessmentDate = controversyList[cIndex]?.assessmentDate ? controversyList[cIndex]?.assessmentDate : '';
+                controversyObject.reassessmentDate = controversyList[cIndex]?.reassessmentDate ? controversyList[cIndex]?.reassessmentDate : '';
+                controversyObject.sourcePublicationDate = controversyList[cIndex]?.sourcePublicationDate ? controversyList[cIndex]?.sourcePublicationDate : '';
+                controversyObject.controversyFiscalYear = controversyList[cIndex]?.year ? controversyList[cIndex]?.year : '';
+                controversyObject.controversyFiscalYearEnd = controversyList[cIndex]?.fiscalYearEndDate ? controversyList[cIndex]?.fiscalYearEndDate : "";
+                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex]?.reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
                 let s3DataScreenshot = [];
-                if (controversyList[cIndex].screenShot && controversyList[cIndex].screenShot.length > 0) {
-                  for (let screenShotIndex = 0; screenShotIndex < controversyList[cIndex].screenShot.length; screenShotIndex++) {
+                if (controversyList[cIndex]?.screenShot && controversyList[cIndex]?.screenShot.length > 0) {
+                  for (let screenShotIndex = 0; screenShotIndex < controversyList[cIndex]?.screenShot.length; screenShotIndex++) {
                     let obj = controversyList[cIndex].screenShot[screenShotIndex];
                     let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                       screenShotFileName = "No screenshot";
@@ -914,7 +933,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                   url: controversyList[cIndex].sourceURL ? controversyList[cIndex].sourceURL : '',
                   publicationDate: controversyList[cIndex].sourcePublicationDate ? controversyList[cIndex].sourcePublicationDate : ''
                 }
-                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : "";
+                controversyObject.comments = controversyList[cIndex].comments ? controversyList[cIndex].comments : mergedComments;
                 responseObject.controversyList.push(controversyObject);
               }
               let greatestResponseValue = responseList.sort((a, b) => a - b)[responseList.length - 1];
