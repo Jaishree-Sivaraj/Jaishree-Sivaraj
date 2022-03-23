@@ -364,7 +364,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].name ? dpDetails[0].name : "";
                     break;
                   case 'themeName':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "";
