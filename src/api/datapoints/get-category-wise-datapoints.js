@@ -75,7 +75,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         functionId: {
           "$ne": functionId.id
         },
-        clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
+        clientTaxonomyId: taskDetails?.categoryId?.clientTaxonomyId,
         categoryId: taskDetails?.categoryId.id,
         status: true
       },

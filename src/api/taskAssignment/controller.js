@@ -5,8 +5,6 @@ import { Role } from "../role";
 import { Group } from "../group";
 import { Categories } from "../categories";
 import { Batches } from "../batches";
-import { CompanyRepresentatives } from "../company-representatives";
-import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
@@ -24,6 +22,9 @@ import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
+import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
+import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
 import {
   VerificationCompleted,
   CorrectionPending,
@@ -1247,6 +1248,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
+              }, {
+                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1908,8 +1911,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       populate: {
         path: 'clientTaxonomyId'
       }
-    }).populate('companyId')
+    })
       .populate('groupId')
+      .populate('categoryId')
     // Get distinct years
     let distinctYears = taskDetails.year.split(', ');
     let datapointsCount = 0;
@@ -1938,8 +1942,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
-    const distinctDpIds = _.uniq(_.map(mergedDetails, 'datapointId'));
-    console.log(distinctDpIds);
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
     //   const query = {
     //     taskId: body.taskId,
@@ -1961,10 +1963,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
 
     let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
-      categoryId: taskDetails.categoryId,
+      categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
     }
+    console.log(datapointQuery)
 
     if (body.skipValidation) {
       datapointQuery.isRequiredForReps = true
@@ -1979,9 +1982,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
-
+    console.log(taskDetails.companyId.clientTaxonomyId);
     if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ _id: distinctDpIds });
+      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId });
       let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
       allDpForTask.map((task) => {
         if (task?.dataType !== "Number") {
@@ -1994,7 +1997,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
     }
 
-    const condition = body.role == ClientRepresentatives || body.role == CompanyRepresentatives
+    const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
       ? datapointsCount == multipliedValue : datapointsCount == multipliedValue && !isCorrectionStatusIncomplete
 
     let taskStatusValue = "";

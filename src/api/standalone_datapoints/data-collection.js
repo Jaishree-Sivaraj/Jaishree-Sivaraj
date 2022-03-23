@@ -7,7 +7,7 @@ import { ErrorDetails } from '../errorDetails';
 import { Datapoints } from '../datapoints'
 import { TaskAssignment } from '../taskAssignment';
 import { storeFileInS3 } from "../../services/utils/aws-s3";
-import { Pending, CorrectionPending, Completed, Error, Collection, Incomplete } from '../../constants/task-status';
+import { Pending, CorrectionPending, Completed, Error, ReassignmentPending } from '../../constants/task-status';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
@@ -260,6 +260,7 @@ export const dataCollection = async ({
                         })
                 }
             case CorrectionPending:
+            case ReassignmentPending:
                 let currentDataCorrection, historyDataCorrection;
                 switch (body.memberType) {
                     case STANDALONE:
