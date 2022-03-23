@@ -5,8 +5,6 @@ import { Role } from "../role";
 import { Group } from "../group";
 import { Categories } from "../categories";
 import { Batches } from "../batches";
-import { CompanyRepresentatives } from "../company-representatives";
-import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
@@ -24,6 +22,7 @@ import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
+import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import {
   VerificationCompleted,
   CorrectionPending,
@@ -1247,6 +1246,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
+              }, {
+                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1909,8 +1910,8 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         path: 'clientTaxonomyId'
       }
     })
-    .populate('groupId')
-    .populate('categoryId')
+      .populate('groupId')
+      .populate('categoryId')
     // Get distinct years
     let distinctYears = taskDetails.year.split(', ');
     let datapointsCount = 0;
@@ -1960,10 +1961,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
 
     let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
-      categoryId: taskDetails.categoryId,
+      categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
     }
+    console.log(datapointQuery)
 
     if (body.skipValidation) {
       datapointQuery.isRequiredForReps = true
@@ -1993,7 +1995,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
     }
 
-    const condition = body.role == ClientRepresentatives || body.role == CompanyRepresentatives
+    const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
       ? datapointsCount == multipliedValue : datapointsCount == multipliedValue && !isCorrectionStatusIncomplete
 
     let taskStatusValue = "";
