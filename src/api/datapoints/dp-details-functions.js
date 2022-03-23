@@ -122,7 +122,7 @@ export async function getSourceDetails(object, sourceDetails) {
 
 export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues) {
     return {
-        status: Completed,
+        status: object?.correctionStatus,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
@@ -504,10 +504,13 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
 
 export function getSortedYear(currentYear) {
     let obj = [{}];
-    currentYear.map((year) => {
-        const y = year.split('-');
+    for (let i = 0; i < currentYear?.length; i++) {
+        const y = currentYear[i].split('-');
+        // if (y[0] < y[1]) {
+        //     return { error: `The year range's first value is smaller the other,please check and request again` };
+        // }
         obj.push({ firstYear: y[0], lastYear: y[1] });
-    });
+    }
     currentYear = sortArray(obj, 'lastYear', -1);
     let newArray = [];
     currentYear.map((arr) => {
