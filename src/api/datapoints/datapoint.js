@@ -409,7 +409,8 @@ export const datapointDetails = async (req, res, next) => {
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
-                        const condition = object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex];
+                        const condition = object.datapointId == datapointId && object.year == currentYear[currentYearIndex];
+
                         if (condition && object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
@@ -544,7 +545,7 @@ export const datapointDetails = async (req, res, next) => {
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
-                        const condition = object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex];
+                        const condition = object.datapointId == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError == true) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues)
                             currentDatapointsObject = { ...currentDatapointsObject, comment: [] };

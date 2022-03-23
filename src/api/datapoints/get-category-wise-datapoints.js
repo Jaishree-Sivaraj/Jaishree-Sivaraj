@@ -213,7 +213,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               dptypeQuery.isRequiredForReps = true
             }
             if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds?.length > 0) {
-              query._id = { $in: distinctDpIds };
+              dptypeQuery._id = { $in: distinctDpIds };
             }
 
             const dpTypeDatapoints = await
