@@ -358,30 +358,30 @@ export const exportReport = async (req, res, next) => {
                 let item = cltTaxoDetails[outIndex].fieldName;
                 switch (item){
                   case 'code':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.code ? dpDetails[0]?.code : "";
                     break;
                   case 'description':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.description ? dpDetails[0]?.description : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].name ? dpDetails[0].name : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.name ? dpDetails[0]?.name : "";
                     break;
                   case 'themeName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.themeId ? dpDetails[0]?.themeId.themeName : "";
                     break;
                   case 'category':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.categoryId ? dpDetails[0]?.categoryId.categoryName : "";
                     break;
                   case 'unit':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.unit ? dpDetails[0]?.unit : "";
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
+                    if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType != 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
+                    } else if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType == 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
                       dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
+                    } else if(dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
                       dataType = "Number";
                     }else{
                       dataType = "Text"
@@ -398,7 +398,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "";
                     break;
                   case 'dataProvider':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].additionalDetails.dataProvider ? dpDetails[0].additionalDetails.dataProvider : "ESGDS";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.additionalDetails.dataProvider ? dpDetails[0]?.additionalDetails.dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
@@ -430,11 +430,11 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
+                if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType != 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
+                } else if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType == 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
                   dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
+                } else if(dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
                   dataType = "Number";
                 }else{
                   dataType = "Text"
