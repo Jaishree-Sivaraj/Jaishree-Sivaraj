@@ -1981,7 +1981,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       datapoints.length * distinctYears.length];
 
     if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ _id: distinctDpIds });
+      const allDpForTask = await Datapoints.find({ categoryId:taskDetails?.categoryId });
       let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
       allDpForTask.map((task) => {
         if (task?.dataType !== "Number") {
