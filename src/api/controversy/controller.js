@@ -43,7 +43,7 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         screenShot: body.screenShot,
         comments: body.comments,
         year: body.controversyFiscalYear,
-        fiscalYearEndDate: body.controversyFiscalYearEnd,
+        fiscalYearEndDate: body.controversyFiscalYearEndDate,
         reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
@@ -111,7 +111,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         screenShot: body.screenShot,
         comments: body.comments,
         year: body.controversyFiscalYear,
-        fiscalYearEndDate: body.controversyFiscalYearEnd,
+        fiscalYearEndDate: body.controversyFiscalYearEndDate,
         reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
@@ -688,7 +688,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.assessmentDate = controversyList[cIndex].assessmentDate ? controversyList[cIndex].assessmentDate : '';
                 controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
-                controversyObject.controversyFiscalYearEnd = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
+                controversyObject.controversyFiscalYearEndDate = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.updatedAt = controversyList[cIndex].updatedAt ? controversyList[cIndex].updatedAt : '';
                 controversyObject.additionalDetails = [];
@@ -849,7 +849,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.reassessmentDate = controversyList[cIndex]?.reassessmentDate ? controversyList[cIndex]?.reassessmentDate : '';
                 controversyObject.sourcePublicationDate = controversyList[cIndex]?.sourcePublicationDate ? controversyList[cIndex]?.sourcePublicationDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex]?.year ? controversyList[cIndex]?.year : '';
-                controversyObject.controversyFiscalYearEnd = controversyList[cIndex]?.fiscalYearEndDate ? controversyList[cIndex]?.fiscalYearEndDate : "";
+                controversyObject.controversyFiscalYearEndDate = controversyList[cIndex]?.fiscalYearEndDate ? controversyList[cIndex]?.fiscalYearEndDate : "";
                 controversyObject.isApplicableForCommiteeReview = controversyList[cIndex]?.reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
