@@ -1938,7 +1938,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
-    const distinctDpIds = _.uniq(_.map(mergedDatapoints, 'datapointId'));
+    const distinctDpIds = _.uniq(_.map(mergedDetails, 'datapointId'));
     console.log(distinctDpIds);
     // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
     //   const query = {
