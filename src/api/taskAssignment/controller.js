@@ -23,6 +23,8 @@ import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
+import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
 import {
   VerificationCompleted,
   CorrectionPending,
