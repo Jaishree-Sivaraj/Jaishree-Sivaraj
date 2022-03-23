@@ -37,6 +37,7 @@ import {
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
+import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1984,7 +1985,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       datapoints.length * distinctYears.length];
     console.log(taskDetails.companyId.clientTaxonomyId);
     if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId });
+      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
       let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
       allDpForTask.map((task) => {
         if (task?.dataType !== "Number") {
