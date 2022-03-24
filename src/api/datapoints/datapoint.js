@@ -12,7 +12,7 @@ import { MeasureUoms } from '../measure_uoms';
 import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
-import { CorrectionPending, ReassignmentPending, YetToStart, Error, CollectionCompleted } from '../../constants/task-status';
+import { CorrectionPending, ReassignmentPending, YetToStart, Error, Correction, CorrectionCompleted } from '../../constants/task-status';
 import {
     getError,
     getS3ScreenShot,
@@ -196,9 +196,11 @@ export const datapointDetails = async (req, res, next) => {
 
         let allDatapointsStartTime = Date.now();
         // Another Set of next and prev dp will come in for this taskStatus.
-        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending || taskDetails?.taskStatus == CorrectionCompleted) {
             let allDpDetails;
-            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: Error }
+            let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
+
+            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus }
             switch (memberType) {
                 case STANDALONE:
                     allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
