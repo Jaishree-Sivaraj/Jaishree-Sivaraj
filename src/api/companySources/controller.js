@@ -79,7 +79,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //   if (error) {
   //     //res.status(400).json({ status: "400", message: "Unable to write the file" });
   //   } else {
-  //     console.log("File Stored Sucessfully");
   //   }
   // });
   try {
@@ -138,6 +137,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
     });
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the company source"})
+    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source"})
   }
 }
