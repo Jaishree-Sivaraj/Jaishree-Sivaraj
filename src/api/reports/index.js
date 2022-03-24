@@ -6,6 +6,7 @@ import { create, index, reportsFilter, exportReport, companySearch } from './con
 
 const { clientTaxonomyId, searchQuery, page, limit, companyName } = '';
 const { selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
+const { isSelectedAll } = false;
 
 
 const router = new Router()
@@ -39,7 +40,7 @@ router.post('/filter',
  */
 router.post('/export',
 token({ required: true }),
-body({ clientTaxonomyId, selectedCompanies, yearsList, pillarList }),
+body({ clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll }),
 exportReport)
   
 /**

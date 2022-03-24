@@ -62,7 +62,7 @@ let requiredFields = [
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
-        const { taskId, datapointId, memberType, memberName, role, year, memberId } = req.body;
+        const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -109,6 +109,12 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
+
+        currentYear = getSortedYear(currentYear);
+        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
+            currentYear.length = 1
+        }
+
         let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
@@ -220,7 +226,9 @@ export const repDatapointDetails = async (req, res, next) => {
         }
 
         let index, prevDatapoint = {}, nextDatapoint = {};
-        const allDatapoints = await Datapoints.find(allDpPointQuery).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        datapointQuery = keyIssueId == '' ? datapointQuery : { ...datapointQuery, keyIssueId };
+        const allDatapoints = await Datapoints.find(datapointQuery).populate('keyIssueId')
+            .populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
@@ -235,7 +243,6 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
         let childDp = [];
-        currentYear = getSortedYear(currentYear);
         let sourceDetails = {
             url: '',
             sourceName: '',
@@ -368,9 +375,10 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject
                     },
-                    dpCodeData: datapointsObject
+
 
                 });
             case BOARD_MATRIX:
@@ -499,9 +507,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
 
                 });
             case KMP_MATRIX:
@@ -623,9 +631,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
                 });
             default:
                 return res.status(500).json({

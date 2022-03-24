@@ -126,11 +126,13 @@ export const reportsFilter = async (req, res, next) => {
 
 export const exportReport = async (req, res, next) => {
   try {
-    const { clientTaxonomyId, selectedCompanies, yearsList, pillarList } = req.body;
+    let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
-    if (clientTaxonomyId && selectedCompanies.length > 0) {
+    let childAndSourceFindQuery = { status: true, isActive: true };
+    // if (clientTaxonomyId && selectedCompanies.length > 0) {
+    if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
-      matchQuery.companyId = { $in: selectedCompanies };
+      // matchQuery.companyId = { $in: selectedCompanies };
       if (yearsList.length > 0) {
         let years = [];
         for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
@@ -144,14 +146,46 @@ export const exportReport = async (req, res, next) => {
           pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
         }
         datapointFindQuery.categoryId = { $in: pillars };
-      } else {
+      } else if (pillarList.length == 0 && selectedCompanies.length > 0) {
         dsnctTaskIds = await TaskAssignment.find({
-          companyId: {$in: selectedCompanies},
+          companyId: { $in: selectedCompanies },
           taskStatus: { $ne: "Pending" },
           status: true
         }).distinct('_id')
-      matchQuery.taskId = { $in: dsnctTaskIds };
+        matchQuery.taskId = { $in: dsnctTaskIds };
       // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
+      }
+      if (isSelectedAll && batchList && batchList.length > 0) {
+        let batchIds = [];
+        for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+          batchIds.push(batchList[nicIndex].value);
+        }
+        let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+        let batchCompanyIds = [];
+        for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+          let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+          for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+            let companyItem = cmpItem[cmpIndex];
+            if(!batchCompanyIds.includes(companyItem.id)){
+              batchCompanyIds.push(companyItem.id);
+              // batchCompanyIds.push(mongoose.Types.ObjectId(companyItem.id));
+            }
+          }
+        }
+        let completedBatchCompanyIds = await TaskAssignment.find({companyId: { $in: batchCompanyIds }, taskStatus: { $ne: "Pending" }, status: true}).distinct('companyId');
+        selectedCompanies = completedBatchCompanyIds;
+      }
+      if (isSelectedAll && filteredCompanies && filteredCompanies.length > 0) {
+        for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+          if(!selectedCompanies.includes(filteredCompanies[filtCmpIndex].value)){
+            selectedCompanies.push(filteredCompanies[filtCmpIndex].value);
+            // selectedCompanies.push(mongoose.Types.ObjectId(filteredCompanies[filtCmpIndex].value));
+          }
+        }
+      }
+      if (selectedCompanies.length > 0) {
+        matchQuery.companyId = { $in: selectedCompanies };
+        childAndSourceFindQuery.companyId = { $in: selectedCompanies };
       }
       datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
@@ -168,8 +202,8 @@ export const exportReport = async (req, res, next) => {
   
   
     const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
-      ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
-      CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
+      ChildDp.find(childAndSourceFindQuery),
+      CompanySources.find(childAndSourceFindQuery).populate('companyId')
     ])
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
       StandaloneDatapoints.find(matchQuery)
@@ -191,6 +225,47 @@ export const exportReport = async (req, res, next) => {
             path: "functionId"
           }
         }]),
+      // StandaloneDatapoints.aggregate([
+      //   {
+      //     $lookup: {
+      //       from: "taskassignments",
+      //       localField: "taskId",
+      //       foreignField: "_id",
+      //       as: "taskDetails"
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "datapoints",
+      //       localField: "datapointId",
+      //       foreignField: "_id",
+      //       as: "datapointDetails"
+      //     }
+      //   },
+      //   { $unwind: "$datapointDetails" },
+      //   {
+      //     $lookup: {
+      //       from: "companies",
+      //       localField: "companyId",
+      //       foreignField: "_id",
+      //       as: "companyDetails"
+      //     }
+      //   },
+      //   { $unwind: "$companyDetails" },
+      //   { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
+      //   // {
+      //     // $project: {
+      //     //   "companyId": "$companyId",
+      //     //   "companyName": "$companyDetails.companyName",
+      //     //   "cin": "$companyDetails.cin",
+      //     //   "nicCode": "$companyDetails.nic",
+      //     //   "nicIndustry": "$companyDetails.nicIndustry",
+      //     //   "year": "$year",
+      //     //   "pillar": "$categoryDetails.categoryName",
+      //     //   "isChecked": { $toBool: false }
+      //     // }
+      //   // }
+      // ]),
       ClientTaxonomy.findById(clientTaxonomyId),
       Datapoints.find({
         clientTaxonomyId: clientTaxonomyId,
@@ -299,9 +374,9 @@ export const exportReport = async (req, res, next) => {
             let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
             let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
             let childDpDetails = allChildDpDetails.filter((obj) =>
-              obj.parentDpId == stdData.datapointId.id && obj.companyId == stdData.companyId.id && obj.year == stdData.year
+              obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
-            let Year = stdData.year.split('-',);
+            let Year = stdData?.year.split('-',);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
@@ -358,31 +433,33 @@ export const exportReport = async (req, res, next) => {
                 let item = cltTaxoDetails[outIndex].fieldName;
                 switch (item){
                   case 'code':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.code ? dpDetails[0]?.code : "";
                     break;
                   case 'description':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.description ? dpDetails[0]?.description : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.name ? dpDetails[0]?.name : "";
                     break;
                   case 'themeName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.themeId ? dpDetails[0]?.themeId.themeName : "";
                     break;
                   case 'category':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.categoryId ? dpDetails[0]?.categoryId.categoryName : "";
                     break;
                   case 'unit':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.unit ? dpDetails[0]?.unit : "";
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
-                      dataType = "Number";
+                    if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                      if (stdData.placeValue == 'Number') {
+                        dataType =  stdData?.uom ? `${stdData?.uom?.uomName}` : "Number";                   
+                      } else {
+                        dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                      }
+                    } else if(dpDetails[0]?.dataType == 'Number' && stdData?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                      dataType = stdData?.placeValue ? stdData?.placeValue : "Number";
                     }else{
                       dataType = "Text"
                     }
@@ -398,7 +475,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "";
                     break;
                   case 'dataProvider':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].additionalDetails.dataProvider ? dpDetails[0].additionalDetails.dataProvider : "ESGDS";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.additionalDetails.dataProvider ? dpDetails[0]?.additionalDetails.dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
@@ -430,12 +507,15 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' && dpDetails[0].measureType != ' ' && dpDetails[0].measureType != 'NA')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ' || dpDetails[0].measureType == 'NA')){
-                  dataType = "Number";
+                if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                  if (item.childFields?.placeValue == 'Number') {
+                    dataType =  item.childFields?.uom ? `${item.childFields?.uom}` : "Number";                   
+                  } else {
+                    // dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                    dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
+                  }
+                } else if(dpDetails[0]?.dataType == 'Number' && item.childFields?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                  dataType = item.childFields?.placeValue ? item.childFields?.placeValue : "Number";
                 }else{
                   dataType = "Text"
                 }
@@ -461,25 +541,25 @@ export const exportReport = async (req, res, next) => {
                   documentYear = "";
                 }
 
-                objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "";
-                objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "";
-                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "";
+                objectToPushAsChild['Item Code'] = item?.childFields?.dpCode ? item?.childFields?.dpCode : "";
+                objectToPushAsChild["company_data_element_label (for numbers)"] = item?.childFields?.companyDataElementLabel ? item?.childFields?.companyDataElementLabel : "";
+                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item?.childFields?.companyDataElementSubLabel ? item?.childFields?.companyDataElementSubLabel : "";
                 objectToPushAsChild["data_value"] = responseValue;
                 objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "";
-                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
-                objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "";
-                objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
-                objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item?.childFields?.formatOfDataProvidedByCompanyChartTableText ? item?.childFields?.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["supporting_narrative"] = item?.childFields?.textSnippet ? item?.childFields?.textSnippet : "";
+                objectToPushAsChild["section_of_document"] = item?.childFields?.sectionOfDocument ? item?.childFields?.sectionOfDocument : "";
+                objectToPushAsChild["page_number"] = item?.childFields?.pageNumber ? item?.childFields?.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
-                objectToPushAsChild["Keyword_used"] = item.childFields.keywordUsed ? item.childFields.keywordUsed : "";
-                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
-                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
-                objectToPushAsChild["did_the_company_report"] = item.childFields.didTheCompanyReport ? item.childFields.didTheCompanyReport : "";
-                objectToPushAsChild["name_of_document_as_saved"] = item.childFields.sourceName ? item.childFields.sourceName : "";
-                objectToPushAsChild["name_of_document (as listed on title page)"] = item.childFields.sourceTitle ? item.childFields.sourceTitle : "";
-                objectToPushAsChild["HTML Link of Document"] = item.childFields.url ? item.childFields.url : "";
+                objectToPushAsChild["Keyword_used"] = item?.childFields?.keywordUsed ? item?.childFields?.keywordUsed : "";
+                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item?.childFields?.typeOf ? item?.childFields?.typeOf : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item?.childFields?.formatOfDataProvidedByCompanyChartTableText ? item?.childFields?.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["did_the_company_report"] = item?.childFields?.didTheCompanyReport ? item?.childFields?.didTheCompanyReport : "";
+                objectToPushAsChild["name_of_document_as_saved"] = item?.childFields?.sourceName ? item?.childFields?.sourceName : "";
+                objectToPushAsChild["name_of_document (as listed on title page)"] = item?.childFields?.sourceTitle ? item?.childFields?.sourceTitle : "";
+                objectToPushAsChild["HTML Link of Document"] = item?.childFields?.url ? item?.childFields?.url : "";
                 objectToPushAsChild["Document Year"] = documentYear;
-                objectToPushAsChild["Comment_G"] = item.childFields.commentG ? item.childFields.commentG : "";
+                objectToPushAsChild["Comment_G"] = item?.childFields?.commentG ? item?.childFields?.commentG : "";
                 objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "subline";
 
 

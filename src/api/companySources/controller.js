@@ -79,61 +79,64 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //   if (error) {
   //     //res.status(400).json({ status: "400", message: "Unable to write the file" });
   //   } else {
-  //     console.log("File Stored Sucessfully");
   //   }
   // });
-  var fileUrl = '';
-  if (body.sourcePDF) {
-    const fileType = body.sourcePDF.split(';')[0].split('/')[1];
-    fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
-    await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
-
-  }
-  let sourceDetails = {
-    newSourceTypeName: body.newSourceTypeName,
-    newSubSourceTypeName: body.newSubSourceTypeName
-  }
-  let newSubSourceTypeId, newSourceTypeId;
-  if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
-    let subTypeName = body.newSubSourceTypeName;
-    await SourceSubTypes.create({ subTypeName: subTypeName })
-      .then((response) => {
-        if (response) {
-          newSubSourceTypeId = response.id;
+  try {
+    var fileUrl = '';
+    if (body.sourcePDF) {
+      const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
+      await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
+  
+    }
+    let sourceDetails = {
+      newSourceTypeName: body.newSourceTypeName,
+      newSubSourceTypeName: body.newSubSourceTypeName
+    }
+    let newSubSourceTypeId, newSourceTypeId;
+    if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
+      let subTypeName = body.newSubSourceTypeName;
+      await SourceSubTypes.create({ subTypeName: subTypeName })
+        .then((response) => {
+          if (response) {
+            newSubSourceTypeId = response.id;
+          }
+        })
+      // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+    }
+    if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
+      let sourceObject = {
+        typeName: body.newSourceTypeName,
+        subSourceTypeId: newSubSourceTypeId,
+        isMultiYear: body.isMultiYear,
+        isMultiSource: body.isMultiSource
+      }
+      await SourceTypes.create(sourceObject).then(async (sourceResponse) => {
+        if (sourceResponse) {
+          newSourceTypeId = sourceResponse.id;
         }
       })
-    // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
-  }
-  if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
-    let sourceObject = {
-      typeName: body.newSourceTypeName,
-      subSourceTypeId: newSubSourceTypeId,
-      isMultiYear: body.isMultiYear,
-      isMultiSource: body.isMultiSource
     }
-    await SourceTypes.create(sourceObject).then(async (sourceResponse) => {
-      if (sourceResponse) {
-        newSourceTypeId = sourceResponse.id;
-      }
-    })
+    if (body.sourceSubTypeId) {
+      newSubSourceTypeId = body.sourceSubTypeId;
+    }
+    let companySourceDetails = {
+      companyId: body.companyId,
+      sourceTypeId: newSourceTypeId,
+      isMultiYear: body.isMultiYear,
+      isMultiSource: body.isMultiSource,
+      sourceUrl: body.url,
+      sourceSubTypeId: newSubSourceTypeId,
+      sourceFile: fileUrl,
+      publicationDate: body.publicationDate,
+      fiscalYear: body.fiscalYear,
+      name: body.name,
+      sourceTitle: body.sourceTitle,
+    }
+    await CompanySources.create(companySourceDetails).then((detail) => {
+      res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
+    });
+  } catch (error) {
+    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source"})
   }
-  if (body.sourceSubTypeId) {
-    newSubSourceTypeId = body.sourceSubTypeId;
-  }
-  let companySourceDetails = {
-    companyId: body.companyId,
-    sourceTypeId: newSourceTypeId,
-    isMultiYear: body.isMultiYear,
-    isMultiSource: body.isMultiSource,
-    sourceUrl: body.url,
-    sourceSubTypeId: newSubSourceTypeId,
-    sourceFile: fileUrl,
-    publicationDate: body.publicationDate,
-    fiscalYear: body.fiscalYear,
-    name: body.name,
-    sourceTitle: body.sourceTitle,
-  }
-  await CompanySources.create(companySourceDetails).then((detail) => {
-    res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
-  });
 }
