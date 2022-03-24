@@ -79,7 +79,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   //   if (error) {
   //     //res.status(400).json({ status: "400", message: "Unable to write the file" });
   //   } else {
-  //     console.log("File Stored Sucessfully");
   //   }
   // });
   try {
