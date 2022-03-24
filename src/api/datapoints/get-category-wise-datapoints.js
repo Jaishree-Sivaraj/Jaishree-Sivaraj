@@ -94,8 +94,31 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery, categoryId: taskDetails?.categoryId });
       datapointCodeQuery = datapointListQuery?._id
     }
-
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
+
+    if (keyIssueId !== '') {
+      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, keyIssueId };
+    }
+    
+    if (memberName !== '') {
+      let memberDp;
+      switch (dpType) {
+        case BOARD_MATRIX:
+          memberDp = await BoardMembersMatrixDataPoints.distinct('datapointId'
+            , { memberName, status: true, isActive: true });
+          countQuery = { ...countQuery, _id: memberDp };
+          break;
+        case KMP_MATRIX:
+          memberDp = await KmpMatrixDataPoints.distinct('datapointId'
+            , { memberName, status: true, isActive: true });
+          countQuery = { ...countQuery, _id: memberDp };
+          break;
+        default:
+          break;
+      }
+
+    }
+    
     if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
       let allDpDetails;
       const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: 'Error' }

@@ -62,7 +62,7 @@ let requiredFields = [
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
-        const { taskId, datapointId, memberType, memberName, role, year, memberId } = req.body;
+        const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -226,7 +226,9 @@ export const repDatapointDetails = async (req, res, next) => {
         }
 
         let index, prevDatapoint = {}, nextDatapoint = {};
-        const allDatapoints = await Datapoints.find(allDpPointQuery).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        datapointQuery = keyIssueId == '' ? datapointQuery : { ...datapointQuery, keyIssueId };
+        const allDatapoints = await Datapoints.find(datapointQuery).populate('keyIssueId')
+            .populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
