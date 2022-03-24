@@ -16,7 +16,7 @@ import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed, CorrectionPending, ReassignmentPending } from '../../constants/task-status';
 
 
-import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear} from './dp-details-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -109,6 +109,12 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
+        
+        currentYear = getSortedYear(currentYear);
+        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
+            currentYear.length = 1
+        }
+
         let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
@@ -235,7 +241,6 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
         let childDp = [];
-        currentYear = getSortedYear(currentYear);
         let sourceDetails = {
             url: '',
             sourceName: '',
