@@ -37,6 +37,7 @@ import {
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
+import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1942,22 +1943,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
-    // for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-    //   const query = {
-    //     taskId: body.taskId,
-    //     companyId: taskDetails.companyId.id,
-    //     year: distinctYears[yearIndex],
-    //     isActive: true,
-    //     status: true
-    //   }
-    //   const [allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
-    //     BoardMembersMatrixDataPoints.distinct('datapointId', query),
-    //     KmpMatrixDataPoints.distinct('datapointId', query)
-    //   ])
-    //   datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
-    // }
-    // datapointsCount += allStandaloneDetails.length;
-
+    
     // It does not need to be distinct, it just need to be the ones which has Status as true and isActive as true.
     datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
@@ -1982,9 +1968,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
-    console.log(taskDetails.companyId.clientTaxonomyId);
+
     if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId });
+      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
       let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
       allDpForTask.map((task) => {
         if (task?.dataType !== "Number") {
@@ -2026,9 +2012,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       } else {
         taskStatusValue = Completed;
       }
-      // taskStatusValue = body.role == QA ? VerificationCompleted : Completed
-      // taskStatusValue = body.role == Analyst ? CorrectionCompleted : Completed
-      // taskStatusValue = CorrectionCompleted;
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
         { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }

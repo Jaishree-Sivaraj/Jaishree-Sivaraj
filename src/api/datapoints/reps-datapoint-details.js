@@ -109,6 +109,12 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
+
+        currentYear = getSortedYear(currentYear);
+        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
+            currentYear.length = 1
+        }
+
         let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
@@ -235,7 +241,6 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
         let childDp = [];
-        currentYear = getSortedYear(currentYear);
         let sourceDetails = {
             url: '',
             sourceName: '',
@@ -368,9 +373,10 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject
                     },
-                    dpCodeData: datapointsObject
+
 
                 });
             case BOARD_MATRIX:
@@ -499,9 +505,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
 
                 });
             case KMP_MATRIX:
@@ -623,9 +629,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
                 });
             default:
                 return res.status(500).json({

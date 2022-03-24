@@ -94,10 +94,9 @@ export const datapointDetails = async (req, res, next) => {
         trackTime(timeDetails, dpTypeErrorDetailsCompanySourceStartTime, Date.now(), 'DpType Details and Error Details and Source Details  Promise ');
 
         // Saving single data for qualitative datapoints
-        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== Number) {
+        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
             currentYear.length = 1
         }
-
         let dpMeasureType = measureTypes.filter(obj => obj?.measureName?.toLowerCase() == dpTypeValues?.measureType?.toLowerCase());
         let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
         const taxonomyStart = Date.now();
@@ -322,8 +321,7 @@ export const datapointDetails = async (req, res, next) => {
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         }
-
-                        console.log(currentAllStandaloneDetails.length)
+                        
                         if (currentIndex == currentAllStandaloneDetails.length - 1) {
                             trackTime(timeDetails, currentYearStandaloneLoopStartTime, Date.now(), `Standalone Loop `);
                         }
@@ -341,7 +339,6 @@ export const datapointDetails = async (req, res, next) => {
                     datapointsObject.currentData.push(currentDatapointsObject);
 
                     if (currentYearIndex == currentYear.length - 1) {
-                        console.log('Here ')
                         trackTime(timeDetails, CurrentYearLoopStartTime, Date.now(), `Current Year Standalone Loop `);
 
                     }
@@ -362,8 +359,8 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails },
-                    dpCodeData: datapointsObject
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject},
+                    
 
 
                 });
@@ -497,9 +494,9 @@ export const datapointDetails = async (req, res, next) => {
                         dpTypeValues,
                         displayFields,
                         historicalYears,
-                        timeDetails
-                    },
-                    dpCodeData: datapointsObject
+                        timeDetails,
+                        dpCodeData: datapointsObject
+                    }
                 });
             case KMP_MATRIX:
                 let currentHistoryAllKmpMatrixDetailsStartTime = Date.now()
@@ -517,8 +514,7 @@ export const datapointDetails = async (req, res, next) => {
                 trackTime(timeDetails, currentHistoryAllKmpMatrixDetailsStartTime, Date.now(), `Current and history Kmp`);
 
                 historyAllKmpMatrixDetails?.map((historyYearData) => {
-                    let historyYearObject = {}
-                    console.log(historyYearData)
+                    let historyYearObject = {};
                     historyYearObject[historyYearData?.year] = historyYearData?.response;
                     historicalYears.push(historyYearObject)
                 });
@@ -638,9 +634,9 @@ export const datapointDetails = async (req, res, next) => {
                         dpTypeValues,
                         displayFields,
                         timeDetails,
-                        historicalYears
-                    },
-                    dpCodeData: datapointsObject
+                        historicalYears,
+                        dpCodeData: datapointsObject
+                    }
                 });
             default:
                 return res.status(409).json({
