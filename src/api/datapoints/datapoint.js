@@ -359,8 +359,8 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails },
-                    dpCodeData: datapointsObject
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject},
+                    
 
 
                 });
@@ -494,9 +494,9 @@ export const datapointDetails = async (req, res, next) => {
                         dpTypeValues,
                         displayFields,
                         historicalYears,
-                        timeDetails
-                    },
-                    dpCodeData: datapointsObject
+                        timeDetails,
+                        dpCodeData: datapointsObject
+                    }
                 });
             case KMP_MATRIX:
                 let currentHistoryAllKmpMatrixDetailsStartTime = Date.now()
@@ -634,9 +634,9 @@ export const datapointDetails = async (req, res, next) => {
                         dpTypeValues,
                         displayFields,
                         timeDetails,
-                        historicalYears
-                    },
-                    dpCodeData: datapointsObject
+                        historicalYears,
+                        dpCodeData: datapointsObject
+                    }
                 });
             default:
                 return res.status(409).json({

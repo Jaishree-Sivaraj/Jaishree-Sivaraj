@@ -16,7 +16,7 @@ import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed, CorrectionPending, ReassignmentPending } from '../../constants/task-status';
 
 
-import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear} from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -109,7 +109,7 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
-        
+
         currentYear = getSortedYear(currentYear);
         if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
             currentYear.length = 1
@@ -373,9 +373,10 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject
                     },
-                    dpCodeData: datapointsObject
+
 
                 });
             case BOARD_MATRIX:
@@ -504,9 +505,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
 
                 });
             case KMP_MATRIX:
@@ -628,9 +629,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
                 });
             default:
                 return res.status(500).json({
