@@ -126,11 +126,12 @@ export const reportsFilter = async (req, res, next) => {
 
 export const exportReport = async (req, res, next) => {
   try {
-    const { clientTaxonomyId, selectedCompanies, yearsList, pillarList } = req.body;
+    let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
-    if (clientTaxonomyId && selectedCompanies.length > 0) {
+    // if (clientTaxonomyId && selectedCompanies.length > 0) {
+    if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
-      matchQuery.companyId = { $in: selectedCompanies };
+      // matchQuery.companyId = { $in: selectedCompanies };
       if (yearsList.length > 0) {
         let years = [];
         for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
@@ -150,9 +151,38 @@ export const exportReport = async (req, res, next) => {
           taskStatus: { $ne: "Pending" },
           status: true
         }).distinct('_id')
-      matchQuery.taskId = { $in: dsnctTaskIds };
+        matchQuery.taskId = { $in: dsnctTaskIds };
       // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
       }
+      if (isSelectedAll && batchList && batchList?.length > 0) {
+        let batchIds = [];
+        for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+          batchIds.push(batchList[nicIndex].value);
+        }
+        let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+        let batchCompanyIds = [];
+        for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+          let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+          for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+            let companyItem = cmpItem[cmpIndex];
+            if(!batchCompanyIds.includes(companyItem.id)){
+              batchCompanyIds.push(companyItem.id);
+              // batchCompanyIds.push(mongoose.Types.ObjectId(companyItem.id));
+            }
+          }
+        }
+        let completedBatchCompanyIds = await TaskAssignment.find({companyId: { $in: batchCompanyIds }, taskStatus: { $ne: "Pending" }, status: true}).distinct('companyId');
+        selectedCompanies = completedBatchCompanyIds;
+      }
+      if (isSelectedAll && filteredCompanies && filteredCompanies.length > 0) {
+        for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+          if(!selectedCompanies.includes(filteredCompanies[filtCmpIndex].value)){
+            selectedCompanies.push(filteredCompanies[filtCmpIndex].value);
+            // selectedCompanies.push(mongoose.Types.ObjectId(filteredCompanies[filtCmpIndex].value));
+          }
+        }
+      }
+      matchQuery.companyId = { $in: selectedCompanies };
       datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
       matchQuery.datapointId = { $in: datapointIds };
@@ -191,6 +221,47 @@ export const exportReport = async (req, res, next) => {
             path: "functionId"
           }
         }]),
+      // StandaloneDatapoints.aggregate([
+      //   {
+      //     $lookup: {
+      //       from: "taskassignments",
+      //       localField: "taskId",
+      //       foreignField: "_id",
+      //       as: "taskDetails"
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "datapoints",
+      //       localField: "datapointId",
+      //       foreignField: "_id",
+      //       as: "datapointDetails"
+      //     }
+      //   },
+      //   { $unwind: "$datapointDetails" },
+      //   {
+      //     $lookup: {
+      //       from: "companies",
+      //       localField: "companyId",
+      //       foreignField: "_id",
+      //       as: "companyDetails"
+      //     }
+      //   },
+      //   { $unwind: "$companyDetails" },
+      //   { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
+      //   // {
+      //     // $project: {
+      //     //   "companyId": "$companyId",
+      //     //   "companyName": "$companyDetails.companyName",
+      //     //   "cin": "$companyDetails.cin",
+      //     //   "nicCode": "$companyDetails.nic",
+      //     //   "nicIndustry": "$companyDetails.nicIndustry",
+      //     //   "year": "$year",
+      //     //   "pillar": "$categoryDetails.categoryName",
+      //     //   "isChecked": { $toBool: false }
+      //     // }
+      //   // }
+      // ]),
       ClientTaxonomy.findById(clientTaxonomyId),
       Datapoints.find({
         clientTaxonomyId: clientTaxonomyId,
@@ -358,22 +429,22 @@ export const exportReport = async (req, res, next) => {
                 let item = cltTaxoDetails[outIndex].fieldName;
                 switch (item){
                   case 'code':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.code ? dpDetails[0]?.code : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].code ? dpDetails[0].code : "" : "";
                     break;
                   case 'description':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.description ? dpDetails[0]?.description : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].description ? dpDetails[0].description : "" : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.name ? dpDetails[0]?.name : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "" : "";
                     break;
                   case 'themeName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.themeId ? dpDetails[0]?.themeId.themeName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "" : "";
                     break;
                   case 'category':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.categoryId ? dpDetails[0]?.categoryId.categoryName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "" : "";
                     break;
                   case 'unit':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.unit ? dpDetails[0]?.unit : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0] ? dpDetails[0].unit ? dpDetails[0].unit : "" : "";
                     break
                   case 'dataType':
                     let dataType = '';
