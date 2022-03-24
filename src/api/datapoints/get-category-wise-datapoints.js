@@ -99,7 +99,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     if (keyIssueId !== '') {
       countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, keyIssueId };
     }
-    
+
     if (memberName !== '') {
       let memberDp;
       switch (dpType) {
@@ -118,10 +118,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       }
 
     }
-    
-    if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+
+    if (taskDetails.taskStatus == CorrectionPending || taskDetails?.taskStatus == ReassignmentPending || taskDetails?.taskStatus == CorrectionCompleted) {
       let allDpDetails;
-      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: 'Error' }
+      let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
+      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus };
       switch (dpType) {
         case STANDALONE:
           allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
