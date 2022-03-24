@@ -75,7 +75,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         functionId: {
           "$ne": functionId.id
         },
-        clientTaxonomyId: taskDetails?.companyId?.clientTaxonomyId.id,
+        clientTaxonomyId: taskDetails?.categoryId?.clientTaxonomyId,
         categoryId: taskDetails?.categoryId.id,
         status: true
       },
@@ -98,7 +98,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
     if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
       let allDpDetails;
-      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
+      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: 'Error' }
       switch (dpType) {
         case STANDALONE:
           allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
@@ -161,7 +161,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           currentAllKmpMatrixDetails = _.filter(currentAllKmpMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
           mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
           distinctDpIds = _.uniq(_.map(mergedDatapoints, 'datapointId'));
-          console.log('distinctDpIds', distinctDpIds);
         } else {
           mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
         }
@@ -182,7 +181,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
         const totalUniquePriortyDpCollected = totalPriortyDataCollected.length / currentYear.length;
         // If priority DP code have not been completed then show only priority Dp codes.
-        console.log(totalUniquePriortyDpCollected);
         if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
           keyIssuesList = await getKeyIssues({ ...dptypeQuery, isPriority: true }, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < priorityDpCodes.length; datapointsIndex++) {
@@ -215,7 +213,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               dptypeQuery.isRequiredForReps = true
             }
             if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds?.length > 0) {
-              query._id = { $in: distinctDpIds };
+              dptypeQuery._id = { $in: distinctDpIds };
             }
 
             const dpTypeDatapoints = await
@@ -235,35 +233,16 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               case STANDALONE:
                 keyIssuesList = await getKeyIssues(dptypeQuery, keyIssuesList);
                 for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
-                  // Getting all priority dp codes and filtering all dpcodes which belong to the given taskid
-                  //  and company and so. and changing the dp status
-                  // TODO: This if and else have the same condition. then why bother with if and else.
-                  // TODO: push priority based array.
-                  if (dpTypeDatapoints[datapointsIndex].isPriority == true) {
-                    // And the dpCode is not completed then only send priority dp codes.
-                    let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
-                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                      _.filter(currentAllStandaloneDetails, (object) => {
-                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id
-                          && object.year == currentYear[currentYearIndex]) {
-                          datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-                        }
-                      })
-                    }
-                    datapointList.dpCodesData.push(datapointsObject);
-                  } else {
-                    // Send all dp codes.
-                    let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
-                    for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                      _.filter(currentAllStandaloneDetails, (object) => {
-                        if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id
-                          && object.year == currentYear[currentYearIndex]) {
-                          datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-                        }
-                      })
-                    }
-                    datapointList.dpCodesData.push(datapointsObject);
+                  let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
+                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                    _.filter(currentAllStandaloneDetails, (object) => {
+                      if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id
+                        && object.year == currentYear[currentYearIndex]) {
+                        datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+                      }
+                    })
                   }
+                  datapointList.dpCodesData.push(datapointsObject);
                 }
                 return res.status(200).send({
                   status: "200",
@@ -475,14 +454,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       case CorrectionPending:
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
+            errorQuery = { ...errorQuery, dpStatus: Error };
             switch (dpType) {
               case STANDALONE:
                 errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
                 errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
-                const errorDatapoints = await StandaloneDatapoints.find({
-                  ...errorQuery,
-                  dpStatus: Error,
-                })
+                const errorDatapoints = await StandaloneDatapoints.find(errorQuery)
                   .skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -533,8 +510,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     ...errorQuery,
                     year: {
                       $in: currentYear
-                    },
-                    dpStatus: Error
+                    }
                   }).skip((page - 1) * limit)
                     .limit(+limit)
                     .populate([{
@@ -610,8 +586,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   ...errorQuery,
                   year: {
                     $in: currentYear
-                  },
-                  dpStatus: Error
+                  }
                 }).skip((page - 1) * limit)
                   .limit(+limit)
                   .populate([{
@@ -699,9 +674,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         } else if (dpType == STANDALONE) {
           try {
+            errorQuery = { ...errorQuery, dpStatus: Error };
             errorQuery = keyIssueId === '' ? errorQuery : await getQueryWithKeyIssue(errorQuery, keyIssueId, datapointCodeQuery);
             errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
-            const errorDatapoints = await StandaloneDatapoints.find({ ...errorQuery, dpStatus: Error })
+            const errorDatapoints = await StandaloneDatapoints.find(errorQuery)
               .skip((page - 1) * limit)
               .limit(+limit)
               .populate({
@@ -810,7 +786,6 @@ function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails) {
     memberId: memberData?.value,
     status: YetToStart
   }
-
 }
 
 function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
