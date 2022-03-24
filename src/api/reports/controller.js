@@ -128,6 +128,7 @@ export const exportReport = async (req, res, next) => {
   try {
     let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
+    let childAndSourceFindQuery = { status: true, isActive: true };
     // if (clientTaxonomyId && selectedCompanies.length > 0) {
     if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
@@ -145,16 +146,16 @@ export const exportReport = async (req, res, next) => {
           pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
         }
         datapointFindQuery.categoryId = { $in: pillars };
-      } else {
+      } else if (pillarList.length == 0 && selectedCompanies.length > 0) {
         dsnctTaskIds = await TaskAssignment.find({
-          companyId: {$in: selectedCompanies},
+          companyId: { $in: selectedCompanies },
           taskStatus: { $ne: "Pending" },
           status: true
         }).distinct('_id')
         matchQuery.taskId = { $in: dsnctTaskIds };
       // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
       }
-      if (isSelectedAll && batchList && batchList?.length > 0) {
+      if (isSelectedAll && batchList && batchList.length > 0) {
         let batchIds = [];
         for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
           batchIds.push(batchList[nicIndex].value);
@@ -182,7 +183,10 @@ export const exportReport = async (req, res, next) => {
           }
         }
       }
-      matchQuery.companyId = { $in: selectedCompanies };
+      if (selectedCompanies.length > 0) {
+        matchQuery.companyId = { $in: selectedCompanies };
+        childAndSourceFindQuery.companyId = { $in: selectedCompanies };
+      }
       datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
       matchQuery.datapointId = { $in: datapointIds };
@@ -198,8 +202,8 @@ export const exportReport = async (req, res, next) => {
   
   
     const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
-      ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
-      CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
+      ChildDp.find(childAndSourceFindQuery),
+      CompanySources.find(childAndSourceFindQuery).populate('companyId')
     ])
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
       StandaloneDatapoints.find(matchQuery)
