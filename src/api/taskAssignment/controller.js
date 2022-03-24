@@ -1943,7 +1943,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.find(query)
     ])
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
-    
+
     // It does not need to be distinct, it just need to be the ones which has Status as true and isActive as true.
     datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
@@ -1984,7 +1984,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     }
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
-      ? datapointsCount == multipliedValue : datapointsCount == multipliedValue && !isCorrectionStatusIncomplete
+      ? datapointsCount <= multipliedValue : datapointsCount <= multipliedValue && !isCorrectionStatusIncomplete
 
     let taskStatusValue = "";
     if (hasError && condition) {
