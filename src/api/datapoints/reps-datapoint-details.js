@@ -194,7 +194,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }
         }
 
-        let allDpPointQuery = {
+        let datapointQuery = {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
