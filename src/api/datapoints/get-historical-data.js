@@ -136,10 +136,9 @@ export const getScreenShot = async (req, res, next) => {
             });
 
         }
-        res.status(200).json({
-            status: 200,
-            screenShot: screenShotData
-        });
+        return res.status(200).json({
+            url: screenShotData?.url
+        })
     } catch (error) {
         res.status(409).json({
             status: 409,

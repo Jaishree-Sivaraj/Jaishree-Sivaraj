@@ -4917,7 +4917,7 @@ export const uploadNewTaxonomyDatapoints = async (req, res, next) => {
                 newThemesList.push(newThemeObject);
                 newKeyIssuesList.push(newKeyIssueObject);
                 newFunctionsList.push(newFunctionObject);
-              } catch {
+              } catch (error) {
                 return next(error);
               }
             }

@@ -5,8 +5,6 @@ import { Role } from "../role";
 import { Group } from "../group";
 import { Categories } from "../categories";
 import { Batches } from "../batches";
-import { CompanyRepresentatives } from "../company-representatives";
-import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
@@ -24,6 +22,9 @@ import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
+import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
+import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
 import {
   VerificationCompleted,
   CorrectionPending,
@@ -31,10 +32,12 @@ import {
   CorrectionCompleted,
   Completed,
   CollectionCompleted,
+  Correction,
+  Incomplete
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
-import { CompanyRepresentative, ClientRepresentative } from '../../constants/roles'
+import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -510,7 +513,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     if (query.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else {
+  } else if (params.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
   if (userRoles.includes(params.role)) {
@@ -1246,6 +1249,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
+              }, {
+                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1378,6 +1383,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
                 object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0].reassessmentDate : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
@@ -1901,11 +1907,16 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     // get all task details.
     const taskDetails = await TaskAssignment.findOne({
       _id: body.taskId
-    }).populate('categoryId')
-      .populate('companyId')
+    }).populate({
+      path: 'companyId',
+      populate: {
+        path: 'clientTaxonomyId'
+      }
+    })
       .populate('groupId')
+      .populate('categoryId')
     // Get distinct years
-    const distinctYears = taskDetails.year.split(', ');
+    let distinctYears = taskDetails.year.split(', ');
     let datapointsCount = 0;
     let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
     const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
@@ -1923,7 +1934,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       query.datapointId = { $in: reqDpCodes }
     }
     // StandAlone, BoardMatrix and KMP are DpTypes.
-    const [allStandaloneDetails, allBoardMemberMatrixDetails1, allKmpMatrixDetails1] = await Promise.all([
+    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
       StandaloneDatapoints.find(query)
         .populate('createdBy')
         .populate('datapointId')
@@ -1931,64 +1942,76 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       BoardMembersMatrixDataPoints.find(query),
       KmpMatrixDataPoints.find(query)
     ])
-    const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
+    const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
 
-    for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-      const query = {
-        taskId: body.taskId,
-        companyId: taskDetails.companyId.id,
-        year: distinctYears[yearIndex],
-        isActive: true,
-        status: true
-      }
-      const [allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
-        BoardMembersMatrixDataPoints.distinct('datapointId', query),
-        KmpMatrixDataPoints.distinct('datapointId', query)
-      ])
-      datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
-    }
-    datapointsCount += allStandaloneDetails.length;
+    // It does not need to be distinct, it just need to be the ones which has Status as true and isActive as true.
+    datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
     let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
-      categoryId: taskDetails.categoryId.id,
+      categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
     }
+    console.log(datapointQuery)
 
     if (body.skipValidation) {
       datapointQuery.isRequiredForReps = true
     }
 
+
     let datapoints = await Datapoints.find({ ...datapointQuery });
 
     // mergedDetails is the Dp codes of all Dp Types.
-    const [hasError, hasCorrection, multipliedValue] = [
+    let [hasError, hasCorrection, isCorrectionStatusIncomplete, multipliedValue] = [
       mergedDetails.find(object => object.hasError == true),
       mergedDetails.find(object => object.hasCorrection == true),
+      mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
+
+    if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
+      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
+      let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
+      allDpForTask.map((task) => {
+        if (task?.dataType !== "Number") {
+          totalQualitativeDatapoints += 1
+        } else {
+          totalQuantativeDatapoints += 1
+
+        }
+      });
+      multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
+    }
+
+    const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
+      ? datapointsCount <= multipliedValue : datapointsCount <= multipliedValue && !isCorrectionStatusIncomplete
+
     let taskStatusValue = "";
-    if (datapointsCount == multipliedValue && hasError) {
+    if (hasError && condition) {
       taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
 
       const [query, update, query1, update1] = [
         { taskId: body.taskId, isActive: true, status: true, hasError: true },
         { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } },
-        { taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' },
-        { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } }
+        { taskId: body.taskId, isActive: true, status: true, hasError: false },
+        { $set: { dpStatus: 'Collection', correctionStatus: 'Completed' } }
       ]
       await Promise.all([
         KmpMatrixDataPoints.updateMany(query, update),
         BoardMembersMatrixDataPoints.updateMany(query, update),
         StandaloneDatapoints.updateMany(query, update),
         KmpMatrixDataPoints.updateMany(query1, update1),
-        BoardMembersMatrixDataPoints.updateMany(query1, update),
+        BoardMembersMatrixDataPoints.updateMany(query1, update1),
         StandaloneDatapoints.updateMany(query1, update1),
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
-    } else if (
-      datapointsCount == multipliedValue &&
-      hasCorrection) {
-      taskStatusValue = CorrectionCompleted;
+    } else if (hasCorrection && condition) {
+      if (body.role == QA) {
+        taskStatusValue = VerificationCompleted;
+      } else if (body.role == Analyst) {
+        taskStatusValue = CorrectionCompleted;
+      } else {
+        taskStatusValue = Completed;
+      }
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
         { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
@@ -1999,17 +2022,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         StandaloneDatapoints.updateMany(query, update),
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
       ])
-    }
-    else if (
-      datapointsCount == multipliedValue &&
-      hasError == undefined &&
-      hasCorrection == undefined
-    ) {
+    } else if (!hasError && !hasCorrection && condition) {
       taskStatusValue = body.role == QA ? VerificationCompleted : Completed
       taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true },
-        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
+        { $set: { dpStatus: Correction, correctionStatus: Incomplete } }
       ]
       await Promise.all([
         KmpMatrixDataPoints.updateMany(query, update),

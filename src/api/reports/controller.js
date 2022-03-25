@@ -8,6 +8,7 @@ import { Datapoints } from '../datapoints'
 import { ChildDp } from '../child-dp'
 import { CompanySources } from '../companySources'
 import { TaskAssignment } from '../taskAssignment'
+import { Batches } from '../batches'
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -16,30 +17,54 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   res.status(200).json([])
 
 export const reportsFilter = async (req, res, next) => {
-  const { clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit } = req.body;
+  const { clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit } = req.body;
   let matchQuery = { status: true };
   if (clientTaxonomyId) {
     let companyFindQuery = { clientTaxonomyId: clientTaxonomyId, status: true };
-    if (nicList.length > 0) {
+    if (nicList && nicList?.length > 0) {
       let nics = [];
       for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
         nics.push(nicList[nicIndex].value);
       }
       companyFindQuery.nic = { $in: nics };
     }
-    if (searchQuery != '') {
-      companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
+    // if (searchQuery != '') {
+    //   companyFindQuery.companyName = { "$regex": searchQuery, "$options": "i" };
+    // }
+    if (filteredCompanies && filteredCompanies.length > 0) {
+      let filteredCompanyIds = [];
+      for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+        filteredCompanyIds.push(filteredCompanies[filtCmpIndex].value);
+      }
+      companyFindQuery._id = { $in: filteredCompanyIds };
+    } else if (batchList && batchList?.length > 0) {
+      let batchIds = [];
+      for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+        batchIds.push(batchList[nicIndex].value);
+      }
+      let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+      let batchCompanyIds = [];
+      for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+        let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+        for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+          let companyItem = cmpItem[cmpIndex];
+          if(!batchCompanyIds.includes(companyItem.id)){
+            batchCompanyIds.push(companyItem.id);
+          }
+        }
+      }
+      companyFindQuery._id = { $in: batchCompanyIds };
     }
     let companyIds = await Companies.find(companyFindQuery).distinct('_id');
     matchQuery.companyId = { $in: companyIds };
-    if (yearsList.length > 0) {
+    if (yearsList && yearsList?.length > 0) {
       let years = [];
       for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
         years.push(yearsList[yearIndex].value);
       }
       matchQuery.year = { $in: years };
     }
-    if (pillarList.length > 0) {
+    if (pillarList && pillarList?.length > 0) {
       let pillars = [];
       for (let pillarIndex = 0; pillarIndex < pillarList.length; pillarIndex++) {
         pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
@@ -101,11 +126,13 @@ export const reportsFilter = async (req, res, next) => {
 
 export const exportReport = async (req, res, next) => {
   try {
-    const { clientTaxonomyId, selectedCompanies, yearsList, pillarList } = req.body;
+    let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
-    if (clientTaxonomyId && selectedCompanies.length > 0) {
+    let childAndSourceFindQuery = { status: true, isActive: true };
+    // if (clientTaxonomyId && selectedCompanies.length > 0) {
+    if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
-      matchQuery.companyId = { $in: selectedCompanies };
+      // matchQuery.companyId = { $in: selectedCompanies };
       if (yearsList.length > 0) {
         let years = [];
         for (let yearIndex = 0; yearIndex < yearsList.length; yearIndex++) {
@@ -119,14 +146,46 @@ export const exportReport = async (req, res, next) => {
           pillars.push(mongoose.Types.ObjectId(pillarList[pillarIndex].value));
         }
         datapointFindQuery.categoryId = { $in: pillars };
-      } else {
+      } else if (pillarList.length == 0 && selectedCompanies.length > 0) {
         dsnctTaskIds = await TaskAssignment.find({
-          companyId: {$in: selectedCompanies},
+          companyId: { $in: selectedCompanies },
           taskStatus: { $ne: "Pending" },
           status: true
         }).distinct('_id')
-      matchQuery.taskId = { $in: dsnctTaskIds };
+        matchQuery.taskId = { $in: dsnctTaskIds };
       // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
+      }
+      if (isSelectedAll && batchList && batchList.length > 0) {
+        let batchIds = [];
+        for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+          batchIds.push(batchList[nicIndex].value);
+        }
+        let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+        let batchCompanyIds = [];
+        for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+          let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+          for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+            let companyItem = cmpItem[cmpIndex];
+            if(!batchCompanyIds.includes(companyItem.id)){
+              batchCompanyIds.push(companyItem.id);
+              // batchCompanyIds.push(mongoose.Types.ObjectId(companyItem.id));
+            }
+          }
+        }
+        let completedBatchCompanyIds = await TaskAssignment.find({companyId: { $in: batchCompanyIds }, taskStatus: { $ne: "Pending" }, status: true}).distinct('companyId');
+        selectedCompanies = completedBatchCompanyIds;
+      }
+      if (isSelectedAll && filteredCompanies && filteredCompanies.length > 0) {
+        for (let filtCmpIndex = 0; filtCmpIndex < filteredCompanies.length; filtCmpIndex++) {
+          if(!selectedCompanies.includes(filteredCompanies[filtCmpIndex].value)){
+            selectedCompanies.push(filteredCompanies[filtCmpIndex].value);
+            // selectedCompanies.push(mongoose.Types.ObjectId(filteredCompanies[filtCmpIndex].value));
+          }
+        }
+      }
+      if (selectedCompanies.length > 0) {
+        matchQuery.companyId = { $in: selectedCompanies };
+        childAndSourceFindQuery.companyId = { $in: selectedCompanies };
       }
       datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
@@ -143,8 +202,8 @@ export const exportReport = async (req, res, next) => {
   
   
     const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
-      ChildDp.find({ status: true, isActive: true, companyId: {$in: selectedCompanies} }),
-      CompanySources.find({ status: true, companyId: {$in: selectedCompanies} }).populate('companyId')
+      ChildDp.find(childAndSourceFindQuery),
+      CompanySources.find(childAndSourceFindQuery).populate('companyId')
     ])
     let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
       StandaloneDatapoints.find(matchQuery)
@@ -166,6 +225,47 @@ export const exportReport = async (req, res, next) => {
             path: "functionId"
           }
         }]),
+      // StandaloneDatapoints.aggregate([
+      //   {
+      //     $lookup: {
+      //       from: "taskassignments",
+      //       localField: "taskId",
+      //       foreignField: "_id",
+      //       as: "taskDetails"
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "datapoints",
+      //       localField: "datapointId",
+      //       foreignField: "_id",
+      //       as: "datapointDetails"
+      //     }
+      //   },
+      //   { $unwind: "$datapointDetails" },
+      //   {
+      //     $lookup: {
+      //       from: "companies",
+      //       localField: "companyId",
+      //       foreignField: "_id",
+      //       as: "companyDetails"
+      //     }
+      //   },
+      //   { $unwind: "$companyDetails" },
+      //   { $match: {...matchQuery, "taskDetails.taskStatus": { $ne: "Pending" }  } },
+      //   // {
+      //     // $project: {
+      //     //   "companyId": "$companyId",
+      //     //   "companyName": "$companyDetails.companyName",
+      //     //   "cin": "$companyDetails.cin",
+      //     //   "nicCode": "$companyDetails.nic",
+      //     //   "nicIndustry": "$companyDetails.nicIndustry",
+      //     //   "year": "$year",
+      //     //   "pillar": "$categoryDetails.categoryName",
+      //     //   "isChecked": { $toBool: false }
+      //     // }
+      //   // }
+      // ]),
       ClientTaxonomy.findById(clientTaxonomyId),
       Datapoints.find({
         clientTaxonomyId: clientTaxonomyId,
@@ -274,9 +374,9 @@ export const exportReport = async (req, res, next) => {
             let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
             let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
             let childDpDetails = allChildDpDetails.filter((obj) =>
-              obj.parentDpId == stdData.datapointId.id && obj.companyId == stdData.companyId.id && obj.year == stdData.year
+              obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
-            let Year = stdData.year.split('-',);
+            let Year = stdData?.year.split('-',);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
@@ -308,6 +408,15 @@ export const exportReport = async (req, res, next) => {
                   documentYear = "";
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
+              } else if(outputFieldsData == 'sourceName'){
+                let fullSourceName = stdData.sourceName ? stdData.sourceName.split(';') :  "";
+                let sourceName;
+                if (fullSourceName?.length > 0) {
+                  sourceName = fullSourceName[0];
+                } else {
+                  sourceName = stdData.sourceName ? stdData.sourceName :  "";
+                }
+                objectToPush[cltTaxoDetails[outIndex].displayName] = sourceName;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
                 if(stdData.response == 'NA' || stdData.response == "NA" || stdData.response == "Na"){
@@ -324,31 +433,33 @@ export const exportReport = async (req, res, next) => {
                 let item = cltTaxoDetails[outIndex].fieldName;
                 switch (item){
                   case 'code':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].code ? dpDetails[0].code : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.code ? dpDetails[0]?.code : "";
                     break;
                   case 'description':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].description ? dpDetails[0].description : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.description ? dpDetails[0]?.description : "";
                     break;
                   case 'keyIssueName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].keyIssueId ? dpDetails[0].keyIssueId.keyIssueName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.name ? dpDetails[0]?.name : "";
                     break;
                   case 'themeName':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].themeId ? dpDetails[0].themeId.themeName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.themeId ? dpDetails[0]?.themeId.themeName : "";
                     break;
                   case 'category':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].categoryId ? dpDetails[0].categoryId.categoryName : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.categoryId ? dpDetails[0]?.categoryId.categoryName : "";
                     break;
                   case 'unit':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].unit ? dpDetails[0].unit : "";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.unit ? dpDetails[0]?.unit : "";
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
-                      dataType = "Number";
+                    if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                      if (stdData.placeValue == 'Number') {
+                        dataType =  stdData?.uom ? `${stdData?.uom?.uomName}` : "Number";                   
+                      } else {
+                        dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                      }
+                    } else if(dpDetails[0]?.dataType == 'Number' && stdData?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                      dataType = stdData?.placeValue ? stdData?.placeValue : "Number";
                     }else{
                       dataType = "Text"
                     }
@@ -364,7 +475,7 @@ export const exportReport = async (req, res, next) => {
                     objectToPush[cltTaxoDetails[outIndex].displayName] = stdData.companyId ? stdData.companyId.nicIndustry : "";
                     break;
                   case 'dataProvider':
-                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0].additionalDetails.dataProvider ? dpDetails[0].additionalDetails.dataProvider : "ESGDS";
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = dpDetails[0]?.additionalDetails.dataProvider ? dpDetails[0]?.additionalDetails.dataProvider : "ESGDS";
                     break;
                   case 'sourceTitle':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
@@ -374,6 +485,8 @@ export const exportReport = async (req, res, next) => {
                 }
               }
             }
+            let objectToPushAsChildCopy = JSON.parse(JSON.stringify(objectToPush));
+            // console.log(objectToPushAsChildCopy);
             
             if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
               let responseObjectToPush = await getResponseObject(objectToPush);
@@ -391,15 +504,18 @@ export const exportReport = async (req, res, next) => {
             }
             if (childDpDetails.length > 0) {
               for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
-                objectToPushAsChild = JSON.parse(JSON.stringify(objectToPush));
+                objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType != 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0].dataType == 'Number' && dpDetails[0].measureType == 'Currency' && (dpDetails[0].measureType != '' || dpDetails[0].measureType != ' ')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if(dpDetails[0].dataType == 'Number' && (dpDetails[0].measureType == '' || dpDetails[0].measureType == ' ')){
-                  dataType = "Number";
+                if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                  if (item.childFields?.placeValue == 'Number') {
+                    dataType =  item.childFields?.uom ? `${item.childFields?.uom}` : "Number";                   
+                  } else {
+                    // dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                    dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
+                  }
+                } else if(dpDetails[0]?.dataType == 'Number' && item.childFields?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                  dataType = item.childFields?.placeValue ? item.childFields?.placeValue : "Number";
                 }else{
                   dataType = "Text"
                 }
@@ -409,25 +525,67 @@ export const exportReport = async (req, res, next) => {
                 } else {
                   responseValue = item.childFields.response ? item.childFields.response : "";
                 }
-                objectToPushAsChild['Item Code'] = item.childFields.dpCode ? item.childFields.dpCode : "";
-                objectToPushAsChild["company_data_element_label (for numbers)"] = item.childFields.companyDataElementLabel ? item.childFields.companyDataElementLabel : "";
-                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item.childFields.companyDataElementSubLabel ? item.childFields.companyDataElementSubLabel : "";
+
+                let date1 = item.childFields.publicationDate ? item.childFields.publicationDate :  "";
+                let documentYear;
+                if (date1 != "" && date1 != " " && date1 != '' && date1 != ' ') {
+                  var month1 = date1.getUTCMonth(); //months from 1-12
+                  var day = date1.getUTCDate();
+                  var year = date1.getUTCFullYear()
+                  // let date2 = date1.split('T');
+                  let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
+                  // let formattedDate = date2[0].split('-');
+                  let month = months[month1];
+                  documentYear = `${day}-${month}-${year}`
+                } else {
+                  documentYear = "";
+                }
+
+                objectToPushAsChild['Item Code'] = item?.childFields?.dpCode ? item?.childFields?.dpCode : "";
+                objectToPushAsChild["company_data_element_label (for numbers)"] = item?.childFields?.companyDataElementLabel ? item?.childFields?.companyDataElementLabel : "";
+                objectToPushAsChild["company_data_element_sub_label (for numbers)"] = item?.childFields?.companyDataElementSubLabel ? item?.childFields?.companyDataElementSubLabel : "";
                 objectToPushAsChild["data_value"] = responseValue;
                 objectToPushAsChild["data_type (number, text, units)"] = dataType ? dataType : "";
-                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item.childFields.formatOfDataProvidedByCompanyChartTableText ? item.childFields.formatOfDataProvidedByCompanyChartTableText : "";
-                objectToPushAsChild["supporting_narrative"] = item.childFields.textSnippet ? item.childFields.textSnippet : "";
-                objectToPushAsChild["section_of_document"] = item.childFields.sectionOfDocument ? item.childFields.sectionOfDocument : "";
-                objectToPushAsChild["page_number"] = item.childFields.pageNumber ? item.childFields.pageNumber : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item?.childFields?.formatOfDataProvidedByCompanyChartTableText ? item?.childFields?.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["supporting_narrative"] = item?.childFields?.textSnippet ? item?.childFields?.textSnippet : "";
+                objectToPushAsChild["section_of_document"] = item?.childFields?.sectionOfDocument ? item?.childFields?.sectionOfDocument : "";
+                objectToPushAsChild["page_number"] = item?.childFields?.pageNumber ? item?.childFields?.pageNumber : "";
                 objectToPushAsChild['Snapshot'] = '';
-                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item.childFields.typeOf ? item.childFields.typeOf : "";
-              }
-              if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
-                objectToPushAsChild["company_data_element_label "] = "";
-                objectToPushAsChild["company_data_element_sub_label"] = "";
-                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
-                rows.push(objectToPushAsChild);
-              } else {
-                rows.push(objectToPushAsChild);
+                objectToPushAsChild["Keyword_used"] = item?.childFields?.keywordUsed ? item?.childFields?.keywordUsed : "";
+                objectToPushAsChild["type of value(actual/derived/Proxy)"] = item?.childFields?.typeOf ? item?.childFields?.typeOf : "";
+                objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item?.childFields?.formatOfDataProvidedByCompanyChartTableText ? item?.childFields?.formatOfDataProvidedByCompanyChartTableText : "";
+                objectToPushAsChild["did_the_company_report"] = item?.childFields?.didTheCompanyReport ? item?.childFields?.didTheCompanyReport : "";
+                objectToPushAsChild["name_of_document_as_saved"] = item?.childFields?.sourceName ? item?.childFields?.sourceName : "";
+                objectToPushAsChild["name_of_document (as listed on title page)"] = item?.childFields?.sourceTitle ? item?.childFields?.sourceTitle : "";
+                objectToPushAsChild["HTML Link of Document"] = item?.childFields?.url ? item?.childFields?.url : "";
+                objectToPushAsChild["Document Year"] = documentYear;
+                objectToPushAsChild["Comment_G"] = item?.childFields?.commentG ? item?.childFields?.commentG : "";
+                objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "subline";
+
+
+                // if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
+                //   objectToPushAsChild["company_data_element_label "] = "";
+                //   objectToPushAsChild["company_data_element_sub_label"] = "";
+                //   objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
+                //   rows.push(objectToPushAsChild);
+                // } else {
+                //   rows.push(objectToPushAsChild);
+                // }
+
+                if ((responseValue == 'NI' || responseValue == 'NA' || responseValue == 'Na') && item.childFields.didTheCompanyReport == "No") {
+                  let responseObjectToPush = await getResponseObject(objectToPushAsChild);
+                  rows.push(responseObjectToPush);
+                } else if ((responseValue == 'NI' || responseValue == 'NA') && item.childFields.didTheCompanyReport == "Yes") {
+                  objectToPushAsChild['data_type (number, text, units)'] = "";
+                  rows.push(objectToPushAsChild);
+                } else if(item.childFields.formatOfDataProvidedByCompanyChartTableText == "Text"){
+                  objectToPushAsChild["company_data_element_label (for numbers)"] = "";
+                  objectToPushAsChild["company_data_element_sub_label (for numbers)"] = "";
+                  objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
+                  rows.push(objectToPushAsChild);
+                } else {
+                  rows.push(objectToPushAsChild);
+                }
               }
             }
           }
@@ -481,4 +639,77 @@ export async function getResponseObject (responseObject) {
   responseObject["Additional Source Used?"] = "";
 
   return responseObject;
+}
+
+export const companySearch = async (req, res, next) => {
+  
+  const { clientTaxonomyId, nicList, batchList, companyName } = req.body;
+  try {
+    if (clientTaxonomyId && companyName) {
+      let companyFindQuery = { clientTaxonomyId: mongoose.mongo.ObjectId(clientTaxonomyId), status: true };
+      if (nicList && nicList?.length > 0) {
+        let nics = [];
+        for (let nicIndex = 0; nicIndex < nicList.length; nicIndex++) {
+          nics.push(nicList[nicIndex].value);
+        }
+        companyFindQuery.nic = { $in: nics };
+      }
+      if (batchList && batchList?.length > 0) {
+        let batchIds = [];
+        for (let nicIndex = 0; nicIndex < batchList.length; nicIndex++) {
+          batchIds.push(batchList[nicIndex].value);
+        }
+        let batchCompanyDetails = await Batches.find({_id: { $in: batchIds } }).populate('companiesList');
+        let batchCompanyIds = [];
+        for (let batchIndex = 0; batchIndex < batchCompanyDetails.length; batchIndex++) {
+          let cmpItem = batchCompanyDetails[batchIndex].companiesList;
+          for (let cmpIndex = 0; cmpIndex < cmpItem.length; cmpIndex++) {
+            let companyItem = cmpItem[cmpIndex];
+            if(!batchCompanyIds.includes(mongoose.mongo.ObjectId(companyItem.id))){
+              batchCompanyIds.push(mongoose.mongo.ObjectId(companyItem.id));
+            }
+          }
+        }
+        companyFindQuery.$and = [
+          {
+            $or : [
+              { companyName: { '$regex': companyName, '$options': 'i' } },
+              { cin: { '$regex': companyName, '$options': 'i' } }
+            ]
+          },
+          {
+            _id: { $in: batchCompanyIds }
+          }
+        ]
+      } else {
+        companyFindQuery.$or = [
+          { companyName: { '$regex': companyName, '$options': 'i' } },
+          { cin: { '$regex': companyName, '$options': 'i' } }
+        ];
+      }
+      await Companies.aggregate([{ $match: companyFindQuery }, { $limit: 10 }, 
+        {
+          $project: {
+            "value": "$_id",
+            "_id": 0,
+            "label": "$companyName"
+          }
+        }
+      ])
+      .then((companies) => {
+        return res.status(200).json({ status: "200", 
+        message: "Retrieved matching companies successfully!", data: companies ? companies : [] });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: error.message ? error.message : "No Companies found!" });
+      })
+    } else {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "No Companies found!" });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "500",
+      message: error.message ? error.message : "No Companies found!"
+    })
+  }
 }

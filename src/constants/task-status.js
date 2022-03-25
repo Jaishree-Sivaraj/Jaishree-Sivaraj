@@ -8,3 +8,5 @@ export const YetToStart = 'Yet to Start';
 export const Pending = 'Pending';
 export const Correction = 'Correction';
 export const Error = 'Error';
+export const Incomplete = 'Incomplete';
+export const Collection = 'Collection';

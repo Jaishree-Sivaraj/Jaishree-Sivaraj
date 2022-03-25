@@ -13,7 +13,8 @@ import { MeasureUoms } from '../measure_uoms'
 import { PlaceValues } from '../place_values'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
-import { Completed } from '../../constants/task-status';
+import { Completed, CorrectionPending, ReassignmentPending } from '../../constants/task-status';
+
 
 import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 let requiredFields = [
@@ -61,7 +62,7 @@ let requiredFields = [
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
-        const { taskId, datapointId, memberType, memberName, role, year, memberId } = req.body;
+        const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -108,6 +109,12 @@ export const repDatapointDetails = async (req, res, next) => {
             CompanySources.find({ companyId: taskDetails.companyId.id }),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id)
         ]);
+
+        currentYear = getSortedYear(currentYear);
+        if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== "Number") {
+            currentYear.length = 1
+        }
+
         let dpMeasureType = measureTypes?.filter(obj => obj?.measureName.toLowerCase() == dpTypeValues?.measureType.toLowerCase());
         let dpMeasureTypeId = dpMeasureType?.length > 0 ? dpMeasureType[0]?.id : null;
         let taxonomyUoms = await MeasureUoms.find({
@@ -136,7 +143,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
-                publicationDate: company.publicationDate
+                publicationDate: company.publicationDate,
+                sourceFile: company?.sourceFile ? company?.sourceFile : ''
             })
         });
 
@@ -186,8 +194,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }
         }
 
-        let index, prevDatapoint = {}, nextDatapoint = {};
-        const allDatapoints = await Datapoints.find({
+        let datapointQuery = {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
@@ -196,7 +203,32 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }).populate('keyIssueId').populate('categoryId').sort({ code: 1 });
+        }
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+            let allDpDetails;
+            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
+            switch (memberType) {
+                case STANDALONE:
+                    allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
+                    break;
+                case BOARD_MATRIX:
+                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                case KMP_MATRIX:
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    break;
+                default:
+                    break;
+
+            }
+            allDpPointQuery = { ...allDpPointQuery, _id: { $in: allDpDetails } }
+
+        }
+
+        let index, prevDatapoint = {}, nextDatapoint = {};
+        datapointQuery = keyIssueId == '' ? datapointQuery : { ...datapointQuery, keyIssueId };
+        const allDatapoints = await Datapoints.find(datapointQuery).populate('keyIssueId')
+            .populate('categoryId').sort({ code: 1 });
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
@@ -211,7 +243,14 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataRefErrorScreenshot = [];
         let totalHistories = 0;
         let childDp = [];
-        currentYear = getSortedYear(currentYear);
+        let sourceDetails = {
+            url: '',
+            sourceName: '',
+            value: '',
+            publicationDate: '',
+            sourceFile: '',
+        };
+
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
@@ -234,12 +273,6 @@ export const repDatapointDetails = async (req, res, next) => {
                 }
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
                         const object = currentAllStandaloneDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -342,9 +375,10 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject
                     },
-                    dpCodeData: datapointsObject
+
 
                 });
             case BOARD_MATRIX:
@@ -377,12 +411,6 @@ export const repDatapointDetails = async (req, res, next) => {
                 // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllBoardMemberMatrixDetails.length; currentIndex++) {
                         let object = currentAllBoardMemberMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -479,9 +507,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
 
                 });
             case KMP_MATRIX:
@@ -511,12 +539,6 @@ export const repDatapointDetails = async (req, res, next) => {
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
-                    let sourceDetails = {
-                        url: '',
-                        sourceName: "",
-                        value: "",
-                        publicationDate: ''
-                    };
                     for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
                         let object = currentAllKmpMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
@@ -609,9 +631,9 @@ export const repDatapointDetails = async (req, res, next) => {
 
                         prevDatapoint,
                         nextDatapoint,
-                        chilDpHeaders
-                    },
-                    dpCodeData: datapointsObject,
+                        chilDpHeaders,
+                        dpCodeData: datapointsObject,
+                    }
                 });
             default:
                 return res.status(500).json({

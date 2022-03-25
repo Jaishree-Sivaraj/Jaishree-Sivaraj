@@ -2,17 +2,18 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, reportsFilter, exportReport } from './controller'
+import { create, index, reportsFilter, exportReport, companySearch } from './controller'
 
-const { clientTaxonomyId, searchQuery, page, limit } = '';
-const { selectedCompanies, nicList, yearsList, pillarList } = [];
+const { clientTaxonomyId, searchQuery, page, limit, companyName } = '';
+const { selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
+const { isSelectedAll } = false;
 
 
 const router = new Router()
 
 /**
- * @api {post} /reports/filter Create reports
- * @apiName CreateReports
+ * @api {post} /reports/filter Filter reports
+ * @apiName FilterReports
  * @apiGroup Reports
  * @apiPermission user
  * @apiParam {String} access_token user access token.
@@ -23,11 +24,11 @@ const router = new Router()
  */
 router.post('/filter',
   token({ required: true }),
-  body({ clientTaxonomyId, nicList, yearsList, pillarList, searchQuery, page, limit }),
+  body({ clientTaxonomyId, nicList, yearsList, pillarList, batchList, filteredCompanies, page, limit }),
   reportsFilter)
   
 /**
- * @api {post} /reports/export Create reports
+ * @api {post} /reports/export Create reports.
  * @apiName CreateReports
  * @apiGroup Reports
  * @apiPermission user
@@ -39,8 +40,24 @@ router.post('/filter',
  */
 router.post('/export',
 token({ required: true }),
-body({ clientTaxonomyId, selectedCompanies, yearsList, pillarList }),
+body({ clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll }),
 exportReport)
+  
+/**
+ * @api {post} /reports/company-search Company Search
+ * @apiName CompanySearch
+ * @apiGroup Reports
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} reports Reports's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Reports not found.
+ * @apiError 401 user access only.
+ */
+router.post('/company-search',
+token({ required: true }),
+body({ clientTaxonomyId, companyName, batchList, nicList }),
+companySearch)
 
 /**
  * @api {get} /reports Retrieve reports
