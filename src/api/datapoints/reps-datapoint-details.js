@@ -194,7 +194,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }
         }
 
-        let allDpPointQuery = {
+        let datapointQuery = {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
@@ -203,26 +203,6 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }
-        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
-            let allDpDetails;
-            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
-            switch (memberType) {
-                case STANDALONE:
-                    allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
-                    break;
-                case BOARD_MATRIX:
-                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
-                    break;
-                case KMP_MATRIX:
-                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
-                    break;
-                default:
-                    break;
-
-            }
-            allDpPointQuery = { ...allDpPointQuery, _id: { $in: allDpDetails } }
-
         }
 
         let index, prevDatapoint = {}, nextDatapoint = {};
