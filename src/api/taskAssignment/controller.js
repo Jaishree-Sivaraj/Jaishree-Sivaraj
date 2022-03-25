@@ -5,8 +5,6 @@ import { Role } from "../role";
 import { Group } from "../group";
 import { Categories } from "../categories";
 import { Batches } from "../batches";
-import { CompanyRepresentatives } from "../company-representatives";
-import { ClientRepresentatives } from "../client-representatives";
 import { CompaniesTasks } from "../companies_tasks";
 import { UserPillarAssignments } from "../user_pillar_assignments";
 import { ControversyTasks } from "../controversy_tasks";
@@ -24,6 +22,9 @@ import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
 import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
+import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
+import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
 import {
   VerificationCompleted,
   CorrectionPending,
@@ -31,10 +32,12 @@ import {
   CorrectionCompleted,
   Completed,
   CollectionCompleted,
+  Correction,
+  Incomplete
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
-import { CompanyRepresentative , ClientRepresentative } from '../../constants/roles'
+import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -141,10 +144,19 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
     qaId: body.qa.value,
     createdBy: user,
   };
-  var taskArray = [];
+  // var taskArray = [];
+  let taskAssign = [];
+  let companyIds = []
+  body.company.map((company) => {
+    companyIds.push(company.id)
+  });
+  let clientTaxDtl = await Companies.findOne({ _id: { $in: companyIds } }).populate('clientTaxonomyId');
   for (let index = 0; index < body.company.length; index++) {
     taskObject.companyId = body.company[index].id;
-    taskObject.taskNumber = "DT1";
+    taskObject.taskNumber = 'DT1';
+    if (clientTaxDtl.clientTaxonomyId && clientTaxDtl.clientTaxonomyId.isDerivedCalculationRequired == false) {
+      taskObject.isDerviedCalculationCompleted = true;
+    }
     await TaskAssignment.findOne({ status: true })
       .sort({ createdAt: -1 })
       .limit(1)
@@ -157,6 +169,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
         }
         await TaskAssignment.create(taskObject)
           .then(async (taskAssignment) => {
+            taskAssign.push(taskAssignment.view(true));
             if (taskAssignment.year) {
               let years = taskAssignment.year.split(', ');
               if (years.length > 1) {
@@ -169,7 +182,8 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
                     taskId: taskAssignment.id,
                     createdBy: taskObject.createdBy,
                   }).then(async () => {
-                    taskArray.push(taskAssignment.view(true));
+                    // console.log(taskAssignment.view(true))
+                    // taskArray.push(taskAssignment.view(true));
                   }).catch((error) => {
                     return res.status(400).json({
                       status: "400",
@@ -186,7 +200,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
                   taskId: taskAssignment.id,
                   createdBy: taskObject.createdBy,
                 }).then(async () => {
-                  taskArray.push(taskAssignment.view(true));
+                  // taskArray.push(taskAssignment.view(true));
                 }).catch((error) => {
                   return res.status(400).json({
                     status: "400",
@@ -211,7 +225,7 @@ export const createTask = async ({ user, bodymen: { body } }, res, next) => {
   res.status(200).json({
     status: "200",
     message: "Task created successfully!",
-    data: taskArray,
+    data: taskAssign,
   });
 };
 
@@ -499,7 +513,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
     if (query.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else {
+  } else if (params.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
   if (userRoles.includes(params.role)) {
@@ -655,7 +669,7 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ])
                 // let totalNoOfControversy;
                 // let controCount = _.countBy(allControversyTasks, obj => obj.taskId ? obj.taskId._id < controversyTasks[cIndex].id : null).true;
@@ -1235,6 +1249,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
+              }, {
+                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1286,7 +1302,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
           userId: completeUserDetail.id,
           status: true
         }).populate('companiesList')
-        .catch((err) => { return res.status(400).json({ status:"400", message: err.message ? err.message : "Invalid user Id" }) });
+          .catch((err) => { return res.status(400).json({ status: "400", message: err.message ? err.message : "Invalid user Id" }) });
         if (clientRepDetail && clientRepDetail.companiesList) {
           if (params.type == "DataReview") {
             findQuery = {
@@ -1364,9 +1380,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
                   Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                  Controversy.count({ taskId: controversyTasks[cIndex].id, status: true, isActive: true })
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
                 object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0].reassessmentDate : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
@@ -1592,7 +1609,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
           await Notifications.create({
             notifyToUser: result.groupId.groupAdmin,
             notificationType: "/tasklist",
-            content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+            content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
             notificationTitle: "Reassignment Pending",
             status: true,
             isRead: false
@@ -1605,7 +1622,7 @@ export const updateSlaDates = async ({ user, bodymen: { body }, params }, res, n
             await Notifications.create({
               notifyToUser: allAdminUserIds[admIndex],
               notificationType: "/tasklist",
-              content: "Reassign the task for Analyst as it has some errors TaskID - " + result.taskNumber,
+              content: "Reassign the task for Analyst as it has some errors TaskID - " + `${result.taskNumber}, CompanyName - ${result.companyId.companyName}`,
               notificationTitle: "Reassignment Pending",
               status: true,
               isRead: false
@@ -1705,7 +1722,7 @@ export const getGroupAndBatches = async ({ user, params }, res, next) => {
                 resObject.groupID = group[index].id;
                 resObject.assignedBatches = [];
                 for (let index1 = 0; index1 < group[index].batchList.length; index1++) {
-  
+
                   let foundCategories = categories.filter(obj => obj.clientTaxonomyId.id == group[index].batchList[index1].clientTaxonomy);
                   var batchDetailsObject = group[index].batchList[index1];
                   var batchDetails = {
@@ -1775,8 +1792,8 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
           });
         }
         var assignedCompanyList = await TaskAssignment.find({ categoryId: body.categoryId, year: years, companyId: batch.companiesList[index].id })
-        .populate("companyId")
-        .catch((error) => { return res.status(500).json({ status: "500", message: error.message  }) })
+          .populate("companyId")
+          .catch((error) => { return res.status(500).json({ status: "500", message: error.message }) })
         if (assignedCompanyList.length === 0) {
           unAssignedCompanyList.push({
             id: batch.companiesList[index].id,
@@ -1808,7 +1825,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
             { primaryPillar: body.categoryId },
           ]
         }).populate("primaryPillar").populate("secondaryPillar")
-        .catch((error) => { return res.status(500).json({ status: "500", message: error.message }) })
+          .catch((error) => { return res.status(500).json({ status: "500", message: error.message }) })
         if (userPillar && Object.keys(userPillar).length > 0) {
           if (userPillar.primaryPillar.id === body.categoryId) {
             qaObject.primaryPillar = true;
@@ -1874,7 +1891,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
       return res.status(200).json({ data: resObj });
     }
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve the users!" })   
+    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve the users!" })
   }
 }
 
@@ -1882,7 +1899,7 @@ export const getUsers = async ({ user, bodymen: { body } }, res, next) => {
 export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next) => {
   try {
     if (body.role == Analyst && !body.skipValidation) {
-      let failedCount = await ValidationResults.countDocuments({taskId: body.taskId, isValidResponse: false, status: true});
+      let failedCount = await ValidationResults.countDocuments({ taskId: body.taskId, isValidResponse: false, status: true });
       if (failedCount > 0) {
         return res.status(400).json({ status: "400", message: "Few validations are still failed, Please check before submitting or skip the validation!" })
       }
@@ -1890,11 +1907,16 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     // get all task details.
     const taskDetails = await TaskAssignment.findOne({
       _id: body.taskId
-    }).populate('categoryId')
-      .populate('companyId')
+    }).populate({
+      path: 'companyId',
+      populate: {
+        path: 'clientTaxonomyId'
+      }
+    })
       .populate('groupId')
+      .populate('categoryId')
     // Get distinct years
-    const distinctYears = taskDetails.year.split(',');
+    let distinctYears = taskDetails.year.split(', ');
     let datapointsCount = 0;
     let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
     const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
@@ -1908,11 +1930,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       status: true
     }
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
-      query.datapointId = { $in: reqDpCodes } 
+    if (body.skipValidation) {
+      query.datapointId = { $in: reqDpCodes }
     }
     // StandAlone, BoardMatrix and KMP are DpTypes.
-    const [allStandaloneDetails, allBoardMemberMatrixDetails1, allKmpMatrixDetails1] = await Promise.all([
+    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
       StandaloneDatapoints.find(query)
         .populate('createdBy')
         .populate('datapointId')
@@ -1920,64 +1942,76 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       BoardMembersMatrixDataPoints.find(query),
       KmpMatrixDataPoints.find(query)
     ])
-    const mergedDetails = _.concat(allKmpMatrixDetails1, allBoardMemberMatrixDetails1, allStandaloneDetails);
+    const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
 
-    for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-      const query = {
-        taskId: body.taskId,
-        companyId: taskDetails.companyId.id,
-        year: distinctYears[yearIndex],
-        isActive: true,
-        status: true
-      }
-      const [allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
-        BoardMembersMatrixDataPoints.distinct('datapointId', query),
-        KmpMatrixDataPoints.distinct('datapointId', query)
-      ])
-      datapointsCount = datapointsCount + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
-    }
-    datapointsCount += allStandaloneDetails.length;
+    // It does not need to be distinct, it just need to be the ones which has Status as true and isActive as true.
+    datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
     let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
-      categoryId: taskDetails.categoryId.id,
+      categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id }
     }
+    console.log(datapointQuery)
 
-    if (user.userType == ClientRepresentative || user.userType == CompanyRepresentative) {
-      datapointQuery.isRequiredForReps = true 
+    if (body.skipValidation) {
+      datapointQuery.isRequiredForReps = true
     }
 
-    let datapoints = await Datapoints.find({...datapointQuery});
+
+    let datapoints = await Datapoints.find({ ...datapointQuery });
 
     // mergedDetails is the Dp codes of all Dp Types.
-    const [hasError, hasCorrection, multipliedValue] = [
+    let [hasError, hasCorrection, isCorrectionStatusIncomplete, multipliedValue] = [
       mergedDetails.find(object => object.hasError == true),
       mergedDetails.find(object => object.hasCorrection == true),
+      mergedDetails.find(object => object.correctionStatus == Incomplete),
       datapoints.length * distinctYears.length];
+
+    if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
+      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
+      let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
+      allDpForTask.map((task) => {
+        if (task?.dataType !== "Number") {
+          totalQualitativeDatapoints += 1
+        } else {
+          totalQuantativeDatapoints += 1
+
+        }
+      });
+      multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
+    }
+
+    const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
+      ? datapointsCount <= multipliedValue : datapointsCount <= multipliedValue && !isCorrectionStatusIncomplete
+
     let taskStatusValue = "";
-    if (datapointsCount == multipliedValue && hasError) {
+    if (hasError && condition) {
       taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
 
       const [query, update, query1, update1] = [
         { taskId: body.taskId, isActive: true, status: true, hasError: true },
         { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } },
-        { taskId: body.taskId, isActive: true, status: true, hasError: false, dpStatus: 'Correction' },
-        { $set: { dpStatus: 'Collection', correctionStatus: 'Incomplete' } }
+        { taskId: body.taskId, isActive: true, status: true, hasError: false },
+        { $set: { dpStatus: 'Collection', correctionStatus: 'Completed' } }
       ]
       await Promise.all([
         KmpMatrixDataPoints.updateMany(query, update),
         BoardMembersMatrixDataPoints.updateMany(query, update),
         StandaloneDatapoints.updateMany(query, update),
         KmpMatrixDataPoints.updateMany(query1, update1),
-        BoardMembersMatrixDataPoints.updateMany(query1, update),
+        BoardMembersMatrixDataPoints.updateMany(query1, update1),
         StandaloneDatapoints.updateMany(query1, update1),
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
-    } else if (
-      datapointsCount == multipliedValue &&
-      hasCorrection) {
-      taskStatusValue = CorrectionCompleted;
+    } else if (hasCorrection && condition) {
+      if (body.role == QA) {
+        taskStatusValue = VerificationCompleted;
+      } else if (body.role == Analyst) {
+        taskStatusValue = CorrectionCompleted;
+      } else {
+        taskStatusValue = Completed;
+      }
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
         { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
@@ -1988,17 +2022,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
         StandaloneDatapoints.updateMany(query, update),
         TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
       ])
-    }
-    else if (
-      datapointsCount == multipliedValue &&
-      hasError == undefined &&
-      hasCorrection == undefined
-    ) {
+    } else if (!hasError && !hasCorrection && condition) {
       taskStatusValue = body.role == QA ? VerificationCompleted : Completed
       taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
       const [query, update,] = [
         { taskId: body.taskId, isActive: true, status: true },
-        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
+        { $set: { dpStatus: Correction, correctionStatus: Incomplete } }
       ]
       await Promise.all([
         KmpMatrixDataPoints.updateMany(query, update),
@@ -2049,7 +2078,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (taskStatusValue == 'Reassignment Pending') {
       const query = {
         notificationType: "/tasklist",
-        content: "Reassign the task for Analyst as it has some errors TaskID - " + taskDetails.taskNumber,
+        content: "Reassign the task for Analyst as it has some errors TaskID - " + `${taskDetails.taskNumber}, CompanyName - ${taskDetails.companyId.companyName}`,
         notificationTitle: "Reassignment Pending",
         status: true,
         isRead: false

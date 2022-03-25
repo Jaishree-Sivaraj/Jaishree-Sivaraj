@@ -170,21 +170,20 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   try {
     const bodyData = Buffer.from(body.onBoardingDetails, 'base64');
     const onBoardingDetails = JSON.parse(bodyData);
-    console.log(onBoardingDetails)
     let userObject, userUpdate;
-    const [oboardingEmailDetails, roleDetails] = await Promise.all
+    const [onboardingEmailDetails, roleDetails] = await Promise.all
       ([
         OnboardingEmails.findOne({ emailId: onBoardingDetails.email }),
         Role.find({ roleName: { $in: GroupRoles } })
       ])
-    if (oboardingEmailDetails) {
-      const userFound = await User.findOne({ email: oboardingEmailDetails.emailId });
+    if (onboardingEmailDetails) {
+      const userFound = await User.findOne({ email: onboardingEmailDetails.emailId });
       const roleObject = roleDetails.find((rec) => rec.roleName === onBoardingDetails.roleName)
       if (userFound) {
         if (!userFound.isUserApproved) {
           switch (roleObject.roleName) {
             case Employee:
-              userObject = getUserDetail(oboardingEmailDetails, roleObject);
+              userObject = getEmployeeUserDetail(onboardingEmailDetails, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
                 const empDetails = await getEmployee(onBoardingDetails, userFound?.id);
@@ -220,7 +219,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
               }
             case ClientRepresentative:
             case CompanyRepresentative:
-              userObject = getUserDetail(oboardingEmailDetails, roleObject);
+              userObject = getUserDetail(userFound, roleObject);
               userUpdate = await User.updateOne({ _id: userFound.id }, { $set: userObject });
               if (userUpdate) {
                 const repDetails = await getRepDetails(onBoardingDetails.roleName, onBoardingDetails, userFound);
@@ -276,7 +275,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       } else {
         switch (roleObject.roleName) {
           case Employee:
-            userObject = getUserDetail(onBoardingDetails, roleObject);
+            userObject = getEmployeeUserDetail(onBoardingDetails, roleObject);
             const userCreate = await User.create({
               email: onBoardingDetails.email ? onBoardingDetails.email : '',
               password: onBoardingDetails.password ? onBoardingDetails.password : '',
@@ -349,7 +348,7 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
                 });
 
               } else {
-               return  res.status(400).json({
+                return res.status(400).json({
                   status: "400",
                   message: `${roleObject.roleName} failed to create`
                 })
@@ -401,6 +400,16 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
     return {
       name: onBoardingDetails.name ? onBoardingDetails.name : '',
       userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
+      phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : '',
+      isUserApproved: false,
+      isUserRejected: false
+    }
+  }
+
+  function getEmployeeUserDetail(onBoardingDetails, roleObject) {
+    return {
+      name: onBoardingDetails.firstName ? `${onBoardingDetails.firstName} ${onBoardingDetails.middleName} ${onBoardingDetails.lastName}` : ' ',
+      userType: roleObject && roleObject.roleName ? roleObject.roleName : '',
       phoneNumber: onBoardingDetails.phoneNumber ? onBoardingDetails.phoneNumber : ''
     }
   }
@@ -439,7 +448,6 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
   }
 
   async function getRepDetails(role, onBoardingDetails, userDetails) {
-    console.log(onBoardingDetails)
     const authenticationLetter = role === ClientRepresentative ?
       onBoardingDetails.authenticationLetterForClientUrl.split(';')[0].split('/')[1]
       : onBoardingDetails.authenticationLetterForCompanyUrl.split(';')[0].split('/')[1];
@@ -448,21 +456,25 @@ export const onBoardNewUser = async ({ bodymen: { body }, params, user }, res, n
       userDetails?.id + '_' + Date.now() + '.' + authenticationLetter
       : userDetails?.id + '_' + Date.now() + '.' + authenticationLetter;
 
+
     role === ClientRepresentative ?
       await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForClientUrl)
       : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, authenticationLetterUrl, onBoardingDetails.authenticationLetterForCompanyUrl);
+
 
     const companyIdForFiletype = role === ClientRepresentative ?
       onBoardingDetails.companyIdForClient.split(';')[0].split('/')[1]
       : onBoardingDetails.companyIdForCompany.split(';')[0].split('/')[1];
 
+
     const companyId = role === ClientRepresentative ?
       userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype
       : userDetails?.id + '_' + Date.now() + '.' + companyIdForFiletype;
 
+
     role === ClientRepresentative ?
       await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForClient)
-      : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForClient);
+      : await storeFileInS3(process.env.USER_DOCUMENTS_BUCKET_NAME, companyId, onBoardingDetails.companyIdForCompany);
 
     return role === ClientRepresentative ? {
       authenticationLetterForClientUrl: authenticationLetterUrl,
@@ -510,7 +522,7 @@ export const updateUserStatus = ({ bodymen: { body }, user }, res, next) => {
         return res.status(400).json({ message: "Invalid UserId" });
       }
     })
-    .catch((error) => { return  res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
+    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 
 }
 
@@ -735,7 +747,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       });
     }
   })
-  .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
+    .catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update the user status" }) })
 }
 
 export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =>
@@ -966,7 +978,6 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                       }], status: true
                     }).distinct('email');
                     for (let index = 0; index < allAdminUserEmailIds.length; index++) {
-                      console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
                       let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
                       console.log("");
                       //nodemail code will come here to send OTP
@@ -1033,7 +1044,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
           existingEmails.push(emailAlreadyExists.email);
         }
       }
-  
+
       for (let index = 0; index < emailList.length; index++) {
         const rowObject = emailList[index];
         let emailAlreadyExists = activeUsers.find(object => rowObject['email'] == object.email && object.isUserApproved == true);
@@ -1061,7 +1072,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                 emailId: email, isOnboarded: false, createdBy: user.id
               }
             }, { upsert: true })
-  
+
           } else if (rolesDetails && (rolesDetails.roleName == ClientRepresentative
             || rolesDetails.roleName == "ClientRepresentative"
             || rolesDetails.roleName == CompanyRepresentative
@@ -1075,15 +1086,15 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
                   { $in: adminRoleIds }
               }], status: true
             }).distinct('email');
-  
+
             for (let index = 0; index < allAdminUserEmailIds.length; index++) {
               console.log("allAdminUserEmail", allAdminUserEmailIds[index]);
               let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`;
-  
+
               const content = `
                 Email: ${rowObject['email']}<br/><br/>
                 Link: ${url}<br/><br/>`;
-  
+
               await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
                 .then((resp) => { console.log('Mail sent!'); });
               let email = `${rowObject['email']}`;
@@ -1103,7 +1114,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
       if (existingEmails.length > 0) {
         return res.status(409).json({ status: "409", message: `User with same email id: ${existingEmails}, already exits` });
       } else {
-  
+
         return res.status(200).json({ status: "200", message: "Emails Sent Sucessfully", UsersAlreadyOnboarded: existingEmails.length > 0 ? existingEmails : "Nil" });
       }
     } else {

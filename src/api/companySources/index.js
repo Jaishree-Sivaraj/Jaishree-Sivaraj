@@ -6,7 +6,7 @@ import { schema } from './model'
 export CompanySources, { schema } from './model'
 
 const router = new Router()
-const { sourceTypeId, url, sourceFile, publicationDate, companyId, isMultiYear, isMultiSource, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name } = schema.tree
+const { sourceTypeId, url, sourceUrl, sourceFile, publicationDate, companyId, isMultiYear, isMultiSource, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name, sourceTitle } = schema.tree
 
 /**
  * @api {post} /companySources Create company sources
@@ -45,7 +45,7 @@ router.post('/',
  * @apiError 404 Company sources not found.
  */
 router.post('/uploadCompanySource',
-  body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name }),
+  body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name, sourceTitle }),
   uploadCompanySource)
 
 
@@ -96,8 +96,8 @@ router.get('/:id',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Company sources not found.
  */
-router.put('/:id',
-  body({ sourceTypeId, url, sourceFile, publicationDate }),
+router.patch('/:id',
+  body({ sourceTypeId, sourceUrl, sourceFile, publicationDate, sourceTitle }),
   update)
 
 /**

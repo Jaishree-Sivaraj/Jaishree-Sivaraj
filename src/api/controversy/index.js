@@ -10,7 +10,7 @@ const router = new Router()
 
 const { taskId, controversyNumber, datapointId, companyId, year, controversyDetails, pageNumber, sourceName, sourceURL, textSnippet, sourcePublicationDate, publicationDate, comments, submittedDate, response, additionalDetails, status, nextReviewDate,assessmentDate,reassessmentDate,reviewDate,fiscalYearEndDate, reviewedByCommittee} = schema.tree
 const dpCodeId = '', source = {}, pageNo = '', screenShot = [];
-const isApplicableForCommiteeReview  = {} ,controversyFiscalYear  = "",controversyFiscalYearEnd = ""
+const isApplicableForCommiteeReview  = {} ,controversyFiscalYear  = "",controversyFiscalYearEndDate = ""
 
 /**
  * @api {post} /controversies Create controversy
@@ -73,7 +73,7 @@ router.post('/',
  * @apiParam assessmentDate Controversy's assessmentDate.
  * @apiParam reassessmentDate Controversy's reassessmentDate.
  * @apiParam controversyFiscalYear Controversy's controversyFiscalYear.
- * @apiParam controversyFiscalYearEnd Controversy's controversyFiscalYearEnd.
+ * @apiParam controversyFiscalYearEndDate Controversy's controversyFiscalYearEndDate.
  * @apiParam additionalDetails Controversy's additionalDetails.
  * @apiParam nextReviewDate Controversy's nextReviewDate.
  * @apiSuccess {Object} controversy Controversy's data.
@@ -83,7 +83,7 @@ router.post('/',
  */
 router.post('/add/new-controversy',
   token({ required: true }),
-  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
+  body({ dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEndDate }),
   addNewControversy)
 
 /**
@@ -195,7 +195,7 @@ router.put('/:id',
  */
 router.put('/update/:id',
   token({ required: true }),
-  body({ controversyNumber,dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEnd }),
+  body({ controversyNumber,dpCodeId, companyId, taskId, source, response, textSnippet, screenShot, pageNo, comments, additionalDetails, nextReviewDate,reviewDate, isApplicableForCommiteeReview,assessmentDate,reassessmentDate,controversyFiscalYear,controversyFiscalYearEndDate }),
   updateControversy)
 
 /**

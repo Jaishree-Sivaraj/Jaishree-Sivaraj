@@ -1,4 +1,5 @@
 'use strict';
+import _ from 'lodash'
 let subject;
 export const LINK_TO_ONBOARD_USER = 'LINK_TO_ONBOARD_USER';
 export const FAILED_TO_ONBOARD = 'FAILED_TO_ONBOARD';
@@ -112,5 +113,27 @@ export function getEmailForJsonGeneration(companyName, year) {
         Kindly contact us at support@esgds.ai in case you need any support.<br><br>    
         Regards, <br>
         ESGDS Support Team.`
+    }
+}
+
+export function notifyControJsonUpdated(companiesList) {
+    let subject = 'Controversy data updated on ESGDS InfinData Platform.';
+    let message = `Below listed company/companies have been updated for controversy - <br/>`;
+    companiesList = _.uniqBy(companiesList)
+    let notificationMessage = `${subject} for the Companies:`
+    for(let i=0;i<companiesList.length;i++){
+        message += `${companiesList[i]} <br/>`;
+        notificationMessage += `${companiesList[i]},`
+    }
+    message += `Please login into the ESGDS InfinData Platform and check the notifications within the system for additional details.<br/>
+    Kindly contact us at support@esgds.ai in case you need any support. <br/><br/>
+    
+    Regards,<br/>
+    ESGDS Support Team`;
+        
+    return {
+        subject,
+        message,
+        notificationMessage
     }
 }
