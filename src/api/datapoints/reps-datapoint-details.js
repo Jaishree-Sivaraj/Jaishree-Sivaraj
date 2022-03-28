@@ -221,7 +221,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     break;
 
             }
-            allDpPointQuery = { ...allDpPointQuery, _id: { $in: allDpDetails } }
+            datapointQuery = { ...datapointQuery, _id: { $in: allDpDetails } }
 
         }
 
