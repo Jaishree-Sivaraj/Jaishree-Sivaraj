@@ -105,12 +105,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       switch (dpType) {
         case BOARD_MATRIX:
           memberDp = await BoardMembersMatrixDataPoints.distinct('datapointId'
-            , { memberName, status: true, isActive: true });
+            , { memberName: { "$regex": memberName, "$options": "i" }, status: true, isActive: true });
           countQuery = { ...countQuery, _id: memberDp };
           break;
         case KMP_MATRIX:
           memberDp = await KmpMatrixDataPoints.distinct('datapointId'
-            , { memberName, status: true, isActive: true });
+            , { memberName: { "$regex": memberName, "$options": "i" }, status: true, isActive: true });
           countQuery = { ...countQuery, _id: memberDp };
           break;
         default:
@@ -128,10 +128,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
           break;
         case BOARD_MATRIX:
-          allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
           break;
         case KMP_MATRIX:
-          allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
           break;
         default:
           break;
