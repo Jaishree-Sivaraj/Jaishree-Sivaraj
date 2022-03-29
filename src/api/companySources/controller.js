@@ -132,6 +132,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       fiscalYear: body.fiscalYear,
       name: body.name,
       sourceTitle: body.sourceTitle,
+      fileName: body.fileName,
     }
     await CompanySources.create(companySourceDetails).then((detail) => {
       res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })

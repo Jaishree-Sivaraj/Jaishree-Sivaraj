@@ -44,6 +44,9 @@ const companySourcesSchema = new Schema({
   name: {
     type: String
   },
+  fileName: {
+    type: String
+  },
   status: {
     type: Boolean,
     default: true
@@ -69,6 +72,7 @@ companySourcesSchema.methods = {
       sourceFile: this.sourceFile,
       publicationDate: this.publicationDate,
       fiscalYear: this.fiscalYear,
+      fileName: this.fileName,
       name: this.name,
       newSourceTypeName: this.newSourceTypeName,
       newSubSourceTypeName: this.newSubSourceTypeName,
