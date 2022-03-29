@@ -54,6 +54,7 @@ import placeValues from './place_values'
 import validationResults from './validation_results'
 import childDp from './child-dp'
 import reports from './reports'
+import temp from './temp'
 
 const router = new Router()
 
@@ -135,6 +136,7 @@ router.use('/place_values', placeValues)
 router.use('/validation_results', validationResults)
 router.use('/child-dps', childDp)
 router.use('/reports', reports)
+router.use('/temp', temp)
 router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router
