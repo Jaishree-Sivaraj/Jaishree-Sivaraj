@@ -452,12 +452,14 @@ export const exportReport = async (req, res, next) => {
                     break
                   case 'dataType':
                     let dataType = '';
-                    if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType != 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType == 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
-                      dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
-                    } else if(dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
-                      dataType = "Number";
+                    if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                      if (stdData.placeValue == 'Number') {
+                        dataType =  stdData?.uom ? `${stdData?.uom?.uomName}` : "Number";                   
+                      } else {
+                        dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                      }
+                    } else if(dpDetails[0]?.dataType == 'Number' && stdData?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                      dataType = stdData?.placeValue ? stdData?.placeValue : "Number";
                     }else{
                       dataType = "Text"
                     }
@@ -505,12 +507,15 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
-                if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType != 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if (dpDetails[0]?.dataType == 'Number' && dpDetails[0]?.measureType == 'Currency' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
-                  dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
-                } else if(dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
-                  dataType = "Number";
+                if (dpDetails[0]?.dataType == 'Number' && (dpDetails[0]?.measureType != '' && dpDetails[0]?.measureType != ' ' && dpDetails[0]?.measureType != 'NA')) {
+                  if (item.childFields?.placeValue == 'Number') {
+                    dataType =  item.childFields?.uom ? `${item.childFields?.uom}` : "Number";                   
+                  } else {
+                    // dataType = stdData?.placeValue ? `${stdData?.placeValue}-${stdData?.uom?.uomName}` : "Number";
+                    dataType = item.childFields?.placeValue ? `${item.childFields?.placeValue}-${item.childFields?.uom}` : "Number";
+                  }
+                } else if(dpDetails[0]?.dataType == 'Number' && item.childFields?.placeValue == 'Number' && (dpDetails[0]?.measureType == '' || dpDetails[0]?.measureType == ' ' || dpDetails[0]?.measureType == 'NA')){
+                  dataType = item.childFields?.placeValue ? item.childFields?.placeValue : "Number";
                 }else{
                   dataType = "Text"
                 }

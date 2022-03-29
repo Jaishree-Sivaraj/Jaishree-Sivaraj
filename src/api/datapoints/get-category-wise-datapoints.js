@@ -94,20 +94,44 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       const datapointListQuery = await Datapoints.findOne({ ...generalMatchQuery, categoryId: taskDetails?.categoryId });
       datapointCodeQuery = datapointListQuery?._id
     }
-
     let countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery };
-    if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+
+    if (keyIssueId !== '') {
+      countQuery = { ...dptypeQuery, dpType: dpType, ...generalMatchQuery, keyIssueId };
+    }
+
+    if (memberName !== '') {
+      let memberDp;
+      switch (dpType) {
+        case BOARD_MATRIX:
+          memberDp = await BoardMembersMatrixDataPoints.distinct('datapointId'
+            , { memberName: { "$regex": memberName, "$options": "i" }, status: true, isActive: true });
+          countQuery = { ...countQuery, _id: memberDp };
+          break;
+        case KMP_MATRIX:
+          memberDp = await KmpMatrixDataPoints.distinct('datapointId'
+            , { memberName: { "$regex": memberName, "$options": "i" }, status: true, isActive: true });
+          countQuery = { ...countQuery, _id: memberDp };
+          break;
+        default:
+          break;
+      }
+
+    }
+
+    if (taskDetails.taskStatus == CorrectionPending || taskDetails?.taskStatus == ReassignmentPending || taskDetails?.taskStatus == CorrectionCompleted) {
       let allDpDetails;
-      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: 'Error' }
+      let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
+      const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus };
       switch (dpType) {
         case STANDALONE:
           allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
           break;
         case BOARD_MATRIX:
-          allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
           break;
         case KMP_MATRIX:
-          allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+          allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
           break;
         default:
           break;

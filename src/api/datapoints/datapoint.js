@@ -12,7 +12,7 @@ import { MeasureUoms } from '../measure_uoms';
 import { Measures } from '../measures';
 import { PlaceValues } from '../place_values';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
-import { CorrectionPending, ReassignmentPending, YetToStart, Error } from '../../constants/task-status';
+import { CorrectionPending, ReassignmentPending, YetToStart, Error, Correction, CorrectionCompleted } from '../../constants/task-status';
 import {
     getError,
     getS3ScreenShot,
@@ -27,12 +27,11 @@ import {
     getHeaders,
     getSortedYear
 } from './dp-details-functions';
-import { PromiseProvider } from 'mongoose';
 
 export const datapointDetails = async (req, res, next) => {
     try {
         let timeDetails = [];
-        const { year, taskId, datapointId, memberType, memberName, memberId, isPriority } = req.body;
+        const { year, taskId, datapointId, memberType, memberName, memberId, isPriority, keyIssueId } = req.body;
         const taskFunctionMeasurePlaceValuesStartTime = Date.now();
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
@@ -54,14 +53,6 @@ export const datapointDetails = async (req, res, next) => {
 
         let currentYear = year.split(', ');
         currentYear = getSortedYear(currentYear);
-
-        // Need discussion with the standard for displaying the year. 
-        // if (currentYear?.error) {
-        //     return res.status(409).json({
-        //         status: 409,
-        //         message: currentYear?.error
-        //     })
-        // }
 
         const clientTaxonomyPromiseStartTime = Date.now();
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
@@ -205,18 +196,20 @@ export const datapointDetails = async (req, res, next) => {
 
         let allDatapointsStartTime = Date.now();
         // Another Set of next and prev dp will come in for this taskStatus.
-        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
+        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending || taskDetails?.taskStatus == CorrectionCompleted) {
             let allDpDetails;
-            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus: Error }
+            let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
+
+            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus }
             switch (memberType) {
                 case STANDALONE:
                     allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
                     break;
                 case BOARD_MATRIX:
-                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
                     break;
                 case KMP_MATRIX:
-                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } }) 
                     break;
                 default:
                     break;
@@ -225,9 +218,9 @@ export const datapointDetails = async (req, res, next) => {
             datapointQuery = { ...datapointQuery, _id: { $in: allDpDetails } }
 
         }
-        //TODO: Time for await call and loop seperately and length of allDatapoints
-        const allDatapoints = await Datapoints.find(datapointQuery)
-            .populate('keyIssueId')
+
+        datapointQuery = keyIssueId == '' ? datapointQuery : { ...datapointQuery, keyIssueId };
+        const allDatapoints = await Datapoints.find(datapointQuery).populate('keyIssueId')
             .populate('categoryId').sort({ code: 1 });
 
         trackTime(timeDetails, allDatapointsStartTime, Date.now(), 'All datapoint query Details');
@@ -259,7 +252,10 @@ export const datapointDetails = async (req, res, next) => {
                 let currentHistoryAllStandaloneDetailsStartTime = Date.now()
                 const [currentAllStandaloneDetails, historyAllStandaloneDetails] =
                     await Promise.all([
-                        StandaloneDatapoints.find(currentQuery),
+                        StandaloneDatapoints.find(currentQuery).populate('datapointId')
+                            .populate('companyId')
+                            .populate('taskId')
+                            .populate('uom'), ,
                         StandaloneDatapoints.find(historyQuery),
                     ])
                 trackTime(timeDetails, currentHistoryAllStandaloneDetailsStartTime, Date.now(), 'Current and History All standalone Details');
@@ -291,7 +287,7 @@ export const datapointDetails = async (req, res, next) => {
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
-                        const condition = object.datapointId == datapointId && object.year == currentYear[currentYearIndex];
+                        const condition = object.datapointId._id == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
@@ -321,7 +317,7 @@ export const datapointDetails = async (req, res, next) => {
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         }
-                        
+
                         if (currentIndex == currentAllStandaloneDetails.length - 1) {
                             trackTime(timeDetails, currentYearStandaloneLoopStartTime, Date.now(), `Standalone Loop `);
                         }
@@ -359,8 +355,8 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject},
-                    
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject },
+
 
 
                 });
@@ -368,11 +364,14 @@ export const datapointDetails = async (req, res, next) => {
                 const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
-                        memberName: memberName
-                    }),
+                        memberName: { "$regex": memberName, "$options": "i" }
+                    }).populate('datapointId')
+                        .populate('companyId')
+                        .populate('taskId')
+                        .populate('uom'), ,
                     BoardMembersMatrixDataPoints.find({
                         ...historyQuery,
-                        memberName: memberName,
+                        memberName: { "$regex": memberName, "$options": "i" },
                     })
                 ]);
                 historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
@@ -392,7 +391,7 @@ export const datapointDetails = async (req, res, next) => {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
                         if (object.year == currentYear[currentYearIndex]
-                            && object.memberName == memberName) {
+                            && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
@@ -406,7 +405,7 @@ export const datapointDetails = async (req, res, next) => {
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
-                        const condition = object.datapointId == datapointId && object.year == currentYear[currentYearIndex];
+                        const condition = object.datapointId._id == datapointId && object.year == currentYear[currentYearIndex];
 
                         if (condition && object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues);
@@ -462,7 +461,7 @@ export const datapointDetails = async (req, res, next) => {
                 //             getS3ScreenShot(object.screenShot),
                 //             getSourceDetails(object, sourceDetails)
                 //         ]);
-                //         if (object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
+                //         if (object.year == historyYear[hitoryYearIndex].year && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                 //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                 //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                 //             childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
@@ -504,11 +503,14 @@ export const datapointDetails = async (req, res, next) => {
                     await Promise.all([
                         KmpMatrixDataPoints.find({
                             ...currentQuery,
-                            memberName: memberName
-                        }),
+                            memberName: { "$regex": memberName, "$options": "i" }
+                        }).populate('datapointId')
+                            .populate('companyId')
+                            .populate('taskId')
+                            .populate('uom'), ,
                         KmpMatrixDataPoints.find({
                             ...historyQuery,
-                            memberName: memberName
+                            memberName: { "$regex": memberName, "$options": "i" }
                         })
                     ]);
                 trackTime(timeDetails, currentHistoryAllKmpMatrixDetailsStartTime, Date.now(), `Current and history Kmp`);
@@ -528,7 +530,7 @@ export const datapointDetails = async (req, res, next) => {
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
-                        if (object.year == currentYear[currentYearIndex] && object.memberName == memberName) {
+                        if (object.year == currentYear[currentYearIndex] && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
@@ -541,7 +543,7 @@ export const datapointDetails = async (req, res, next) => {
                             getS3ScreenShot(object.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
-                        const condition = object.datapointId == datapointId && object.year == currentYear[currentYearIndex];
+                        const condition = object.datapointId._id == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError == true) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues)
                             currentDatapointsObject = { ...currentDatapointsObject, comment: [] };
@@ -601,7 +603,7 @@ export const datapointDetails = async (req, res, next) => {
                 //         ]);
                 //         if (object.datapointId.id == dpTypeValues.id
                 //             && object.year == historyYear[hitoryYearIndex].year
-                //             && object.memberName == memberName) {
+                //             && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                 //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues)
                 //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                 //             childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)

@@ -102,7 +102,6 @@ export const index = async ({ querymen: { query, select, cursor } }, res, next) 
         })
       })
     )
-    // .then(success(res))
     .catch(next)
 }
 
