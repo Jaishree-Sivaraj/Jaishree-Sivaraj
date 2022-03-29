@@ -128,7 +128,7 @@ export const exportReport = async (req, res, next) => {
   try {
     let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
-    let childAndSourceFindQuery = { status: true, isActive: true };
+    let childAndSourceFindQuery = { status: true};
     // if (clientTaxonomyId && selectedCompanies.length > 0) {
     if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
@@ -200,13 +200,13 @@ export const exportReport = async (req, res, next) => {
   
     let taxonomyDetails = await ClientTaxonomy.find({ _id: clientTaxonomyId, status: true });
   
-  
+
     // const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
     //   ChildDp.find(childAndSourceFindQuery),
     //   CompanySources.find(childAndSourceFindQuery).populate('companyId')
     // ])
     let [allChildDpDetails, allCompanySourceDetails, allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
-      ChildDp.find(childAndSourceFindQuery),
+      ChildDp.find({...childAndSourceFindQuery, isActive: true}),
       CompanySources.find(childAndSourceFindQuery).populate('companyId'),
       StandaloneDatapoints.find(matchQuery)
         .populate('companyId')
@@ -376,7 +376,7 @@ export const exportReport = async (req, res, next) => {
             let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
             let stdData = allStandaloneDetails[stdIndex];
             let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
-            let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
+            let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj._id == stdData?.sourceName?.split(';')[1] )
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
@@ -413,7 +413,7 @@ export const exportReport = async (req, res, next) => {
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               } else if(outputFieldsData == 'sourceName'){
-                let sourceName = sourceDetails.fileName ? sourceDetails.fileName :  "";
+                let sourceName = sourceDetails[0]?.fileName ? sourceDetails[0]?.fileName :  "";
                 objectToPush[cltTaxoDetails[outIndex].displayName] = sourceName;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
