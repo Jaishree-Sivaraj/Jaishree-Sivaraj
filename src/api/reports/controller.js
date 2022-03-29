@@ -372,7 +372,7 @@ export const exportReport = async (req, res, next) => {
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
-            let objectToPush = { _id: stdIndex };
+            let objectToPush = {};
             let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
             let stdData = allStandaloneDetails[stdIndex];
             let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
@@ -503,7 +503,7 @@ export const exportReport = async (req, res, next) => {
             if (childDpDetails.length > 0) {
               let totalChildDpRecords = childDpDetails.length;
               for (let childIndex = 0; childIndex < totalChildDpRecords; childIndex++) {
-                let objectToPushAsChild = {_id: `${stdIndex}.${childIndex}`};
+                let objectToPushAsChild = {};
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
