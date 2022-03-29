@@ -413,13 +413,7 @@ export const exportReport = async (req, res, next) => {
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               } else if(outputFieldsData == 'sourceName'){
-                let fullSourceName = stdData.sourceName ? stdData.sourceName.split(';') :  "";
-                let sourceName;
-                if (fullSourceName?.length > 0) {
-                  sourceName = fullSourceName[0];
-                } else {
-                  sourceName = stdData.sourceName ? stdData.sourceName :  "";
-                }
+                let sourceName = sourceDetails.fileName ? sourceDetails.fileName :  "";
                 objectToPush[cltTaxoDetails[outIndex].displayName] = sourceName;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
