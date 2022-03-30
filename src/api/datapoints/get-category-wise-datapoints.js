@@ -678,7 +678,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             message: 'No datapoints available'
           });
         }
-      
       case CorrectionCompleted:
         if (dpTypeValues.includes(BOARD_MATRIX) || dpTypeValues.includes(KMP_MATRIX)) {
           try {
@@ -749,7 +748,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }]),
                   BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
                 ]);
-                orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
+                orderedDpCodes = _.uniq(_.map(errorboardDatapoints, 'datapointId'));
+                orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
                   const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
@@ -774,28 +774,30 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }
                   }
                 }
-                for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
-                  _.filter(datapointList.memberList, (object) => {
-                    let memberName = orderedDpCodes[errorDpIndex].memberName;
-                    if (memberName.toLowerCase().includes((object.label).toLowerCase())) {
-                      let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
-                      boardDatapointsObject = {
-                        ...boardDatapointsObject,
-                        memberName: object.label,
-                        memberId: object.value,
-                      }
-                      if (datapointList.dpCodesData.length > 0) {
-                        let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
-                        if (yearfind > -1) {
-                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(', ', orderedDpCodes[errorDpIndex].year)
+                if (memberName != '') {
+                  for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
+                    _.filter(datapointList.memberList, (object) => {
+                      let memberName = orderedDpCodes[errorDpIndex].memberName;
+                      if (memberName.toLowerCase().includes((object.label).toLowerCase())) {
+                        let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
+                        boardDatapointsObject = {
+                          ...boardDatapointsObject,
+                          memberName: object.label,
+                          memberId: object.value,
+                        }
+                        if (datapointList.dpCodesData.length > 0) {
+                          let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
+                          if (yearfind > -1) {
+                            datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(', ', orderedDpCodes[errorDpIndex].year)
+                          } else {
+                            datapointList.dpCodesData.push(boardDatapointsObject);
+                          }
                         } else {
                           datapointList.dpCodesData.push(boardDatapointsObject);
                         }
-                      } else {
-                        datapointList.dpCodesData.push(boardDatapointsObject);
                       }
-                    }
-                  })
+                    })
+                  }
                 }
 
                 return res.status(200).send({
