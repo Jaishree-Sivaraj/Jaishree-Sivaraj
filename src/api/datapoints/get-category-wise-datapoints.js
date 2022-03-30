@@ -748,7 +748,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     }]),
                   BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
                 ]);
-                orderedDpCodes = _.uniq(_.map(errorboardDatapoints, 'datapointId'));
+                orderedDpCodes = _.uniq(errorboardDatapoints, 'datapointId');
                 orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
@@ -778,7 +778,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
                     _.filter(datapointList.memberList, (object) => {
                       let memberName = orderedDpCodes[errorDpIndex].memberName;
-                      if (memberName.toLowerCase().includes((object.label).toLowerCase())) {
+                      if (memberName.includes((object.label))) {
                         let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
                         boardDatapointsObject = {
                           ...boardDatapointsObject,
