@@ -630,7 +630,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let endDateString = yearSplit[1] + "-12-31";
                   let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
                   let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
-                  console.log(1614709800, yearTimeStamp)
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
                   for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
