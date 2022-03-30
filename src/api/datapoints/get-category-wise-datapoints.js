@@ -93,7 +93,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // When task status are conditional count changes.
     let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
     queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
-      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments)
+      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
       : queryToCountDocuments;
 
     // 
@@ -823,7 +823,7 @@ async function getMemberCount(memberName, queryToCountDocuments, dpType) {
   return queryToCountDocuments;
 }
 
-async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments) {
+async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName) {
   let allDpDetails;
   let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
   const query = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus };
