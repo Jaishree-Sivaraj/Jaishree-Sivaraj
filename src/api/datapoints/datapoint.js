@@ -391,7 +391,7 @@ export const datapointDetails = async (req, res, next) => {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
                         if (object.year == currentYear[currentYearIndex]
-                            && object.memberName.toLowerCase() == memberName.toLowerCase()) {
+                            && object.memberName == memberName) {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
@@ -530,7 +530,7 @@ export const datapointDetails = async (req, res, next) => {
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     _.filter(errorDataDetails, function (object) {
-                        if (object.year == currentYear[currentYearIndex] && object.memberName.toLowerCase() == memberName.toLowerCase()) {
+                        if (object.year == currentYear[currentYearIndex] && object.memberName == memberName) {
                             datapointsObject.comments.push(object.comments);
                             datapointsObject.comments.push(object.rejectComment)
                         }
