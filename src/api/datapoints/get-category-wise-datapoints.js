@@ -180,14 +180,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         let repFinalSubmit = false;
         let mergedDatapoints, distinctDpIds = [];
         if (taskDetails.taskStatus == CorrectionCompleted) {
-          currentAllStandaloneDetails = _.filter(currentAllStandaloneDetails, function (o) { return o.dpStatus == "Correction"; });
-          currentAllBoardMemberMatrixDetails = _.filter(currentAllBoardMemberMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
-          currentAllKmpMatrixDetails = _.filter(currentAllKmpMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
-          mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
-          distinctDpIds = _.uniq(_.map(mergedDatapoints, 'datapointId'));
-        } else {
-          mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
+          const allStandaloneDetails = _.filter(currentAllStandaloneDetails, function (o) { return o.dpStatus == "Correction"; });
+          const allBoardMemberMatrixDetails = _.filter(currentAllBoardMemberMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
+          const allKmpMatrixDetails = _.filter(currentAllKmpMatrixDetails, function (o) { return o.dpStatus == "Correction"; });
+          const correctionPendingMergedDatapoints = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
+          distinctDpIds = _.uniq(_.map(correctionPendingMergedDatapoints, 'datapointId'));
         }
+        mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
         const checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
         if (checkHasError.length > 0) { // only when rep raises error they can submit.
           repFinalSubmit = true;
@@ -320,9 +319,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       // filtered data to get status.
                       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                         _.filter(currentAllBoardMemberMatrixDetails, (object) => {
+                          let memberName = object.memberName;
+                          let element = datapointList.memberList[boarMemberListIndex].label;
                           if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id
                             && object.year == currentYear[currentYearIndex]
-                            && object.memberName == datapointList.memberList[boarMemberListIndex].label) {
+                            && memberName.toLowerCase().includes(element.toLowerCase())) {
                             boardDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                           }
                         })
@@ -379,7 +380,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let kmpDatapointsObject = getMemberDataPoint(dpTypeDatapoints[datapointsIndex], datapointList.memberList[kmpMemberListIndex], taskDetails);
                       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                         _.filter(currentAllKmpMatrixDetails, (object) => {
-                          if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == datapointList.memberList[kmpMemberListIndex].label) {
+                          let memberName = object.memberName;
+                          let element = datapointList.memberList[boarMemberListIndex].label;
+                          if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && memberName.toLowerCase().includes(element.toLowerCase())) {
                             kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
                           }
                         })
