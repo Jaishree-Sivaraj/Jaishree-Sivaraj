@@ -1546,7 +1546,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
               if (denominatorValues[j].response == ' ' || denominatorValues[j].response == '' || denominatorValues[j].response == 'NA' || denominatorValues[j].response == '0' || denominatorValues[j].response == 0) {
                 derivedResponse = 'NA';
               } else {
-                derivedResponse = (Number(numeratorValues[j].response.replace(/[^\d.]/g, '').toFixed(4)) / Number(denominatorValues[j].response.replace(/[^\d.]/g, '')).toFixed(4)) * 100;
+                derivedResponse = (Number(numeratorValues[j].response.replace(/[^\d.]/g, '')) / Number(denominatorValues[j].response.replace(/[^\d.]/g, ''))) * 100;
                 derivedResponse = Number(derivedResponse).toFixed(4);
               }
             }
