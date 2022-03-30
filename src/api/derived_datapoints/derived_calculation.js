@@ -682,7 +682,7 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
             derivedResponse = 'NA';
           } else {
             // derivedResponse = Number(numeratorResponse.response)/Number(denominatorResponse.response)
-            derivedResponse = Number(numeratorResponse.response.replace(/[^\d.]/g, '')).toFixed(4) / Number(denominatorResponse.response.replace(/[^\d.]/g, '')).toFixed(4);
+            derivedResponse = Number(numeratorResponse.response.replace(/[^\d.]/g, '')) / Number(denominatorResponse.response.replace(/[^\d.]/g, ''));
             derivedResponse = Number(derivedResponse).toFixed(4);
           }
 
@@ -909,8 +909,8 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
                   if (prev && next) {
                     let prevResponse = prev.replace(/[^\d.]/g, '');
                     let nextResponse = next.replace(/[^\d.]/g, '');
-                    let sum = Number(prevResponse) + Number(nextResponse);
-                    return sum.toFixed(4);
+                    let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
+                    return sum;
                   }
                 });
               }
@@ -993,8 +993,8 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
                   if (prev && next) {
                     let prevResponse = prev.replace(/[^\d.]/g, '');
                     let nextResponse = next.replace(/[^\d.]/g, '');
-                    let sum = Number(prevResponse) + Number(nextResponse);
-                    return sum.toFixed(4);
+                    let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
+                    return sum;
                   }
                 });
               }
@@ -1154,8 +1154,8 @@ export const sumCalculation = async function (taskId, companyId, mergedDetails, 
             if (prev && next) {
               let prevResponse = prev.trim().replace(/[^\d.]/g, '');
               let nextResponse = next.trim().replace(/[^\d.]/g, '');
-              let sum = Number(prevResponse) + Number(nextResponse);
-              return sum.toFixed(4);
+              let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
+              return sum;
             } else {
               sumValue = 0;
             }
@@ -1446,7 +1446,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
                 let prevResponse = prev.replace(/[^\d.]/g, '');
                 let nextResponse = next.replace(/[^\d.]/g, '');
                 let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                return sum.toFixed(4);
+                return sum;
               }
             });
           } else {
@@ -1458,7 +1458,7 @@ export const percentageCalculation = async function (taskId, companyId, mergedDe
                 let prevResponse = prev.replace(/[^\d.]/g, '');
                 let nextResponse = next.replace(/[^\d.]/g, '');
                 let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-                return sum.toFixed(4);
+                return sum;
               }
             });
           } else {
