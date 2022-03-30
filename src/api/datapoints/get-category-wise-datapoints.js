@@ -828,8 +828,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }]),
                 Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
                 ]);
-
-                orderedDpCodes = _.orderBy(errorkmpDatapoints, ['datapointId.code'], ['asc']);
+                orderedDpCodes = _.uniq(errorkmpDatapoints, 'datapointId');
+                orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
 
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                   let yearSplit = currentYear[currentYearIndex].split('-');
@@ -858,29 +858,32 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 }
 
-                for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
-                  _.filter(datapointList.memberList, (object) => {
-                    let memberName = orderedDpCodes[errorDpIndex].memberName;
-                    if (memberName.toLowerCase().includes((object.label).toLowerCase())) {
-                      let kmpDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
-                      kmpDatapointsObject = {
-                        ...kmpDatapointsObject,
-                        memberName: object.label,
-                        memberId: object.value,
-                      }
-                      if (datapointList.dpCodesData.length > 0) {
-                        let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
-                        if (yearfind > -1) {
-                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(', ', orderedDpCodes[errorDpIndex].year)
+                if (memberName != '') {
+                  for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
+                    _.filter(datapointList.memberList, (object) => {
+                      let memberName = orderedDpCodes[errorDpIndex].memberName;
+                      if (memberName.toLowerCase().includes((object.label).toLowerCase())) {
+                        let kmpDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
+                        kmpDatapointsObject = {
+                          ...kmpDatapointsObject,
+                          memberName: object.label,
+                          memberId: object.value,
+                        }
+                        if (datapointList.dpCodesData.length > 0) {
+                          let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
+                          if (yearfind > -1) {
+                            datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(', ', orderedDpCodes[errorDpIndex].year)
+                          } else {
+                            datapointList.dpCodesData.push(kmpDatapointsObject);
+                          }
                         } else {
                           datapointList.dpCodesData.push(kmpDatapointsObject);
                         }
-                      } else {
-                        datapointList.dpCodesData.push(kmpDatapointsObject);
                       }
-                    }
-                  });
+                    });
+                  }  
                 }
+
                 return res.status(200).send({
                   status: '200',
                   message: 'Data correction dp codes retrieved successfully!',
