@@ -527,101 +527,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 });
               case BOARD_MATRIX:
-                if (memberName != '') {
-                  errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
-                  errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
-                  const [errorboardDatapoints, boardMemberEq] = await Promise.all([
-                    BoardMembersMatrixDataPoints.find({
-                      ...errorQuery,
-                      year: {
-                        $in: currentYear
-                      }
-                    }).skip((page - 1) * limit)
-                      .limit(+limit)
-                      .populate([{
-                        path: 'datapointId',
-                        populate: {
-                          path: 'keyIssueId'
-                        }
-                      }]),
-                    BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
-                  ]);
-                  orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
-                    const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
-                    const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
-  
-                    for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
-                      let boardNameValue = {
-                        label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
-                        value: mergeBoardMemberList[boardMemberNameListIndex].id,
-                        year: currentYear[currentYearIndex]
-                      }
-                      if (datapointList.memberList.length > 0) {
-                        let boardMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
-                        if (boardMemberValues.length > 0) {
-                          let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
-                          datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
-                        } else {
-                          datapointList.memberList.push(boardNameValue);
-                        }
-                      } else {
-                        datapointList.memberList.push(boardNameValue);
-                      }
-                    }
-                  }
-                  for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
-                    _.filter(datapointList.memberList, (object) => {
-                      let memberName = orderedDpCodes[errorDpIndex].memberName;
-                      if (memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
-                        let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
-                        boardDatapointsObject = {
-                          ...boardDatapointsObject,
-                          memberName: object.label,
-                          memberId: object.value,
-                        }
-                        if (datapointList.dpCodesData.length > 0) {
-                          let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
-                          if (yearfind > -1) {
-                            datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
-                          } else {
-                            datapointList.dpCodesData.push(boardDatapointsObject);
-                          }
-                        } else {
-                          datapointList.dpCodesData.push(boardDatapointsObject);
-                        }
-                      }
-                    })
-                  }
-  
-                  return res.status(200).send({
-                    status: "200",
-                    message: "Data correction dp codes retrieved successfully!",
-                    response: {
-                      datapointList,
-                      isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                      count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                      isPriority: false
-                    }
-                  });
-                } else {
-                  return res.status(200).send({
-                    status: "500",
-                    message: "Please select any BoardMember!",
-                    response: {
-                      datapointList: [],
-                      isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                      count: 0,
-                      isPriority: false
-                    }
-                  });
-                }
-              case KMP_MATRIX:
-                if (condition) {
-                  errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
-                  errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
-                  let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
+                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
+                errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
+                const [errorboardDatapoints, boardMemberEq] = await Promise.all([
+                  BoardMembersMatrixDataPoints.find({
                     ...errorQuery,
                     year: {
                       $in: currentYear
@@ -634,84 +543,148 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                         path: 'keyIssueId'
                       }
                     }]),
-                  Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
-                  ]);
-  
-                  orderedDpCodes = _.orderBy(errorkmpDatapoints, ['datapointId.code'], ['asc']);
-  
-                  for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                    let yearSplit = currentYear[currentYearIndex].split('-');
-                    let endDateString = yearSplit[1] + "-12-31";
-                    let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                    let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
-                    let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
-  
-                    for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
-                      let kmpNameValue = {
-                        label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
-                        value: mergeKmpMemberList[kmpMemberNameListIndex].id,
-                        year: currentYear[currentYearIndex]
+                  BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
+                ]);
+                orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
+
+                  for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
+                    let boardNameValue = {
+                      label: mergeBoardMemberList[boardMemberNameListIndex].BOSP004,
+                      value: mergeBoardMemberList[boardMemberNameListIndex].id,
+                      year: currentYear[currentYearIndex]
+                    }
+                    if (datapointList.memberList.length > 0) {
+                      let boardMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id);
+                      if (boardMemberValues.length > 0) {
+                        let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeBoardMemberList[boardMemberNameListIndex].id)
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
+                      } else {
+                        datapointList.memberList.push(boardNameValue);
                       }
-                      if (datapointList.memberList.length > 0) {
-                        let kmpMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
-                        if (kmpMemberValues.length > 0) {
-                          let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
-                          datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
+                    } else {
+                      datapointList.memberList.push(boardNameValue);
+                    }
+                  }
+                }
+                for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
+                  _.filter(datapointList.memberList, (object) => {
+                    let memberName = orderedDpCodes[errorDpIndex].memberName;
+                    if (memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
+                      let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
+                      boardDatapointsObject = {
+                        ...boardDatapointsObject,
+                        memberName: object.label,
+                        memberId: object.value,
+                      }
+                      if (datapointList.dpCodesData.length > 0) {
+                        let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
+                        if (yearfind > -1) {
+                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
                         } else {
-                          datapointList.memberList.push(kmpNameValue);
+                          datapointList.dpCodesData.push(boardDatapointsObject);
                         }
+                      } else {
+                        datapointList.dpCodesData.push(boardDatapointsObject);
+                      }
+                    }
+                  })
+                }
+
+                return res.status(200).send({
+                  status: "200",
+                  message: "Data correction dp codes retrieved successfully!",
+                  response: {
+                    datapointList,
+                    isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    isPriority: false
+                  }
+                });
+              case KMP_MATRIX:
+                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
+                errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
+                let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
+                  ...errorQuery,
+                  year: {
+                    $in: currentYear
+                  }
+                }).skip((page - 1) * limit)
+                  .limit(+limit)
+                  .populate([{
+                    path: 'datapointId',
+                    populate: {
+                      path: 'keyIssueId'
+                    }
+                  }]),
+                Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: 0 })
+                ]);
+
+                orderedDpCodes = _.orderBy(errorkmpDatapoints, ['datapointId.code'], ['asc']);
+
+                for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+                  let yearSplit = currentYear[currentYearIndex].split('-');
+                  let endDateString = yearSplit[1] + "-12-31";
+                  let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
+
+                  for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
+                    let kmpNameValue = {
+                      label: mergeKmpMemberList[kmpMemberNameListIndex].MASP003,
+                      value: mergeKmpMemberList[kmpMemberNameListIndex].id,
+                      year: currentYear[currentYearIndex]
+                    }
+                    if (datapointList.memberList.length > 0) {
+                      let kmpMemberValues = datapointList.memberList.filter((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id);
+                      if (kmpMemberValues.length > 0) {
+                        let memberIndex = datapointList.memberList.findIndex((obj) => obj.value == mergeKmpMemberList[kmpMemberNameListIndex].id)
+                        datapointList.memberList[memberIndex].year = datapointList.memberList[memberIndex].year + ', ' + currentYear[currentYearIndex];
                       } else {
                         datapointList.memberList.push(kmpNameValue);
                       }
+                    } else {
+                      datapointList.memberList.push(kmpNameValue);
                     }
                   }
-  
-                  for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
-                    _.filter(datapointList.memberList, (object) => {
-                      let memberName = orderedDpCodes[errorDpIndex].memberName;
-                      if ( memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
-                        let kmpDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
-                        kmpDatapointsObject = {
-                          ...kmpDatapointsObject,
-                          memberName: object.label,
-                          memberId: object.value,
-                        }
-                        if (datapointList.dpCodesData.length > 0) {
-                          let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
-                          if (yearfind > -1) {
-                            datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
-                          } else {
-                            datapointList.dpCodesData.push(kmpDatapointsObject);
-                          }
+                }
+
+                for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
+                  _.filter(datapointList.memberList, (object) => {
+                    let memberName = orderedDpCodes[errorDpIndex].memberName;
+                    if ( memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
+                      let kmpDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
+                      kmpDatapointsObject = {
+                        ...kmpDatapointsObject,
+                        memberName: object.label,
+                        memberId: object.value,
+                      }
+                      if (datapointList.dpCodesData.length > 0) {
+                        let yearfind = datapointList.dpCodesData.findIndex(obj => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code && obj.memberName == orderedDpCodes[errorDpIndex].memberName);
+                        if (yearfind > -1) {
+                          datapointList.dpCodesData[yearfind].fiscalYear = datapointList.dpCodesData[yearfind].fiscalYear.concat(", ", orderedDpCodes[errorDpIndex].year)
                         } else {
                           datapointList.dpCodesData.push(kmpDatapointsObject);
                         }
+                      } else {
+                        datapointList.dpCodesData.push(kmpDatapointsObject);
                       }
-                    });
-                  }
-                  return res.status(200).send({
-                    status: "200",
-                    message: "Data correction dp codes retrieved successfully!",
-                    response: {
-                      datapointList,
-                      isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                      count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                      isPriority: false
                     }
                   });
-                } else {
-                  return res.status(200).send({
-                    status: "500",
-                    message: "Please select any BoardMember!",
-                    response: {
-                      datapointList: [],
-                      isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                      count: 0,
-                      isPriority: false
-                    }
-                  });
-                  
                 }
+                return res.status(200).send({
+                  status: "200",
+                  message: "Data correction dp codes retrieved successfully!",
+                  response: {
+                    datapointList,
+                    isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
+                    count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                    isPriority: false
+                  }
+                });
               default:
                 return res.status(500).send({
                   status: "500",
