@@ -216,7 +216,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
         return res.status(412).json({ message: "Condition Failed" });
       }
     } else if (datapointDetails.methodName.trim() == 'ANDOR3') {
-      console.log('...',datapointDetails);
+      // console.log('...',datapointDetails);
       let parameters = datapointDetails.dependentCodes;
       let param1Value, param2Value, param3Value, param4Value;
       let previousYearResponse;
@@ -253,7 +253,7 @@ export const type8Validation = async ({ user, body }, res, next) => {
 }
     
 export const type3Validation = async ({ user, body }, res, next) => {
-  console.log(body.datapointId, body.companyId, body.clientTaxonomyId, params.previousYear, body.response);
+  // console.log(body.datapointId, body.companyId, body.clientTaxonomyId, params.previousYear, body.response);
   let previousResponse = await StandaloneDatapoints.findOne({ datapointId: body.datapointId, companyId: body.companyId, year: params.previousYear })
   .catch((error) => { return res.status(500).json({ status: "500", message: error.message }) })
   try {
@@ -529,7 +529,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                                           dpCodeObject.description.push(validationResponseObject);
                                         }
                                       } else {
-                                        console.log("\n\n\n\n\n",validationRules[validationIndex].datapointId.code)
+                                        // console.log("\n\n\n\n\n",validationRules[validationIndex].datapointId.code)
                                         let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
                                         if (Number(currentResponse.response) < Number(calculatedResponse)) {
                                           dpCodeObject.isValidResponse = true;
@@ -819,7 +819,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                           let zscoreValue ,performanceResult ;
                           let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
                             let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                            console.log(projectedValue)
+                            // console.log(projectedValue)
                           if(projectedValue > -1){
                           if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
                             zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
@@ -1377,7 +1377,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                                       dpCodeObject.description.push(validationResponseObject);
                                     }
                                   } else {
-                                    console.log("\n\n\n\n\n", validationRules[validationIndex].datapointId.code)
+                                    // console.log("\n\n\n\n\n", validationRules[validationIndex].datapointId.code)
                                     let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
                                     if (Number(currentResponse.response) < Number(calculatedResponse)) {
                                       dpCodeObject.isValidResponse = true;
@@ -1668,7 +1668,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       let zscoreValue, performanceResult;
                       let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
                       let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                      console.log(projectedValue)
+                      // console.log(projectedValue)
                       if (projectedValue > -1) {
                         if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
                           zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);
@@ -1728,7 +1728,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   }
                 }
               }
-              console.log(validationResponse, boardDpCodesData)
+              // console.log(validationResponse, boardDpCodesData)
               if(validationIndex == validationRules.length - 1){
                 let allDpCodeData = _.concat(validationResponse, boardDpCodesData.dpCodesData, kmpDpCodesData.dpCodesData); 
                 await ValidationResults.deleteMany({ taskId: params.taskId ? params.taskId : "" });
@@ -1843,7 +1843,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                                   dpCodeObject.description.push(validationResponseObject);
                                 }
                               } else {
-                                console.log("\n\n\n\n\n",validationRules[validationIndex].datapointId.code)
+                                // console.log("\n\n\n\n\n",validationRules[validationIndex].datapointId.code)
                                 let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
                                 if (Number(currentResponse.response) < Number(calculatedResponse)) {
                                   dpCodeObject.isValidResponse = true;
@@ -2130,7 +2130,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   let zscoreValue ,performanceResult ;
                   let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
                    let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
-                   console.log(projectedValue)
+                  //  console.log(projectedValue)
                   if(projectedValue > -1){
                   if (validationRules[validationIndex].datapointId.polarity == 'Positive') {
                     zscoreValue = (Number(currentResponse.response) - Number(projectedValues[projectedValue].projectedAverage)) / Number(projectedValues[projectedValue].projectedStdDeviation);

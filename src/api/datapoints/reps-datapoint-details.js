@@ -435,8 +435,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                     if (errorDetailsObject[0].raisedBy == role) {
                                         let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0].comments : "";
                                         let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0].rejectComment : "";
-                                        boardDatapointsObject.comments.push(comments);
-                                        boardDatapointsObject.comments.push(rejectComment);
+                                        datapointsObject.comments.push(comments);
+                                        datapointsObject.comments.push(rejectComment);
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);

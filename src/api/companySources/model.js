@@ -44,6 +44,9 @@ const companySourcesSchema = new Schema({
   name: {
     type: String
   },
+  fileName: {
+    type: String
+  },
   status: {
     type: Boolean,
     default: true

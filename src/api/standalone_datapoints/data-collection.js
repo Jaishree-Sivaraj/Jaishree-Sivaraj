@@ -136,7 +136,7 @@ export const dataCollection = async ({
 
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
                                 await Promise.all([
-                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
@@ -165,7 +165,7 @@ export const dataCollection = async ({
                                 // })
                                 // updating and inserting data for BoardMembersMatrixDataPoints and child dp respectively.
                                 await Promise.all([
-                                    BoardMembersMatrixDataPoints.updateMany({ year: item['fiscalYear'], memberName: body.memberName, ...updateQuery },
+                                    BoardMembersMatrixDataPoints.updateMany({ year: item['fiscalYear'], memberName: { "$regex": body.memberName, "$options": "i" }, ...updateQuery },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
@@ -207,7 +207,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
                                 // Updating and inserting data to KmpMatrixDataPoints and ChildDp respectively.
                                 await Promise.all([
-                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    KmpMatrixDataPoints.updateMany({ ...updateQuery,memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
@@ -224,7 +224,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyData);
                                 // Updating and inserting data to KmpMatrixDataPoints and ChildDp respectively.
                                 await Promise.all([
-                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { isActive: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
@@ -396,7 +396,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
 
                                 await Promise.all([
-                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
@@ -418,7 +418,7 @@ export const dataCollection = async ({
                                 // Getting child Dp.
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyDataCorrection);
                                 await Promise.all([
-                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { isActive: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
@@ -482,7 +482,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
 
                                 await Promise.all([
-                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails),
 
@@ -512,7 +512,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, historyDataCorrection);
 
                                 await Promise.all([
-                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
+                                    KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: { "$regex": body.memberName, "$options": "i" }, year: item['fiscalYear'] },
                                         { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
@@ -562,9 +562,11 @@ export async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear
     if (screenShot && screenShot.length > 0) {
         for (let screenshotIndex = 0; screenshotIndex < screenShot.length; screenshotIndex++) {
             let screenshotItem = screenShot[screenshotIndex];
-            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenShotFileType = screenshotItem?.base64?.split(';')[0].split('/')[1];
             let screenshotFileName = companyId + '_' + dpCodeId + '_' + fiscalYear + '_' + screenshotIndex + '.' + screenShotFileType;
-            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            if (screenshotItem?.base64) {
+                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem?.base64);
+            }
             formattedScreenShots.push(screenshotFileName);
         }
     }
