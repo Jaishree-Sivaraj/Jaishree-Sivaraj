@@ -307,7 +307,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                         _.filter(currentAllKmpMatrixDetails, (object) => {
                           let memberName = object.memberName;
-                          let element = datapointList.memberList[boarMemberListIndex].label;
+                          let element = datapointList.memberList[kmpMemberListIndex].label;
                           if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && memberName.toLowerCase().includes(element.toLowerCase())) {
                             kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
                           }
