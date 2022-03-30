@@ -527,7 +527,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 });
               case BOARD_MATRIX:
-                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
+                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
                 errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
@@ -572,7 +572,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 }
                 for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
                   _.filter(datapointList.memberList, (object) => {
-                    if (object.label == orderedDpCodes[errorDpIndex].memberName) {
+                    let memberName = orderedDpCodes[errorDpIndex].memberName;
+                    if (memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
                       let boardDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
                       boardDatapointsObject = {
                         ...boardDatapointsObject,
@@ -604,7 +605,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }
                 });
               case KMP_MATRIX:
-                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName };
+                errorQuery = memberName === '' ? errorQuery : { ...errorQuery, memberName: { "$regex": memberName, "$options": "i" } };
                 errorQuery = datapointCodeQuery ? { ...errorQuery, datapointId: datapointCodeQuery } : errorQuery;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...errorQuery,
@@ -654,7 +655,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
                 for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
                   _.filter(datapointList.memberList, (object) => {
-                    if (object.label == orderedDpCodes[errorDpIndex].memberName) {
+                    let memberName = orderedDpCodes[errorDpIndex].memberName;
+                    if ( memberName.toLowerCase().includes((object.label).toLowerCase()) ) {
                       let kmpDatapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
                       kmpDatapointsObject = {
                         ...kmpDatapointsObject,
