@@ -71,11 +71,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     searchQuery = dpCode !== '' ? getSearchQuery('dpCode', dpCode, searchQuery) : searchQuery;
 
     // Query based on searchQuery.
-    const datapointListQuery = dpName !== '' || dpCode !== '' ?
+    const datapointCodeQuery = dpName !== '' || dpCode !== '' ?
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
-    let queryToCountDocuments = datapointListQuery.length > 0 ?
-      { ...queryForDatapointCollection, dpType, _id: { $in: datapointListQuery } }
+    let queryToCountDocuments = datapointCodeQuery.length > 0 ?
+      { ...queryForDatapointCollection, dpType, _id: { $in: datapointCodeQuery } }
       : { ...queryForDatapointCollection, dpType };
 
     queryToCountDocuments = keyIssueId !== '' ?
