@@ -562,9 +562,11 @@ export async function saveScreenShot(screenShot, companyId, dpCodeId, fiscalYear
     if (screenShot && screenShot.length > 0) {
         for (let screenshotIndex = 0; screenshotIndex < screenShot.length; screenshotIndex++) {
             let screenshotItem = screenShot[screenshotIndex];
-            let screenShotFileType = screenshotItem.base64.split(';')[0].split('/')[1];
+            let screenShotFileType = screenshotItem?.base64?.split(';')[0].split('/')[1];
             let screenshotFileName = companyId + '_' + dpCodeId + '_' + fiscalYear + '_' + screenshotIndex + '.' + screenShotFileType;
-            await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64);
+            if (screenshotItem?.base64) {
+                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem?.base64);
+            }
             formattedScreenShots.push(screenshotFileName);
         }
     }
