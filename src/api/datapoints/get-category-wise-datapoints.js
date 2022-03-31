@@ -200,7 +200,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
                   }
 
                 });
@@ -266,7 +267,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
                   }
 
                 });
@@ -326,7 +328,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
 
                   }
                 });
@@ -386,7 +389,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 datapointList,
                 isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                 count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                isPriority: false
+                isPriority: false,
+                fiscalYear: taskDetails?.year
 
               }
             });
@@ -451,7 +455,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
 
                   }
                 });
@@ -530,7 +535,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
                   }
                 });
               case KMP_MATRIX:
@@ -611,7 +617,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false
+                    isPriority: false,
+                    fiscalYear: taskDetails?.year
                   }
                 });
               default:
@@ -664,7 +671,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 datapointList,
                 isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                 count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                isPriority: false
+                isPriority: false,
+                fiscalYear: taskDetails?.year
               }
             });
           } catch (error) {
@@ -990,6 +998,7 @@ function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails) {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
     dpName: dpTypeDatapoints?.name,
+    description: dpTypeDatapoints?.description,
     companyId: taskDetails?.companyId.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: dpTypeDatapoints?.keyIssueId.id,
@@ -1008,6 +1017,7 @@ function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails) {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
     dpName: dpTypeDatapoints?.name,
+    description: dpTypeDatapoints?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId?.companyName,
     keyIssueId: dpTypeDatapoints?.keyIssueId.id,
@@ -1027,6 +1037,7 @@ function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
     dpCode: orderedDpCodes?.datapointId?.code,
     dpCodeId: orderedDpCodes?.datapointId?.id,
     dpName: orderedDpCodes?.datapointId?.name,
+    description: orderedDpCodes?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: orderedDpCodes?.datapointId.keyIssueId?.id,
