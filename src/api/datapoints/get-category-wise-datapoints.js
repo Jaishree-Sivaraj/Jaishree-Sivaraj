@@ -64,7 +64,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         isActive: true,
         status: true
       };
-    let queryKeyIssueSearch = queryForDatapointCollection
+    let queryKeyIssueSearch = queryForDatapointCollection;
 
     // Queries when there is a searchValue added.
     let searchQuery = {};
@@ -75,16 +75,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
     let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
-    let queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
-      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
+    let queryToCountDocuments = { ...queryForDatapointCollection, dpType };
+    
+    conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
+      queryToCountDocuments = await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
       : queryToCountDocuments;
 
     queryToCountDocuments = datapointCodeQuery.length > 0 ?
-      { ...queryForDatapointCollection, dpType, _id: { $in: datapointCodeQuery } }
-      : { ...queryForDatapointCollection, dpType };
+      { ...queryToCountDocuments, dpType, _id: { $in: datapointCodeQuery } }
+      : queryToCountDocuments;
 
     queryToCountDocuments = keyIssueId !== '' ?
-      { ...queryForDatapointCollection, keyIssueId }
+      { ...queryToCountDocuments, keyIssueId }
       : queryToCountDocuments;
 
     queryToCountDocuments = memberName !== '' ?
@@ -96,7 +98,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { ...queryForDatapointCollection, keyIssueId }
       : queryForDatapointCollection;
 
-      const {
+    const {
       count,
       dpTypeValues,
       priorityDpCodes,
@@ -412,7 +414,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -459,7 +461,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...queryForHasError,
@@ -538,7 +540,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...queryForHasError,
                   year: {
@@ -634,7 +636,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             queryForHasError = { ...queryForHasError, dpStatus: Error };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
@@ -1073,7 +1075,7 @@ async function getKeyIssues(queryKeyIssueSearch, keyIssuesList) {
 
 async function getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery) {
   const datapointwithKeyIssue = await Datapoints.distinct('_id', { keyIssueId });
-  if (datapointCodeQuery) {
+  if (datapointCodeQuery.length > 0) {
     datapointwithKeyIssue.push(datapointwithKeyIssue);
   }
 
@@ -1133,7 +1135,9 @@ async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDo
       break;
 
   }
+  console.log(queryToCountDocuments);
   queryToCountDocuments = { ...queryToCountDocuments, _id: { $in: allDpDetails } };
+  console.log(queryToCountDocuments)
   return queryToCountDocuments;
 }
 
