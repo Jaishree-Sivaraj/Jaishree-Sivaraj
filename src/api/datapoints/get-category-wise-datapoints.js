@@ -96,7 +96,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { ...queryForDatapointCollection, keyIssueId }
       : queryForDatapointCollection;
 
-      const {
+    const {
       count,
       dpTypeValues,
       priorityDpCodes,
@@ -412,7 +412,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -459,7 +459,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...queryForHasError,
@@ -538,7 +538,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...queryForHasError,
                   year: {
@@ -634,7 +634,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             queryForHasError = { ...queryForHasError, dpStatus: Error };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
