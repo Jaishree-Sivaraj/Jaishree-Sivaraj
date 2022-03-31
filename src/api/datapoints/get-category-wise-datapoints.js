@@ -1045,7 +1045,7 @@ function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
     dpCode: orderedDpCodes?.datapointId?.code,
     dpCodeId: orderedDpCodes?.datapointId?.id,
     dpName: orderedDpCodes?.datapointId?.name,
-    description: orderedDpCodes?.description,
+    description: orderedDpCodes?.datapointId?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: orderedDpCodes?.datapointId.keyIssueId?.id,
