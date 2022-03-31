@@ -14,7 +14,7 @@ import { CompanyRepresentative, ClientRepresentative } from '../../constants/rol
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
-    const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValue } = req.body;
+    const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, dpCode, dpName } = req.body;
 
     // Error message 
     if (!page || !limit) {
@@ -64,14 +64,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         isActive: true,
         status: true
       };
-    let queryForSearchingKeyIssueName = queryForDatapointCollection;
 
     // Queries when there is a searchValue added.
     let searchQuery = {};
-    searchQuery = searchValue !== '' ? getSearchQuery(searchValue, searchQuery) : searchQuery;
+    searchQuery = dpName !== '' ? getSearchQuery('dpName', dpName, searchQuery) : searchQuery;
+    searchQuery = dpCode !== '' ? getSearchQuery('dpCode', dpCode, searchQuery) : searchQuery;
 
     // Query based on searchQuery.
-    const datapointCodeQuery = searchValue !== '' ?
+    const datapointCodeQuery = dpName !== '' || dpCode !== '' ?
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
     let queryToCountDocuments = datapointCodeQuery.length > 0 ?
@@ -130,13 +130,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
         mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
-        if (taskDetails.taskStatus == CorrectionCompleted) {
-          const allStandaloneDetails = getFilteredData(currentAllStandaloneDetails);
-          const allBoardMemberMatrixDetails = getFilteredData(currentAllBoardMemberMatrixDetails);
-          const allKmpMatrixDetails = getFilteredData(currentAllKmpMatrixDetails);
-          const correctionPendingMergedDatapoints = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
-          distinctDpIds = _.uniq(_.map(correctionPendingMergedDatapoints, 'datapointId'));
-        }
+        // if (taskDetails.taskStatus == CorrectionCompleted) {
+        //   const allStandaloneDetails = getFilteredData(currentAllStandaloneDetails);
+        //   const allBoardMemberMatrixDetails = getFilteredData(currentAllBoardMemberMatrixDetails);
+        //   const allKmpMatrixDetails = getFilteredData(currentAllKmpMatrixDetails);
+        //   const correctionPendingMergedDatapoints = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
+        //   distinctDpIds = _.uniq(_.map(correctionPendingMergedDatapoints, 'datapointId'));
+        // }
 
         const checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
         // only when rep raises error they can submit.const
@@ -150,7 +150,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
         const totalUniquePriortyDpCollected = totalPriortyDataCollected.length / currentYear.length;
         if (priorityDpCodes.length !== totalUniquePriortyDpCollected) {
-          keyIssuesList = await getKeyIssues({ ...queryForSearchingKeyIssueName, isPriority: true }, keyIssuesList);
+          keyIssuesList = await getKeyIssues({ ...queryForDatapointCollection, isPriority: true }, keyIssuesList);
           datapointList = await getDataPointListForStandalone(priorityDpCodes, currentYear, currentAllStandaloneDetails, taskDetails, datapointList);
           return res.status(200).json({
             status: '200',
@@ -171,9 +171,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
               queryForDatapointCollection.isRequiredForReps = true
             }
-            if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds?.length > 0) {
-              queryForDatapointCollection._id = { $in: distinctDpIds };
-            }
+            // if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds?.length > 0) {
+            //   queryForDatapointCollection._id = { $in: distinctDpIds };
+            // }
 
             const dpTypeDatapoints = await
               Datapoints.find({
@@ -189,7 +189,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0, status: true };
             switch (dpType) {
               case STANDALONE:
-                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName,keyIssuesList);
+                keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
                 datapointList = await getDataPointListForStandalone(dpTypeDatapoints, currentYear, currentAllStandaloneDetails, taskDetails, datapointList);
                 return res.status(200).send({
                   status: '200',
@@ -200,8 +200,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
                   }
 
                 });
@@ -267,8 +266,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
                   }
 
                 });
@@ -328,8 +326,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
 
                   }
                 });
@@ -356,9 +353,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
               queryForDpTypeCollection.isRequiredForReps = true
             }
-            if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds.length > 0) {
-              queryForDpTypeCollection._id = { $in: distinctDpIds };
-            }
+            // if (taskDetails.taskStatus == CorrectionCompleted && distinctDpIds.length > 0) {
+            //   queryForDpTypeCollection._id = { $in: distinctDpIds };
+            // }
 
             const dpTypeDatapoints = await Datapoints.find({ ...queryForDpTypeCollection, ...searchQuery })
               .skip(((page - 1) * limit))
@@ -367,7 +364,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               .populate('keyIssueId')
               .populate('categoryId');
 
-            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
+            keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
             for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints.length; datapointsIndex++) {
               let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
               for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
@@ -389,8 +386,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 datapointList,
                 isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                 count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
-                isPriority: false,
-                fiscalYear: taskDetails?.year
+                isPriority: false
 
               }
             });
@@ -415,7 +411,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -427,7 +423,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }]);
 
                 orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
+                keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
                 for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
 
                   let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
@@ -455,14 +451,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
 
                   }
                 });
               case BOARD_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...queryForHasError,
@@ -535,13 +530,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
                   }
                 });
               case KMP_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...queryForHasError,
                   year: {
@@ -617,8 +611,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     datapointList,
                     isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                     count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                    isPriority: false,
-                    fiscalYear: taskDetails?.year
+                    isPriority: false
                   }
                 });
               default:
@@ -637,7 +630,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             queryForHasError = { ...queryForHasError, dpStatus: Error };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+            queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
@@ -649,7 +642,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               });
 
             orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
+            keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
             for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
               let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
               if (datapointList.dpCodesData.length > 0) {
@@ -671,8 +664,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 datapointList,
                 isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
                 count: datapointList.dpCodesData.length < 1 ? 0 : count,
-                isPriority: false,
-                fiscalYear: taskDetails?.year
+                isPriority: false
               }
             });
           } catch (error) {
@@ -693,7 +685,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -703,9 +695,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       path: 'keyIssueId'
                     }
                   }]);
+                orderedDpCodes = _.uniq(errorDatapoints, 'datapointId');
+                orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
 
-                orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
+                // orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
+                keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
                 for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
 
                   let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
@@ -889,7 +883,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                         }
                       }
                     });
-                  }
+                  }  
                 }
 
                 return res.status(200).send({
@@ -916,9 +910,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         } else if (dpType == STANDALONE) {
           try {
-            queryForHasError = { ...queryForHasError, dpStatus: Error };
+            queryForHasError = { ...queryForHasError, dpStatus: "Correction" };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: { $in: datapointCodeQuery } } : queryForHasError;
+            // queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
@@ -928,9 +922,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   path: 'keyIssueId'
                 }
               });
+              orderedDpCodes = _.uniq(errorDatapoints, 'datapointId');
+              orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
 
-            orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
+            // orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
+            keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
             for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
               let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
               if (datapointList.dpCodesData.length > 0) {
@@ -998,7 +994,6 @@ function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails) {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
     dpName: dpTypeDatapoints?.name,
-    description: dpTypeDatapoints?.description,
     companyId: taskDetails?.companyId.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: dpTypeDatapoints?.keyIssueId.id,
@@ -1017,7 +1012,6 @@ function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails) {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
     dpName: dpTypeDatapoints?.name,
-    description: dpTypeDatapoints?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId?.companyName,
     keyIssueId: dpTypeDatapoints?.keyIssueId.id,
@@ -1037,7 +1031,6 @@ function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
     dpCode: orderedDpCodes?.datapointId?.code,
     dpCodeId: orderedDpCodes?.datapointId?.id,
     dpName: orderedDpCodes?.datapointId?.name,
-    description: orderedDpCodes?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: orderedDpCodes?.datapointId.keyIssueId?.id,
@@ -1052,8 +1045,8 @@ function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
   }
 }
 
-async function getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList) {
-  const keyIssuesCollection = await Datapoints.find(queryForSearchingKeyIssueName)
+async function getKeyIssues(queryForDatapointCollection, keyIssuesList) {
+  const keyIssuesCollection = await Datapoints.find(queryForDatapointCollection)
     .sort({ code: 1 })
     .populate('keyIssueId');
 
@@ -1069,7 +1062,7 @@ async function getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList) {
 
 async function getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery) {
   const datapointwithKeyIssue = await Datapoints.distinct('_id', { keyIssueId });
-  if (datapointCodeQuery.length > 0) {
+  if (datapointCodeQuery) {
     datapointwithKeyIssue.push(datapointwithKeyIssue);
   }
 
@@ -1080,12 +1073,18 @@ async function getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQ
   return queryForHasError;
 }
 
-function getSearchQuery(searchValue, searchQuery) {
-  searchQuery = {
-    $or: [{ code: { $regex: new RegExp(searchValue, 'gi') } },
-    { name: { $regex: new RegExp(searchValue, 'gi') } }]
+function getSearchQuery(searchName, searchValue, searchQuery) {
+  switch (searchName) {
+    case 'dpCode':
+      searchQuery.code = { $regex: new RegExp(searchValue, 'gi') };
+      break;
+    case 'dpName':
+      searchQuery.name = { $regex: new RegExp(searchValue, 'gi') };
+      break;
+
   }
   return searchQuery;
+
 }
 
 async function getMemberCount(memberName, queryToCountDocuments, dpType) {
