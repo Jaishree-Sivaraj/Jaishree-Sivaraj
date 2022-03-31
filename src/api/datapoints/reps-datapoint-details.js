@@ -194,7 +194,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }
         }
 
-        let allDpPointQuery = {
+        let datapointQuery = {
             dataCollection: 'Yes',
             functionId: {
                 "$ne": functionId.id
@@ -203,26 +203,6 @@ export const repDatapointDetails = async (req, res, next) => {
             clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
             categoryId: taskDetails.categoryId.id,
             status: true
-        }
-        if (taskDetails.taskStatus == CorrectionPending || taskDetails.taskStatus == ReassignmentPending) {
-            let allDpDetails;
-            const errQuery = { taskId: taskDetails?._id, status: true, isActive: true, hasError: true }
-            switch (memberType) {
-                case STANDALONE:
-                    allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
-                    break;
-                case BOARD_MATRIX:
-                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
-                    break;
-                case KMP_MATRIX:
-                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
-                    break;
-                default:
-                    break;
-
-            }
-            allDpPointQuery = { ...allDpPointQuery, _id: { $in: allDpDetails } }
-
         }
 
         let index, prevDatapoint = {}, nextDatapoint = {};
@@ -234,8 +214,8 @@ export const repDatapointDetails = async (req, res, next) => {
             if (allDatapoints[i].id == datapointId) {
                 // find memberName
                 index = allDatapoints.indexOf(allDatapoints[i]);
-                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName) : {};
-                nextDatapoint = (index + 1) <= allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName) : {};
+                prevDatapoint = (index - 1) >= 0 ? getPreviousNextDataPoints(allDatapoints[index - 1], taskDetails, year, memberId, memberName.toLowerCase()) : {};
+                nextDatapoint = (index + 1) <= allDatapoints?.length - 1 ? getPreviousNextDataPoints(allDatapoints[index + 1], taskDetails, year, memberId, memberName.toLowerCase()) : {}; 
                 break;
             }
         }
@@ -385,7 +365,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 const [currentAllBoardMemberMatrixDetails /*, historyAllBoardMemberMatrixDetails*/] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
-                        memberName: memberName
+                        memberName: { "$regex": memberName, "$options": "i" }
                     }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -393,7 +373,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('uom'),
                     // BoardMembersMatrixDataPoints.find({
                     //     ...historyQuery,
-                    //     memberName: memberName,
+                    //     memberName: { "$regex": memberName, "$options": "i" },
                     // }).populate('createdBy')
                     //     .populate('datapointId')
                     //     .populate('companyId')
@@ -455,8 +435,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                     if (errorDetailsObject[0].raisedBy == role) {
                                         let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0].comments : "";
                                         let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0].rejectComment : "";
-                                        boardDatapointsObject.comments.push(comments);
-                                        boardDatapointsObject.comments.push(rejectComment);
+                                        datapointsObject.comments.push(comments);
+                                        datapointsObject.comments.push(rejectComment);
                                     }
                                 }
                                 currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, true, uomValues, placeValues);
@@ -489,7 +469,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 //             getSourceDetails(object, sourceDetails)
                 //         ]);
                 //         if (object.year == historyYear[hitoryYearIndex].year
-                //             && object.memberName == memberName) {
+                //             && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                 //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                 //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                 //             // !Fetching Child Dp
@@ -515,7 +495,7 @@ export const repDatapointDetails = async (req, res, next) => {
             case KMP_MATRIX:
                 const [currentAllKmpMatrixDetails /*, historyAllKmpMatrixDetails*/] = await Promise.all([
                     KmpMatrixDataPoints.find({
-                        ...currentQuery, memberName: memberName,
+                        ...currentQuery, memberName: { "$regex": memberName, "$options": "i" },
                     }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -523,7 +503,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('uom'),
                     // KmpMatrixDataPoints.find({
                     //     ...historyQuery,
-                    //     memberName: memberName,
+                    //    memberName: { "$regex": memberName, "$options": "i" },
                     // }).populate('createdBy')
                     //     .populate('datapointId')
                     //     .populate('companyId')
@@ -612,7 +592,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     //             getS3ScreenShot(object.screenShot),
                     //             getSourceDetails(object, sourceDetails)
                     //         ]);
-                    //         if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
+                    //         if (object.datapointId.id == dpTypeValues.id && object.year == historyYear[hitoryYearIndex].year && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                     //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                     //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false)
                     //             //! Fetching Child Dp

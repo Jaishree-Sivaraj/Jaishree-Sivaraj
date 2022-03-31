@@ -56,6 +56,10 @@ export const datapointDetails = async (req, res, next) => {
 
         const clientTaxonomyPromiseStartTime = Date.now();
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        let isSFDR = false;
+        if (!clienttaxonomyFields?.isDerivedCalculationRequired) {
+            isSFDR = true;
+        }
         trackTime(timeDetails, clientTaxonomyPromiseStartTime, Date.now(), 'Client Taxonomy');
 
         const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
@@ -206,10 +210,10 @@ export const datapointDetails = async (req, res, next) => {
                     allDpDetails = await StandaloneDatapoints.distinct('datapointId', errQuery);
                     break;
                 case BOARD_MATRIX:
-                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
                     break;
                 case KMP_MATRIX:
-                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName })
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
                     break;
                 default:
                     break;
@@ -355,7 +359,7 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject, isSFDR },
 
 
 
@@ -364,14 +368,14 @@ export const datapointDetails = async (req, res, next) => {
                 const [currentAllBoardMemberMatrixDetails, historyAllBoardMemberMatrixDetails] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
-                        memberName: memberName
+                        memberName: { "$regex": memberName, "$options": "i" }
                     }).populate('datapointId')
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'), ,
                     BoardMembersMatrixDataPoints.find({
                         ...historyQuery,
-                        memberName: memberName,
+                        memberName: { "$regex": memberName, "$options": "i" },
                     })
                 ]);
                 historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
@@ -461,7 +465,7 @@ export const datapointDetails = async (req, res, next) => {
                 //             getS3ScreenShot(object.screenShot),
                 //             getSourceDetails(object, sourceDetails)
                 //         ]);
-                //         if (object.year == historyYear[hitoryYearIndex].year && object.memberName == memberName) {
+                //         if (object.year == historyYear[hitoryYearIndex].year && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                 //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues);
                 //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllBoardMemberMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                 //             childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
@@ -494,7 +498,8 @@ export const datapointDetails = async (req, res, next) => {
                         displayFields,
                         historicalYears,
                         timeDetails,
-                        dpCodeData: datapointsObject
+                        dpCodeData: datapointsObject,
+                        isSFDR
                     }
                 });
             case KMP_MATRIX:
@@ -503,14 +508,14 @@ export const datapointDetails = async (req, res, next) => {
                     await Promise.all([
                         KmpMatrixDataPoints.find({
                             ...currentQuery,
-                            memberName: memberName
+                            memberName: { "$regex": memberName, "$options": "i" }
                         }).populate('datapointId')
                             .populate('companyId')
                             .populate('taskId')
                             .populate('uom'), ,
                         KmpMatrixDataPoints.find({
                             ...historyQuery,
-                            memberName: memberName
+                            memberName: { "$regex": memberName, "$options": "i" }
                         })
                     ]);
                 trackTime(timeDetails, currentHistoryAllKmpMatrixDetailsStartTime, Date.now(), `Current and history Kmp`);
@@ -603,7 +608,7 @@ export const datapointDetails = async (req, res, next) => {
                 //         ]);
                 //         if (object.datapointId.id == dpTypeValues.id
                 //             && object.year == historyYear[hitoryYearIndex].year
-                //             && object.memberName == memberName) {
+                //             && object.memberName.toLowerCase() == memberName.toLowerCase()) {
                 //             historicalDatapointsObject = getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, historyYear[hitoryYearIndex].year, uomValues, placeValues)
                 //             historicalDatapointsObject = getDisplayFields(dpTypeValues, displayFields, historyAllKmpMatrixDetails, historyYear[hitoryYearIndex].year, historicalDatapointsObject, false, false);
                 //             childDp = await getChildDp(datapointId, historicalDatapointsObject.fiscalYear, taskId, taskDetails?.companyId?.id, uomValues, placeValues)
@@ -637,7 +642,8 @@ export const datapointDetails = async (req, res, next) => {
                         displayFields,
                         timeDetails,
                         historicalYears,
-                        dpCodeData: datapointsObject
+                        dpCodeData: datapointsObject,
+                        isSFDR
                     }
                 });
             default:
