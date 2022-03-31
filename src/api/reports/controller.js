@@ -128,7 +128,7 @@ export const exportReport = async (req, res, next) => {
   try {
     let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
-    let childAndSourceFindQuery = { status: true, isActive: true };
+    let childAndSourceFindQuery = { status: true};
     // if (clientTaxonomyId && selectedCompanies.length > 0) {
     if (clientTaxonomyId) {
       datapointFindQuery.clientTaxonomyId = clientTaxonomyId;
@@ -200,12 +200,14 @@ export const exportReport = async (req, res, next) => {
   
     let taxonomyDetails = await ClientTaxonomy.find({ _id: clientTaxonomyId, status: true });
   
-  
-    const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
-      ChildDp.find(childAndSourceFindQuery),
-      CompanySources.find(childAndSourceFindQuery).populate('companyId')
-    ])
-    let [allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
+
+    // const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
+    //   ChildDp.find(childAndSourceFindQuery),
+    //   CompanySources.find(childAndSourceFindQuery).populate('companyId')
+    // ])
+    let [allChildDpDetails, allCompanySourceDetails, allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
+      ChildDp.find({...childAndSourceFindQuery, isActive: true}),
+      CompanySources.find(childAndSourceFindQuery).populate('companyId'),
       StandaloneDatapoints.find(matchQuery)
         .populate('companyId')
         .populate('uom')
@@ -367,12 +369,14 @@ export const exportReport = async (req, res, next) => {
         if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
           let rows = [];
           allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
-          for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
-            let objectToPush = {}, objectToPushAsChild = {};
+          let totalStandaloneRecords = allStandaloneDetails.length
+          for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
+            // console.log("allStandaloneDetails", stdIndex);
+            let objectToPush = {};
             let cltTaxoDetails = clientTaxonomyDetail.outputFields.additionalFields;;
             let stdData = allStandaloneDetails[stdIndex];
             let dpDetails = datapointDetails.filter(obj => obj.id == stdData.datapointId.id )
-            let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj.sourceUrl == stdData.url )
+            let sourceDetails = allCompanySourceDetails.filter(obj => obj.companyId.id == stdData.companyId.id && obj._id == stdData?.sourceName?.split(';')[1] )
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
@@ -409,13 +413,7 @@ export const exportReport = async (req, res, next) => {
                 }
                 objectToPush[cltTaxoDetails[outIndex].displayName] = documentYear;
               } else if(outputFieldsData == 'sourceName'){
-                let fullSourceName = stdData.sourceName ? stdData.sourceName.split(';') :  "";
-                let sourceName;
-                if (fullSourceName?.length > 0) {
-                  sourceName = fullSourceName[0];
-                } else {
-                  sourceName = stdData.sourceName ? stdData.sourceName :  "";
-                }
+                let sourceName = sourceDetails[0]?.fileName ? sourceDetails[0]?.fileName :  "";
                 objectToPush[cltTaxoDetails[outIndex].displayName] = sourceName;
               }else if(outputFieldsData == 'response'){
                 let responseValue;
@@ -489,7 +487,7 @@ export const exportReport = async (req, res, next) => {
             // console.log(objectToPushAsChildCopy);
             
             if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
-              let responseObjectToPush = await getResponseObject(objectToPush);
+              let responseObjectToPush = getResponseObject(objectToPush);
               rows.push(responseObjectToPush);
             } else if ((stdData.response == 'NI' || stdData.response == 'NA') && stdData.additionalDetails.didTheCompanyReport == "Yes") {
               objectToPush['data_type (number, text, units)'] = "";
@@ -503,7 +501,9 @@ export const exportReport = async (req, res, next) => {
               rows.push(objectToPush);
             }
             if (childDpDetails.length > 0) {
-              for (let childIndex = 0; childIndex < childDpDetails.length; childIndex++) {
+              let totalChildDpRecords = childDpDetails.length;
+              for (let childIndex = 0; childIndex < totalChildDpRecords; childIndex++) {
+                let objectToPushAsChild = {};
                 objectToPushAsChild = JSON.parse(JSON.stringify(objectToPushAsChildCopy));
                 const item = childDpDetails[childIndex];
                 let dataType;
@@ -562,18 +562,8 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["Comment_G"] = item?.childFields?.commentG ? item?.childFields?.commentG : "";
                 objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "subline";
 
-
-                // if (objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] == "Text") {
-                //   objectToPushAsChild["company_data_element_label "] = "";
-                //   objectToPushAsChild["company_data_element_sub_label"] = "";
-                //   objectToPushAsChild["Total_or_sub_line_item (for numbers)"] = "";
-                //   rows.push(objectToPushAsChild);
-                // } else {
-                //   rows.push(objectToPushAsChild);
-                // }
-
                 if ((responseValue == 'NI' || responseValue == 'NA' || responseValue == 'Na') && item.childFields.didTheCompanyReport == "No") {
-                  let responseObjectToPush = await getResponseObject(objectToPushAsChild);
+                  let responseObjectToPush = getResponseObject(objectToPushAsChild);
                   rows.push(responseObjectToPush);
                 } else if ((responseValue == 'NI' || responseValue == 'NA') && item.childFields.didTheCompanyReport == "Yes") {
                   objectToPushAsChild['data_type (number, text, units)'] = "";
@@ -587,6 +577,9 @@ export const exportReport = async (req, res, next) => {
                   rows.push(objectToPushAsChild);
                 }
               }
+            }
+            if (stdIndex % 1000 == 0) {
+              console.log("Length", stdIndex);
             }
           }
           return res.status(200).json({
@@ -618,7 +611,7 @@ export const exportReport = async (req, res, next) => {
   }
 }
 
-export async function getResponseObject (responseObject) {
+export function getResponseObject (responseObject) {
   responseObject['data_type (number, text, units)'] = "";
   responseObject["date_of_data_capture"] = "";
   responseObject["type of value(actual/derived/Proxy)"] = "";
