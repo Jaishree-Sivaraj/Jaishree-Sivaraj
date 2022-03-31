@@ -93,7 +93,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // When task status are conditional count changes.
     let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
     queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
-      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments)
+      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
       : queryToCountDocuments;
 
     // 
@@ -132,15 +132,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
         mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
         if (taskDetails.taskStatus == CorrectionCompleted) {
-          currentAllStandaloneDetails = getFilteredData(currentAllStandaloneDetails);
-          currentAllBoardMemberMatrixDetails = getFilteredData(currentAllBoardMemberMatrixDetails);
-          currentAllKmpMatrixDetails = getFilteredData(currentAllKmpMatrixDetails);
-          mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
-          distinctDpIds = _.uniq(_.map(mergedDatapoints, 'datapointId'));
+          const allStandaloneDetails = getFilteredData(currentAllStandaloneDetails);
+          const allBoardMemberMatrixDetails = getFilteredData(currentAllBoardMemberMatrixDetails);
+          const allKmpMatrixDetails = getFilteredData(currentAllKmpMatrixDetails);
+          const correctionPendingMergedDatapoints = _.concat(allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails);
+          distinctDpIds = _.uniq(_.map(correctionPendingMergedDatapoints, 'datapointId'));
         }
 
         const checkHasError = _.filter(mergedDatapoints, function (o) { return o.hasError == true; });
-        // only when rep raises error they can submit.
+        // only when rep raises error they can submit.const
         repFinalSubmit = checkHasError.length > 0 && true;
 
         const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
@@ -247,9 +247,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       // filtered data to get status.
                       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                         _.filter(currentAllBoardMemberMatrixDetails, (object) => {
+                          let memberName = object.memberName;
+                          let element = datapointList.memberList[boarMemberListIndex].label;
                           if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id
                             && object.year == currentYear[currentYearIndex]
-                            && object.memberName == datapointList.memberList[boarMemberListIndex].label) {
+                            && memberName.toLowerCase().includes(element.toLowerCase())) {
                             boardDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
                           }
                         })
@@ -307,7 +309,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       let kmpDatapointsObject = getMemberDataPoint(dpTypeDatapoints[datapointsIndex], datapointList.memberList[kmpMemberListIndex], taskDetails);
                       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
                         _.filter(currentAllKmpMatrixDetails, (object) => {
-                          if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && object.memberName == datapointList.memberList[kmpMemberListIndex].label) {
+                          let memberName = object.memberName;
+                          let element = datapointList.memberList[boarMemberListIndex].label;
+                          if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex] && memberName.toLowerCase().includes(element.toLowerCase())) {
                             kmpDatapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed'
                           }
                         })
@@ -830,7 +834,7 @@ async function getMemberCount(memberName, queryToCountDocuments, dpType) {
   return queryToCountDocuments;
 }
 
-async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments) {
+async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName) {
   let allDpDetails;
   let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
   const query = { taskId: taskDetails?._id, status: true, isActive: true, dpStatus };
