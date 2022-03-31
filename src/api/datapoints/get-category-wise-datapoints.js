@@ -74,7 +74,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     const datapointCodeQuery = searchValue !== '' ?
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
-    let queryToCountDocuments = datapointCodeQuery.length > 0 ?
+    let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
+    let queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
+      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
+      : queryToCountDocuments;
+
+    queryToCountDocuments = datapointCodeQuery.length > 0 ?
       { ...queryForDatapointCollection, dpType, _id: { $in: datapointCodeQuery } }
       : { ...queryForDatapointCollection, dpType };
 
@@ -90,15 +95,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     queryForDatapointCollection = keyIssueId !== '' ?
       { ...queryForDatapointCollection, keyIssueId }
       : queryForDatapointCollection;
-    // When task status are conditional count changes.
-    let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
-    queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
-      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
-      : queryToCountDocuments;
 
-    // 
-    // Counting datapoint just with keyIssueId filter as board-matrix and kmp-matrix dp codes will not be displayed without memberid.
-    const {
+      const {
       count,
       dpTypeValues,
       priorityDpCodes,
@@ -692,7 +690,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -741,7 +739,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                // queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...queryForHasError,
@@ -823,7 +821,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                // queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...queryForHasError,
                   year: {
@@ -923,7 +921,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             queryForHasError = { ...queryForHasError, dpStatus: "Correction" };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            // queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
@@ -958,7 +956,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 keyIssuesList,
                 datapointList,
                 isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-                count: datapointList.dpCodesData.length < 1 ? 0 : count,
+                count,
                 isPriority: false,
                 fiscalYear: taskDetails?.year
               }
@@ -1045,7 +1043,7 @@ function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
     dpCode: orderedDpCodes?.datapointId?.code,
     dpCodeId: orderedDpCodes?.datapointId?.id,
     dpName: orderedDpCodes?.datapointId?.name,
-    description: orderedDpCodes?.description,
+    description: orderedDpCodes?.datapointId?.description,
     companyId: taskDetails?.companyId?.id,
     companyName: taskDetails?.companyId.companyName,
     keyIssueId: orderedDpCodes?.datapointId.keyIssueId?.id,
