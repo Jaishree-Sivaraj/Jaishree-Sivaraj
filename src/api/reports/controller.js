@@ -9,6 +9,7 @@ import { ChildDp } from '../child-dp'
 import { CompanySources } from '../companySources'
 import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
+import { Role } from '../role'
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -485,6 +486,7 @@ export const exportReport = async (req, res, next) => {
             }
             let objectToPushAsChildCopy = JSON.parse(JSON.stringify(objectToPush));
             // console.log(objectToPushAsChildCopy);
+            await Role.count({status: true});
             
             if ((stdData.response == 'NI' || stdData.response == 'NA' || stdData.response == 'Na') && stdData.additionalDetails.didTheCompanyReport == "No") {
               let responseObjectToPush = getResponseObject(objectToPush);
