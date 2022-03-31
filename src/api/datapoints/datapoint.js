@@ -56,6 +56,10 @@ export const datapointDetails = async (req, res, next) => {
 
         const clientTaxonomyPromiseStartTime = Date.now();
         const clienttaxonomyFields = await ClientTaxonomy.findOne({ _id: taskDetails.companyId.clientTaxonomyId.id }).lean();
+        let isSFDR = false;
+        if (!clienttaxonomyFields?.isDerivedCalculationRequired) {
+            isSFDR = true;
+        }
         trackTime(timeDetails, clientTaxonomyPromiseStartTime, Date.now(), 'Client Taxonomy');
 
         const displayFields = clienttaxonomyFields?.fields?.filter(obj => obj.toDisplay == true && obj.applicableFor != 'Only Controversy');
@@ -209,7 +213,7 @@ export const datapointDetails = async (req, res, next) => {
                     allDpDetails = await BoardMembersMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
                     break;
                 case KMP_MATRIX:
-                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } }) 
+                    allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', { ...errQuery, memberName: { "$regex": memberName, "$options": "i" } })
                     break;
                 default:
                     break;
@@ -355,7 +359,7 @@ export const datapointDetails = async (req, res, next) => {
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject, isSFDR },
 
 
 
@@ -494,7 +498,8 @@ export const datapointDetails = async (req, res, next) => {
                         displayFields,
                         historicalYears,
                         timeDetails,
-                        dpCodeData: datapointsObject
+                        dpCodeData: datapointsObject,
+                        isSFDR
                     }
                 });
             case KMP_MATRIX:
@@ -637,7 +642,8 @@ export const datapointDetails = async (req, res, next) => {
                         displayFields,
                         timeDetails,
                         historicalYears,
-                        dpCodeData: datapointsObject
+                        dpCodeData: datapointsObject,
+                        isSFDR
                     }
                 });
             default:

@@ -695,8 +695,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                       path: 'keyIssueId'
                     }
                   }]);
-                  orderedDpCodes = _.uniq(errorDatapoints, 'datapointId');
-                  orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
+                orderedDpCodes = _.uniq(errorDatapoints, 'datapointId');
+                orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
 
                 // orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
                 keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
