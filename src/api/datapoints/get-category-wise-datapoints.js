@@ -14,7 +14,7 @@ import { CompanyRepresentative, ClientRepresentative } from '../../constants/rol
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
-    const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValues } = req.body;
+    const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValue } = req.body;
 
     // Error message 
     if (!page || !limit) {
@@ -68,10 +68,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     // Queries when there is a searchValue added.
     let searchQuery = {};
-    searchQuery = searchValues !== '' ? getSearchQuery(searchValues, searchQuery) : searchQuery;
+    searchQuery = searchValue !== '' ? getSearchQuery(searchValue, searchQuery) : searchQuery;
 
     // Query based on searchQuery.
-    const datapointCodeQuery = searchValues !== '' ?
+    const datapointCodeQuery = searchValue !== '' ?
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
     let queryToCountDocuments = datapointCodeQuery.length > 0 ?
