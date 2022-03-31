@@ -162,20 +162,30 @@ export const show = async ({ params }, res, next) => {
             .populate('keyIssueId')
             .then(async (datapoints) => {
               if (datapoints.length > 0) {
+                let totalControversies = await Controversy.find({taskId: controversyTasks.id, status: true, isActive: true, response: { $nin: ["", " "] }})
                 for (let index = 0; index < datapoints.length; index++) {
                   let yesterday = new Date();
                   yesterday.setDate(yesterday.getDate() - 1);
                   let reassessmentDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reassessmentDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reassessmentDate: 1});
                   let reviewDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id, reviewDate:{$gt : yesterday}, status:true, isActive: true}).limit(1).sort({reviewDate: 1});
                   let fiscalYearEndDate = await Controversy.find({taskId: controversyTasks.id,datapointId: datapoints[index].id , status:true, isActive: true}).limit(1).sort({fiscalYearEndDate: -1});
+                  let countOfControversies = totalControversies.filter(obj => obj.datapointId == datapoints[index].id && obj.taskId == controversyTasks.id)
+
+                  var convertedFiscalYearEndDate = fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : "";
+                  if (convertedFiscalYearEndDate != "") {
+                    convertedFiscalYearEndDate = moment(convertedFiscalYearEndDate, "DD-MM-YYYY")
+                    convertedFiscalYearEndDate = convertedFiscalYearEndDate.format();
+                  }
+
                   let objectToPush = {
                     dpCode: datapoints[index].code,
                     dpCodeId: datapoints[index].id,
                     keyIssueName: datapoints[index].keyIssueId.keyIssueName,
                     keyIssueId: datapoints[index].keyIssueId.id,
+                    controversiesCount: countOfControversies.length > 0 ? countOfControversies.length : 0,
                     reassessmentDate: reassessmentDate[0] ? reassessmentDate[0].reassessmentDate : '',
                     reviewDate: reviewDate[0] ? reviewDate[0].reviewDate : '',
-                    controversyFiscalYearEndDate: fiscalYearEndDate[0] ? fiscalYearEndDate[0].fiscalYearEndDate : ""
+                    controversyFiscalYearEndDate: convertedFiscalYearEndDate
                   };
                   controversyObject.dpCodesList.push(objectToPush);
                 }
@@ -216,6 +226,31 @@ export const updateControversyTask = ({ user, bodymen: { body }, params }, res, 
     return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to update controversy task!" });
   })
 } 
+
+export const updateReassesmentDate = (req, res, next) => {
+  // console.log(req.body);
+  if (req.body) {
+    let reassessmentDate = req.body.reassesmentDate;
+    reassessmentDate = new Date(reassessmentDate).toISOString()
+    Controversy.updateMany({
+      taskId: req.body.taskId,
+      status: true,
+      isActive: true,
+      "controversyDetails.sourceName": { $exists: true }
+    },
+    {
+      $set: { reassessmentDate: reassessmentDate }
+    })
+    .then((result) => {
+      return res.status(200).json({ status: "200", message: "Last Review date is updated sucessfully" });
+    })
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: "Falied to update Reassesment date " });
+    })
+  } else {
+    return res.status(500).json({ status: "500", message: "No details found in the body...!" })
+  }
+}
 
 export const destroy = ({ user, params }, res, next) =>
   ControversyTasks.findById(params.id)

@@ -7,10 +7,11 @@ import { ErrorDetails } from '../errorDetails';
 import { Datapoints } from '../datapoints'
 import { TaskAssignment } from '../taskAssignment';
 import { storeFileInS3 } from "../../services/utils/aws-s3";
-import { Pending, CorrectionPending, Completed, CollectionCompleted } from '../../constants/task-status';
+import { Pending, CorrectionPending, Completed, Error, ReassignmentPending } from '../../constants/task-status';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from '../../constants/dp-type';
 import { ChildDp } from '../child-dp';
 import { Analyst } from '../../constants/roles';
+import { CompanySources } from '../companySources'
 
 // Incoming payload
 // currentDatapoint:
@@ -43,7 +44,8 @@ export const dataCollection = async ({
             companyId: body.companyId,
             datapointId: body.dpCodeId,
             isActive: true,
-            status: true
+            status: true,
+            taskId: body.taskId
         }
 
         let isUpdated, childpDpDataDetails;
@@ -69,7 +71,7 @@ export const dataCollection = async ({
                                             ...updateQuery,
                                             year: item['fiscalYear'],
                                         },
-                                        { $set: { isActive: false } }),
+                                        { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
                                 currentYearData.push(currentData);
@@ -118,7 +120,6 @@ export const dataCollection = async ({
                             });
 
                         }
-                        break;
                     case BOARD_MATRIX:
                         try {
                             isUpdated = await updateDerivedCalculationCompletedStatus(BOARD_MATRIX, updateQuery, body, dpCodesDetails);
@@ -136,7 +137,7 @@ export const dataCollection = async ({
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentData);
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
-                                        { $set: { isActive: false } }),
+                                        { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
                                 currentYearData.push(currentData);
@@ -165,7 +166,7 @@ export const dataCollection = async ({
                                 // updating and inserting data for BoardMembersMatrixDataPoints and child dp respectively.
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ year: item['fiscalYear'], memberName: body.memberName, ...updateQuery },
-                                        { $set: { isActive: false } }),
+                                        { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
                                 historyYearData.push(historyData);
@@ -176,7 +177,7 @@ export const dataCollection = async ({
                             const saveBoardMatrix = await BoardMembersMatrixDataPoints.insertMany(boardMemberDetails);
 
                             if (saveBoardMatrix) {
-                                res.status(200).json({
+                                return res.status(200).json({
                                     status: 200,
                                     message: 'Data inserted Successfully',
                                     isDerviedCalculationCompleted: isUpdated ? false : true
@@ -207,7 +208,7 @@ export const dataCollection = async ({
                                 // Updating and inserting data to KmpMatrixDataPoints and ChildDp respectively.
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
-                                        { $set: { isActive: false } }),
+                                        { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ])
                                 currentYearData.push(currentData);
@@ -236,6 +237,7 @@ export const dataCollection = async ({
                             const saveKmpMatrix = await KmpMatrixDataPoints.insertMany(kmpMemberDetails);
                             if (saveKmpMatrix) {
                                 return res.status(200).json({
+                                    status: 200,
                                     message: "Data inserted Successfully",
                                     isDerviedCalculationCompleted: isUpdated ? false : true
                                 });
@@ -258,6 +260,7 @@ export const dataCollection = async ({
                         })
                 }
             case CorrectionPending:
+            case ReassignmentPending:
                 let currentDataCorrection, historyDataCorrection;
                 switch (body.memberType) {
                     case STANDALONE:
@@ -294,7 +297,7 @@ export const dataCollection = async ({
                                 currentDataCorrection = getData(body, item, user, formattedScreenShots);
                                 currentDataCorrection = {
                                     ...currentDataCorrection,
-                                    dpStatus: "Error",
+                                    dpStatus: Error,
                                     hasCorrection: hasCorrectionValue,
                                     correctionStatus: Completed,
                                 }
@@ -306,17 +309,16 @@ export const dataCollection = async ({
                                         ...updateQuery,
                                         year: item['fiscalYear']
                                     }, {
-                                        $set: { isActive: false }
+                                        $set: { status: false }
                                     }),
-                                    StandaloneDatapoints.create(currentDataCorrection)
-
-                                        .catch(err => {
-                                            return res.status('500').json({
-                                                message: err.message ? err.message : "Failed to save the data"
-                                            });
-                                        }),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
+                                await StandaloneDatapoints.create(currentDataCorrection)
+                                    .catch(err => {
+                                        return res.status('500').json({
+                                            message: err.message ? err.message : "Failed to save the data"
+                                        });
+                                    })
                             }
 
                             //! Historical Data
@@ -330,10 +332,10 @@ export const dataCollection = async ({
                                 await Promise.all([
                                     StandaloneDatapoints.updateMany({ ...updateQuery, year: item['fiscalYear'] },
                                         { $set: { isActive: false } }),
-                                    StandaloneDatapoints.create(historyDataCorrection),
                                     ChildDp.insertMany(childpDpDataDetails)
 
                                 ]);
+                                await StandaloneDatapoints.create(historyDataCorrection)
                             }
 
                             return res.status(200).json({
@@ -385,24 +387,25 @@ export const dataCollection = async ({
                                 currentDataCorrection = {
                                     ...currentDataCorrection,
                                     memberName: body.memberName,
-                                    dpStatus: "Error",
+                                    dpStatus: Error,
                                     hasError: false,
                                     hasCorrection: hasCorrectionValue,
-                                    correctionStatus: 'Completed',
+                                    correctionStatus: Completed,
                                 }
                                 // Getting child Dp.
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
 
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
-                                        { $set: { isActive: false } }),
-                                    BoardMembersMatrixDataPoints.create(currentDataCorrection).catch(err => {
-                                        return res.status('500').json({
-                                            message: err.message ? err.message : "Failed to save the data"
-                                        }),
-                                            ChildDp.insertMany(childpDpDataDetails)
-                                    })
-                                ])
+                                        { $set: { status: false } }),
+                                    ChildDp.insertMany(childpDpDataDetails)
+                                ]);
+
+                                await BoardMembersMatrixDataPoints.create(currentDataCorrection).catch(err => {
+                                    return res.status('500').json({
+                                        message: err.message ? err.message : "Failed to save the data"
+                                    });
+                                })
                             }
                             //! Historical Data
                             for (let historyIndex = 0; historyIndex < dpHistoricalDpDetails.length; historyIndex++) {
@@ -417,9 +420,10 @@ export const dataCollection = async ({
                                 await Promise.all([
                                     BoardMembersMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
                                         { $set: { isActive: false } }),
-                                    BoardMembersMatrixDataPoints.create(historicalDataYear),
                                     ChildDp.insertMany(childpDpDataDetails)
                                 ]);
+
+                                await BoardMembersMatrixDataPoints.create(historicalDataYear);
                             }
 
                             return res.status(200).json({
@@ -470,23 +474,25 @@ export const dataCollection = async ({
                                 currentDataCorrection = {
                                     ...currentDataCorrection, hasError: false,
                                     hasCorrection: hasCorrectionValue,
-                                    dpStatus: "Error",
+                                    dpStatus: Error,
                                     memberName: body.memberName,
-                                    correctionStatus: 'Completed',
+                                    correctionStatus: Completed,
                                 };
                                 // Getting Child Dp.
                                 childpDpDataDetails = await getChildData(body, taskDetailsObject, item?.fiscalYear, item?.childDp, currentDataCorrection);
 
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
-                                        { $set: { isActive: false } }),
-                                    KmpMatrixDataPoints.create(currentDataCorrection).catch(err => {
-                                        return res.status('500').json({
-                                            message: err.message ? err.message : "Failed to save the data"
-                                        }),
-                                            ChildDp.insertMany(childpDpDataDetails)
-                                    })
+                                        { $set: { status: false } }),
+                                    ChildDp.insertMany(childpDpDataDetails),
+
                                 ]);
+
+                                await KmpMatrixDataPoints.create(currentDataCorrection).catch(err => {
+                                    return res.status('500').json({
+                                        message: err.message ? err.message : "Failed to save the data"
+                                    });
+                                })
 
                             }
                             //! Historical Data
@@ -507,16 +513,16 @@ export const dataCollection = async ({
 
                                 await Promise.all([
                                     KmpMatrixDataPoints.updateMany({ ...updateQuery, memberName: body.memberName, year: item['fiscalYear'] },
-                                        { $set: { isActive: false } }),
-                                    KmpMatrixDataPoints.create(historyDataCorrection)
-                                        .catch(err => {
-                                            return res.status('500').json({
-                                                message: err.message ? err.message : "Failed to save the data"
-                                            });
-                                        }),
+                                        { $set: { status: false } }),
                                     ChildDp.insertMany(childpDpDataDetails)
+                                ]);
 
-                                ])
+                                await KmpMatrixDataPoints.create(historyDataCorrection)
+                                    .catch(err => {
+                                        return res.status('500').json({
+                                            message: err.message ? err.message : "Failed to save the data"
+                                        });
+                                    });
                             }
                             return res.status(200).json({
                                 status: 200,
@@ -716,6 +722,18 @@ export async function getChildData(body, taskDetailsObject, fiscalYear, childDp,
 
                     }
                 }
+
+                if (childDetailsDatas?.source) {
+                    let sourceDetails = await CompanySources.findOne({ _id: childDetailsDatas?.source, status: true });
+
+                    if (sourceDetails) {
+                        childDetailsDatas.sourceName = sourceDetails?.name ? sourceDetails?.name : "";
+                        childDetailsDatas.url = sourceDetails?.sourceUrl ? sourceDetails?.sourceUrl : "";
+                        childDetailsDatas.publicationDate = sourceDetails?.publicationDate ? sourceDetails?.publicationDate : "";
+                        childDetailsDatas.sourceTitle = sourceDetails?.sourceTitle ? sourceDetails?.sourceTitle : "";
+                    }
+                }
+
                 childDetailsDatas.units = {
                     measure: data?.subDataType?.measure ? data?.subDataType?.measure : '',
                     placeValues: data?.subDataType?.measure ? data?.subDataType?.measure : [],

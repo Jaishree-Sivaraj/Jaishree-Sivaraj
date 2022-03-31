@@ -69,25 +69,31 @@ export function getError(errorDataDetails, currentYear, taskId, datapointId) {
 
 export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
-    if (screenShot && screenShot.length > 0) {
-        for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
-            let obj = screenShot[screenShotIndex];
-            let screenShotFileNameStartTime=Date.now()
-            let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                screenShotFileName = "No screenshot";
-            });
-            // let screenShotFileNameEndTime=Date.now()
-            // timeDetails.push({
-            //     blockName:'screenshot FileName',
-            //     timeTaken:screenShotFileNameEndTime-screenShotFileNameStartTime
-
-            // })
-            if (screenShotFileName == undefined) {
-                screenShotFileName = "";
+    if (Array.isArray(screenShot)) {
+        if (screenShot && screenShot.length > 0) {
+            for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
+                let obj = screenShot[screenShotIndex];
+                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = "No screenshot";
+                });
+                if (screenShotFileName == undefined) {
+                    screenShotFileName = "";
+                }
+                s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
             }
-            s3DataScreenshot.push({ uid: screenShotIndex, name: obj, url: screenShotFileName });
         }
+    } else {
+        let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
+            screenShotFileName = "No screenshot";
+        });
+        if (screenShotFileName == undefined) {
+            screenShotFileName = "";
+        }
+        return { uid: 1, name: screenShot, url: screenShotFileName }
+
     }
+
+
     return s3DataScreenshot;
 }
 
@@ -96,7 +102,7 @@ export async function getSourceDetails(object, sourceDetails) {
         let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
         findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
-        let sourceValuesStartTime=Date.now()
+        let sourceValuesStartTime = Date.now()
         sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
         // let sourceValuesEndTime=Date.now()
         // timeDetails.push({
@@ -108,6 +114,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
+            sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
     return sourceDetails;
@@ -115,7 +122,7 @@ export async function getSourceDetails(object, sourceDetails) {
 
 export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues) {
     return {
-        status: Completed,
+        status: object?.correctionStatus,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
@@ -125,7 +132,7 @@ export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, curren
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : null,
+            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: object?.uom ? { value: object?.uom.id, label: object?.uom.uomName } : null
         },
@@ -167,7 +174,7 @@ export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetai
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: null,
+            selectedPlaceValue: { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: null
         },
@@ -199,7 +206,7 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
     if (errorDetailLength > 0 && screenshot && screenshot.length > 0) {
         for (let refErrorScreenShotIndex = 0; refErrorScreenShotIndex < screenshot.length; refErrorScreenShotIndex++) {
             let obj = screenshot[refErrorScreenShotIndex];
-            let screenshotFileNameDetailsStartTime=Date.now()
+            let screenshotFileNameDetailsStartTime = Date.now()
             let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                 screenShotFileName = "No screenshot";
             });
@@ -269,7 +276,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
-                isMandatory: display?.isMandatory?display?.isMandatory:false,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
             !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
@@ -277,7 +284,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 name: display.name,
                 value: currentValue ? currentValue : '',
                 inputType: display.inputType,
-                isMandatory: display?.isMandatory?display?.isMandatory:false,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
 
@@ -303,7 +310,7 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
         subDataType: {
             measure: dpTypeValues?.measureType,
             placeValues: placeValues,
-            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : null,
+            selectedPlaceValue: object?.placeValue ? { value: object?.placeValue, label: object?.placeValue } : { value: "Number", label: "Number" },
             uoms: uomValues,
             selectedUom: object?.uom ? { value: object?.uom.id, label: object?.uom.uomName } : null
         },
@@ -395,7 +402,7 @@ export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memb
 export async function getChildDp(datapointId, year, taskId, companyId) {
     try {
         // let childDpDetailsStartTime=Date.now()
-        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true });
+        const getChildDpDetails = await ChildDp.find({ parentDpId: datapointId, year, taskId, companyId, isActive: true, status: true });
         // let childDpDetailsEndTime=Date.now()
         // timeDetails.push({
         //     blockName:'child dp Details',
@@ -412,13 +419,13 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
         console.log(error?.message);
         return error?.message;
     }
-    
+
 }
 
 export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
         // let timeDetails=[]
-        let clientTaxDpMeasurePlaceValueDetailsStartTime=Date.now()
+        let clientTaxDpMeasurePlaceValueDetailsStartTime = Date.now()
 
         const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
             ClientTaxonomy.findOne({
@@ -443,30 +450,32 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if (dpDetails.measureType != '' && dpDetails.measureType != 'NA') {
+            if (dpDetails.measureType != '') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
-                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl.id);
+                let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl?.id);
                 let uomValues = [];
                 for (let uomIndex = 0; uomIndex < measureUoms.length; uomIndex++) {
                     const element = measureUoms[uomIndex];
                     uomValues.push({ value: element.uomName, label: element.uomName });
                 }
+                console.log(headers);
+                headers.push({
+                    "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
+                    "displayName": "Place Value",
+                    "fieldName": "placeValue",
+                    "dataType": "Select",
+                    "options": placeValues,
+                    "isRequired": true,
+                    "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex]?.orderNumber
+                        ?
+                        clientTaxData?.childFields?.additionalFields[responseIndex]?.orderNumber
+                        :
+                        clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
+                });
+                console.log('this is a headers', headers);
                 if (uomValues.length > 0) {
-                    if (measureDtl.measureName == 'Currency') {
-                        headers.push({
-                            "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
-                            "displayName": "Place Value",
-                            "fieldName": "placeValue",
-                            "dataType": "Select",
-                            "options": placeValues,
-                            "isRequired": true,
-                            "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                                ?
-                                clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
-                                :
-                                clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
-                        })
-                    }
+                    // if (measureDtl.measureName == 'Currency') {
+                    // }
 
                     headers.push({
                         "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length,
@@ -475,9 +484,9 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                         "dataType": "Select",
                         "options": uomValues,
                         "isRequired": true,
-                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                        "orderNumber": clientTaxData?.childFields?.additionalFields[responseIndex]?.orderNumber
                             ?
-                            clientTaxData?.childFields?.additionalFields[responseIndex].orderNumber
+                            clientTaxData?.childFields?.additionalFields[responseIndex]?.orderNumber
                             :
                             clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                     })
@@ -497,10 +506,13 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
 
 export function getSortedYear(currentYear) {
     let obj = [{}];
-    currentYear.map((year) => {
-        const y = year.split('-');
+    for (let i = 0; i < currentYear?.length; i++) {
+        const y = currentYear[i].split('-');
+        // if (y[0] < y[1]) {
+        //     return { error: `The year range's first value is smaller the other,please check and request again` };
+        // }
         obj.push({ firstYear: y[0], lastYear: y[1] });
-    });
+    }
     currentYear = sortArray(obj, 'lastYear', -1);
     let newArray = [];
     currentYear.map((arr) => {

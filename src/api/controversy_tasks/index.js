@@ -2,13 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, newControversyTask, updateControversyTask, getMyPendingTasks, companiesAndAnalyst, allocateTasksFromJson } from './controller'
+import { create, index, show, update, destroy, newControversyTask, updateControversyTask, getMyPendingTasks, companiesAndAnalyst, allocateTasksFromJson, updateReassesmentDate } from './controller'
 import { schema } from './model'
 export ControversyTasks, { schema } from './model'
 
 const router = new Router()
-const { taskNumber, companyId, analystId, taskStatus, completedDate, status, canGenerateJson, isJsonGenerated } = schema.tree
-const taskId = "", analyst = {}, company = [];
+const { taskNumber, companyId, analystId, taskStatus, completedDate, status, canGenerateJson, isJsonGenerated,  } = schema.tree
+const taskId = "", analyst = {}, company = [], reassessmentDate = "";
 
 /**
  * @api {post} /controversy_tasks Create controversy tasks
@@ -65,6 +65,23 @@ router.post('/update-task',
   token({ required: true }),
   body({ taskId, analystId }),
   updateControversyTask)
+
+/** @api {post} /controversy_tasks/update-reassesment-date Update controversy task
+* @apiName UpdateControversyTask
+* @apiGroup ControversyTasks
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiParam analyst Controversy tasks's analyst.
+* @apiParam company Controversy tasks's company.
+* @apiSuccess {Object} controversyTasks Controversy tasks's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Controversy tasks not found.
+* @apiError 401 user access only.
+*/
+router.post('/update-reassesment-date',
+  token({ required: true }),
+  body({ taskId, reassessmentDate }),
+  updateReassesmentDate)
 
 /**
  * @api {get} /controversy_tasks Retrieve controversy tasks
