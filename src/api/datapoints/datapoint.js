@@ -355,11 +355,11 @@ export const datapointDetails = async (req, res, next) => {
                         orderNumber: chilDpHeaders.length + 2
                     })
                 }
-
+                datapointsObject = { ...datapointsObject, isSFDR };
                 return res.status(200).send({
                     status: 200,
                     message: "Data collection dp codes retrieved successfully!",
-                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject, isSFDR },
+                    response: { prevDatapoint, nextDatapoint, chilDpHeaders, dpTypeValues, displayFields, historicalYears, timeDetails, dpCodeData: datapointsObject },
 
 
 
@@ -486,7 +486,7 @@ export const datapointDetails = async (req, res, next) => {
                         orderNumber: chilDpHeaders.length + 2
                     })
                 }
-
+                datapointsObject = { ...datapointsObject, isSFDR };
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
@@ -499,7 +499,6 @@ export const datapointDetails = async (req, res, next) => {
                         historicalYears,
                         timeDetails,
                         dpCodeData: datapointsObject,
-                        isSFDR
                     }
                 });
             case KMP_MATRIX:
@@ -630,7 +629,7 @@ export const datapointDetails = async (req, res, next) => {
                     })
                 }
 
-
+                datapointsObject = { ...datapointsObject, isSFDR };
                 return res.status(200).send({
                     status: "200",
                     message: "Data collection dp codes retrieved successfully!",
@@ -642,8 +641,7 @@ export const datapointDetails = async (req, res, next) => {
                         displayFields,
                         timeDetails,
                         historicalYears,
-                        dpCodeData: datapointsObject,
-                        isSFDR
+                        dpCodeData: datapointsObject
                     }
                 });
             default:
