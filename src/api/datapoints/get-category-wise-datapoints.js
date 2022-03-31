@@ -189,7 +189,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             const dpQuery = { companyId: taskDetails.companyId.id, endDateTimeStamp: 0, status: true };
             switch (dpType) {
               case STANDALONE:
-                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName);
+                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName,keyIssuesList);
                 datapointList = await getDataPointListForStandalone(dpTypeDatapoints, currentYear, currentAllStandaloneDetails, taskDetails, datapointList);
                 return res.status(200).send({
                   status: '200',
@@ -649,7 +649,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               });
 
             orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssueList);
+            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
             for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
               let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
               if (datapointList.dpCodesData.length > 0) {
@@ -705,7 +705,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   }]);
 
                 orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-                keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
+                keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
                 for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
 
                   let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
@@ -930,7 +930,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               });
 
             orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-            keyIssuesList = await getKeyIssues(queryForDatapointCollection, keyIssuesList);
+            keyIssuesList = await getKeyIssues(queryForSearchingKeyIssueName, keyIssuesList);
             for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
               let datapointsObject = getDpObjectForCorrrection(orderedDpCodes[errorDpIndex], taskDetails);
               if (datapointList.dpCodesData.length > 0) {
