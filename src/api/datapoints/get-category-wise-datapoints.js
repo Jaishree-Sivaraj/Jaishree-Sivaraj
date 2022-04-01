@@ -89,6 +89,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { ...queryToCountDocuments, keyIssueId }
       : queryToCountDocuments;
       
+    if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+      queryToCountDocuments.isRequiredForReps = true
+    }
     queryForDatapointCollection = { ...queryForDatapointCollection, ...searchQuery };
     queryForDatapointCollection = keyIssueId !== '' ?
       { ...queryForDatapointCollection, keyIssueId }
