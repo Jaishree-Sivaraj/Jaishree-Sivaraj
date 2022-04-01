@@ -73,9 +73,15 @@ export async function getS3ScreenShot(screenShot) {
         if (screenShot && screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
                 let obj = screenShot[screenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                    screenShotFileName = "No screenshot";
-                });
+                if (process.env.NODE_ENV == 'production') {
+                    let screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
+                        screenShotFileName = "No screenshot";
+                    });
+                } else {
+                    let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                        screenShotFileName = "No screenshot";
+                    });
+                }
                 if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                 }
@@ -120,7 +126,7 @@ export async function getSourceDetails(object, sourceDetails) {
     return sourceDetails;
 }
 
-export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues) {
+export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR) {
     return {
         status: object?.correctionStatus,
         dpCode: dpTypeValues?.code,
@@ -158,11 +164,12 @@ export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, curren
             comment: errorDetailsObject[0] ? errorDetailsObject[0]?.comments.content : '',
             errorStatus: object?.correctionStatus
         },
-        additionalDetails: []
+        additionalDetails: [],
+        isSFDR
     }
 }
 
-export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetails, inputValues, uomValues, placeValues) {
+export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetails, inputValues, uomValues, placeValues, isSFDR) {
     return {
         status: YetToStart,
         dpCode: dpTypeValues?.code,
@@ -197,7 +204,8 @@ export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetai
         },
         error: {},
         comments: [],
-        additionalDetails: []
+        additionalDetails: [],
+        isSFDR
     }
 }
 

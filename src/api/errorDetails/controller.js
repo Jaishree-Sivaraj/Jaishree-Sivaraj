@@ -266,7 +266,7 @@ export const saveErrorDetails = async ({
         try {
           let item = dpCodesDetails[index];
           if (item.isUnfreezed && item.error.isThere) {
-            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
             let errorDp = getErrorData(body, item, errorTypeObject, errorCaughtByRep, user)
@@ -290,12 +290,12 @@ export const saveErrorDetails = async ({
                 })
               }),
               ChildDp.insertMany(childpDpDataDetails),
-              ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
                 { $set: errorDp })
             ])
           }
           else if (item.isUnfreezed == true) {
-            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" } , datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
 
@@ -325,13 +325,13 @@ export const saveErrorDetails = async ({
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
             let errorDp = getErrorData(body, item, errorTypeObject, errorCaughtByRep, user)
             await Promise.all([
-              ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
                 { $set: errorDp }, { upsert: true }),
-              BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+              BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
                 { $set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed' } })
             ]);
           } else {
-            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { hasError: false, hasCorrection: false, correctionStatus: 'Completed' } });
           }
         } catch (error) {
@@ -341,7 +341,7 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
         try {
           let item = dpHistoricalDpDetails[index];
-          await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+          await BoardMembersMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { status: false } });
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -394,7 +394,7 @@ export const saveErrorDetails = async ({
         try {
           let item = dpCodesDetails[index];
           if (item.isUnfreezed && item.error.isThere) {
-            await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
             let errorDp = getErrorData(body, item, errorTypeObject, errorCaughtByRep, user)
@@ -418,11 +418,11 @@ export const saveErrorDetails = async ({
                 })
               }),
               ChildDp.insertMany(childpDpDataDetails),
-              ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
                 { $set: errorDp })
             ])
           } else if (item.isUnfreezed == true) {
-            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
 
@@ -450,13 +450,13 @@ export const saveErrorDetails = async ({
             let errorDp = getErrorData(body, item, errorTypeObject, errorCaughtByRep, user)
 
             await Promise.all([
-              KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+              KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
                 { $set: { hasError: true, hasCorrection: false, correctionStatus: 'Completed' } }),
-              ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+              ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
                 { $set: errorDp }, { upsert: true })
             ])
           } else {
-            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { hasError: false, hasCorrection: false, correctionStatus: 'Completed' } });
           }
         } catch (error) {
@@ -466,7 +466,7 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpHistoricalDpDetails.length; index++) {
         try {
           let item = dpHistoricalDpDetails[index];
-          await KmpMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
+          await KmpMatrixDataPoints.updateOne({ companyId: body.companyId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
             { $set: { status: false } });
           let formattedScreenShots = [];
           if (item['screenShot'] && item['screenShot'].length > 0) {
@@ -669,14 +669,14 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
             status: true,
             createdBy: user
           }
-          await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+          await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { hasCorrection: false, hasError: true, correctionStatus: 'Completed' } })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
-          await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, raisedBy: item.error.raisedBy, year: item['fiscalYear'], status: true },
+          await ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, raisedBy: item.error.raisedBy, year: item['fiscalYear'], status: true },
             { $set: errorDp }, { upsert: true })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the error details!" }) });
         } else {
-          await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+          await BoardMembersMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { hasCorrection: false, hasError: false, correctionStatus: 'Completed' } })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
         }
@@ -747,14 +747,14 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
             status: true,
             createdBy: user
           }
-          await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+          await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { hasCorrection: false, hasError: true, correctionStatus: 'Completed' } })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
-          await ErrorDetails.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, raisedBy: item.error.raisedBy, year: item['fiscalYear'], status: true },
+          await ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, raisedBy: item.error.raisedBy, year: item['fiscalYear'], status: true },
             { $set: errorDp }, { upsert: true })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the error details!" }) });
         } else {
-          await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: body.memberName, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+          await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { hasCorrection: false, hasError: false, correctionStatus: 'Completed' } })
             .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the data!" }) });
         }
