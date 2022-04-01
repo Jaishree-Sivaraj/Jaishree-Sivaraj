@@ -64,7 +64,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         isActive: true,
         status: true
       };
-    let queryKeyIssueSearch = queryForDatapointCollection
+    let queryKeyIssueSearch = queryForDatapointCollection;
 
     // Queries when there is a searchValue added.
     let searchQuery = {};
@@ -75,28 +75,29 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       await Datapoints.distinct('_id', { ...searchQuery, categoryId: taskDetails?.categoryId }) : [];
 
     let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
-    let queryToCountDocuments = conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
-      await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
+    let queryToCountDocuments = { ...queryForDatapointCollection, dpType };
+
+    conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
+      queryToCountDocuments = await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
       : queryToCountDocuments;
 
     queryToCountDocuments = datapointCodeQuery.length > 0 ?
-      { ...queryForDatapointCollection, dpType, _id: { $in: datapointCodeQuery } }
-      : { ...queryForDatapointCollection, dpType };
+      { ...queryToCountDocuments, dpType, _id: { $in: datapointCodeQuery } }
+      : queryToCountDocuments;
 
     queryToCountDocuments = keyIssueId !== '' ?
-      { ...queryForDatapointCollection, keyIssueId }
+      { ...queryToCountDocuments, keyIssueId }
       : queryToCountDocuments;
-
-    queryToCountDocuments = memberName !== '' ?
-      await getMemberCount(memberName, queryToCountDocuments, dpType)
-      : queryToCountDocuments;
-
+      
+    if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
+      queryToCountDocuments.isRequiredForReps = true
+    }
     queryForDatapointCollection = { ...queryForDatapointCollection, ...searchQuery };
     queryForDatapointCollection = keyIssueId !== '' ?
       { ...queryForDatapointCollection, keyIssueId }
       : queryForDatapointCollection;
 
-      const {
+    const {
       count,
       dpTypeValues,
       priorityDpCodes,
@@ -344,7 +345,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         } else if (dpType == STANDALONE) {
           try {
-            let queryForDpTypeCollection = keyIssueId ? {
+            let queryForDpTypeCollection = keyIssueId !== '' ? {
               ...queryForDatapointCollection,
               keyIssueId,
             } : queryForDatapointCollection;
@@ -412,7 +413,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             switch (dpType) {
               case STANDALONE:
                 queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
                   .skip((page - 1) * limit)
                   .limit(+limit)
@@ -459,7 +460,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case BOARD_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 const [errorboardDatapoints, boardMemberEq] = await Promise.all([
                   BoardMembersMatrixDataPoints.find({
                     ...queryForHasError,
@@ -538,7 +539,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 });
               case KMP_MATRIX:
                 queryForHasError = memberName === '' ? queryForHasError : { ...queryForHasError, memberName: { '$regex': memberName, '$options': 'i' } };
-                queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+                queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
                 let [errorkmpDatapoints, kmpMemberEq] = await Promise.all([KmpMatrixDataPoints.find({
                   ...queryForHasError,
                   year: {
@@ -634,7 +635,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           try {
             queryForHasError = { ...queryForHasError, dpStatus: Error };
             queryForHasError = keyIssueId === '' ? queryForHasError : await getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery);
-            queryForHasError = datapointCodeQuery ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
+            queryForHasError = datapointCodeQuery.length > 0 ? { ...queryForHasError, datapointId: datapointCodeQuery } : queryForHasError;
             const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
               .skip((page - 1) * limit)
               .limit(+limit)
@@ -1073,7 +1074,7 @@ async function getKeyIssues(queryKeyIssueSearch, keyIssuesList) {
 
 async function getQueryWithKeyIssue(queryForHasError, keyIssueId, datapointCodeQuery) {
   const datapointwithKeyIssue = await Datapoints.distinct('_id', { keyIssueId });
-  if (datapointCodeQuery) {
+  if (datapointCodeQuery.length > 0) {
     datapointwithKeyIssue.push(datapointwithKeyIssue);
   }
 
@@ -1096,25 +1097,6 @@ function getSearchQuery(searchValue, searchQuery) {
 
 }
 
-async function getMemberCount(memberName, queryToCountDocuments, dpType) {
-  let memberDp;
-  switch (dpType) {
-    case BOARD_MATRIX:
-      memberDp = await BoardMembersMatrixDataPoints.distinct('datapointId'
-        , { memberName: { '$regex': memberName, '$options': 'i' }, status: true, isActive: true });
-      queryToCountDocuments = { ...queryToCountDocuments, _id: memberDp };
-      break;
-    case KMP_MATRIX:
-      memberDp = await KmpMatrixDataPoints.distinct('datapointId'
-        , { memberName: { '$regex': memberName, '$options': 'i' }, status: true, isActive: true });
-      queryToCountDocuments = { ...queryToCountDocuments, _id: memberDp };
-      break;
-    default:
-      break;
-  }
-  return queryToCountDocuments;
-}
-
 async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName) {
   let allDpDetails;
   let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
@@ -1133,11 +1115,14 @@ async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDo
       break;
 
   }
+  console.log(queryToCountDocuments);
   queryToCountDocuments = { ...queryToCountDocuments, _id: { $in: allDpDetails } };
+  console.log(queryToCountDocuments)
   return queryToCountDocuments;
 }
 
 async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(queryToCountDocuments, queryForDatapointCollection, queryForDpTypeCollection) {
+  console.log(queryToCountDocuments);
   let [count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
     Datapoints.countDocuments(queryToCountDocuments),
     Datapoints.find(queryForDatapointCollection).distinct('dpType'),
@@ -1159,7 +1144,7 @@ async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(queryToCountDo
       .populate('companyId')
       .populate('taskId')
   ]);
-
+  console.log(count);
   return { count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails };
 }
 
