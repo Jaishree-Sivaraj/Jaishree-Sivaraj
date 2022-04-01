@@ -73,12 +73,13 @@ export async function getS3ScreenShot(screenShot) {
         if (screenShot && screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
                 let obj = screenShot[screenShotIndex];
+                let screenShotFileName
                 if (process.env.NODE_ENV == 'production') {
-                    let screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
                         screenShotFileName = "No screenshot";
                     });
                 } else {
-                    let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                         screenShotFileName = "No screenshot";
                     });
                 }
