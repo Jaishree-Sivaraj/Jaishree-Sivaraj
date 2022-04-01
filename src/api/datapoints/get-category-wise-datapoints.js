@@ -342,7 +342,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         } else if (dpType == STANDALONE) {
           try {
-            let queryForDpTypeCollection = keyIssueId ? {
+            let queryForDpTypeCollection = keyIssueId !== '' ? {
               ...queryForDatapointCollection,
               keyIssueId,
             } : queryForDatapointCollection;
