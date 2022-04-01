@@ -76,7 +76,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     let conditionalTaskStatus = [CorrectionPending, ReassignmentPending, CorrectionCompleted];
     let queryToCountDocuments = { ...queryForDatapointCollection, dpType };
-    
+
     conditionalTaskStatus.includes(taskDetails?.taskStatus) ?
       queryToCountDocuments = await getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName)
       : queryToCountDocuments;
@@ -88,11 +88,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     queryToCountDocuments = keyIssueId !== '' ?
       { ...queryToCountDocuments, keyIssueId }
       : queryToCountDocuments;
-
-    queryToCountDocuments = memberName !== '' ?
-      await getMemberCount(memberName, queryToCountDocuments, dpType)
-      : queryToCountDocuments;
-
+      
     queryForDatapointCollection = { ...queryForDatapointCollection, ...searchQuery };
     queryForDatapointCollection = keyIssueId !== '' ?
       { ...queryForDatapointCollection, keyIssueId }
@@ -1098,25 +1094,6 @@ function getSearchQuery(searchValue, searchQuery) {
 
 }
 
-async function getMemberCount(memberName, queryToCountDocuments, dpType) {
-  let memberDp;
-  switch (dpType) {
-    case BOARD_MATRIX:
-      memberDp = await BoardMembersMatrixDataPoints.distinct('datapointId'
-        , { memberName: { '$regex': memberName, '$options': 'i' }, status: true, isActive: true });
-      queryToCountDocuments = { ...queryToCountDocuments, _id: memberDp };
-      break;
-    case KMP_MATRIX:
-      memberDp = await KmpMatrixDataPoints.distinct('datapointId'
-        , { memberName: { '$regex': memberName, '$options': 'i' }, status: true, isActive: true });
-      queryToCountDocuments = { ...queryToCountDocuments, _id: memberDp };
-      break;
-    default:
-      break;
-  }
-  return queryToCountDocuments;
-}
-
 async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDocuments, memberName) {
   let allDpDetails;
   let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
@@ -1142,6 +1119,7 @@ async function getConditionalTaskStatusCount(dpType, taskDetails, queryToCountDo
 }
 
 async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(queryToCountDocuments, queryForDatapointCollection, queryForDpTypeCollection) {
+  console.log(queryToCountDocuments);
   let [count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails] = await Promise.all([
     Datapoints.countDocuments(queryToCountDocuments),
     Datapoints.find(queryForDatapointCollection).distinct('dpType'),
@@ -1163,7 +1141,7 @@ async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(queryToCountDo
       .populate('companyId')
       .populate('taskId')
   ]);
-
+  console.log(count);
   return { count, dpTypeValues, priorityDpCodes, currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails };
 }
 
