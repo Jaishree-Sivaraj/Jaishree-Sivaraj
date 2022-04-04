@@ -63,21 +63,20 @@ export const update = async (req, res, next) => {
       publicationData: publicationData ? publicationData : companydata?.publicationData
     }
 
-    console.log(updatedData);
-
     const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
       $set: updatedData
     });
-    console.log(updateCompanyDetails)
     if (!updateCompanyDetails) {
       return res.status(409).json({
+        status: 409,
         message: 'Failed to updated company source data'
       });
     }
 
     return res.status(200).json({
       status: 200,
-      message: 'Update Successfully'
+      message: 'Update Successfully',
+      data: updateCompanyDetails
     });
 
   } catch (error) {
