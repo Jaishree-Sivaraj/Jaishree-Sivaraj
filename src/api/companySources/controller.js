@@ -43,14 +43,54 @@ export const show = async ({ params }, res, next) => {
   }
 }
 
-export const update = ({ bodymen: { body }, params }, res, next) =>
-  CompanySources.findById(params.id)
-    .populate('sourceTypeId')
-    .then(notFound(res))
-    .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
-    .then((companySources) => companySources ? companySources.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = async (req, res, next) => {
+  try {
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationData } = req.body;
+    const { id } = req.params;
+    let fileUrl;
+    if (sourcePDF) {
+      const fileType = sourcePDF.split(';')[0].split('/')[1];
+      fileUrl = companyId + '_' + Date.now() + '.' + fileType;
+      await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
+    }
+
+    const companydata = await CompanySources.findOne({ _id: id });
+    const updatedData = {
+      fileName: fileUrl ? fileUrl : companydata?.fileUrl,
+      name: name ? name : companydata?.name,
+      sourceUrl: url ? url : companydata?.url,
+      sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
+      publicationData: publicationData ? publicationData : companydata?.publicationData
+    }
+
+    console.log(updatedData);
+
+    const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
+      $set: updatedData
+    });
+    console.log(updateCompanyDetails)
+    if (!updateCompanyDetails) {
+      return res.status(409).json({
+        message: 'Failed to updated company source data'
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: 'Update Successfully'
+    });
+
+  } catch (error) {
+    return res.status(409).json({ message: error?.message ? error?.message : 'Failed to update the ' })
+  }
+}
+// CompanySources.findById(params.id)
+//   .populate('sourceTypeId')
+//   .then(notFound(res))
+//   .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
+//   .then((companySources) => companySources ? companySources.view(true) : null)
+//   .then(success(res))
+//   .catch(next)
 
 export const destroy = ({ params }, res, next) =>
   CompanySources.findById(params.id)
@@ -87,7 +127,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       const fileType = body.sourcePDF.split(';')[0].split('/')[1];
       fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
-  
+
     }
     let sourceDetails = {
       newSourceTypeName: body.newSourceTypeName,
@@ -138,6 +178,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
     });
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source"})
+    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source" })
   }
 }

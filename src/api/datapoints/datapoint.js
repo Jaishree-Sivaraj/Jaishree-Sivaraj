@@ -122,7 +122,8 @@ export const datapointDetails = async (req, res, next) => {
                 value: company.id,
                 url: company.sourceUrl,
                 publicationDate: company.publicationDate,
-                sourceFile: company?.sourceFile ? company?.sourceFile : ''
+                sourceFile: company?.sourceFile ? company?.sourceFile : '',
+                title: company?.sourceTitle ? company?.sourceTitle : '',
             });
         });
         trackTime(timeDetails, taxonomyStart, Date.now(), 'Measure Deatils and placeValues Details and Source Details  Promise');
