@@ -120,7 +120,7 @@ export async function getSourceDetails(object, sourceDetails) {
     return sourceDetails;
 }
 
-export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues) {
+export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR) {
     return {
         status: object?.correctionStatus,
         dpCode: dpTypeValues?.code,
@@ -158,11 +158,12 @@ export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, curren
             comment: errorDetailsObject[0] ? errorDetailsObject[0]?.comments.content : '',
             errorStatus: object?.correctionStatus
         },
-        additionalDetails: []
+        additionalDetails: [],
+        isSFDR
     }
 }
 
-export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetails, inputValues, uomValues, placeValues) {
+export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetails, inputValues, uomValues, placeValues, isSFDR) {
     return {
         status: YetToStart,
         dpCode: dpTypeValues?.code,
@@ -197,7 +198,8 @@ export function getCurrentEmptyObject(dpTypeValues, currentYear, sourceTypeDetai
         },
         error: {},
         comments: [],
-        additionalDetails: []
+        additionalDetails: [],
+        isSFDR
     }
 }
 
