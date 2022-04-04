@@ -271,6 +271,14 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }
                     break;
             }
+            display.fieldName == 'collectionYear' ? 
+            currentDatapointsObject.collectionYear = {
+                fieldName: display.fieldName,
+                name: display.name,
+                inputType: display.inputType,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+            } : 
             currentDatapointsObject.additionalDetails.push({
                 fieldName: display.fieldName,
                 name: display.name,
