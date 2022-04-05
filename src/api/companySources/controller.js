@@ -45,7 +45,7 @@ export const show = async ({ params }, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
-    const { companyId, sourcePDF, name, url, sourceTitle, publicationData } = req.body;
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate } = req.body;
     const { id } = req.params;
     let fileUrl = '';
     if (sourcePDF !== '') {
@@ -60,7 +60,7 @@ export const update = async (req, res, next) => {
       name: name ? name : companydata?.name,
       sourceUrl: url ? url : companydata?.url,
       sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
-      publicationData: publicationData ? publicationData : companydata?.publicationData
+      publicationDate: publicationDate ? publicationData : companydata?.publicationData
     }
 
     const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
