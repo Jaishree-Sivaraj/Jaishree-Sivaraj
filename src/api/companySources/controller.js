@@ -60,7 +60,7 @@ export const update = async (req, res, next) => {
       name: name ? name : companydata?.name,
       sourceUrl: url ? url : companydata?.url,
       sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
-      publicationDate: publicationDate ? publicationData : companydata?.publicationData
+      publicationDate: publicationDate ? publicationDate : companydata?.publicationDate
     }
 
     const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
