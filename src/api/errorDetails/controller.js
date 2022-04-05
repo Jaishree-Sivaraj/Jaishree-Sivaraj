@@ -179,6 +179,10 @@ export const saveErrorDetails = async ({
         try {
           let item = dpCodesDetails[index];
           //store in s3 bucket with filename     
+          
+        if (item?.collectionYear) {
+          item.additionalDetails.collectionYear = item?.collectionYear ;
+        }
           if (item.isUnfreezed == true && item.error.isThere == true) {
             await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true }, { $set: { status: false } });
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
@@ -265,6 +269,10 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpCodesDetails.length; index++) {
         try {
           let item = dpCodesDetails[index];
+          
+          if (item?.collectionYear) {
+            item.additionalDetails.collectionYear = item?.collectionYear ;
+          }
           if (item.isUnfreezed && item.error.isThere) {
             await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
@@ -393,6 +401,10 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpCodesDetails.length; index++) {
         try {
           let item = dpCodesDetails[index];
+          
+          if (item?.collectionYear) {
+            item.additionalDetails.collectionYear = item?.collectionYear ;
+          }
           if (item.isUnfreezed && item.error.isThere) {
             await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
@@ -530,6 +542,10 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     if (body.memberType == 'Standalone') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
+        
+        if (item?.collectionYear) {
+          item.additionalDetails.collectionYear = item?.collectionYear ;
+        }
         //store in s3 bucket with filename       
         if (item.error.isThere == true) {
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
@@ -609,6 +625,10 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     } else if (body.memberType == 'Board Matrix') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
+        
+        if (item?.collectionYear) {
+          item.additionalDetails.collectionYear = item?.collectionYear ;
+        }
         if (item.error.isThere == true) {
           if (item.error.refData == null || item.error.refData === '' || item.error.refData === "") {
             errorCaughtByRep == null
@@ -687,7 +707,11 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     } else if (body.memberType == 'KMP Matrix') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
-        if (item.error.isThere == true) {
+          
+        if (item?.collectionYear) {
+          item.additionalDetails.collectionYear = item?.collectionYear ;
+        }
+          if (item.error.isThere == true) {
           if (item.error.refData == null || item.error.refData === '' || item.error.refData === "") {
             errorCaughtByRep == null
           } else {
