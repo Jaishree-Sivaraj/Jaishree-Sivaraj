@@ -65,6 +65,8 @@ export const update = async (req, res, next) => {
 
     const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
       $set: updatedData
+    }, {
+      new: true
     });
     if (!updateCompanyDetails) {
       return res.status(409).json({
