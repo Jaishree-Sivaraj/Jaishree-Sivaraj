@@ -47,8 +47,8 @@ export const update = async (req, res, next) => {
   try {
     const { companyId, sourcePDF, name, url, sourceTitle, publicationData } = req.body;
     const { id } = req.params;
-    let fileUrl;
-    if (sourcePDF) {
+    let fileUrl = '';
+    if (sourcePDF !== '') {
       const fileType = sourcePDF.split(';')[0].split('/')[1];
       fileUrl = companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
@@ -80,7 +80,7 @@ export const update = async (req, res, next) => {
     });
 
   } catch (error) {
-    return res.status(409).json({ message: error?.message ? error?.message : 'Failed to update the ' })
+    return res.status(409).json({ message: error?.message ? error?.message : 'Failed to update' });
   }
 }
 // CompanySources.findById(params.id)
