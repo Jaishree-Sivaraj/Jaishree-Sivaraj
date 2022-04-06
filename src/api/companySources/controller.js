@@ -47,17 +47,17 @@ export const update = async (req, res, next) => {
   try {
     const { companyId, sourcePDF, name, url, sourceTitle, publicationDate, fileName } = req.body;
     const { id } = req.params;
-    let fileUrl = '';
+    let fileUrl;
     if (sourcePDF !== '') {
       const fileType = sourcePDF.split(';')[0].split('/')[1];
       fileUrl = companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
     }
-    
+
     const companydata = await CompanySources.findOne({ _id: id });
     const updatedData = {
       fileName: fileName ? fileName : companydata?.fileName,
-      sourceFile: fileUrl ? fileUrl : companydata?.fileUrl,
+      sourceFile: fileUrl ? fileUrl : companydata?.sourceFile,
       name: name ? name : companydata?.name,
       sourceUrl: url ? url : companydata?.url,
       sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
