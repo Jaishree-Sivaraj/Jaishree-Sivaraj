@@ -1009,7 +1009,7 @@ function getDpMemberGt(currentyear, month, date) {
   const endDate = new Date(year[0], month, 0).getDate() == date ? 1 : (Number(date) + 1);
   // ? If the month is december then, the subsequent month will be the January
   // * Here month starts from 0.
-  const endMonth = new Date(year[0], month, 0).getMonth() == 11 ? 0 : (Number(month) + 1);
+  const endMonth = new Date(year[0], month, 0).getMonth() == 11 ? 0 : (Number(month));
 
   if (month == 12) { year[0] = (Number(year[0]) + 1) };
 
