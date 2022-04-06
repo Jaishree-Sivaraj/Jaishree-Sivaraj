@@ -123,7 +123,7 @@ export async function getSourceDetails(object, sourceDetails) {
 
 export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR) {
     return {
-        status: object?.correctionStatus,
+        status: Completed,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
@@ -274,23 +274,23 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }
                     break;
             }
-            display.fieldName == 'collectionYear' ? 
-            currentDatapointsObject.collectionYear = {
-                fieldName: display.fieldName,
-                name: display.name,
-                value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
-            } : 
-            currentDatapointsObject.additionalDetails.push({
-                fieldName: display.fieldName,
-                name: display.name,
-                value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
-            });
+            display.fieldName == 'collectionYear' ?
+                currentDatapointsObject.collectionYear = {
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : '',
+                    inputType: display.inputType,
+                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                } :
+                currentDatapointsObject.additionalDetails.push({
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : '',
+                    inputType: display.inputType,
+                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
             !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
                 fieldName: display.fieldName,
                 name: display.name,
