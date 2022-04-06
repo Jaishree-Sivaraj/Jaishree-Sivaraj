@@ -45,7 +45,7 @@ export const show = async ({ params }, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
-    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate } = req.body;
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate, fileName } = req.body;
     const { id } = req.params;
     let fileUrl = '';
     if (sourcePDF !== '') {
@@ -53,10 +53,11 @@ export const update = async (req, res, next) => {
       fileUrl = companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
     }
-
+    
     const companydata = await CompanySources.findOne({ _id: id });
     const updatedData = {
-      fileName: fileUrl ? fileUrl : companydata?.fileUrl,
+      fileName: fileName ? fileName : companydata?.fileName,
+      sourceFile: fileUrl ? fileUrl : companydata?.fileUrl,
       name: name ? name : companydata?.name,
       sourceUrl: url ? url : companydata?.url,
       sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
