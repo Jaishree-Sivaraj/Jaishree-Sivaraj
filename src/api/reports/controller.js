@@ -381,7 +381,7 @@ export const exportReport = async (req, res, next) => {
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
-            let Year = stdData?.year.split('-',);
+            let Year = stdData?.additionalDetails?.collectionYear.split('-',);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
