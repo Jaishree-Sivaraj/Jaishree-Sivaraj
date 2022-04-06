@@ -41,7 +41,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         status: true
       })
     ]);
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
+
+    console.log(fiscalYearEndMonth);
+    console.log(fiscalYearEndDate);
+    
     const currentYear = taskDetails.year.split(', ');
+    console.log(currentYear);
 
     let queryForDpTypeCollection = {
       taskId: taskId,
@@ -88,7 +95,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     queryToCountDocuments = keyIssueId !== '' ?
       { ...queryToCountDocuments, keyIssueId }
       : queryToCountDocuments;
-      
+
     if (req.user.userType == CompanyRepresentative || req.user.userType == ClientRepresentative) {
       queryToCountDocuments.isRequiredForReps = true
     }
@@ -206,10 +213,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               case BOARD_MATRIX:
                 let boardMemberEq = await BoardMembers.find(dpQuery);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
+                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex], fiscalYearEndMonth, fiscalYearEndDate);
                   const boardMemberGt = await BoardMembers.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    endDateTimeStamp: { $gte: yearTimeStamp },
                     status: true
                   });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
@@ -273,11 +280,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               case KMP_MATRIX:
                 const kmpMemberEq = await Kmp.find(dpQuery);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
+                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex], fiscalYearEndMonth, fiscalYearEndDate);
 
                   const kmpMemberGt = await Kmp.find({
                     companyId: taskDetails.companyId.id,
-                    endDateTimeStamp: { $gt: yearTimeStamp },
+                    endDateTimeStamp: { $gte: yearTimeStamp },
                     status: true
                   });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
@@ -479,8 +486,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 ]);
                 orderedDpCodes = _.orderBy(errorboardDatapoints, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gte: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
 
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -562,7 +569,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let yearSplit = currentYear[currentYearIndex].split('-');
                   let endDateString = yearSplit[1] + '-12-31';
                   let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gte: yearTimeStamp }, status: true });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
                   for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -760,8 +767,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 orderedDpCodes = _.uniq(errorboardDatapoints, 'datapointId');
                 orderedDpCodes = _.orderBy(orderedDpCodes, ['datapointId.code'], ['asc']);
                 for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
-                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex]);
-                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  const yearTimeStamp = getDpMemberGt(currentYear[currentYearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+                  const boardMemberGt = await BoardMembers.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gte: yearTimeStamp }, status: true });
                   const mergeBoardMemberList = _.concat(boardMemberEq, boardMemberGt);
 
                   for (let boardMemberNameListIndex = 0; boardMemberNameListIndex < mergeBoardMemberList.length; boardMemberNameListIndex++) {
@@ -845,7 +852,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   let yearSplit = currentYear[currentYearIndex].split('-');
                   let endDateString = yearSplit[1] + '-12-31';
                   let yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
-                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gt: yearTimeStamp }, status: true });
+                  let kmpMemberGt = await Kmp.find({ companyId: taskDetails.companyId.id, endDateTimeStamp: { $gte: yearTimeStamp }, status: true });
                   let mergeKmpMemberList = _.concat(kmpMemberEq, kmpMemberGt);
 
                   for (let kmpMemberNameListIndex = 0; kmpMemberNameListIndex < mergeKmpMemberList.length; kmpMemberNameListIndex++) {
@@ -993,10 +1000,21 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
 // Generic Functions.
 
-function getDpMemberGt(currentyear) {
-  const yearSplit = currentyear.split('-');
-  const endDateString = yearSplit[1] + '-12-31';
-  const yearTimeStamp = Math.floor(new Date(endDateString).getTime() / 1000);
+function getDpMemberGt(currentyear, month, date) {
+  // The year is in Example:2020-2021 
+  let year = currentyear.split('-');
+  // year =['2020','2021']
+  // new Date(year[0], month, 0).getDate()= this will get the number of days in a month.
+  // ? If the date that is there is the last date of the month, the subsequent day will be the 1st
+  const endDate = new Date(year[0], month, 0).getDate() == date ? 1 : (Number(date) + 1);
+  // ? If the month is december then, the subsequent month will be the January
+  // * Here month starts from 0.
+  const endMonth = new Date(year[0], month, 0).getMonth() == 11 ? 0 : (Number(month));
+
+  if (month == 12) { year[0] = (Number(year[0]) + 1) };
+
+  const yearTimeStamp = Math.floor(new Date(year[0], endMonth, endDate).getTime() / 1000);
+  console.log(yearTimeStamp)
   return yearTimeStamp;
 }
 
