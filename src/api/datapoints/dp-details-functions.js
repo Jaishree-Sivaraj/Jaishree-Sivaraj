@@ -244,7 +244,11 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }) : optionValues = [];
 
                     if (isEmpty) {
-                        currentValue = { value: '', label: '' };
+                        if (display.fieldName == 'collectionYear') {
+                            currentValue = { value: null, label: null };
+                        } else {
+                            currentValue = { value: '', label: '' };
+                        }
                     } else {
                         optionVal = display.inputValues;
                         // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
@@ -274,23 +278,23 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }
                     break;
             }
-            display.fieldName == 'collectionYear' ?
-                currentDatapointsObject.collectionYear = {
-                    fieldName: display.fieldName,
-                    name: display.name,
-                    value: currentValue ? currentValue : '',
-                    inputType: display.inputType,
-                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                } :
-                currentDatapointsObject.additionalDetails.push({
-                    fieldName: display.fieldName,
-                    name: display.name,
-                    value: currentValue ? currentValue : '',
-                    inputType: display.inputType,
-                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                });
+            display.fieldName == 'collectionYear' ? 
+            currentDatapointsObject.collectionYear = {
+                fieldName: display.fieldName,
+                name: display.name,
+                value: currentValue ? currentValue : null,
+                inputType: display.inputType,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+            } : 
+            currentDatapointsObject.additionalDetails.push({
+                fieldName: display.fieldName,
+                name: display.name,
+                value: currentValue ? currentValue : '',
+                inputType: display.inputType,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+            });
             !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
                 fieldName: display.fieldName,
                 name: display.name,
