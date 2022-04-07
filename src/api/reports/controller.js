@@ -312,7 +312,7 @@ export const exportReport = async (req, res, next) => {
         )
         let dpCodeDetails = datapointDetails.filter(obj => obj.id == data.datapointId['id'])
   
-        let Year = data.year.split('-',);
+        let yearVal = data.year.split('-');
   
         let dataType = '';
         if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType != 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {
@@ -329,7 +329,7 @@ export const exportReport = async (req, res, next) => {
         elementObj["Category"] = dpCodeDetails[0].categoryId ? dpCodeDetails[0].categoryId.categoryName : "NI";
         elementObj["CIN"] = data.companyId ? data.companyId.cin : '';
         elementObj["Company_Name"] = data.companyId ? data.companyId.companyName : '';
-        elementObj["year"] = Year.length > 1 ? Year[0].trim(' ') : 'NI';
+        elementObj["year"] = yearVal.length > 1 ? yearVal[0].trim(' ') : 'NI';
         elementObj["Description"] = dpCodeDetails[0].description ? dpCodeDetails[0].description : "NI";
         elementObj["Expected Result"] = dpCodeDetails[0].unit ? dpCodeDetails[0].unit : "NI";
         elementObj["Response"] = data.response ? data.response : (data?.additionalDetails?.response ? data?.additionalDetails?.response : "NI");
@@ -382,7 +382,7 @@ export const exportReport = async (req, res, next) => {
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
-            let Year = stdData?.year.split('-',);
+            let yearVal = stdData?.year.split('-');
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
@@ -390,7 +390,7 @@ export const exportReport = async (req, res, next) => {
             for (let outIndex = 0; outIndex < cltTaxoDetails.length; outIndex++) {
               let outputFieldsData = cltTaxoDetails[outIndex].fieldName;
               if ( outputFieldsData == 'year') {
-                objectToPush[cltTaxoDetails[outIndex].displayName] = Year ? Year[0] : "";
+                objectToPush[cltTaxoDetails[outIndex].displayName] = yearVal ? yearVal[0] : "";
               } else if(outputFieldsData == 'screenShot'){
                 objectToPush[cltTaxoDetails[outIndex].displayName] = ""; 
               } else if(outputFieldsData == 'date_of_data_capture'){
