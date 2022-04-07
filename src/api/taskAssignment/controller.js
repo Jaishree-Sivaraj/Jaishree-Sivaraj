@@ -1296,6 +1296,53 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       } else {
         return res.status(400).json({ status: "400", message: "User role not found!" });
       }
+    } else if (params.role == "GroupAdmin") {
+      if (userRoles.includes("GroupAdmin")) {
+        let adminGroupIds = await Group.find({ groupAdmin: completeUserDetail.id, status: true }).distinct('_id');
+        if (params.type == "DataVerification") {
+          if (adminGroupIds.length > 0) {
+            findQuery = {
+              $or: [
+                {
+                  groupId: { $in: adminGroupIds },
+                },
+                {
+                  qaId: completeUserDetail.id
+                }
+              ],
+              $or: [
+                {
+                  taskStatus: "Collection Completed"
+                },
+                {
+                  taskStatus: "Correction Completed"
+                }
+              ],
+              status: true
+            }
+          } else {
+            findQuery = {
+              qaId: completeUserDetail.id,
+              $or: [
+                {
+                  taskStatus: "Collection Completed"
+                },
+                {
+                  taskStatus: "Correction Completed"
+                }
+              ],
+              status: true
+            }          
+          }
+        } else {
+          return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+        }
+        if (query.company) {
+          findQuery['companyId'] = { $in: companyIds };
+        }
+      } else {
+        return res.status(400).json({ status: "400", message: "User role not found!" });
+      }
     } else if (params.role == "Client Representative") {
       if (userRoles.includes("Client Representative")) {
         let clientRepDetail = await ClientRepresentatives.findOne({
@@ -1457,6 +1504,9 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               } else {
                 taskObject.isValidationRequired = false;
               }
+            }
+            if (params.type == "DataVerification") {
+              taskObject.isChecked = false;    
             }
             rows.push(taskObject);
           }

@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 import { Companies } from "../companies";
 import { CompaniesTasks } from "../companies_tasks";
 import { StandaloneDatapoints } from "../standalone_datapoints";
+import { Group } from "../group";
 import { ClientTaxonomy } from "../clientTaxonomy";
 import _ from 'lodash'
 import { Datapoints } from '../datapoints'
@@ -708,3 +709,242 @@ export const companySearch = async (req, res, next) => {
     })
   }
 }
+
+export const exportQATasks = async (req, res, next) => {
+  const { selectedTasks, isSelectedAll, role } = req.body;
+  let exportQuery = {}, taxonomyBatchIds = [];
+  let taxonomyDetail = await ClientTaxonomy.findOne({ taxonomyName: "SFDR", status: true });
+  if (taxonomyDetail) {
+    taxonomyBatchIds = await Batches.find({ clientTaxonomy: taxonomyDetail.id }).distinct('_id');
+  } else {
+    return res.status(400).json({ status: "400", message: "SFDR taxonomy not found!" });
+  }
+  if (selectedTasks && selectedTasks.length > 0 && !isSelectedAll) {
+    let sfdrTaskIds = await TaskAssignment.find({
+      batchId: { $in: taxonomyBatchIds },
+      _id: { $in: selectedTasks },
+      taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+      status: true
+    }).distinct('_id');
+    if (sfdrTaskIds.length > 0) {
+      exportQuery = {
+        taskId: { $in: sfdrTaskIds },
+        status: true,
+        isActive: true
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "Can export only SFDR task data!", data: [] });
+    }
+  } else if ((!selectedTasks || selectedTasks.length <= 0) && isSelectedAll) {
+    if (role == "GroupAdmin") {
+      let adminGroupIds = await Group.find({ groupAdmin: req.user.id }).distinct('_id');
+      console.log('adminGroupIds', adminGroupIds);
+      if (adminGroupIds.length > 0) {
+        let groupTaskIds = await TaskAssignment.find({
+          batchId: { $in: taxonomyBatchIds },
+          groupId: { $in: adminGroupIds },
+          taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+          status: true
+        }).distinct('_id');
+        if (groupTaskIds.length > 0) {
+          exportQuery = {
+            taskId: { $in: groupTaskIds },
+            status: true,
+            isActive: true
+          }
+        } else {
+          return res.status(400).json({ status: "400", message: "No data available to export!", data: [] });
+        }
+      } else {
+        return res.status(400).json({ status: "400", message: "You're not an admin for any group!", data: [] });
+      }
+    } else if (role == "Admin" || role == "SuperAdmin") {
+      let batchTaskIds = await TaskAssignment.find({
+        batchId: { $in: taxonomyBatchIds },
+        taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+        status: true
+      }).distinct('_id');
+      if (batchTaskIds.length > 0) {
+        exportQuery = {
+          taskId: { $in: batchTaskIds },
+          status: true,
+          isActive: true
+        }
+      } else {
+        exportQuery = {
+          status: true,
+          isActive: true
+        }
+      }
+    } else if (role == "QA") {
+      let qaTaskIds = await TaskAssignment.find({ 
+        batchId: { $in: taxonomyBatchIds },
+        qaId: req.user.id,
+        taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+        status: true
+      }).distinct('_id');
+      if (qaTaskIds.length > 0) {
+        exportQuery = {
+          taskId: { $in: qaTaskIds },
+          status: true,
+          isActive: true
+        }
+      } else {
+        return res.status(400).json({ status: "400", message: "No records found!", data: [] });
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "Invalid role and selected tasks to export data!", data: [] });
+    }
+  } else {
+    return res.status(400).json({ status: "400", message: "No tasks selected to export data!", data: [] });
+  }
+  let distinctTaskIds = await StandaloneDatapoints.find(exportQuery).distinct('taskId');
+  let selectedTaskData = await TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('_id');
+  if (selectedTaskData.length > 0) {
+    StandaloneDatapoints.aggregate([
+      { '$match': {
+          taskId: { $in: distinctTaskIds },
+          dpStatus: "Correction",
+          status: true,
+          isActive: true
+        }
+      },
+      { '$lookup': { from: 'taskassignments', localField: 'taskId', foreignField: '_id', as: 'taskDetails' } },
+      { '$unwind': '$taskDetails' },
+      { '$lookup': { from: 'companies', localField: 'companyId', foreignField: '_id', as: 'companyDetails' } },
+      { '$unwind': '$companyDetails' },
+      { '$lookup': { from: 'datapoints', localField: 'datapointId', foreignField: '_id', as: 'datapointDetails' } },
+      { '$unwind': '$datapointDetails' },
+      { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
+      { '$unwind': '$categoryDetails' },
+      {
+        '$project': {
+          _id: '$_id',
+          taskId: '$taskDetails._id',
+          taskNumber: '$taskDetails.taskNumber',
+          companyId: '$companyId',
+          company: '$companyDetails.companyName',
+          pillarId: '$categoryDetails._id',
+          pillar: '$categoryDetails.categoryName',
+          dpCodeId: '$datapointDetails._id',
+          dpCode: '$datapointDetails.code',
+          year: '$year',
+          response: '$response',
+          hasError: { '$toBool': false },
+          errorType: '',
+          errorComments: ''
+        }
+      }
+    ])
+    .then((standaloneData) => {
+      return res.status(200).json({ status: "200", message: "Data exported successfully!", data: standaloneData });
+    })
+    .catch((error) => {
+      return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
+    })
+  } else {
+    return res.status(400).json({ status: "400", message: "No records found!", data: [] });
+  }
+}
+
+
+
+
+// export const exportQATasks = async (req, res, next) => {
+//   const { selectedTasks, isSelectedAll, role } = req.body;
+//   let exportQuery = {};
+//   if (selectedTasks && selectedTasks.length > 0) {
+//     selectedTasks = selectedTasks.map(s => mongoose.Types.ObjectId(s));
+//     exportQuery = {
+//       taskId: { $in: selectedTasks },
+//       status: true,
+//       isActive: true
+//     }
+//   } else if ((!selectedTasks || selectedTasks.length <= 0) && isSelectedAll) {
+//     if (role == "GroupAdmin") {
+//       let adminGroupIds = await Group.find({ groupAdmin: req.user.id }).distinct('_id');
+//       console.log('adminGroupIds', adminGroupIds);
+//       if (adminGroupIds.length > 0) {
+//         exportQuery = {
+//           "taskDetails.groupId": { $in: adminGroupIds },
+//           status: true,
+//           isActive: true
+//         }
+//       } else {
+//         return res.status(400).json({ status: "400", message: "You're not an admin for any group!", count: 0, rows: [] });
+//       }
+//     } else if (role == "Admin" || role == "SuperAdmin") {
+//       exportQuery = {
+//         status: true,
+//         isActive: true
+//       }
+//     } else if (role == "QA") {
+//       exportQuery = {
+//         "taskDetails.qaId": mongoose.Types.ObjectId(req.user.id),
+//         status: true,
+//         isActive: true
+//       }
+//     } else {
+//       return res.status(400).json({ status: "400", message: "Invalid role and selected tasks to export data!", count: 0, rows: [] });
+//     }
+//   } else {
+//     return res.status(400).json({ status: "400", message: "No tasks selected to export data!", count: 0, rows: [] });
+//   }
+//   console.log('exportQuery', exportQuery);
+//   await StandaloneDatapoints.aggregate([
+//     {
+//       $match: { 
+//         ...exportQuery,
+//         //"companyDetails.clientTaxonomyId": mongoose.Types.ObjectId("621ef39ce3170b2420a227d7"),
+//         //"taskDetails.taskStatus": { $in: [ "Collection Completed", "Correction Completed" ] }
+//       }
+//     },
+//     {
+//         $lookup: {
+//             from: "taskassignments",
+//             localField: "taskId",
+//             foreignField: "_id",
+//             as: "taskDetails"
+//         }
+//     },
+//     { $unwind: "$taskDetails" },
+//     {
+//         $lookup: {
+//             from: "companies",
+//             localField: "companyId",
+//             foreignField: "_id",
+//             as: "companyDetails"
+//         }
+//     },
+//     { $unwind: "$companyDetails" },
+//     {
+//         $lookup: {
+//             from: "datapoints",
+//             localField: "datapointId",
+//             foreignField: "_id",
+//             as: "datapointDetails"
+//         }
+//     },
+//     { $unwind: "$datapointDetails" },
+//     {
+//         $project: {
+//             "_id": "$_id",
+//             "taskId": "$taskDetails._id",
+//             "taskNumber": "$taskDetails.taskNumber",
+//             "companyId": "$companyId",
+//             "company": "$companyDetails.companyName",
+//             "dpCodeId": "$datapointDetails._id",
+//             "dpCode": "$datapointDetails.code",
+//             "year": "$year",
+//             "response": "$response",
+//             "hasError": { $toBool: false },
+//             "errorType": "",
+//             "errorComments": ""
+//         }
+//     }
+//     ])
+//     .then((exportData) => {
+//       console.log('exportData', exportData);
+//       return res.status(200).json({ status: "200", data: exportData, message: "Data exported successfully!" });
+//     });
+// }

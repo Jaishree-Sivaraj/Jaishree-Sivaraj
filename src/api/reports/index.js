@@ -2,10 +2,10 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, reportsFilter, exportReport, companySearch } from './controller'
+import { create, index, reportsFilter, exportReport, companySearch, exportQATasks } from './controller'
 
-const { clientTaxonomyId, searchQuery, page, limit, companyName } = '';
-const { selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
+const { role, clientTaxonomyId, searchQuery, page, limit, companyName } = '';
+const { selectedTasks, selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
 const { isSelectedAll } = false;
 
 
@@ -58,6 +58,22 @@ router.post('/company-search',
 token({ required: true }),
 body({ clientTaxonomyId, companyName, batchList, nicList }),
 companySearch)
+
+/**
+ * @api {post} /reports/qa-tasks/export Export QA Tasks
+ * @apiName ExportQATasks
+ * @apiGroup Reports
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} reports Reports's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Reports not found.
+ * @apiError 401 user access only.
+ */
+router.post('/qa-tasks/export',
+token({ required: true }),
+body({ selectedTasks, isSelectedAll, role }),
+exportQATasks)
 
 /**
  * @api {get} /reports Retrieve reports
