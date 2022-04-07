@@ -128,7 +128,7 @@ export async function getSourceDetails(object, sourceDetails) {
 
 export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR) {
     return {
-        status: object?.correctionStatus,
+        status: Completed,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
@@ -388,7 +388,6 @@ function getShot(screenShot) {
     return image;
 
 }
-
 
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
     return {
