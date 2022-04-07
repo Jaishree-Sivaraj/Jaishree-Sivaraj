@@ -114,7 +114,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
-            sourceDetails.value = sourceValues?.sourceTitle;
+            sourceDetails.sourceTitle = sourceValues?.sourceTitle;
             sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
