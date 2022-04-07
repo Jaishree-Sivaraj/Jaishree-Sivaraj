@@ -107,7 +107,7 @@ export async function getSourceDetails(object, sourceDetails) {
     if (object?.sourceName !== "" || object?.sourceName !== " ") {
         let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
-        findQuery = companySourceId ? { _id: companySourceId ? companySourceId : null } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
+        findQuery = companySourceId ? { _id: companySourceId } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
         let sourceValuesStartTime = Date.now()
         sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
         // let sourceValuesEndTime=Date.now()
@@ -120,6 +120,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
+            sourceDetails.title = sourceValues?.sourceTitle;
             sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
@@ -249,7 +250,11 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }) : optionValues = [];
 
                     if (isEmpty) {
-                        currentValue = { value: '', label: '' };
+                        if (display.fieldName == 'collectionYear') {
+                            currentValue = { value: null, label: null };
+                        } else {
+                            currentValue = { value: '', label: '' };
+                        }
                     } else {
                         optionVal = display.inputValues;
                         // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
@@ -279,6 +284,15 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }
                     break;
             }
+            display.fieldName == 'collectionYear' ? 
+            currentDatapointsObject.collectionYear = {
+                fieldName: display.fieldName,
+                name: display.name,
+                value: currentValue ? currentValue : null,
+                inputType: display.inputType,
+                isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                inputValues: optionValues.length > 0 ? optionValues : optionVal
+            } : 
             currentDatapointsObject.additionalDetails.push({
                 fieldName: display.fieldName,
                 name: display.name,

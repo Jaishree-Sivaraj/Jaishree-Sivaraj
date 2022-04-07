@@ -43,10 +43,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     ]);
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
-
-    console.log(fiscalYearEndMonth);
-    console.log(fiscalYearEndDate);
-
+    
     const currentYear = taskDetails.year.split(', ');
     console.log(currentYear);
 
