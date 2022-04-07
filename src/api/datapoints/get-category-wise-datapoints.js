@@ -20,7 +20,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     if (!page || !limit) {
       return res.status(500).json({
         status: 500,
-        message: 'Missing Expected input'
+        message: 'Missing page and limit'
       });
     }
 
