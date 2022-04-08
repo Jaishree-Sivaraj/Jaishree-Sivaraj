@@ -806,38 +806,39 @@ export const uploadQAVerificationData = async (req, res, next) => {
           let allErrorTypes = await Errors.find({ status: true }, { _id: 1, errorType: 1 });
           for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
             const rowObject = sheetAsJson[index1];
-            if (rowObject.hasError != '' && rowObject.errorType != '') {
-              let errorTypeDetail = allErrorTypes.find((obj) => obj.errorType.toLowerCase() == rowObject.errorType.trim().toLowerCase()).id;
-              if (errorTypeDetail || errorTypeDetail != null || errorTypeDetail != undefined) {
+            if (rowObject.hasError != ' '  && rowObject.errorType != ' ' && rowObject.hasError != ''  && rowObject.errorType != '') {
+              let errorTypeDetail = allErrorTypes.find((obj) => obj.errorType.toLowerCase() == rowObject.errorType.trim().toLowerCase());
+              errorTypeDetail = errorTypeDetail?.id;
+              if (errorTypeDetail && errorTypeDetail != null && errorTypeDetail != undefined) {
                 let splitDpCodeWithDot = rowObject['dpCode'].split('.');
-                if (splitDpCodeWithDot.length == 2) {
-                  if (splitDpCodeWithDot[0] != '' && splitDpCodeWithDot[1] != '') {
-                    let errorObject = {
-                      "datapointId": rowObject["dpCodeId"],
-                      "companyId": rowObject["companyId"],
-                      "categoryId": rowObject["pillarId"],
-                      "year": rowObject["year"],
-                      "taskId": rowObject["taskId"],
-                      "errorTypeId": errorTypeDetail,
-                      "raisedBy": "QA",
-                      "errorStatus": "Completed",
-                      "errorCaughtByRep": {},
-                      "isErrorAccepted": null,
-                      "isErrorRejected": false,
-                      "comments": {
-                        "author": "QA",
-                        "fiscalYear": rowObject["year"],
-                        "dateTime": new Date().getTime(),
-                        "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
-                      },
-                      "status": true,
-                      "createdBy": req.user
-                    };
-                    errorObjectsToInsert.push(errorObject);
-                  } else {
-                    return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });  
-                  }
-                } else if (splitDpCodeWithDot.length > 2) {
+                if (splitDpCodeWithDot.length >= 2) {
+                  // if (splitDpCodeWithDot[0] != '' && splitDpCodeWithDot[1] != '') {
+                  //   let errorObject = {
+                  //     "datapointId": rowObject["dpCodeId"],
+                  //     "companyId": rowObject["companyId"],
+                  //     "categoryId": rowObject["pillarId"],
+                  //     "year": rowObject["year"],
+                  //     "taskId": rowObject["taskId"],
+                  //     "errorTypeId": errorTypeDetail,
+                  //     "raisedBy": "QA",
+                  //     "errorStatus": "Completed",
+                  //     "errorCaughtByRep": {},
+                  //     "isErrorAccepted": null,
+                  //     "isErrorRejected": false,
+                  //     "comments": {
+                  //       "author": "QA",
+                  //       "fiscalYear": rowObject["year"],
+                  //       "dateTime": new Date().getTime(),
+                  //       "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
+                  //     },
+                  //     "status": true,
+                  //     "createdBy": req.user
+                  //   };
+                  //   errorObjectsToInsert.push(errorObject);
+                  // } else {
+                  //   return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });  
+                  // }
+                  // } else if (splitDpCodeWithDot.length >= 2) {
                   return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });
                 } else {
                   let errorObject = {
@@ -850,7 +851,7 @@ export const uploadQAVerificationData = async (req, res, next) => {
                     "raisedBy": "QA",
                     "errorStatus": "Completed",
                     "errorCaughtByRep": {},
-                    "isErrorAccepted": null,
+                    "isErrorAccepted": false,
                     "isErrorRejected": false,
                     "comments": {
                       "author": "QA",
@@ -864,7 +865,7 @@ export const uploadQAVerificationData = async (req, res, next) => {
                   errorObjectsToInsert.push(errorObject);
                 }
               } else {
-                return res.status(400).json({ status: "400", message: `Invalid errorType ${rowObject.errorType}, Please enter valid errorType` });
+                return res.status(400).json({ status: "400", message: `Invalid errorType ${rowObject.errorType} at line number ${index1+1}, Please enter valid errorType` });
               }
               hasError.push(rowObject["_id"]);
             } else {
