@@ -13,6 +13,7 @@ import {
   KmpMatrixDataPoints
 } from '../kmpMatrixDataPoints'
 import { Errors } from '../error'
+import XLSX from 'xlsx'
 import _ from 'lodash'
 import { TaskAssignment } from '../taskAssignment'
 import { StandaloneDatapoints } from '../standalone_datapoints'
@@ -789,5 +790,118 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     }
   } catch (error) {
     return res.status(400).json({ status: "400", message: "Failed to save the rep error details!" });
+  }
+}
+
+export const uploadQAVerificationData = async (req, res, next) => {
+  try {
+    let convertedWorkbook = [];
+    convertedWorkbook = XLSX.read(req.body.companiesFile.replace(/^data:@file\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    if (convertedWorkbook.SheetNames.length > 0) {
+      var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
+      try {
+        var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+        if (sheetAsJson.length > 0) {
+          let errorObjectsToInsert = [], hasError = [], noError = [];
+          let allErrorTypes = await Errors.find({ status: true }, { _id: 1, errorType: 1 });
+          for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
+            const rowObject = sheetAsJson[index1];
+            if (rowObject.hasError != '' && rowObject.errorType != '') {
+              let errorTypeDetail = allErrorTypes.find((obj) => obj.errorType.toLowerCase() == rowObject.errorType.trim().toLowerCase()).id;
+              if (errorTypeDetail || errorTypeDetail != null || errorTypeDetail != undefined) {
+                let splitDpCodeWithDot = rowObject['dpCode'].split('.');
+                if (splitDpCodeWithDot.length == 2) {
+                  if (splitDpCodeWithDot[0] != '' && splitDpCodeWithDot[1] != '') {
+                    let errorObject = {
+                      "datapointId": rowObject["dpCodeId"],
+                      "companyId": rowObject["companyId"],
+                      "categoryId": rowObject["pillarId"],
+                      "year": rowObject["year"],
+                      "taskId": rowObject["taskId"],
+                      "errorTypeId": errorTypeDetail,
+                      "raisedBy": "QA",
+                      "errorStatus": "Completed",
+                      "errorCaughtByRep": {},
+                      "isErrorAccepted": null,
+                      "isErrorRejected": false,
+                      "comments": {
+                        "author": "QA",
+                        "fiscalYear": rowObject["year"],
+                        "dateTime": new Date().getTime(),
+                        "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
+                      },
+                      "status": true,
+                      "createdBy": req.user
+                    };
+                    errorObjectsToInsert.push(errorObject);
+                  } else {
+                    return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });  
+                  }
+                } else if (splitDpCodeWithDot.length > 2) {
+                  return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });
+                } else {
+                  let errorObject = {
+                    "datapointId": rowObject["dpCodeId"],
+                    "companyId": rowObject["companyId"],
+                    "categoryId": rowObject["pillarId"],
+                    "year": rowObject["year"],
+                    "taskId": rowObject["taskId"],
+                    "errorTypeId": errorTypeDetail,
+                    "raisedBy": "QA",
+                    "errorStatus": "Completed",
+                    "errorCaughtByRep": {},
+                    "isErrorAccepted": null,
+                    "isErrorRejected": false,
+                    "comments": {
+                      "author": "QA",
+                      "fiscalYear": rowObject["year"],
+                      "dateTime": new Date().getTime(),
+                      "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
+                    },
+                    "status": true,
+                    "createdBy": req.user
+                  };
+                  errorObjectsToInsert.push(errorObject);
+                }
+              } else {
+                return res.status(400).json({ status: "400", message: `Invalid errorType ${rowObject.errorType}, Please enter valid errorType` });
+              }
+              hasError.push(rowObject["_id"]);
+            } else {
+              noError.push(rowObject["_id"]);
+            }
+            //If any error, take the errorTypeId from errors master
+            //Frame the object to make an insert in errorDetails collection
+            //Push that object into an array errorDataToInsert
+            //If entered error type is not matching break the loop and throw error
+
+            //If any error take _id of standalone and push to hasError array
+            //If no error take _id of standalone and push to noError array
+          }
+          console.log('errorObjectsToInsert', errorObjectsToInsert);
+          console.log('hasError', hasError);
+          console.log('noError', noError);
+          await Promise.all([
+            ErrorDetails.insertMany(errorObjectsToInsert),
+            StandaloneDatapoints.updateMany({_id: {$in: hasError}}, {$set: { "hasError": true, hasCorrection: false, correctionStatus: 'Completed' } }),
+            StandaloneDatapoints.updateMany({_id: {$in: noError}}, {$set: { "hasError": false, hasCorrection: false, correctionStatus: 'Completed' } })
+          ]);
+          return res.status(200).json({ status: "200", message: "Verification Data Imported Successfully!" });
+        } else {
+          return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" })
+        }
+      } catch (error) {
+        return res.status(400).json({ message: error.message })
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "Invalid excel file please check!" })
+    }
+  } catch (error) {
+    if (error) {
+      return res.status(403).json({
+        message: error.message ? error.message : 'Failed to import!',
+        status: 403
+      });
+    }
   }
 }
