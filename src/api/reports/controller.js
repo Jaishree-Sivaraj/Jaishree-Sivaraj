@@ -830,14 +830,57 @@ export const exportQATasks = async (req, res, next) => {
           dpCode: '$datapointDetails.code',
           year: '$year',
           response: '$response',
-          hasError: { '$toBool': false },
+          hasError: '',
           errorType: '',
           errorComments: ''
         }
       }
     ])
     .then((standaloneData) => {
-      return res.status(200).json({ status: "200", message: "Data exported successfully!", data: standaloneData });
+      const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
+      ChildDp.aggregate([
+        {
+          $match: {
+            taskId: { $in: distinctTaskIdList },
+            status: true,
+            isActive: true
+          }
+        },
+        {
+          $addFields: {
+            convertedTaskId: { $toObjectId: "$taskId" },
+            convertedDatapointId: { $toObjectId: "$parentDpId" }
+          }
+        },
+        { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
+        { '$unwind': '$taskDetails' },
+        { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
+        { '$unwind': '$companyDetails' },
+        { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
+        { '$unwind': '$categoryDetails' },
+        {
+          '$project': {
+            _id: '$_id',
+            taskId: '$taskId',
+            taskNumber: '$taskDetails.taskNumber',
+            companyId: '$companyId',
+            company: '$companyDetails.companyName',
+            pillarId: '$categoryDetails._id',
+            pillar: '$categoryDetails.categoryName',
+            dpCodeId: '$parentDpId',
+            dpCode: '$childFields.dpCode',
+            year: '$year',
+            response: '$childFields.response',
+            hasError: '',
+            errorType: '',
+            errorComments: ''
+          }
+        }
+      ])
+      .then((childData) => {
+        let responseData = _.concat(standaloneData, childData);
+        return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
+      })
     })
     .catch((error) => {
       return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
