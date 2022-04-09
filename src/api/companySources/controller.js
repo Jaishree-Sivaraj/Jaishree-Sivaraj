@@ -49,7 +49,14 @@ export const update = async (req, res, next) => {
     const { id } = req.params;
     let fileUrl;
     if (sourcePDF !== '') {
-      const fileType = sourcePDF.split(';')[0].split('/')[1];
+      let fileType = sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
     }
@@ -126,7 +133,14 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   try {
     var fileUrl = '';
     if (body.sourcePDF) {
-      const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      let fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
 
