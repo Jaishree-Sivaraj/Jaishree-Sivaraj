@@ -1343,6 +1343,29 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
       } else {
         return res.status(400).json({ status: "400", message: "User role not found!" });
       }
+    } else if (params.role == "Admin" || params.role == "SuperAdmin") {
+      if (userRoles.includes("Admin") || userRoles.includes("SuperAdmin")) {
+        if (params.type == "DataVerification") {
+          findQuery = {
+            $or: [
+              {
+                taskStatus: "Collection Completed"
+              },
+              {
+                taskStatus: "Correction Completed"
+              }
+            ],
+            status: true
+          }
+        } else {
+          return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
+        }
+        if (query.company) {
+          findQuery['companyId'] = { $in: companyIds };
+        }
+      } else {
+        return res.status(400).json({ status: "400", message: "User role not found!" });
+      }
     } else if (params.role == "Client Representative") {
       if (userRoles.includes("Client Representative")) {
         let clientRepDetail = await ClientRepresentatives.findOne({
