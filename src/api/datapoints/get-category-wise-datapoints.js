@@ -43,10 +43,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     ]);
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
-
-    console.log(fiscalYearEndMonth);
-    console.log(fiscalYearEndDate);
-
+    
     const currentYear = taskDetails.year.split(', ');
     console.log(currentYear);
 
@@ -149,7 +146,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
       const checkHasError = _.filter(mergedDatapoints, function (o) { return o?.hasError == true; });
       // only when rep raises error they can submit.const
-      console.log(checkHasError);
       repFinalSubmit = checkHasError?.length > 0 && true;
 
       const totalPriortyDataCollected = mergedDatapoints.filter(mergedData => {
@@ -379,7 +375,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             .sort({ code: 1 })
             .populate('keyIssueId')
             .populate('categoryId');
-          console.log(dpTypeDatapoints)
           keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints?.length; datapointsIndex++) {
             let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
@@ -1031,7 +1026,6 @@ function getDpMemberGt(currentyear, month, date) {
   if (month == 12) { year[0] = (Number(year[0]) + 1) };
 
   const yearTimeStamp = Math.floor(new Date(year[0], endMonth, endDate).getTime() / 1000);
-  console.log(yearTimeStamp)
   return yearTimeStamp;
 }
 
