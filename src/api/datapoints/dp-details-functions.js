@@ -69,7 +69,7 @@ export function getError(errorDataDetails, currentYear, taskId, datapointId) {
 
 export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
-    if (Array.isArray(screenShot)) {
+    if (screenShot && Array.isArray(screenShot)) {
         if (screenShot && screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
                 let obj = screenShot[screenShotIndex];
