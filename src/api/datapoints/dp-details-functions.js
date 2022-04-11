@@ -301,7 +301,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 isMandatory: display?.isMandatory ? display?.isMandatory : false,
                 inputValues: optionValues.length > 0 ? optionValues : optionVal
             });
-            !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
+            !isEmpty && isRefDataExists && currentDatapointsObject?.error?.refData['additionalDetails'].push({
                 fieldName: display.fieldName,
                 name: display.name,
                 value: currentValue ? currentValue : '',

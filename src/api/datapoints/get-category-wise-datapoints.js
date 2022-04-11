@@ -375,7 +375,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             .sort({ code: 1 })
             .populate('keyIssueId')
             .populate('categoryId');
-
           keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
           for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints?.length; datapointsIndex++) {
             let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);

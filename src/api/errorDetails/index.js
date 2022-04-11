@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, saveErrorDetails,saveRepErrorDetails } from './controller'
+import { create, index, show, update, destroy, saveErrorDetails, saveRepErrorDetails, uploadQAVerificationData } from './controller'
 import { schema } from './model'
 export ErrorDetails, { schema } from './model'
 
@@ -55,6 +55,22 @@ saveErrorDetails)
  token({ required: true }),
  body({ taskId, pillarId, companyId, dpCodeId, memberName, memberType, currentData, historicalData }),
  saveRepErrorDetails)
+
+/**
+* @api {post} /errorDetails/upload/qa-verfication-data Upload QA Verification Data
+* @apiName UploadQAVerificationData
+* @apiGroup ErrorDetails
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} errorDetails Error details's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Error details not found.
+* @apiError 401 user access only.
+*/
+router.post('/upload/qa-verfication-data',
+token({ required: true }),
+uploadQAVerificationData)
+
 /**
  * @api {post} /errorDetails Create error details
  * @apiName CreateErrorDetails
