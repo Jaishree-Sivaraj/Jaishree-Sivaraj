@@ -713,7 +713,8 @@ export const companySearch = async (req, res, next) => {
 export const exportQATasks = async (req, res, next) => {
   const { selectedTasks, isSelectedAll, role } = req.body;
   let exportQuery = {}, taxonomyBatchIds = [];
-  let taxonomyDetail = await ClientTaxonomy.findOne({ taxonomyName: "SFDR", status: true });
+  let taxonomyDetail = await ClientTaxonomy.findOne({ $or:[{taxonomyName: "SFDR"},{
+    taxonomyName: "SFDR_V1"}], status: true });
   if (taxonomyDetail) {
     taxonomyBatchIds = await Batches.find({ clientTaxonomy: taxonomyDetail.id }).distinct('_id');
   } else {
