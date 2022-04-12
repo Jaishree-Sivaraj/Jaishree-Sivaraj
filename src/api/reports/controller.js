@@ -382,7 +382,7 @@ export const exportReport = async (req, res, next) => {
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
-            let yearVal = stdData?.year.split('-');
+            let yearVal = stdData?.additionalDetails?.collectionYear.split('-');
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['nicIndustry']);
@@ -835,7 +835,7 @@ export const exportQATasks = async (req, res, next) => {
           year: '$year',
           response: '$response',
           placeValue: '$placeValue',
-          uom: '$uom',
+          uom: '$uomDetails.uomName',
           pageNumber: '$pageNumber',
           textSnippet: '$textSnippet',
           sourceName: "$sourceName",
