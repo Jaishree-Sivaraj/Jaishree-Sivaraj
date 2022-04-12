@@ -291,16 +291,18 @@ export const datapointDetails = async (req, res, next) => {
                         const object = currentAllStandaloneDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, currentYear[currentYearIndex], taskId, datapointId);
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
-                            getS3ScreenShot(object.screenShot),
+                            getS3ScreenShot(object?.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
                         const condition = object.datapointId._id == datapointId && object.year == currentYear[currentYearIndex];
                         if (condition && object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot); //here we need to update the errorCaughtbyRep screenshot
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot); //here we need to update the errorCaughtbyRep screenshot
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         } else if (condition && object.hasCorrection) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR);
@@ -308,9 +310,11 @@ export const datapointDetails = async (req, res, next) => {
                                 ...currentDatapointsObject,
                                 comments: object.comments,
                             }
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         } else if (condition && !object.hasCorrection && !object.hasError) {
@@ -319,9 +323,11 @@ export const datapointDetails = async (req, res, next) => {
                                 ...currentDatapointsObject,
                                 comments: []
                             }
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllStandaloneDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         }
 
@@ -422,7 +428,7 @@ export const datapointDetails = async (req, res, next) => {
                         const object = currentAllBoardMemberMatrixDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, memberCollectionYears[currentYearIndex], taskId, datapointId);
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
-                            getS3ScreenShot(object.screenShot),
+                            getS3ScreenShot(object?.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
                         const condition = object.datapointId._id == datapointId && object.year == memberCollectionYears[currentYearIndex];
@@ -430,25 +436,31 @@ export const datapointDetails = async (req, res, next) => {
                         if (condition && object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         } else if (condition && object.hasCorrection) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
+
                             s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
                             currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
                             currentDatapointsObject.error.refData['additionalDetails'] = [];
                             currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
 
                         } else if (condition && !object.hasCorrection && !object.hasError) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR);
                             currentDatapointsObject = { ...currentDatapointsObject, comments: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0] ? (errorDetailsObject[0]?.errorCaughtByRep ? (errorDetailsObject[0]?.errorCaughtByRep.screenShot ? errorDetailsObject[0]?.errorCaughtByRep.screenShot : []) : []) : []);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0] ? (errorDetailsObject[0]?.errorCaughtByRep ? (errorDetailsObject[0]?.errorCaughtByRep?.screenShot ? errorDetailsObject[0]?.errorCaughtByRep?.screenShot : []) : []) : []);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllBoardMemberMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         }
                         datapointsObject.status = 'Completed';
@@ -571,32 +583,38 @@ export const datapointDetails = async (req, res, next) => {
                         const object = currentAllKmpMatrixDetails[currentIndex];
                         const { errorTypeId, errorDetailsObject } = getError(errorDataDetails, memberCollectionYears[currentYearIndex], taskId, datapointId);
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
-                            getS3ScreenShot(object.screenShot),
+                            getS3ScreenShot(object?.screenShot),
                             getSourceDetails(object, sourceDetails)
                         ]);
                         const condition = object.datapointId._id == datapointId && object.year == memberCollectionYears[currentYearIndex];
                         if (condition && object.hasError == true) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR)
                             currentDatapointsObject = { ...currentDatapointsObject, comment: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
 
                         } else if (condition && object.hasCorrection == true) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR)
                             currentDatapointsObject = { ...currentDatapointsObject, comment: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep.screenShot);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0]?.errorCaughtByRep?.screenShot);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         } else if (condition && object.hasCorrection == false && object.hasError == false) {
                             currentDatapointsObject = getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, memberCollectionYears[currentYearIndex], inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR)
                             currentDatapointsObject = { ...currentDatapointsObject, comment: [] };
-                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0] ? (errorDetailsObject[0]?.errorCaughtByRep ? (errorDetailsObject[0]?.errorCaughtByRep.screenShot ? errorDetailsObject[0]?.errorCaughtByRep.screenShot : []) : []) : []);
-                            currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
-                            currentDatapointsObject.error.refData['additionalDetails'] = [];
-                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, memberCollectionYears[currentYearIndex], currentDatapointsObject, false, true);
+                            s3DataRefErrorScreenshot = await getS3RefScreenShot(errorDetailsObject.length, errorDetailsObject[0] ? (errorDetailsObject[0]?.errorCaughtByRep ? (errorDetailsObject[0]?.errorCaughtByRep?.screenShot ? errorDetailsObject[0]?.errorCaughtByRep?.screenShot : []) : []) : []);
+                            if (currentDatapointsObject?.error?.refData?.screenShot) {
+                                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+                                currentDatapointsObject.error.refData['additionalDetails'] = [];
+                            }
+                            currentDatapointsObject = getDisplayFields(dpTypeValues, displayFields, currentAllKmpMatrixDetails, currentYear[currentYearIndex], currentDatapointsObject, false, true);
                         }
                         if (currentIndex == currentAllKmpMatrixDetails.length - 1) {
                             trackTime(timeDetails, currentYearLoopKmpMatrixDetailsLoopStartTime, Date.now(), `Kmp Loop`);

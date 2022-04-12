@@ -132,8 +132,23 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         let repFinalSubmit = false;
         let mergedDatapoints, distinctDpIds = [];
 
-        if (taskDetails.taskStatus == VerificationCompleted || taskDetails.taskStatus == Completed) {
-          await TaskAssignment.updateOne({ _id: taskId }, { $set: { taskStatus: Completed } });
+        const dpTypeDatapoints = await Datapoints.find({ ...queryForDpTypeCollection, ...searchQuery })
+          .skip(((page - 1) * limit))
+          .limit(+limit)
+          .sort({ code: 1 })
+          .populate('keyIssueId')
+          .populate('categoryId');
+        keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
+        for (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints?.length; datapointsIndex++) {
+          let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
+          for (let currentYearIndex = 0; currentYearIndex < currentYear?.length; currentYearIndex++) {
+            _.filter(currentAllStandaloneDetails, (object) => {
+              if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
+                datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
+              }
+            })
+          }
+          datapointList.dpCodesData.push(datapointsObject);
         }
 
         mergedDatapoints = _.concat(currentAllStandaloneDetails, currentAllBoardMemberMatrixDetails, currentAllKmpMatrixDetails);
