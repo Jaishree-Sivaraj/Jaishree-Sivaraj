@@ -43,14 +43,63 @@ export const show = async ({ params }, res, next) => {
   }
 }
 
-export const update = ({ bodymen: { body }, params }, res, next) =>
-  CompanySources.findById(params.id)
-    .populate('sourceTypeId')
-    .then(notFound(res))
-    .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
-    .then((companySources) => companySources ? companySources.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = async (req, res, next) => {
+  try {
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate, fileName } = req.body;
+    const { id } = req.params;
+    let fileUrl;
+    if (sourcePDF !== '') {
+      let fileType = sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
+      fileUrl = companyId + '_' + Date.now() + '.' + fileType;
+      await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
+    }
+
+    const companydata = await CompanySources.findOne({ _id: id });
+    const updatedData = {
+      fileName: fileName ? fileName : companydata?.fileName,
+      sourceFile: fileUrl ? fileUrl : companydata?.sourceFile,
+      name: name ? name : companydata?.name,
+      sourceUrl: url ? url : companydata?.url,
+      sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
+      publicationDate: publicationDate ? publicationDate : companydata?.publicationDate
+    }
+
+    const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
+      $set: updatedData
+    }, {
+      new: true
+    });
+    if (!updateCompanyDetails) {
+      return res.status(409).json({
+        status: 409,
+        message: 'Failed to updated company source data'
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: 'Update Successfully',
+      data: updateCompanyDetails
+    });
+
+  } catch (error) {
+    return res.status(409).json({ message: error?.message ? error?.message : 'Failed to update' });
+  }
+}
+// CompanySources.findById(params.id)
+//   .populate('sourceTypeId')
+//   .then(notFound(res))
+//   .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
+//   .then((companySources) => companySources ? companySources.view(true) : null)
+//   .then(success(res))
+//   .catch(next)
 
 export const destroy = ({ params }, res, next) =>
   CompanySources.findById(params.id)
@@ -84,10 +133,17 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   try {
     var fileUrl = '';
     if (body.sourcePDF) {
-      const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      let fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
-  
+
     }
     let sourceDetails = {
       newSourceTypeName: body.newSourceTypeName,
@@ -138,6 +194,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
     });
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source"})
+    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source" })
   }
 }

@@ -74,6 +74,7 @@ companySourcesSchema.methods = {
       fiscalYear: this.fiscalYear,
       fileName: this.fileName,
       name: this.name,
+      sourceTitle: this.sourceTitle,
       newSourceTypeName: this.newSourceTypeName,
       newSubSourceTypeName: this.newSubSourceTypeName,
       status: this.status,

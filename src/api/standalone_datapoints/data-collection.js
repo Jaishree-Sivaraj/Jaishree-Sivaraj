@@ -60,6 +60,10 @@ export const dataCollection = async ({
                             //! Current Data
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
                                 currentData = { ...currentData, correctionStatus: Completed };
@@ -126,6 +130,10 @@ export const dataCollection = async ({
                             //! Current Data
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
                                 // Getting formatted screenShot for current Data.
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
@@ -200,6 +208,10 @@ export const dataCollection = async ({
                             //! Current Data
                             for (let dpIndex = 0; dpIndex < dpCodesDetails.length; dpIndex++) {
                                 let item = dpCodesDetails[dpIndex];
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
                                 // Getting formatted screenShot for currentData.
                                 let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
                                 currentData = getData(body, item, user, formattedScreenShots);
@@ -270,6 +282,10 @@ export const dataCollection = async ({
 
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
                                 let item = dpCodesDetails[dpDetailsIndex]
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
                                 let hasCorrectionValue = true;
                                 const query = {
                                     taskId: body.taskId,
@@ -358,6 +374,10 @@ export const dataCollection = async ({
                             //! Current Data
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
                                 let item = dpCodesDetails[dpDetailsIndex];
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
                                 let hasCorrectionValue = true;
                                 const query = {
                                     taskId: body.taskId,
@@ -445,7 +465,11 @@ export const dataCollection = async ({
                             //! Current Data
                             for (let dpDetailsIndex = 0; dpDetailsIndex < dpCodesDetails.length; dpDetailsIndex++) {
                                 let item = dpCodesDetails[dpDetailsIndex];
-                                let hasCorrectionValue = true;
+                                
+                                if (item?.collectionYear) {
+                                item.additionalDetails.collectionYear = item?.collectionYear ;
+                                }
+                                                        let hasCorrectionValue = true;
                                 const query = {
                                     taskId: body.taskId,
                                     datapointId: body.dpCodeId,
