@@ -25,7 +25,7 @@ import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import { CompanyRepresentatives } from '../company-representatives';
 import { ClientRepresentatives } from '../client-representatives';
-import { getTotalExpectedYear } from './helper-function-update-company-status';
+import { getTotalExpectedYear, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
 import {
   VerificationCompleted,
   CorrectionPending,
@@ -2014,7 +2014,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       Datapoints.find({ ...datapointQuery, dpType: KMP_MATRIX }),
     ]);
 
-    let totalExpectedBoardMatrixCount = 0, totalExpectedKmpMatrixCount = 0
+    let totalExpectedBoardMatrixCount = 0, totalExpectedKmpMatrixCount = 0;
     if (allBoardMemberMatrixDetails.length > 0 || allKmpMatrixDetails?.length > 0) {
       // Incase more than one members collect data hence expected years is coming in form of an array.
       const [totalBoardMemberYearsCount, totalKmpMemberYearsCount] = await Promise.all([
@@ -2023,89 +2023,30 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       ])// expected totalboardmatrix count
 
       totalBoardMemberYearsCount.map(total => {
-        totalExpectedBoardMatrixCount = boardMatrixDatapoints.length * total;
+        totalExpectedBoardMatrixCount += boardMatrixDatapoints.length * total;
       });
       totalKmpMemberYearsCount.map(total => {
-        totalExpectedKmpMatrixCount = kmpMatrixDatapoints.length * total;
+        totalExpectedKmpMatrixCount += kmpMatrixDatapoints.length * total;
       });
     }
 
     // mergedDetails is the Dp codes of all Dp Types.
-    let [hasError, hasCorrection, isCorrectionStatusIncomplete, multipliedValue] = [
+    let [hasError, hasCorrection, isCorrectionStatusIncomplete] = [
       mergedDetails.find(object => object.hasError == true),
       mergedDetails.find(object => object.hasCorrection == true),
-      mergedDetails.find(object => object.correctionStatus == Incomplete),
-      totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints.length * distinctYears.length];
+      mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
-    if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
-      let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
-      allDpForTask.map((task) => {
-        if (task?.dataType !== "Number") {
-          totalQualitativeDatapoints += 1
-        } else {
-          totalQuantativeDatapoints += 1
-
-        }
-      });
-      multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
-    }
+    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired;
+    const multipliedValue = await  getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctYears, isSFDR);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
       ? totalDatapointsCollectedCount >= multipliedValue : totalDatapointsCollectedCount >= multipliedValue && !isCorrectionStatusIncomplete
 
-    let taskStatusValue = "";
-    if (hasError && condition) {
-      taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
-
-      const [query, update, query1, update1] = [
-        { taskId: body.taskId, isActive: true, status: true, hasError: true },
-        { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } },
-        { taskId: body.taskId, isActive: true, status: true, hasError: false },
-        { $set: { dpStatus: 'Collection', correctionStatus: 'Completed' } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        KmpMatrixDataPoints.updateMany(query1, update1),
-        BoardMembersMatrixDataPoints.updateMany(query1, update1),
-        StandaloneDatapoints.updateMany(query1, update1),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
-    } else if (hasCorrection && condition) {
-      if (body.role == QA) {
-        taskStatusValue = VerificationCompleted;
-      } else if (body.role == Analyst) {
-        taskStatusValue = CorrectionCompleted;
-      } else {
-        taskStatusValue = Completed;
-      }
-      const [query, update,] = [
-        { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
-        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
-      ])
-    } else if (!hasError && !hasCorrection && condition) {
-      taskStatusValue = body.role == QA ? VerificationCompleted : Completed
-      taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
-      const [query, update,] = [
-        { taskId: body.taskId, isActive: true, status: true },
-        { $set: { dpStatus: Correction, correctionStatus: Incomplete } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
-      ])
-    } else {
-      return res.status(402).json({
-        message: "Task Status not updated. Check all DPcodes",
+    const conditionalResponse = await conditionalResult(body, hasError, hasCorrection, condition);
+    if (conditionalResponse) {
+      return res.status(409).json({
+        status: 409,
+        message: awaitResponse
       });
     }
 
@@ -2185,17 +2126,19 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       }
     }
 
-    const categoriesLength = await Categories.count({
-      clientTaxonomyId: body.clientTaxonomyId,
-      status: true,
-    });
+    const [categoriesLength, taskDetailsObject] = await Promise.all([
+      Categories.count({
+        clientTaxonomyId: body.clientTaxonomyId,
+        status: true,
+      }),
+      TaskAssignment.count({
+        companyId: body.companyId,
+        year: body.year,
+        taskStatus: { $in: [VerificationCompleted, Completed] }
+      })
+    ]);
 
-    const taskDetailsObject = await TaskAssignment.count({
-      companyId: body.companyId,
-      year: body.year,
-      taskStatus: { $in: [VerificationCompleted, Completed] }
-    });
-
+    // All the task for a particular category is completed.
     if (categoriesLength == taskDetailsObject) {
       await CompaniesTasks.updateMany(
         {
@@ -2231,29 +2174,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     });
   }
 };
-
-// function for updateCompanyStatus.
-async function getCompanyDetails(companyId) {
-  const cmpDetail = await Companies.findOne({ _id: companyId })
-  const [clientRep, companyRep] = await Promise.all([
-    ClientRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId'),
-    CompanyRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId')
-  ])
-  let companyRepEmail = [], clientRepEmail = []
-
-  clientRep.map(async (client) => {
-    clientRepEmail.push(client?.userId?.email)
-  })
-
-  companyRep.map(async (company) => {
-    companyRepEmail.push(company?.userId?.email)
-  })
-
-  let email = _.concat(companyRepEmail, clientRepEmail);
-  email = email.filter(e => e !== undefined);
-  return { email, companyName: cmpDetail?.companyName }
-}
-
 
 export const reports = async ({ user, params }, res, next) => {
   try {
