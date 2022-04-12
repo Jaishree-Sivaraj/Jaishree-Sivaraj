@@ -818,6 +818,8 @@ export const exportQATasks = async (req, res, next) => {
       { '$unwind': '$datapointDetails' },
       { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
       { '$unwind': '$categoryDetails' },
+      { '$lookup': { from: 'measureuoms', localField: 'uom', foreignField: '_id', as: 'uomDetails' } },
+      { '$unwind': { path: '$uomDetails', preserveNullAndEmptyArrays: true } },
       {
         '$project': {
           _id: '$_id',
