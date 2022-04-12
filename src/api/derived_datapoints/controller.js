@@ -2806,7 +2806,7 @@ export const derivedCalculation = async ({
       }
     }).populate('categoryId');
     let allDerivedDatapoints = [];
-    let year = taskDetailsObject.year.split(",");
+    let year = taskDetailsObject.year.split(", ");
     let allStandaloneDetails = await StandaloneDatapoints.find({
       companyId: taskDetailsObject.companyId.id,
       year: {
