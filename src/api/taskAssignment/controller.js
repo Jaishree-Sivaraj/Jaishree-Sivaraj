@@ -2009,10 +2009,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       query.datapointId = { $in: reqDpCodes }
     }
     // StandAlone, BoardMatrix and KMP are DpTypes.
-    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
+    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctBMMembers, distinctKmpMembers] = await Promise.all([
       StandaloneDatapoints.find(query),
       BoardMembersMatrixDataPoints.find(query),
-      KmpMatrixDataPoints.find(query)
+      KmpMatrixDataPoints.find(query),
+      BoardMembersMatrixDataPoints.distinct('memberName', query),
+      KmpMatrixDataPoints.distinct('memberName', query)
     ]);
 
     // Getting all the collected Datas.
@@ -2037,21 +2039,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       Datapoints.find({ ...datapointQuery, dpType: KMP_MATRIX }),
     ]);
 
-    let totalExpectedBoardMatrixCount = 0, totalExpectedKmpMatrixCount = 0;
-    if (allBoardMemberMatrixDetails.length > 0 || allKmpMatrixDetails?.length > 0) {
-      // Incase more than one members collect data hence expected years is coming in form of an array.
-      const [totalBoardMemberYearsCount, totalKmpMemberYearsCount] = await Promise.all([
-        getTotalExpectedYear(allBoardMemberMatrixDetails, distinctYears, BOARD_MATRIX),
-        getTotalExpectedYear(allKmpMatrixDetails, distinctYears, KMP_MATRIX)
-      ])// expected totalboardmatrix count
-
-      totalBoardMemberYearsCount.map(total => {
-        totalExpectedBoardMatrixCount += boardMatrixDatapoints.length * total;
-      });
-      totalKmpMemberYearsCount.map(total => {
-        totalExpectedKmpMatrixCount += kmpMatrixDatapoints.length * total;
-      });
-    }
 
     // mergedDetails is the Dp codes of all Dp Types.
     let [hasError, hasCorrection, isCorrectionStatusIncomplete] = [
@@ -2060,16 +2047,17 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
     const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired;
-    const multipliedValue = await  getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctYears, isSFDR);
+    const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
       ? totalDatapointsCollectedCount >= multipliedValue : totalDatapointsCollectedCount >= multipliedValue && !isCorrectionStatusIncomplete
 
-    const conditionalResponse = await conditionalResult(body, hasError, hasCorrection, condition);
-    if (conditionalResponse) {
+    const { message, taskStatusValue } = await conditionalResult(body, hasError, hasCorrection, condition);
+    console.log();
+    if (message !== '') {
       return res.status(409).json({
         status: 409,
-        message: awaitResponse
+        message
       });
     }
 
