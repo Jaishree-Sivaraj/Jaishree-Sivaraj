@@ -851,7 +851,7 @@ export const uploadQAVerificationData = async (req, res, next) => {
                     "raisedBy": "QA",
                     "errorStatus": "Completed",
                     "errorCaughtByRep": {},
-                    "isErrorAccepted": false,
+                    "isErrorAccepted": null,
                     "isErrorRejected": false,
                     "comments": {
                       "author": "QA",
