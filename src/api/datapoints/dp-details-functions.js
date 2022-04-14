@@ -90,9 +90,15 @@ export async function getS3ScreenShot(screenShot) {
             }
         }
     } else {
-        screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
-            screenShotFileName = "No screenshot";
-        });
+        if (process.env.NODE_ENV == 'production') {
+            screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        } else {
+            screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        }
         if (screenShotFileName == undefined) {
             screenShotFileName = "";
         }
