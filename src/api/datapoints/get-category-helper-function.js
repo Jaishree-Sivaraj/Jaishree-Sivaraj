@@ -312,7 +312,7 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
           yearsForDataCollection =
             yearsForDataCollection + currentYear[yearIndex];
           if (yearIndex !== currentYear?.length - 1) {
-            yearsForDataCollection = yearsForDataCollection + " ,";
+            yearsForDataCollection = yearsForDataCollection + ", ";
           }
         }
       }
@@ -328,13 +328,13 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
       boardNameValue = {
         label,
         value: member.id,
-        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "-",
+        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "",
       };
 
       bordMemberForPayload = {
         label: memberName,
         value: member.id,
-        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "-",
+        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "",
       };
 
       memberListForDisplay.push(boardNameValue);
@@ -571,7 +571,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
   memberId
 ) {
   try {
-    if (memberListForDisplay.year == "-") {
+    if (memberListForDisplay.year == "") {
       return {
         status: 200,
         message: `Member's  not part of the task`,
