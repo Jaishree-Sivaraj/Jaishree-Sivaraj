@@ -965,11 +965,15 @@ export const datapointDetails = async (req, res, next) => {
         const kmpMemberStartDate = new Date(
           kmpMemberDetails?.startDate
         ).getFullYear();
-        currentYear.map((year) => {
-          if (year.includes(kmpMemberStartDate)) {
-            memberCollectionYears.push(year);
+        for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
+          const splityear = currentYear[yearIndex].split("-");
+          if (
+            kmpMemberStartDate <= splityear[0] ||
+            kmpMemberStartDate <= splityear[1]
+          ) {
+            memberCollectionYears.push(currentYear[yearIndex]);
           }
-        });
+        }
         trackTime(
           timeDetails,
           currentHistoryAllKmpMatrixDetailsStartTime,
