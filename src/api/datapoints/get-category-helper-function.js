@@ -304,11 +304,16 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
       endDate = new Date(member.endDate).getFullYear()
         ? new Date(member.endDate).getFullYear()
         : "";
-      let yearsForDataCollection = [];
+
+      let yearsForDataCollection = "";
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split("-");
         if (startDate <= splityear[0] || startDate <= splityear[1]) {
-          yearsForDataCollection.push(currentYear[yearIndex]);
+          yearsForDataCollection =
+            yearsForDataCollection + currentYear[yearIndex];
+          if (yearIndex !== currentYear?.length - 1) {
+            yearsForDataCollection = yearsForDataCollection + " ,";
+          }
         }
       }
       const memberName =
