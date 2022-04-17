@@ -72,15 +72,18 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
 
         if (totalBoardMemberYearsCount && totalKmpMemberYearsCount) {
             let multipliedValue;
-            if (isSFDR) {
+            if (!isSFDR) {
                 totalExpectedBoardMatrixCount = getTotalCount(totalBoardMemberYearsCount, boardMatrixDatapoints);
                 totalExpectedKmpMatrixCount = getTotalCount(totalKmpMemberYearsCount, kmpMatrixDatapoints);
 
-                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints.length * distinctYears.length
+                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints?.length * distinctYears?.length
             } else {
-                const { standaloneQualitative, standaloneQuantitative } = getQualitativeAndQuantitativeCount(standaloneDatapoints);
-                const { bmQualitative, bmQuantitative } = getQualitativeAndQuantitativeCount(boardMatrixDatapoints);
-                const { kmQualitative, kmQuantitative } = getQualitativeAndQuantitativeCount(kmpMatrixDatapoints);
+                const totalStandaloneDatapoints = getQualitativeAndQuantitativeCount(standaloneDatapoints);
+                const standaloneQualitative = totalStandaloneDatapoints[0], standaloneQuantitative = totalStandaloneDatapoints[1];
+                const totalBMDatapoints = getQualitativeAndQuantitativeCount(boardMatrixDatapoints);
+                const bmQualitative = totalBMDatapoints[0], bmQuantitative = totalBMDatapoints[1];
+                const totalKMDatapoints = getQualitativeAndQuantitativeCount(kmpMatrixDatapoints);
+                const kmQualitative = totalKMDatapoints[0], kmQuantitative = totalKMDatapoints[1];
                 const totalQualitativeDatapoints = standaloneQualitative + bmQualitative + kmQualitative;
                 if (totalBoardMemberYearsCount && totalKmpMemberYearsCount) {
                     totalExpectedBoardMatrixCount = getTotalCount(totalBoardMemberYearsCount, bmQuantitative);
@@ -99,8 +102,9 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
     }
 }
 
-function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can be standalone or boar-matrix or kmp-matrix.
+function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can be standalone or board-matrix or kmp-matrix.
     let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
+    let totalDatapoints = [];
     datapoints.map((datapoint) => {
         if (datapoint?.dataType !== NUMBER) {
             totalQualitativeDatapoints += 1
@@ -108,8 +112,9 @@ function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can 
             totalQuantativeDatapoints += 1
         }
     });
+    totalDatapoints.push(totalQualitativeDatapoints, totalQuantativeDatapoints)
 
-    return { totalQualitativeDatapoints, totalQuantativeDatapoints };
+    return totalDatapoints;
 }
 
 function getTotalCount(yearCount, datapoint) {
@@ -129,7 +134,7 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
 
             const [query, update, query1, update1] = [
                 { taskId: body.taskId, isActive: true, status: true, hasError: true },
-                 { $set: { dpStatus: Error, correctionStatus: Incomplete } },
+                { $set: { dpStatus: Error, correctionStatus: Incomplete } },
                 { taskId: body.taskId, isActive: true, status: true, hasError: false },
                 { $set: { dpStatus: Collection, correctionStatus: Completed } }
             ]
