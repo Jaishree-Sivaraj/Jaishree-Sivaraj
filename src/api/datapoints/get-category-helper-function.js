@@ -173,7 +173,7 @@ export function getResponse(
 
 export function getTaskStartDate(currentyear, month, date) {
   // We will get the first year
-  const [taskStartingYear] = currentyear.split("-");
+  let [taskStartingYear] = currentyear.split("-");
   // ? If the date that is there is the last date of the month, the subsequent day will be the 1st
   const taskStartingDate =
     new Date(taskStartingYear, month, 0).getDate() == date
@@ -505,13 +505,18 @@ export async function getFilterdDatapointForErrorForBMAndKM(
         ? { ...queryForHasError, datapointId: datapointCodeQuery }
         : queryForHasError;
 
-    const findQuery = {
+    const [findQuery, filterAllMemberWhoseDataIsCollected] = [{
       ...queryForHasError,
       year: {
         $in: currentYear,
       },
       memberName
-    };
+    }, {
+      ...queryForHasError,
+      year: {
+        $in: currentYear,
+      }
+    }];
 
     const populateQuery = {
       path: "datapointId",
@@ -520,16 +525,20 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       },
     };
 
-    let errorDatapoints =
+    let [errorDatapoints, allCollectedMembers] =
       dpType == BOARD_MATRIX
-        ? await BoardMembersMatrixDataPoints.find(findQuery)
+        ? await Promise.all([BoardMembersMatrixDataPoints.find(findQuery)
           .skip((page - 1) * limit)
           .limit(+limit)
-          .populate([populateQuery])
-        : await KmpMatrixDataPoints.find(findQuery)
+          .populate([populateQuery]),
+        BoardMembersMatrixDataPoints.distinct('memberName', filterAllMemberWhoseDataIsCollected)
+        ])
+        : await Promise.all([KmpMatrixDataPoints.find(findQuery)
           .skip((page - 1) * limit)
           .limit(+limit)
-          .populate([populateQuery]);
+          .populate([populateQuery])],
+          KmpMatrixDataPoints.distinct('memberName', filterAllMemberWhoseDataIsCollected)
+        );
 
     orderedDpCodes =
       isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
@@ -603,6 +612,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       response: {
         datapointList,
         count: datapointList.dpCodesData.length < 1 ? 0 : count,
+        allCollectedMembers
       },
     };
   } catch (error) {
