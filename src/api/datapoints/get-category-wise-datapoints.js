@@ -196,7 +196,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       isDerivedCalculationRequired: isSFDR,
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
-    let orderedDpCodes, result;
+    let result;
     switch (taskDetails.taskStatus) {
       case Pending:
       case CollectionCompleted:
@@ -211,29 +211,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         }
 
         let repFinalSubmit = false;
-        let mergedDatapoints;
-        // This is Doubtful.
-        // const dpTypeDatapoints = await Datapoints.find({ ...queryForDpTypeCollection, ...searchQuery })
-        //   .skip(((page - 1) * limit))
-        //   .limit(+limit)
-        //   .sort({ code: 1 })
-        //   .populate('keyIssueId')
-        //   .populate('categoryId');
-        // keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
-        // // datapointList = await getDataPointListForStandalone(dpTypeDatapoints, currentYear, currentAllStandaloneDetails, taskDetails, datapointList)
-        // for  (let datapointsIndex = 0; datapointsIndex < dpTypeDatapoints?.length; datapointsIndex++) {
-        //   let datapointsObject = getDpObjectDetailsForStandalone(dpTypeDatapoints[datapointsIndex], taskDetails);
-        //   for (let currentYearIndex = 0; currentYearIndex < currentYear?.length; currentYearIndex++) {
-        //     _.filter(currentAllStandaloneDetails, (object) => {
-        //       if (object.datapointId.id == dpTypeDatapoints[datapointsIndex].id && object.year == currentYear[currentYearIndex]) {
-        //         datapointsObject.status = object.correctionStatus ? object.correctionStatus : 'Completed';
-        //       }
-        //     })
-        //   }
-        //   datapointList.dpCodesData.push(datapointsObject);
-        // }
-
-        mergedDatapoints = _.concat(
+        let mergedDatapoints = _.concat(
           currentAllStandaloneDetails,
           currentAllBoardMemberMatrixDetails,
           currentAllKmpMatrixDetails
@@ -311,7 +289,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   repFinalSubmit
                 );
                 return res.status(200).json(result);
-
               case BOARD_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
                   dpQuery,
