@@ -404,12 +404,18 @@ export async function getFilteredDatapointsForBMAndKM(
   dpType
 ) {
   try {
-    let memberList = await getMembers(
-      dpQuery,
-      dpType,
-      taskStartDate,
-      currentYear
-    );
+    const searchQueryForMemberName = { taskId: taskDetails?.id, status: true, isActive: true };
+    let [memberList, allCollectedMembers] = await Promise.all([
+      getMembers(
+        dpQuery,
+        dpType,
+        taskStartDate,
+        currentYear
+      ),
+      dpType == BOARD_MATRIX ?
+        BoardMembersMatrixDataPoints.distinct('memberName', searchQueryForMemberName) :
+        KmpMatrixDataPoints.distinct('memberName', searchQueryForMemberName)
+    ]);
     datapointList.memberList = memberList;
     for (
       let datapointsIndex = 0;
@@ -468,6 +474,7 @@ export async function getFilteredDatapointsForBMAndKM(
       response: {
         datapointList,
       },
+      allCollectedMembers
     };
   } catch (error) {
     console.log(error?.message);
