@@ -189,7 +189,7 @@ export function getTaskStartDate(currentyear, month, date) {
   }
   const yearTimeStamp = Math.floor(
     new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() /
-      1000
+    1000
   );
   return yearTimeStamp;
 }
@@ -428,9 +428,7 @@ export async function getFilteredDatapointsForBMAndKM(
         datapointListIndex < memberListToSave.length;
         datapointListIndex++
       ) {
-        console.log();
         if (memberListToSave[datapointListIndex].value == memberId) {
-          console.log();
           const errorMessage =
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
               memberListToSave[datapointListIndex],
@@ -495,7 +493,9 @@ export async function getFilterdDatapointForErrorForBMAndKM(
   taskStartDate,
   isCorrectionCompleted,
   page,
-  limit
+  limit,
+  memberId,
+  count
 ) {
   try {
     let orderedDpCodes;
@@ -503,9 +503,9 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       memberName === ""
         ? queryForHasError
         : {
-            ...queryForHasError,
-            memberName: { $regex: memberName, $options: "i" },
-          };
+          ...queryForHasError,
+          memberName: { $regex: memberName, $options: "i" },
+        };
 
     queryForHasError =
       datapointCodeQuery.length > 0
@@ -529,13 +529,13 @@ export async function getFilterdDatapointForErrorForBMAndKM(
     let errorDatapoints =
       dpType == BOARD_MATRIX
         ? await BoardMembersMatrixDataPoints.find(findQuery)
-            .skip((page - 1) * limit)
-            .limit(+limit)
-            .populate([populateQuery])
+          .skip((page - 1) * limit)
+          .limit(+limit)
+          .populate([populateQuery])
         : await KmpMatrixDataPoints.find(findQuery)
-            .skip((page - 1) * limit)
-            .limit(+limit)
-            .populate([populateQuery]);
+          .skip((page - 1) * limit)
+          .limit(+limit)
+          .populate([populateQuery]);
 
     orderedDpCodes =
       isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
@@ -553,9 +553,11 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       errorDpIndex < orderedDpCodes.length;
       errorDpIndex++
     ) {
-      _.filter(memberListToSave, async (object) => {
+      for (let memberIndex = 0; memberIndex < memberListToSave?.length; memberIndex++) {
         let memberName = orderedDpCodes[errorDpIndex].memberName;
+        let object = memberListToSave[memberIndex];
         if (memberName.toLowerCase().includes(object.label.toLowerCase())) {
+
           const errorMessage =
             //! check
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
@@ -563,41 +565,98 @@ export async function getFilterdDatapointForErrorForBMAndKM(
               dpType,
               datapointList,
               taskStartDate,
-              memberId
+              memberId,
+              memberName
             );
+          console.log(errorMessage);
 
           if (errorMessage !== "") {
             return errorMessage;
-          }
-          let datapointObject = getDpObjectForCorrrection(
-            orderedDpCodes[errorDpIndex],
-            taskDetails
-          );
-          datapointObject = {
-            ...datapointObject,
-            memberName: object.label,
-            memberId: object.value,
-          };
-          if (datapointList.dpCodesData.length > 0) {
-            let yearfind = datapointList.dpCodesData.findIndex(
-              (obj) =>
-                obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code &&
-                obj.memberName == orderedDpCodes[errorDpIndex].memberName
+          } else {
+            let datapointObject = getDpObjectForCorrrection(
+              orderedDpCodes[errorDpIndex],
+              taskDetails
             );
-            if (yearfind > -1) {
-              datapointList.dpCodesData[yearfind].fiscalYear =
-                datapointList.dpCodesData[yearfind].fiscalYear.concat(
-                  ", ",
-                  orderedDpCodes[errorDpIndex].year
-                );
+            datapointObject = {
+              ...datapointObject,
+              memberName: object.label,
+              memberId: object.value,
+            };
+            if (datapointList.dpCodesData.length > 0) {
+              let yearfind = datapointList.dpCodesData.findIndex(
+                (obj) =>
+                  obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code &&
+                  obj.memberName == orderedDpCodes[errorDpIndex].memberName
+              );
+              if (yearfind > -1) {
+                datapointList.dpCodesData[yearfind].fiscalYear =
+                  datapointList.dpCodesData[yearfind].fiscalYear.concat(
+                    ", ",
+                    orderedDpCodes[errorDpIndex].year
+                  );
+              } else {
+                datapointList.dpCodesData.push(datapointObject);
+              }
             } else {
               datapointList.dpCodesData.push(datapointObject);
             }
-          } else {
-            datapointList.dpCodesData.push(datapointObject);
           }
         }
-      });
+      }
+      // _.filter(memberListToSave, async (object) => {
+      //   let memberName = orderedDpCodes[errorDpIndex].memberName;
+      //   console.log(
+      //     memberName.toLowerCase().includes(object.label.toLowerCase())
+      //   );
+      //   console.log(memberName.toLowerCase());
+      //   console.log(object.label.toLowerCase());
+      //   if (memberName.toLowerCase().includes(object.label.toLowerCase())) {
+
+      //     const errorMessage =
+      //       //! check
+      //       await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
+      //         memberListForDisplay,
+      //         dpType,
+      //         datapointList,
+      //         taskStartDate,
+      //         memberId,
+      //         memberName
+      //       );
+      //     console.log(errorMessage);
+
+      //     if (errorMessage !== "") {
+      //       return errorMessage;
+      //     } else {
+      //       let datapointObject = getDpObjectForCorrrection(
+      //         orderedDpCodes[errorDpIndex],
+      //         taskDetails
+      //       );
+      //       datapointObject = {
+      //         ...datapointObject,
+      //         memberName: object.label,
+      //         memberId: object.value,
+      //       };
+      //       if (datapointList.dpCodesData.length > 0) {
+      //         let yearfind = datapointList.dpCodesData.findIndex(
+      //           (obj) =>
+      //             obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code &&
+      //             obj.memberName == orderedDpCodes[errorDpIndex].memberName
+      //         );
+      //         if (yearfind > -1) {
+      //           datapointList.dpCodesData[yearfind].fiscalYear =
+      //             datapointList.dpCodesData[yearfind].fiscalYear.concat(
+      //               ", ",
+      //               orderedDpCodes[errorDpIndex].year
+      //             );
+      //         } else {
+      //           datapointList.dpCodesData.push(datapointObject);
+      //         }
+      //       } else {
+      //         datapointList.dpCodesData.push(datapointObject);
+      //       }
+      //     }
+      //   }
+      // });
     }
     return {
       status: 200,
@@ -617,7 +676,8 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
   dpType,
   datapointList,
   taskStartDate,
-  memberId
+  memberId,
+  memberName
 ) {
   try {
     if (memberListForDisplay.year == "") {
@@ -629,32 +689,56 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
         },
       };
     }
-    const memberData =
-      dpType == BOARD_MATRIX
-        ? await BoardMembers.findOne({ _id: memberId, status: true })
-        : await Kmp.findOne({ _id: memberId, status: true });
 
-    if (
-      memberData?.endDateTimeStamp < taskStartDate &&
-      memberData?.endDateTimeStamp !== 0
-    ) {
-      const gender =
-        dpType == BOARD_MATRIX
-          ? memberData.BODR005 == "M"
-            ? "he"
-            : "she"
-          : memberData.MASR008 == "M"
-          ? "he"
-          : "she";
-      return {
-        status: 200,
-        message: `Member is terminated, ${gender} is no longer part of this task`,
-        response: {
-          datapointList,
-        },
-      };
+    let searchQuery = {},
+      memberData;
+    switch (dpType) {
+      case BOARD_MATRIX:
+        searchQuery =
+          memberId == ""
+            ? { BOSP004: memberName, status: true }
+            : {
+              $or: [{ _id: memberId }, { BOSP004: memberName, status: true }],
+            };
+        memberData = await BoardMembers.findOne(searchQuery);
+        break;
+      case KMP_MATRIX:
+        searchQuery =
+          memberId == ""
+            ? { MASP003: memberName, status: true }
+            : {
+              $or: [{ _id: memberId }, { MASP003: memberName, status: true }],
+            };
+        memberData = await Kmp.findOne(searchQuery);
+      default:
+        console.log("Wrong dp Type");
+        break;
     }
-    return "";
+
+    if (memberData) {
+      if (
+        memberData?.endDateTimeStamp < taskStartDate &&
+        memberData?.endDateTimeStamp !== 0
+      ) {
+        const gender =
+          dpType == BOARD_MATRIX
+            ? memberData.BODR005 == "M"
+              ? "he"
+              : "she"
+            : memberData.MASR008 == "M"
+              ? "he"
+              : "she";
+        return {
+          status: 200,
+          message: `Member is terminated, ${gender} is no longer part of this task`,
+          response: {
+            datapointList,
+          },
+        };
+      } else {
+        return "";
+      }
+    }
   } catch (error) {
     console.log(error?.message);
   }
@@ -676,10 +760,10 @@ export async function getFilteredErrorDatapointForStandalone(
       keyIssueId === ""
         ? queryForHasError
         : await getQueryWithKeyIssue(
-            queryForHasError,
-            keyIssueId,
-            datapointCodeQuery
-          );
+          queryForHasError,
+          keyIssueId,
+          datapointCodeQuery
+        );
     queryForHasError =
       datapointCodeQuery.length > 0
         ? { ...queryForHasError, datapointId: datapointCodeQuery }

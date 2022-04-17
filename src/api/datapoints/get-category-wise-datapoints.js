@@ -1,19 +1,12 @@
 import _ from "lodash";
 import { Datapoints } from ".";
-import { StandaloneDatapoints } from "../standalone_datapoints";
-import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
-import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
 import { Functions } from "../functions";
 import { TaskAssignment } from "../taskAssignment";
-import { BoardMembers } from "../boardMembers";
-import { Kmp } from "../kmp";
 import {
-  YetToStart,
   Pending,
   CollectionCompleted,
   CorrectionPending,
   ReassignmentPending,
-  Correction,
   CorrectionCompleted,
   VerificationCompleted,
   Completed,
@@ -89,12 +82,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     );
 
     let queryForDpTypeCollection = {
-        taskId: taskId,
-        companyId: taskDetails.companyId.id,
-        year: { $in: currentYear },
-        isActive: true,
-        status: true,
-      },
+      taskId: taskId,
+      companyId: taskDetails.companyId.id,
+      year: { $in: currentYear },
+      isActive: true,
+      status: true,
+    },
       queryForDatapointCollection = {
         dataCollection: "Yes",
         functionId: { $ne: functionId.id },
@@ -121,9 +114,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     const datapointCodeQuery =
       searchValue !== ""
         ? await Datapoints.distinct("_id", {
-            ...searchQuery,
-            categoryId: taskDetails?.categoryId,
-          })
+          ...searchQuery,
+          categoryId: taskDetails?.categoryId,
+        })
         : [];
 
     let queryToCountDocuments = { ...queryForDatapointCollection, dpType };
@@ -135,11 +128,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     ];
     conditionalTaskStatus.includes(taskDetails?.taskStatus)
       ? (queryToCountDocuments = await getConditionalTaskStatusCount(
-          dpType,
-          taskDetails,
-          queryToCountDocuments,
-          memberName
-        ))
+        dpType,
+        taskDetails,
+        queryToCountDocuments,
+        memberName
+      ))
       : queryToCountDocuments;
 
     queryToCountDocuments =
@@ -419,11 +412,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskStartDate,
                   false,
                   page,
-                  limit
+                  limit,
+                  memberId,
+                  count
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
-
               case KMP_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
                   dpQuery,
@@ -437,11 +431,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskStartDate,
                   false,
                   page,
-                  limit
+                  limit,
+                  memberId,
+                  count
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
-
               default:
                 return res.status(500).send({
                   status: "500",
@@ -517,7 +512,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskStartDate,
                   true,
                   page,
-                  limit
+                  limit,
+                  memberId,
+                  count
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -534,7 +531,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskStartDate,
                   true,
                   page,
-                  limit
+                  limit,
+                  memberId,
+                  count
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
