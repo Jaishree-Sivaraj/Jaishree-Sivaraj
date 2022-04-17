@@ -493,7 +493,9 @@ export async function getFilterdDatapointForErrorForBMAndKM(
   datapointCodeQuery,
   memberName,
   taskStartDate,
-  isCorrectionCompleted
+  isCorrectionCompleted,
+  page,
+  limit
 ) {
   try {
     let orderedDpCodes;
@@ -504,55 +506,48 @@ export async function getFilterdDatapointForErrorForBMAndKM(
             ...queryForHasError,
             memberName: { $regex: memberName, $options: "i" },
           };
+
     queryForHasError =
       datapointCodeQuery.length > 0
         ? { ...queryForHasError, datapointId: datapointCodeQuery }
         : queryForHasError;
+
+    const findQuery = {
+      ...queryForHasError,
+      year: {
+        $in: currentYear,
+      },
+    };
+
+    const populateQuery = {
+      path: "datapointId",
+      populate: {
+        path: "keyIssueId",
+      },
+    };
+
     let errorDatapoints =
       dpType == BOARD_MATRIX
-        ? await BoardMembersMatrixDataPoints.find({
-            ...queryForHasError,
-            year: {
-              $in: currentYear,
-            },
-          })
+        ? await BoardMembersMatrixDataPoints.find(findQuery)
             .skip((page - 1) * limit)
             .limit(+limit)
-            .populate([
-              {
-                path: "datapointId",
-                populate: {
-                  path: "keyIssueId",
-                },
-              },
-            ])
-        : await KmpMatrixDataPoints.find({
-            ...queryForHasError,
-            year: {
-              $in: currentYear,
-            },
-          })
+            .populate([populateQuery])
+        : await KmpMatrixDataPoints.find(findQuery)
             .skip((page - 1) * limit)
             .limit(+limit)
-            .populate([
-              {
-                path: "datapointId",
-                populate: {
-                  path: "keyIssueId",
-                },
-              },
-            ]);
+            .populate([populateQuery]);
+
     orderedDpCodes =
-      isCorrectionCompleted && _.uniq(errorkmpDatapoints, "datapointId");
+      isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
     orderedDpCodes = _.orderBy(errorDatapoints, ["datapointId.code"], ["asc"]);
 
     let { memberListToSave, memberListForDisplay } = await getMembers(
       dpQuery,
-      KMP_MATRIX,
+      dpType,
       taskStartDate,
       currentYear
     );
-    datapointList.memberList = memberListForDisplayKmp;
+    datapointList.memberList = memberListForDisplay;
     for (
       let errorDpIndex = 0;
       errorDpIndex < orderedDpCodes.length;
@@ -562,6 +557,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
         let memberName = orderedDpCodes[errorDpIndex].memberName;
         if (memberName.toLowerCase().includes(object.label.toLowerCase())) {
           const errorMessage =
+            //! check
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
               memberListForDisplay,
               dpType,
@@ -569,6 +565,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
               taskStartDate,
               memberId
             );
+
           if (errorMessage !== "") {
             return errorMessage;
           }
@@ -601,15 +598,15 @@ export async function getFilterdDatapointForErrorForBMAndKM(
           }
         }
       });
-      return {
-        status: 200,
-        message: "Data collection dp codes retrieved successfully!",
-        response: {
-          datapointList,
-          count: datapointList.dpCodesData.length < 1 ? 0 : count,
-        },
-      };
     }
+    return {
+      status: 200,
+      message: "Data collection dp codes retrieved successfully!",
+      response: {
+        datapointList,
+        count: datapointList.dpCodesData.length < 1 ? 0 : count,
+      },
+    };
   } catch (error) {
     console.log(error?.message);
   }

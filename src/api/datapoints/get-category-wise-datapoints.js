@@ -416,8 +416,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryForHasError,
                   datapointCodeQuery,
                   memberName,
-                  taskStartDate.toString,
-                  false
+                  taskStartDate,
+                  false,
+                  page,
+                  limit
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -432,8 +434,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryForHasError,
                   datapointCodeQuery,
                   memberName,
-                  taskStartDate.toString,
-                  false
+                  taskStartDate,
+                  false,
+                  page,
+                  limit
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -510,8 +514,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryForHasError,
                   datapointCodeQuery,
                   memberName,
-                  taskStartDate.toString,
-                  true
+                  taskStartDate,
+                  true,
+                  page,
+                  limit
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -525,8 +531,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryForHasError,
                   datapointCodeQuery,
                   memberName,
-                  taskStartDate.toString,
-                  true
+                  taskStartDate,
+                  true,
+                  page,
+                  limit
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
