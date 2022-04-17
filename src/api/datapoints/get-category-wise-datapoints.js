@@ -505,7 +505,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
               case BOARD_MATRIX:
-                result = getFilterdDatapointForErrorForBMAndKM(
+                result = await getFilterdDatapointForErrorForBMAndKM(
                   dpQuery,
                   BOARD_MATRIX,
                   taskDetails,
@@ -522,7 +522,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
               case KMP_MATRIX:
-                result = getFilterdDatapointForErrorForBMAndKM(
+                result = await getFilterdDatapointForErrorForBMAndKM(
                   dpQuery,
                   KMP_MATRIX,
                   taskDetails,
