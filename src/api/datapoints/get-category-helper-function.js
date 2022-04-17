@@ -332,14 +332,11 @@ export function getFilteredData(data) {
 
 export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
   try {
-    let memberListForDisplay = [],
-      memberListToSave = [];
+    let memberList = []
     let memberDetails,
       terminatedDate,
       endDate,
-      label,
-      boardNameValue,
-      bordMemberForPayload;
+      memberValue
     switch (dpType) {
       case BOARD_MATRIX:
         memberDetails = await BoardMembers.find(dpQuery);
@@ -371,28 +368,24 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
       }
       const memberName =
         dpType == BOARD_MATRIX ? member.BOSP004 : member.MASP003;
-      label =
-        member.endDateTimeStamp >= taskStartDate
-          ? `${memberName}, last working date ${terminatedDate}`
-          : `${memberName} terminated at ${terminatedDate}`;
+      let label1 = memberName;
+      if (member.endDateTimeStamp >= taskStartDate) {
+        label1 = `${memberName}, last working date ${terminatedDate}`
+      } else if (member.endDateTimeStamp == 0) {
+        label1 = `${memberName}, last working date ${terminatedDate}`
+      }
 
-      label = member.endDateTimeStamp == 0 ? memberName : label;
-      boardNameValue = {
+      let label = memberName;
+      memberValue = {
         label,
+        label1,
         value: member.id,
         year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "",
       };
 
-      bordMemberForPayload = {
-        label: memberName,
-        value: member.id,
-        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "",
-      };
-
-      memberListForDisplay.push(boardNameValue);
-      memberListToSave.push(bordMemberForPayload);
+      memberList.push(memberValue);
     });
-    return { memberListToSave, memberListForDisplay };
+    return memberList;
   } catch (error) {
     console.log(error?.message);
     return error?.message;
@@ -411,13 +404,13 @@ export async function getFilteredDatapointsForBMAndKM(
   dpType
 ) {
   try {
-    let { memberListToSave, memberListForDisplay } = await getMembers(
+    let memberList = await getMembers(
       dpQuery,
       dpType,
       taskStartDate,
       currentYear
     );
-    datapointList.memberList = memberListForDisplay;
+    datapointList.memberList = memberList;
     for (
       let datapointsIndex = 0;
       datapointsIndex < dpTypeDatapoints.length;
@@ -425,13 +418,13 @@ export async function getFilteredDatapointsForBMAndKM(
     ) {
       for (
         let datapointListIndex = 0;
-        datapointListIndex < memberListToSave.length;
+        datapointListIndex < memberList.length;
         datapointListIndex++
       ) {
-        if (memberListToSave[datapointListIndex].value == memberId) {
+        if (memberList[datapointListIndex].value == memberId) {
           const errorMessage =
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
-              memberListToSave[datapointListIndex],
+              memberList[datapointListIndex],
               dpType,
               datapointList,
               taskStartDate,
@@ -442,7 +435,7 @@ export async function getFilteredDatapointsForBMAndKM(
           }
           let datapointObject = getMemberDataPoint(
             dpTypeDatapoints[datapointsIndex],
-            memberListToSave[datapointListIndex],
+            memberList[datapointListIndex],
             taskDetails
           );
           // filtered data to get status.
@@ -453,7 +446,7 @@ export async function getFilteredDatapointsForBMAndKM(
           ) {
             _.filter(allDatapoints, (object) => {
               let memberName = object.memberName;
-              let element = memberListToSave[datapointListIndex].label;
+              let element = memberList[datapointListIndex].label;
               if (
                 object.datapointId.id == dpTypeDatapoints[datapointsIndex].id &&
                 object.year == currentYear[currentYearIndex] &&
@@ -542,27 +535,26 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
     orderedDpCodes = _.orderBy(errorDatapoints, ["datapointId.code"], ["asc"]);
 
-    let { memberListToSave, memberListForDisplay } = await getMembers(
+    let memberList = await getMembers(
       dpQuery,
       dpType,
       taskStartDate,
       currentYear
     );
-    datapointList.memberList = memberListForDisplay;
+    datapointList.memberList = memberList;
     for (
       let errorDpIndex = 0;
       errorDpIndex < orderedDpCodes.length;
       errorDpIndex++
     ) {
-      for (let memberIndex = 0; memberIndex < memberListToSave?.length; memberIndex++) {
+      for (let memberIndex = 0; memberIndex < memberList?.length; memberIndex++) {
         let memberName = orderedDpCodes[errorDpIndex].memberName;
-        let object = memberListToSave[memberIndex];
+        let object = memberList[memberIndex];
         if (memberName.toLowerCase().includes(object.label.toLowerCase())) {
-
           const errorMessage =
             //! check
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
-              memberListForDisplay,
+              memberList,
               dpType,
               datapointList,
               taskStartDate,
@@ -603,60 +595,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
           }
         }
       }
-      // _.filter(memberListToSave, async (object) => {
-      //   let memberName = orderedDpCodes[errorDpIndex].memberName;
-      //   console.log(
-      //     memberName.toLowerCase().includes(object.label.toLowerCase())
-      //   );
-      //   console.log(memberName.toLowerCase());
-      //   console.log(object.label.toLowerCase());
-      //   if (memberName.toLowerCase().includes(object.label.toLowerCase())) {
 
-      //     const errorMessage =
-      //       //! check
-      //       await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
-      //         memberListForDisplay,
-      //         dpType,
-      //         datapointList,
-      //         taskStartDate,
-      //         memberId,
-      //         memberName
-      //       );
-      //     console.log(errorMessage);
-
-      //     if (errorMessage !== "") {
-      //       return errorMessage;
-      //     } else {
-      //       let datapointObject = getDpObjectForCorrrection(
-      //         orderedDpCodes[errorDpIndex],
-      //         taskDetails
-      //       );
-      //       datapointObject = {
-      //         ...datapointObject,
-      //         memberName: object.label,
-      //         memberId: object.value,
-      //       };
-      //       if (datapointList.dpCodesData.length > 0) {
-      //         let yearfind = datapointList.dpCodesData.findIndex(
-      //           (obj) =>
-      //             obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code &&
-      //             obj.memberName == orderedDpCodes[errorDpIndex].memberName
-      //         );
-      //         if (yearfind > -1) {
-      //           datapointList.dpCodesData[yearfind].fiscalYear =
-      //             datapointList.dpCodesData[yearfind].fiscalYear.concat(
-      //               ", ",
-      //               orderedDpCodes[errorDpIndex].year
-      //             );
-      //         } else {
-      //           datapointList.dpCodesData.push(datapointObject);
-      //         }
-      //       } else {
-      //         datapointList.dpCodesData.push(datapointObject);
-      //       }
-      //     }
-      //   }
-      // });
     }
     return {
       status: 200,
