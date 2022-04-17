@@ -517,6 +517,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       year: {
         $in: currentYear,
       },
+      memberName
     };
 
     const populateQuery = {
@@ -568,7 +569,6 @@ export async function getFilterdDatapointForErrorForBMAndKM(
               memberId,
               memberName
             );
-          console.log(errorMessage);
 
           if (errorMessage !== "") {
             return errorMessage;
