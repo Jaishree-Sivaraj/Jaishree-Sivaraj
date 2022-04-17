@@ -177,16 +177,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { _id: taskDetails?.categoryId?.clientTaxonomyId },
       { isDerivedCalculationRequired: 1 }
     );
-    const isSFDR = clientTaxonomyDetails?.isDerivedCalculationRequired
-      ? false
-      : true;
+    const isDerivedCalculationRequired = clientTaxonomyDetails?.isDerivedCalculationRequired;
 
     const dpQuery = { companyId: taskDetails.companyId.id, status: true };
     let response = {
       status: 200,
       fiscalYear: taskDetails?.year,
       isDerviedCalculationCompleted: taskDetails?.isDerviedCalculationCompleted,
-      isDerivedCalculationRequired: isSFDR,
+      isDerivedCalculationRequired,
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;

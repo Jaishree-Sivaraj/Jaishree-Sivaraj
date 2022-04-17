@@ -2046,7 +2046,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
-    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired;
+    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
     const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
