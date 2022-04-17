@@ -394,7 +394,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryKeyIssueSearch,
                   keyIssuesList,
                   taskDetails,
-                  datapointList
+                  datapointList,
+                  page,
+                  limit
                 );
                 result = getResponse(
                   result,
@@ -459,7 +461,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               queryKeyIssueSearch,
               keyIssuesList,
               taskDetails,
-              datapointList
+              datapointList,
+              page,
+              limit
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);
@@ -490,7 +494,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   queryKeyIssueSearch,
                   keyIssuesList,
                   taskDetails,
-                  datapointList
+                  datapointList,
+                  page,
+                  limit
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -547,7 +553,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               queryKeyIssueSearch,
               keyIssuesList,
               taskDetails,
-              datapointList
+              datapointList,
+              page,
+              limit
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);
