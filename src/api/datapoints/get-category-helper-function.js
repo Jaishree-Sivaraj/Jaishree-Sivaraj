@@ -354,7 +354,6 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
       terminatedDate = format(terminatedDate, "MM-dd-yyyy");
       const startDate = new Date(member?.startDate).getFullYear();
-      console.log(member.endDate);
       endDate = new Date(member.endDate).getFullYear()
         ? new Date(member.endDate).getFullYear()
         : "";
@@ -627,7 +626,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
     if (memberListForDisplay.year == "") {
       return {
         status: 200,
-        message: `Member's  not part of the task`,
+        message: `Member's not part of the task`,
         response: {
           datapointList,
         },
@@ -671,7 +670,9 @@ export async function getFilteredErrorDatapointForStandalone(
   queryKeyIssueSearch,
   keyIssuesList,
   taskDetails,
-  datapointList
+  datapointList,
+  page,
+  limit
 ) {
   try {
     queryForHasError =
