@@ -117,13 +117,15 @@ function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can 
     return totalDatapoints;
 }
 
-function getTotalCount(yearCount, datapoint) {
-    let count = 0;
+function getTotalCount(yearCount, data) {
+    let counter = 0;
     yearCount.map(total => {
-        count += datapoint.length * total;
+        let datapointLength = Array.isArray(data) ? data.length : data;
+        counter += datapointLength * total;
+        console.log(counter);
     });
 
-    return count;
+    return counter;
 }
 
 export async function conditionalResult(body, hasError, hasCorrection, condition) {
