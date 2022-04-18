@@ -24,7 +24,7 @@ import {
 
 export async function getTotalExpectedYear(memberName, distinctYears, dpType) {
     try {
-        let totalYearByAllMembers = []
+        let totalCollectionYearForMembers = []
         if (memberName?.length > 0) {
             let memberDetails = []
             if (dpType == BOARD_MATRIX) {
@@ -32,31 +32,26 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType) {
                     BOSP004: { $in: memberName },
                     status: true
                 });
-                console.log(memberDetails);
             } else if (dpType == KMP_MATRIX) {
                 memberDetails = await Kmp.find({
                     MASP003: { $in: memberName },
                     status: true
                 })
             }
-            console.log(memberDetails)
+
             for (let memberIndex = 0; memberIndex < memberDetails?.length; memberIndex++) {
                 let totalCollectedYears = 0;
-                console.log(memberDetails[memberIndex]?.startDate)
                 let memberStartYear = new Date(memberDetails[memberIndex]?.startDate).getFullYear();
                 for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                     const splityear = distinctYears[yearIndex].split('-');
-                    console.log(memberStartYear == splityear[0]);
-                    console.log(memberStartYear == splityear[1]);
-                    if (memberStartYear == splityear[0] || memberStartYear == splityear[1]) {
+                    if (memberStartYear < splityear[1]) {
                         totalCollectedYears += 1;
                     }
-                    console.log(totalCollectedYears)
                 }
-                totalYearByAllMembers.push(totalCollectedYears);
+                totalCollectionYearForMembers.push(totalCollectedYears);
             }
         }
-        return totalYearByAllMembers;
+        return totalCollectionYearForMembers;
     } catch (error) {
         console.log(error?.message);
     }
@@ -67,8 +62,6 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
         let totalExpectedBoardMatrixCount = 0, totalExpectedKmpMatrixCount = 0;
         const totalBoardMemberYearsCount = await getTotalExpectedYear(allBoardMemberMatrixDetails, distinctYears, BOARD_MATRIX);
         const totalKmpMemberYearsCount = await getTotalExpectedYear(allKmpMatrixDetails, distinctYears, KMP_MATRIX);
-
-        console.log(totalBoardMemberYearsCount && totalKmpMemberYearsCount);
 
         if (totalBoardMemberYearsCount && totalKmpMemberYearsCount) {
             let multipliedValue;
