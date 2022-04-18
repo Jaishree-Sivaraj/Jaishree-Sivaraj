@@ -344,7 +344,7 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
     memberDetails.map((member) => {
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
       terminatedDate = format(terminatedDate, "MM-dd-yyyy");
-      const startYear = new Date(member?.startYear).getFullYear();
+      const startYear = new Date(member?.startDate).getFullYear();
       let yearsForDataCollection = "";
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split("-");
