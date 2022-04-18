@@ -20,7 +20,9 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .catch(next)
 
 export const getMyNotifications = ({ params }, res, next) =>
-  Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false })
+  Notifications.count({ notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false, createdAt: {
+    $gte: new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)))
+  } })
     .then(count => Notifications.find({
       notifyToUser: params.notifyToUser ? params.notifyToUser : null, isRead: false,
       createdAt: {
