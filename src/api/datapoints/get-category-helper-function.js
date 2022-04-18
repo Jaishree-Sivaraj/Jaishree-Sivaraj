@@ -16,6 +16,7 @@ import {
 } from "../../constants/task-status";
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import { format } from "date-fns";
+import { all } from "bluebird";
 
 export async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(
   queryToCountDocuments,
@@ -131,8 +132,7 @@ export function getDataPointListForStandalone(
       datapointData[datapointsIndex],
       taskDetails
     );
-    // BODC001,MACR005,MACR006
-    console.log(datapointData[datapointsIndex].code);
+
     for (
       let currentYearIndex = 0;
       currentYearIndex < currentYear.length;
@@ -174,15 +174,11 @@ export function getResponse(
 export function getTaskStartDate(currentyear, month, date) {
   // We will get the first year
   let [taskStartingYear] = currentyear.split("-");
-  // ? If the date that is there is the last date of the month, the subsequent day will be the 1st
   const taskStartingDate =
     new Date(taskStartingYear, month, 0).getDate() == date
       ? 1
       : Number(date) + 1;
-  // ? If the month is december then, the subsequent month will be the January
-  // * Here month starts from 0.
-  const taskStartingMonth =
-    new Date(taskStartingYear, month, 0).getMonth() == 11 ? 0 : Number(month);
+  const taskStartingMonth = new Date(taskStartingYear, month, 0).getMonth() == 11 ? 0 : Number(month);
   // because month starts with 0 hence 3 is April and not march. Therefore, we are not increamenting the month.
   if (month == 12) {
     taskStartingYear = Number(taskStartingYear) + 1;
@@ -319,7 +315,6 @@ export async function getConditionalTaskStatusCount(
     ...queryToCountDocuments,
     _id: { $in: allDpDetails },
   };
-  console.log(queryToCountDocuments);
   return queryToCountDocuments;
 }
 
@@ -333,10 +328,8 @@ export function getFilteredData(data) {
 export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
   try {
     let memberList = []
-    let memberDetails,
-      terminatedDate,
-      endDate,
-      memberValue
+    let memberDetails, terminatedDate, memberValue;
+
     switch (dpType) {
       case BOARD_MATRIX:
         memberDetails = await BoardMembers.find(dpQuery);
@@ -347,32 +340,35 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
       default:
         break;
     }
+
     memberDetails.map((member) => {
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
       terminatedDate = format(terminatedDate, "MM-dd-yyyy");
-      const startDate = new Date(member?.startDate).getFullYear();
-      endDate = new Date(member.endDate).getFullYear()
-        ? new Date(member.endDate).getFullYear()
-        : "";
-
+      const startYear = new Date(member?.startYear).getFullYear();
       let yearsForDataCollection = "";
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split("-");
-        if (startDate <= splityear[0] || startDate <= splityear[1]) {
-          yearsForDataCollection =
-            yearsForDataCollection + currentYear[yearIndex];
+        // ! according to the requirement the member should be collecting data past their startingYear. i.e,
+        // ! If starting year = 2018, collection year should be 2019 and henceforth.
+        if (startYear < splityear[1] && member.endDateTimeStamp > taskStartDate) {
+          yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
           if (yearIndex !== currentYear?.length - 1) {
             yearsForDataCollection = yearsForDataCollection + ", ";
           }
         }
       }
+
       const memberName =
         dpType == BOARD_MATRIX ? member.BOSP004 : member.MASP003;
       let label1 = memberName;
-      if (member.endDateTimeStamp >= taskStartDate) {
+      //! If they have a termination date then.
+      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0) {
         label1 = `${memberName}, last working date ${terminatedDate}`
-      } else if (member.endDateTimeStamp == 0) {
-        label1 = `${memberName}, last working date ${terminatedDate}`
+      }
+
+      //! If the member is terminated then.
+      if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0) {
+        label1 = `${memberName}, is terminated on ${terminatedDate}`
       }
 
       let label = memberName;
@@ -405,6 +401,7 @@ export async function getFilteredDatapointsForBMAndKM(
 ) {
   try {
     const searchQueryForMemberName = { taskId: taskDetails?.id, status: true, isActive: true };
+    // TODO Step1: Getting the memberlist 
     let [memberList, allCollectedMembers] = await Promise.all([
       getMembers(
         dpQuery,
@@ -417,6 +414,8 @@ export async function getFilteredDatapointsForBMAndKM(
         KmpMatrixDataPoints.distinct('memberName', searchQueryForMemberName)
     ]);
     datapointList.memberList = memberList;
+
+    // TODO Step2: Iterating through the datapoints to get the list.
     for (
       let datapointsIndex = 0;
       datapointsIndex < dpTypeDatapoints.length;
@@ -428,6 +427,7 @@ export async function getFilteredDatapointsForBMAndKM(
         datapointListIndex++
       ) {
         if (memberList[datapointListIndex].value == memberId) {
+          // TODO Step 2.1: Getting the message based on the year for a particular user.
           const errorMessage =
             await getErrorMessageIfMemberIsNoLongerPartOfTheTask(
               memberList[datapointListIndex],
@@ -436,21 +436,22 @@ export async function getFilteredDatapointsForBMAndKM(
               taskStartDate,
               memberId
             );
+
           if (errorMessage !== "") {
             return errorMessage;
           }
+
+          // TODO 2.2: Getting the member details.
           let datapointObject = getMemberDataPoint(
             dpTypeDatapoints[datapointsIndex],
             memberList[datapointListIndex],
             taskDetails
           );
-          // filtered data to get status.
-          for (
-            let currentYearIndex = 0;
-            currentYearIndex < currentYear.length;
-            currentYearIndex++
-          ) {
-            _.filter(allDatapoints, (object) => {
+
+          // TODO 2.3: Checking for the correction status whether it is complete or incomplete based on the collected data and members.
+          for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
+            for (let dpIndex = 0; dpIndex < allDatapoints.length; dpIndex++) {
+              let object = allDatapoints[dpIndex];
               let memberName = object.memberName;
               let element = memberList[datapointListIndex].label;
               if (
@@ -462,7 +463,7 @@ export async function getFilteredDatapointsForBMAndKM(
                   ? object.correctionStatus
                   : "Completed";
               }
-            });
+            }
           }
           datapointList.dpCodesData.push(datapointObject);
         }
@@ -551,6 +552,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
     orderedDpCodes = _.orderBy(errorDatapoints, ["datapointId.code"], ["asc"]);
 
+    // TODO Step 1: Getting the member details.
     let memberList = await getMembers(
       dpQuery,
       dpType,
@@ -636,16 +638,6 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
   memberName
 ) {
   try {
-    if (memberListForDisplay.year == "") {
-      return {
-        status: 200,
-        message: `Member's not part of the task`,
-        response: {
-          datapointList,
-        },
-      };
-    }
-
     let searchQuery = {},
       memberData;
     switch (dpType) {
@@ -672,21 +664,26 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
     }
 
     if (memberData) {
-      if (
-        memberData?.endDateTimeStamp < taskStartDate &&
-        memberData?.endDateTimeStamp !== 0
-      ) {
-        const gender =
-          dpType == BOARD_MATRIX
-            ? memberData.BODR005 == "M"
-              ? "he"
-              : "she"
-            : memberData.MASR008 == "M"
-              ? "he"
-              : "she";
+      const gender =
+        dpType == BOARD_MATRIX
+          ? memberData.BODR005 == "M"
+            ? "he"
+            : "she"
+          : memberData.MASR008 == "M"
+            ? "he"
+            : "she";
+      if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0) {
         return {
           status: 200,
           message: `Member is terminated, ${gender} is no longer part of this task`,
+          response: {
+            datapointList,
+          },
+        };
+      } else if (memberListForDisplay.year == "") {
+        return {
+          status: 200,
+          message: `Member's not part of the task`,
           response: {
             datapointList,
           },
