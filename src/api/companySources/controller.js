@@ -45,26 +45,36 @@ export const show = async ({ params }, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
-    const { companyId, sourcePDF, name, url, sourceTitle, publicationData } = req.body;
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate, fileName } = req.body;
     const { id } = req.params;
-    let fileUrl = '';
+    let fileUrl;
     if (sourcePDF !== '') {
-      const fileType = sourcePDF.split(';')[0].split('/')[1];
+      let fileType = sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
     }
 
     const companydata = await CompanySources.findOne({ _id: id });
     const updatedData = {
-      fileName: fileUrl ? fileUrl : companydata?.fileUrl,
+      fileName: fileName ? fileName : companydata?.fileName,
+      sourceFile: fileUrl ? fileUrl : companydata?.sourceFile,
       name: name ? name : companydata?.name,
       sourceUrl: url ? url : companydata?.url,
       sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
-      publicationData: publicationData ? publicationData : companydata?.publicationData
+      publicationDate: publicationDate ? publicationDate : companydata?.publicationDate
     }
 
     const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
       $set: updatedData
+    }, {
+      new: true
     });
     if (!updateCompanyDetails) {
       return res.status(409).json({
@@ -123,7 +133,14 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   try {
     var fileUrl = '';
     if (body.sourcePDF) {
-      const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      let fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
 

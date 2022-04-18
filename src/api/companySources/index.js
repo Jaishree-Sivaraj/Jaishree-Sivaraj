@@ -96,7 +96,7 @@ router.get('/:id',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 404 Company sources not found.
  */
-router.patch('/:id',
+router.put('/:id',
   body({ sourceTypeId, sourceUrl, sourceFile, publicationDate, sourceTitle }),
   update)
 

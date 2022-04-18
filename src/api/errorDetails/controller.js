@@ -13,6 +13,7 @@ import {
   KmpMatrixDataPoints
 } from '../kmpMatrixDataPoints'
 import { Errors } from '../error'
+import XLSX from 'xlsx'
 import _ from 'lodash'
 import { TaskAssignment } from '../taskAssignment'
 import { StandaloneDatapoints } from '../standalone_datapoints'
@@ -179,10 +180,10 @@ export const saveErrorDetails = async ({
         try {
           let item = dpCodesDetails[index];
           //store in s3 bucket with filename     
-          
-        if (item?.collectionYear) {
-          item.additionalDetails.collectionYear = item?.collectionYear ;
-        }
+
+          if (item?.collectionYear) {
+            item.additionalDetails.collectionYear = item?.collectionYear;
+          }
           if (item.isUnfreezed == true && item.error.isThere == true) {
             await StandaloneDatapoints.updateMany({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true }, { $set: { status: false } });
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
@@ -269,9 +270,9 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpCodesDetails.length; index++) {
         try {
           let item = dpCodesDetails[index];
-          
+
           if (item?.collectionYear) {
-            item.additionalDetails.collectionYear = item?.collectionYear ;
+            item.additionalDetails.collectionYear = item?.collectionYear;
           }
           if (item.isUnfreezed && item.error.isThere) {
             await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
@@ -303,7 +304,7 @@ export const saveErrorDetails = async ({
             ])
           }
           else if (item.isUnfreezed == true) {
-            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" } , datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
+            await BoardMembersMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
               { $set: { status: false } });
             let formattedScreenShots = await saveScreenShot(item['screenShot'], body.companyId, body.dpCodeId, item['fiscalYear']);
 
@@ -401,9 +402,9 @@ export const saveErrorDetails = async ({
       for (let index = 0; index < dpCodesDetails.length; index++) {
         try {
           let item = dpCodesDetails[index];
-          
+
           if (item?.collectionYear) {
-            item.additionalDetails.collectionYear = item?.collectionYear ;
+            item.additionalDetails.collectionYear = item?.collectionYear;
           }
           if (item.isUnfreezed && item.error.isThere) {
             await KmpMatrixDataPoints.updateMany({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
@@ -542,67 +543,67 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     if (body.memberType == 'Standalone') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
-        
+
         if (item?.collectionYear) {
-          item.additionalDetails.collectionYear = item?.collectionYear ;
+          item.additionalDetails.collectionYear = item?.collectionYear;
         }
         //store in s3 bucket with filename       
         if (item.error.isThere == true) {
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
-          if (item.error.refData === '' || item.error.refData === "") {
+          if (item?.error?.refData === '' || item?.error?.refData === "") {
             errorCaughtByRep == null
           } else {
             let formattedScreenShots = [];
-            if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
-              for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
-                let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
-                if (screenshotItem.base64) {
-                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
-                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
-                    .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
+            if (item?.error?.refData?.screenShot && item?.error?.refData?.screenShot?.length > 0) {
+              for (let screenshotIndex = 0; screenshotIndex < item?.error?.refData?.screenShot?.length; screenshotIndex++) {
+                let screenshotItem = item?.error?.refData?.screenShot[screenshotIndex];
+                let screenShotFileType = screenshotItem?.base64 ? screenshotItem?.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem?.base64) {
+                  let screenshotFileName = body?.companyId + '_' + body?.dpCodeId + '_' + item['fiscalYear'] + '_' + screenshotIndex + '.' + screenShotFileType;
+                  await storeFileInS3(process?.env?.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem?.base64)
+                    .catch((error) => { return res.status(400).json({ status: "400", message: error?.message ? error?.message : "Failed to store the screenshot!" }) });
                   formattedScreenShots.push(screenshotFileName);
                 }
               }
             }
             errorCaughtByRep = {
-              description: item.error.refData.description,
-              response: item.error.refData.response,
+              description: item?.error?.refData?.description,
+              response: item?.error?.refData?.response,
               screenShot: formattedScreenShots,
-              dataType: item.error.refData.dataType,
-              fiscalYear: item.fiscalYear,
-              textSnippet: item.error.refData.textSnippet,
-              pageNo: item.error.refData.pageNo,
-              optionalAnalystComment: item.error.refData.optionalAnalystComment,
-              isRestated: item.error.refData.isRestated,
-              restatedForYear: item.error.refData.restatedForYear,
-              restatedInYear: item.error.refData.restatedInYear,
-              restatedValue: item.error.refData.restatedValue,
+              dataType: item?.error?.refData?.dataType,
+              fiscalYear: item?.fiscalYear,
+              textSnippet: item?.error?.refData?.textSnippet,
+              pageNo: item?.error?.refData?.pageNo,
+              optionalAnalystComment: item?.error?.refData?.optionalAnalystComment,
+              isRestated: item?.error?.refData?.isRestated,
+              restatedForYear: item?.error?.refData?.restatedForYear,
+              restatedInYear: item?.error?.refData?.restatedInYear,
+              restatedValue: item?.error?.refData?.restatedValue,
               source: {
-                publicationDate: item.error.refData.source.publicationDate,
-                url: item.error.refData.source.url,
-                sourceName: item.error.refData.source.sourceName
+                publicationDate: item?.error?.refData?.source?.publicationDate,
+                url: item?.error?.refData?.source?.url,
+                sourceName: item?.error?.refData?.source?.sourceName
               },
-              additionalDetails: item.error.refData.additionalDetails
+              additionalDetails: item?.error?.refData?.additionalDetails
             }
           }
           let standaloneDatapoints = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: item.fiscalYear,
-            taskId: body.taskId,
-            errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-            raisedBy: item.error.raisedBy,
-            errorStatus: item.error.errorStatus,
+            datapointId: body?.dpCodeId,
+            companyId: body?.companyId,
+            categoryId: body?.pillarId,
+            year: item?.fiscalYear,
+            taskId: body?.taskId,
+            errorTypeId: errorTypeObject[0] ? errorTypeObject[0]?.id : null,
+            raisedBy: item?.error?.raisedBy,
+            errorStatus: item?.error?.errorStatus,
             errorCaughtByRep: errorCaughtByRep,
             isErrorAccepted: null,
             isErrorRejected: false,
             comments: {
-              author: item.error.raisedBy,
-              fiscalYear: item.fiscalYear,
+              author: item?.error?.raisedBy,
+              fiscalYear: item?.fiscalYear,
               dateTime: Date.now(),
-              content: item.error.comment
+              content: item?.error?.comment
             },
             status: true,
             createdBy: user
@@ -616,7 +617,7 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
         } else {
           await StandaloneDatapoints.updateOne({ taskId: body.taskId, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
             { $set: { hasCorrection: false, hasError: false, correctionStatus: 'Completed' } })
-            .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to update the task details!" }) });
+            .catch((error) => { return res.status(400).json({ status: "400", message: error?.message ? error?.message : "Failed to update the task details!" }) });
         }
       }
       res.status('200').json({
@@ -625,66 +626,66 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     } else if (body.memberType == 'Board Matrix') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
-        
+
         if (item?.collectionYear) {
-          item.additionalDetails.collectionYear = item?.collectionYear ;
+          item.additionalDetails.collectionYear = item?.collectionYear;
         }
         if (item.error.isThere == true) {
-          if (item.error.refData == null || item.error.refData === '' || item.error.refData === "") {
+          if (item?.error?.refData == null || item?.error?.refData === '' || item?.error?.refData === "") {
             errorCaughtByRep == null
           } else {
             let formattedScreenShots = [];
-            if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
-              for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
-                let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
-                if (screenshotItem.base64) {
-                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
-                    .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
+            if (item?.error?.refData?.screenShot && item?.error?.refData?.screenShot?.length > 0) {
+              for (let screenshotIndex = 0; screenshotIndex < item?.error?.refData?.screenShot?.length; screenshotIndex++) {
+                let screenshotItem = item?.error?.refData?.screenShot[screenshotIndex];
+                let screenShotFileType = screenshotItem?.base64 ? screenshotItem?.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem?.base64) {
+                  let screenshotFileName = body?.companyId + '_' + body?.dpCodeId + '_' + item['fiscalYear'] + '_' + body?.memberName + '_' + screenshotIndex + '?.' + screenShotFileType;
+                  await storeFileInS3(process?.env?.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem?.base64)
+                    .catch((error) => { return res.status(400).json({ status: "400", message: error?.message ? error?.message : "Failed to store the screenshot!" }) });
                   formattedScreenShots.push(screenshotFileName);
                 }
               }
             }
             errorCaughtByRep = {
-              description: item.error.refData.description,
-              response: item.error.refData.response,
+              description: item?.error?.refData?.description,
+              response: item?.error?.refData?.response,
               screenShot: formattedScreenShots,
-              dataType: item.error.refData.dataType,
-              fiscalYear: item.error.refData.fiscalYear,
-              textSnippet: item.error.refData.textSnippet,
-              pageNo: item.error.refData.pageNo,
-              optionalAnalystComment: item.error.refData.optionalAnalystComment,
-              isRestated: item.error.refData.isRestated,
-              restatedForYear: item.error.refData.restatedForYear,
-              restatedInYear: item.error.refData.restatedInYear,
-              restatedValue: item.error.refData.restatedValue,
+              dataType: item?.error?.refData?.dataType,
+              fiscalYear: item?.error?.refData?.fiscalYear,
+              textSnippet: item?.error?.refData?.textSnippet,
+              pageNo: item?.error?.refData?.pageNo,
+              optionalAnalystComment: item?.error?.refData?.optionalAnalystComment,
+              isRestated: item?.error?.refData?.isRestated,
+              restatedForYear: item?.error?.refData?.restatedForYear,
+              restatedInYear: item?.error?.refData?.restatedInYear,
+              restatedValue: item?.error?.refData?.restatedValue,
               source: {
-                publicationDate: item.error.refData.source.publicationDate,
-                url: item.error.refData.source.url,
-                sourceName: item.error.refData.source.sourceName
+                publicationDate: item?.error?.refData?.source?.publicationDate,
+                url: item?.error?.refData?.source?.url,
+                sourceName: item?.error?.refData?.source?.sourceName
               },
-              additionalDetails: item.error.refData.additionalDetails
+              additionalDetails: item?.error?.refData?.additionalDetails
             }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
           let errorDp = {
-            datapointId: body.dpCodeId,
-            companyId: body.companyId,
-            categoryId: body.pillarId,
-            year: item.fiscalYear,
-            taskId: body.taskId,
-            errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-            raisedBy: item.error.raisedBy,
-            errorStatus: item.error.errorStatus,
+            datapointId: body?.dpCodeId,
+            companyId: body?.companyId,
+            categoryId: body?.pillarId,
+            year: item?.fiscalYear,
+            taskId: body?.taskId,
+            errorTypeId: errorTypeObject[0] ? errorTypeObject[0]?.id : null,
+            raisedBy: item?.error?.raisedBy,
+            errorStatus: item?.error?.errorStatus,
             errorCaughtByRep: errorCaughtByRep,
             isErrorRejected: false,
             isErrorAccepted: null,
             comments: {
-              author: item.error.raisedBy,
-              fiscalYear: item.fiscalYear,
+              author: item?.error?.raisedBy,
+              fiscalYear: item?.fiscalYear,
               dateTime: Date.now(),
-              content: item.error.comment
+              content: item?.error?.comment
             },
             status: true,
             createdBy: user
@@ -707,46 +708,46 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     } else if (body.memberType == 'KMP Matrix') {
       for (let index = 0; index < dpCodesDetails.length; index++) {
         let item = dpCodesDetails[index];
-          
+
         if (item?.collectionYear) {
-          item.additionalDetails.collectionYear = item?.collectionYear ;
+          item.additionalDetails.collectionYear = item?.collectionYear;
         }
-          if (item.error.isThere == true) {
-          if (item.error.refData == null || item.error.refData === '' || item.error.refData === "") {
+        if (item?.error?.isThere == true) {
+          if (item?.error?.refData == null || item?.error?.refData === '' || item?.error?.refData === "") {
             errorCaughtByRep == null
           } else {
             let formattedScreenShots = [];
-            if (item.error.refData.screenShot && item.error.refData.screenShot.length > 0) {
-              for (let screenshotIndex = 0; screenshotIndex < item.error.refData.screenShot.length; screenshotIndex++) {
-                let screenshotItem = item.error.refData.screenShot[screenshotIndex];
-                let screenShotFileType = screenshotItem.base64 ? screenshotItem.base64.split(';')[0].split('/')[1] : '';
-                if (screenshotItem.base64) {
-                  let screenshotFileName = body.companyId + '_' + body.dpCodeId + '_' + item['fiscalYear'] + '_' + body.memberName + '_' + screenshotIndex + '.' + screenShotFileType;
-                  await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem.base64)
-                    .catch((error) => { return res.status(400).json({ status: "400", message: "Failed to store the screenshot!" }) });
+            if (item?.error?.refData?.screenShot && item?.error?.refData?.screenShot?.length > 0) {
+              for (let screenshotIndex = 0; screenshotIndex < item?.error?.refData?.screenShot?.length; screenshotIndex++) {
+                let screenshotItem = item?.error?.refData?.screenShot[screenshotIndex];
+                let screenShotFileType = screenshotItem?.base64 ? screenshotItem?.base64.split(';')[0].split('/')[1] : '';
+                if (screenshotItem?.base64) {
+                  let screenshotFileName = body?.companyId + '_' + body?.dpCodeId + '_' + item['fiscalYear'] + '_' + body?.memberName + '_' + screenshotIndex + '?.' + screenShotFileType;
+                  await storeFileInS3(process?.env?.SCREENSHOT_BUCKET_NAME, screenshotFileName, screenshotItem?.base64)
+                    .catch((error) => { return res.status(400).json({ status: "400", message: error?.message ? error?.message : "Failed to store the screenshot!" }) });
                   formattedScreenShots.push(screenshotFileName);
                 }
               }
             }
             errorCaughtByRep = {
-              description: item.error.refData.description,
-              response: item.error.refData.response,
+              description: item?.error?.refData?.description,
+              response: item?.error?.refData?.response,
               screenShot: formattedScreenShots,
-              dataType: item.error.refData.dataType,
-              fiscalYear: item.error.refData.fiscalYear,
-              textSnippet: item.error.refData.textSnippet,
-              pageNo: item.error.refData.pageNo,
-              optionalAnalystComment: item.error.refData.optionalAnalystComment,
-              isRestated: item.error.refData.isRestated,
-              restatedForYear: item.error.refData.restatedForYear,
-              restatedInYear: item.error.refData.restatedInYear,
-              restatedValue: item.error.refData.restatedValue,
+              dataType: item?.error?.refData?.dataType,
+              fiscalYear: item?.error?.refData?.fiscalYear,
+              textSnippet: item?.error?.refData?.textSnippet,
+              pageNo: item?.error?.refData?.pageNo,
+              optionalAnalystComment: item?.error?.refData?.optionalAnalystComment,
+              isRestated: item?.error?.refData?.isRestated,
+              restatedForYear: item?.error?.refData?.restatedForYear,
+              restatedInYear: item?.error?.refData?.restatedInYear,
+              restatedValue: item?.error?.refData?.restatedValue,
               source: {
-                publicationDate: item.error.refData.source.publicationDate,
-                url: item.error.refData.source.url,
-                sourceName: item.error.refData.source.sourceName
+                publicationDate: item?.error?.refData?.source?.publicationDate,
+                url: item?.error?.refData?.source?.url,
+                sourceName: item?.error?.refData?.source?.sourceName
               },
-              additionalDetails: item.error.refData.additionalDetails
+              additionalDetails: item?.error?.refData?.additionalDetails
             }
           }
           let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item.error['type']);
@@ -789,5 +790,119 @@ export const saveRepErrorDetails = async ({ user, bodymen: { body }, params }, r
     }
   } catch (error) {
     return res.status(400).json({ status: "400", message: "Failed to save the rep error details!" });
+  }
+}
+
+export const uploadQAVerificationData = async (req, res, next) => {
+  try {
+    let convertedWorkbook = [];
+    convertedWorkbook = XLSX.read(req.body.companiesFile.replace(/^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/, ""));
+    if (convertedWorkbook.SheetNames.length > 0) {
+      var worksheet = convertedWorkbook.Sheets[convertedWorkbook.SheetNames[0]];
+      try {
+        var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, { defval: " " });
+        if (sheetAsJson.length > 0) {
+          let errorObjectsToInsert = [], hasError = [], noError = [];
+          let allErrorTypes = await Errors.find({ status: true }, { _id: 1, errorType: 1 });
+          for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
+            const rowObject = sheetAsJson[index1];
+            if (rowObject.hasError != ' ' && rowObject.errorType != ' ' && rowObject.hasError != '' && rowObject.errorType != '') {
+              let errorTypeDetail = allErrorTypes.find((obj) => obj.errorType.toLowerCase() == rowObject.errorType.trim().toLowerCase());
+              errorTypeDetail = errorTypeDetail?.id;
+              if (errorTypeDetail && errorTypeDetail != null && errorTypeDetail != undefined) {
+                let splitDpCodeWithDot = rowObject['dpCode'].split('.');
+                if (splitDpCodeWithDot.length >= 2) {
+                  // if (splitDpCodeWithDot[0] != '' && splitDpCodeWithDot[1] != '') {
+                  //   let errorObject = {
+                  //     "datapointId": rowObject["dpCodeId"],
+                  //     "companyId": rowObject["companyId"],
+                  //     "categoryId": rowObject["pillarId"],
+                  //     "year": rowObject["year"],
+                  //     "taskId": rowObject["taskId"],
+                  //     "errorTypeId": errorTypeDetail,
+                  //     "raisedBy": "QA",
+                  //     "errorStatus": "Completed",
+                  //     "errorCaughtByRep": {},
+                  //     "isErrorAccepted": null,
+                  //     "isErrorRejected": false,
+                  //     "comments": {
+                  //       "author": "QA",
+                  //       "fiscalYear": rowObject["year"],
+                  //       "dateTime": new Date().getTime(),
+                  //       "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
+                  //     },
+                  //     "status": true,
+                  //     "createdBy": req.user
+                  //   };
+                  //   errorObjectsToInsert.push(errorObject);
+                  // } else {
+                  //   return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });  
+                  // }
+                  // } else if (splitDpCodeWithDot.length >= 2) {
+                  return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });
+                } else {
+                  let errorObject = {
+                    "datapointId": rowObject["dpCodeId"],
+                    "companyId": rowObject["companyId"],
+                    "categoryId": rowObject["pillarId"],
+                    "year": rowObject["year"],
+                    "taskId": rowObject["taskId"],
+                    "errorTypeId": errorTypeDetail,
+                    "raisedBy": "QA",
+                    "errorStatus": "Completed",
+                    "errorCaughtByRep": {},
+                    "isErrorAccepted": null,
+                    "isErrorRejected": false,
+                    "comments": {
+                      "author": "QA",
+                      "fiscalYear": rowObject["year"],
+                      "dateTime": new Date().getTime(),
+                      "content": rowObject["errorComments"] ? rowObject["errorComments"] : ''
+                    },
+                    "status": true,
+                    "createdBy": req.user
+                  };
+                  errorObjectsToInsert.push(errorObject);
+                }
+              } else {
+                return res.status(400).json({ status: "400", message: `Invalid errorType ${rowObject.errorType} at line number ${index1 + 1}, Please enter valid errorType` });
+              }
+              hasError.push(rowObject["_id"]);
+            } else {
+              noError.push(rowObject["_id"]);
+            }
+            //If any error, take the errorTypeId from errors master
+            //Frame the object to make an insert in errorDetails collection
+            //Push that object into an array errorDataToInsert
+            //If entered error type is not matching break the loop and throw error
+
+            //If any error take _id of standalone and push to hasError array
+            //If no error take _id of standalone and push to noError array
+          }
+          console.log('errorObjectsToInsert', errorObjectsToInsert);
+          console.log('hasError', hasError);
+          console.log('noError', noError);
+          await Promise.all([
+            ErrorDetails.insertMany(errorObjectsToInsert),
+            StandaloneDatapoints.updateMany({ _id: { $in: hasError } }, { $set: { "hasError": true, hasCorrection: false, correctionStatus: 'Completed' } }),
+            StandaloneDatapoints.updateMany({ _id: { $in: noError } }, { $set: { "hasError": false, hasCorrection: false, correctionStatus: 'Completed' } })
+          ]);
+          return res.status(200).json({ status: "200", message: "Verification Data Imported Successfully!" });
+        } else {
+          return res.status(400).json({ status: "400", message: "No values present in the uploaded file, please check!" })
+        }
+      } catch (error) {
+        return res.status(400).json({ message: error.message })
+      }
+    } else {
+      return res.status(400).json({ status: "400", message: "Invalid excel file please check!" })
+    }
+  } catch (error) {
+    if (error) {
+      return res.status(403).json({
+        message: error.message ? error.message : 'Failed to import!',
+        status: 403
+      });
+    }
   }
 }

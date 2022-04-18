@@ -69,13 +69,20 @@ export function getError(errorDataDetails, currentYear, taskId, datapointId) {
 
 export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
-    if (Array.isArray(screenShot)) {
+    let screenShotFileName;
+    if (screenShot && Array.isArray(screenShot)) {
         if (screenShot && screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
                 let obj = screenShot[screenShotIndex];
-                let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
-                    screenShotFileName = "No screenshot";
-                });
+                if (process.env.NODE_ENV == 'production') {
+                    screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
+                        screenShotFileName = "No screenshot";
+                    });
+                } else {
+                    screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                        screenShotFileName = "No screenshot";
+                    });
+                }
                 if (screenShotFileName == undefined) {
                     screenShotFileName = "";
                 }
@@ -83,9 +90,15 @@ export async function getS3ScreenShot(screenShot) {
             }
         }
     } else {
-        let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
-            screenShotFileName = "No screenshot";
-        });
+        if (process.env.NODE_ENV == 'production') {
+            screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        } else {
+            screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        }
         if (screenShotFileName == undefined) {
             screenShotFileName = "";
         }
@@ -114,7 +127,7 @@ export async function getSourceDetails(object, sourceDetails) {
             sourceDetails.publicationDate = sourceValues?.publicationDate;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
-            sourceDetails.value = sourceValues?.sourceTitle;
+            sourceDetails.title = sourceValues?.sourceTitle;
             sourceDetails.sourceFile = sourceValues?.sourceFile ? sourceValues?.sourceFile : '';
         }
     }
@@ -123,7 +136,7 @@ export async function getSourceDetails(object, sourceDetails) {
 
 export function getCurrentDatapointObject(s3DataScreenshot, dpTypeValues, currentYear, inputValues, object, sourceTypeDetails, sourceDetails, errorDetailsObject, errorTypeId, uomValues, placeValues, isSFDR) {
     return {
-        status: object?.correctionStatus,
+        status: Completed,
         dpCode: dpTypeValues?.code,
         dpCodeId: dpTypeValues?.id,
         dpName: dpTypeValues?.name,
@@ -244,7 +257,11 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }) : optionValues = [];
 
                     if (isEmpty) {
-                        currentValue = { value: '', label: '' };
+                        if (display.fieldName == 'collectionYear') {
+                            currentValue = { value: null, label: null };
+                        } else {
+                            currentValue = { value: '', label: '' };
+                        }
                     } else {
                         optionVal = display.inputValues;
                         // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
@@ -274,33 +291,34 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                     }
                     break;
             }
-            display.fieldName == 'collectionYear' ? 
-            currentDatapointsObject.collectionYear = {
-                fieldName: display.fieldName,
-                name: display.name,
-                value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
-            } : 
-            currentDatapointsObject.additionalDetails.push({
-                fieldName: display.fieldName,
-                name: display.name,
-                value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
-            });
-            !isEmpty && isRefDataExists && currentDatapointsObject.error.refData['additionalDetails'].push({
-                fieldName: display.fieldName,
-                name: display.name,
-                value: currentValue ? currentValue : '',
-                inputType: display.inputType,
-                isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                inputValues: optionValues.length > 0 ? optionValues : optionVal
-            });
+            display.fieldName == 'collectionYear' ?
+                currentDatapointsObject.collectionYear = {
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : null,
+                    inputType: display.inputType,
+                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                } :
+                currentDatapointsObject?.additionalDetails.push({
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : '',
+                    inputType: display.inputType,
+                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
 
-
+            if (!isEmpty && isRefDataExists && currentDatapointsObject?.error?.refData && currentDatapointsObject?.error?.refData['additionalDetails']) {
+                currentDatapointsObject?.error?.refData?.additionalDetails.push({
+                    fieldName: display.fieldName,
+                    name: display.name,
+                    value: currentValue ? currentValue : '',
+                    inputType: display.inputType,
+                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                    inputValues: optionValues.length > 0 ? optionValues : optionVal
+                });
+            }
         }
     });
 
@@ -392,7 +410,6 @@ function getShot(screenShot) {
     return image;
 
 }
-
 
 export function getPreviousNextDataPoints(allDatapoints, taskDetails, year, memberId, memberName) {
     return {
