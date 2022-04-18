@@ -342,6 +342,7 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
     }
 
     memberDetails.map((member) => {
+      console.log(member?.BOSP004);
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
       terminatedDate = format(terminatedDate, "MM-dd-yyyy");
       const startYear = new Date(member?.startDate).getFullYear();
@@ -350,7 +351,7 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
         const splityear = currentYear[yearIndex].split("-");
         // ! according to the requirement the member should be collecting data past their startingYear. i.e,
         // ! If starting year = 2018, collection year should be 2019 and henceforth.
-        if (startYear < splityear[1] && member.endDateTimeStamp > taskStartDate) {
+        if (startYear < splityear[1] && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > taskStartDate)) {
           yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
           if (yearIndex !== currentYear?.length - 1) {
             yearsForDataCollection = yearsForDataCollection + ", ";
