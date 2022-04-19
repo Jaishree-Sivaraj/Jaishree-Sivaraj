@@ -69,16 +69,17 @@ export function getError(errorDataDetails, currentYear, taskId, datapointId) {
 
 export async function getS3ScreenShot(screenShot) {
     let s3DataScreenshot = [];
+    let screenShotFileName;
     if (screenShot && Array.isArray(screenShot)) {
         if (screenShot && screenShot.length > 0) {
             for (let screenShotIndex = 0; screenShotIndex < screenShot.length; screenShotIndex++) {
                 let obj = screenShot[screenShotIndex];
                 if (process.env.NODE_ENV == 'production') {
-                    let screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, obj).catch((error) => {
                         screenShotFileName = "No screenshot";
                     });
                 } else {
-                    let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
+                    screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, obj).catch((error) => {
                         screenShotFileName = "No screenshot";
                     });
                 }
@@ -89,9 +90,15 @@ export async function getS3ScreenShot(screenShot) {
             }
         }
     } else {
-        let screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
-            screenShotFileName = "No screenshot";
-        });
+        if (process.env.NODE_ENV == 'production') {
+            screenShotFileName = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        } else {
+            screenShotFileName = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, screenShot).catch((error) => {
+                screenShotFileName = "No screenshot";
+            });
+        }
         if (screenShotFileName == undefined) {
             screenShotFileName = "";
         }
