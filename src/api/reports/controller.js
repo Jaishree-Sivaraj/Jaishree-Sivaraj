@@ -312,7 +312,7 @@ export const exportReport = async (req, res, next) => {
         )
         let dpCodeDetails = datapointDetails.filter(obj => obj.id == data.datapointId['id'])
   
-        let yearVal = data.year.split('-');
+        let yearVal = data?.year.split('-');
   
         let dataType = '';
         if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType != 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {
@@ -370,7 +370,7 @@ export const exportReport = async (req, res, next) => {
       if (allStandaloneDetails.length > 0) {
         if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
           let rows = [];
-          allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
+          allStandaloneDetails =  allStandaloneDetails = _.sortBy(allStandaloneDetails, [function(standaloneData) { return standaloneData.companyId.id && standaloneData.datapointId.code }])
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
