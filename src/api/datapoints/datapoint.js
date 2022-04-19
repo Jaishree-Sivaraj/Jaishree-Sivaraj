@@ -85,6 +85,7 @@ export const datapointDetails = async (req, res, next) => {
                 status: true
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id })
+            .populate('sourceTypeId')
         ]);
         trackTime(timeDetails, dpTypeErrorDetailsCompanySourceStartTime, Date.now(), 'DpType Details and Error Details and Source Details  Promise ');
 
@@ -120,6 +121,7 @@ export const datapointDetails = async (req, res, next) => {
             sourceTypeDetails.push({
                 sourceName: company.name,
                 value: company.id,
+                isPublicationDateRequired: company.sourceTypeId?.typeName == 'Webpages' ? false : true,
                 url: company.sourceUrl,
                 publicationDate: company.publicationDate,
                 sourceFile: company?.sourceFile ? company?.sourceFile : '',
