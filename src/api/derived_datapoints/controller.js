@@ -3125,9 +3125,10 @@ export const derivedCalculation = async ({
                       }
                     });
                   } else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes' && datapointDetail.code == 'ANTR001') {
+                    let performanceResponse;
                     if (foundResponse.response) {
-                      performanceResult = Number((1 - (foundResponse.response / 7)) * 100).toFixed(4);
-                      allDerivedDatapoints[foundResponseIndex].performanceResult = Math.abs(performanceResult);
+                      performanceResponse = Number((1 - (foundResponse.response / 7)) * 100).toFixed(4);
+                      performanceResult = Math.abs(performanceResponse);
                     } else {
                       performanceResult = foundResponse.response;
                     }
