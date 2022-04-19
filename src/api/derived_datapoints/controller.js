@@ -3171,14 +3171,11 @@ export const derivedCalculation = async ({
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     }
-                    console.log("Step1");
                   } else {
                     let zscoreValue;
-                    console.log("Step1", percentileDataPointsList[pdpIndex].code);
                     if (projectedValue.projectedStdDeviation == 'NA') {
                       await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     } else {
-                      console.log("percentileDataPointsList[pdpIndex].polarity\n\n\n\n", percentileDataPointsList[pdpIndex].code);
                       if (percentileDataPointsList[pdpIndex].polarity == 'Positive') {
                         zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
                       } else if (percentileDataPointsList[pdpIndex].polarity == 'Negative') {
