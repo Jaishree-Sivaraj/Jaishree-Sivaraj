@@ -312,7 +312,7 @@ export const exportReport = async (req, res, next) => {
         )
         let dpCodeDetails = datapointDetails.filter(obj => obj.id == data.datapointId['id'])
   
-        let yearVal = data.year.split('-');
+        let yearVal = data?.year.split('-');
   
         let dataType = '';
         if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType != 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {

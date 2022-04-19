@@ -150,7 +150,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       newSubSourceTypeName: body.newSubSourceTypeName
     }
     let newSubSourceTypeId, newSourceTypeId;
-    if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
+    if (sourceDetails.newSubSourceTypeName != null && sourceDetails.newSubSourceTypeName != "") {
       let subTypeName = body.newSubSourceTypeName;
       await SourceSubTypes.create({ subTypeName: subTypeName })
         .then((response) => {
@@ -159,6 +159,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
           }
         })
       // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+    } else if (body.sourceSubTypeId != null && body.sourceSubTypeId != ""){
+      newSubSourceTypeId = body.sourceSubTypeId
     }
     if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
       let sourceObject = {
@@ -172,9 +174,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
           newSourceTypeId = sourceResponse.id;
         }
       })
-    }
-    if (body.sourceSubTypeId) {
-      newSubSourceTypeId = body.sourceSubTypeId;
+    } else if (body.sourceTypeId != null && body.sourceTypeId != "") {
+      newSourceTypeId = body.sourceTypeId;
     }
     let companySourceDetails = {
       companyId: body.companyId,
@@ -184,7 +185,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       sourceUrl: body.url,
       sourceSubTypeId: newSubSourceTypeId,
       sourceFile: fileUrl,
-      publicationDate: body.publicationDate,
+      publicationDate: body.publicationDate == 'NA' ? null : body.publicationDate,
       fiscalYear: body.fiscalYear,
       name: body.name,
       sourceTitle: body.sourceTitle,
