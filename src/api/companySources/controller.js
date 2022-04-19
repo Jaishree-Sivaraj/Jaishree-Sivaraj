@@ -109,15 +109,20 @@ export const destroy = ({ params }, res, next) =>
     .catch(next)
 
 export const getDocumentsByCompanyId = async ({ params }, res, next) =>
-  await CompanySources.find({ companyId: params.companyId }).then(async (result) => {
+  await CompanySources.find({ companyId: params.companyId }).populate('sourceTypeId').then(async (result) => {
+    let sourceList = [];
     for (let index = 0; index < result.length; index++) {
-      var s3Data = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, result[index].sourceFile).catch((e) => {
-        result[index].sourceFile = "No image";
-      }) //bucket name and file name 
-      console.log('s3', s3Data);
-      result[index].sourceFile = s3Data;
+      sourceList.push({
+        "sourceName": result[index]?.name ? result[index]?.name : "",
+        "value": result[index]?._id ? result[index]?._id : "",
+        "url": result[index]?.sourceUrl ? result[index]?.sourceUrl : "",
+        "isPublicatioDateRequired": result[index]?.sourceTypeId?.typeName == "Webpages" ? false : true,
+        "publicationDate": result[index]?.publicationDate ? result[index]?.publicationDate : null,
+        "sourceFile": result[index]?.sourceFile ? result[index]?.sourceFile : "",
+        "title": result[index]?.sourceTitle ? result[index]?.sourceTitle : ""
+      })
     }
-    res.send(result, 200);
+    res.status(200).json({ status: "200", message: "Company Sources retrieved successfully!", sourceList });
   }).catch(next)
 
 export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
