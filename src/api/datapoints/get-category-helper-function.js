@@ -16,7 +16,8 @@ import {
 } from "../../constants/task-status";
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import { format } from "date-fns";
-import { all } from "bluebird";
+import { NUMBER } from '../../constants/dp-datatype';
+
 
 export async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(
   queryToCountDocuments,
@@ -497,7 +498,8 @@ export async function getFilterdDatapointForErrorForBMAndKM(
   page,
   limit,
   memberId,
-  count
+  count,
+  dataType
 ) {
   try {
     let orderedDpCodes;
@@ -513,6 +515,11 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       datapointCodeQuery.length > 0
         ? { ...queryForHasError, datapointId: datapointCodeQuery }
         : queryForHasError;
+
+    queryForHasError = dataType !== '' ? {
+      ...queryForHasError, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType)
+    }
+      : queryForHasError
 
     const [findQuery, filterAllMemberWhoseDataIsCollected] = [{
       ...queryForHasError,
@@ -707,7 +714,8 @@ export async function getFilteredErrorDatapointForStandalone(
   taskDetails,
   datapointList,
   page,
-  limit
+  limit,
+  dataType
 ) {
   try {
     queryForHasError =
@@ -722,6 +730,11 @@ export async function getFilteredErrorDatapointForStandalone(
       datapointCodeQuery.length > 0
         ? { ...queryForHasError, datapointId: datapointCodeQuery }
         : queryForHasError;
+
+    queryForHasError = dataType !== '' ? {
+      ...queryForHasError, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType)
+    }
+      : queryForHasError
 
     const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
       .skip((page - 1) * limit)
@@ -780,5 +793,24 @@ export async function getFilteredErrorDatapointForStandalone(
     };
   } catch (error) {
     console.log(error?.message);
+  }
+}
+
+export function getConditionForQualitativeAndQuantitativeDatapoints(dataType) {
+  let dataTypeCondition;
+  if (dataType !== '') {
+    switch (dataType) {
+      case 'Qualitative':
+        dataTypeCondition = { dataType: { $ne: NUMBER } };
+        break;
+      case 'Quantitative':
+        dataTypeCondition = { dataType: NUMBER };
+        break;
+      default:
+        console.log('Incorrect data type');
+        break;
+    }
+    return dataTypeCondition;
+
   }
 }
