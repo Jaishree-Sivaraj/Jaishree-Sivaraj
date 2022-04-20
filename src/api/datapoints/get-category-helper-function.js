@@ -1,66 +1,74 @@
-"use strict";
+'use strict';
 
-import _ from "lodash";
-import { Datapoints } from ".";
-import { StandaloneDatapoints } from "../standalone_datapoints";
-import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
-import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
-import { BoardMembers } from "../boardMembers";
-import { Kmp } from "../kmp";
+import _ from 'lodash';
+import { Datapoints } from '.';
+import { StandaloneDatapoints } from '../standalone_datapoints';
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
+import { BoardMembers } from '../boardMembers';
+import { Kmp } from '../kmp';
 import {
   YetToStart,
   Correction,
   CorrectionCompleted,
   Completed,
   Error,
-} from "../../constants/task-status";
-import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
-import { format } from "date-fns";
+} from '../../constants/task-status';
+import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
+import { format } from 'date-fns';
 import { NUMBER } from '../../constants/dp-datatype';
 
+const QUALITATIVE = 'Qualitative';
+const QUANTITATIVE = 'Quantitative';
 
 export async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(
   queryToCountDocuments,
   queryForDatapointCollection,
-  queryForDpTypeCollection
+  queryForDpTypeCollection,
+  queryForTotalPriorityDpCode
 ) {
   // Here queryForDatapointCollection is dependent on the searchQuery, Filter and so.
   let [
     count,
     dpTypeValues,
     priorityDpCodes,
+    totalPriorityDpWithoutFilter,
     currentAllStandaloneDetails,
     currentAllBoardMemberMatrixDetails,
     currentAllKmpMatrixDetails,
   ] = await Promise.all([
     Datapoints.countDocuments(queryToCountDocuments),
-    Datapoints.find(queryForDatapointCollection).distinct("dpType"),
+    Datapoints.find(queryForDatapointCollection).distinct('dpType'),
     // Priority Dp code is just for standalone Dp.
     Datapoints.find({ ...queryForDatapointCollection, isPriority: true })
       .populate("keyIssueId")
       .populate("categoryId"),
+    Datapoints.find({ ...queryForTotalPriorityDpCode, isPriority: true })
+      .populate("keyIssueId")
+      .populate("categoryId"),
     StandaloneDatapoints.find(queryForDpTypeCollection)
-      .populate("createdBy")
-      .populate("datapointId")
-      .populate("companyId")
-      .populate("taskId"),
+      .populate('createdBy')
+      .populate('datapointId')
+      .populate('companyId')
+      .populate('taskId'),
     // Is memberName not needed
     BoardMembersMatrixDataPoints.find(queryForDpTypeCollection)
-      .populate("createdBy")
-      .populate("datapointId")
-      .populate("companyId")
-      .populate("taskId"),
+      .populate('createdBy')
+      .populate('datapointId')
+      .populate('companyId')
+      .populate('taskId'),
     KmpMatrixDataPoints.find(queryForDpTypeCollection)
-      .populate("createdBy")
-      .populate("datapointId")
-      .populate("companyId")
-      .populate("taskId"),
+      .populate('createdBy')
+      .populate('datapointId')
+      .populate('companyId')
+      .populate('taskId'),
   ]);
 
   return {
     count,
     dpTypeValues,
     priorityDpCodes,
+    totalPriorityDpWithoutFilter,
     currentAllStandaloneDetails,
     currentAllBoardMemberMatrixDetails,
     currentAllKmpMatrixDetails,
@@ -90,8 +98,8 @@ export async function getFilteredDatapointForStandalone(
       datapointList
     );
     return {
-      status: "200",
-      message: "Data collection dp codes retrieved successfully!",
+      status: '200',
+      message: 'Data collection dp codes retrieved successfully!',
       response: {
         keyIssuesList,
         datapointList,
@@ -105,9 +113,9 @@ export async function getFilteredDatapointForStandalone(
 export async function getKeyIssues(queryKeyIssueSearch, keyIssuesList) {
   const keyIssuesCollection = await Datapoints.find(queryKeyIssueSearch)
     .sort({ code: 1 })
-    .populate("keyIssueId");
+    .populate('keyIssueId');
 
-  const keyIssueListObject = _.uniqBy(keyIssuesCollection, "keyIssueId");
+  const keyIssueListObject = _.uniqBy(keyIssuesCollection, 'keyIssueId');
   keyIssueListObject.map((keyIssue) => {
     keyIssuesList.push({
       label: keyIssue.keyIssueId.keyIssueName,
@@ -166,7 +174,7 @@ export function getResponse(
     ...result.response,
     ...response,
     count: result?.response?.datapointList?.dpCodesData?.length < 1 ? 0 : count,
-    repFinalSubmit: repFinalSubmit ? repFinalSubmit : "",
+    repFinalSubmit: repFinalSubmit ? repFinalSubmit : '',
     isPriority,
   };
   return result;
@@ -174,7 +182,7 @@ export function getResponse(
 
 export function getTaskStartDate(currentyear, month, date) {
   // We will get the first year
-  let [taskStartingYear] = currentyear.split("-");
+  let [taskStartingYear] = currentyear.split('-');
   const taskStartingDate =
     new Date(taskStartingYear, month, 0).getDate() == date
       ? 1
@@ -203,8 +211,8 @@ export function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails) {
     keyIssue: dpTypeDatapoints?.keyIssueId.keyIssueName,
     pillarId: dpTypeDatapoints?.categoryId.id,
     pillar: dpTypeDatapoints?.categoryId.categoryName,
-    memberId: "",
-    memberName: "",
+    memberId: '',
+    memberName: '',
     fiscalYear: taskDetails?.year,
     status: YetToStart,
   };
@@ -247,30 +255,49 @@ export function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
   };
 }
 
-export async function getQueryWithKeyIssue(
+export async function getQueryWithKeyIssueOrDataType(
   queryForHasError,
   keyIssueId,
-  datapointCodeQuery
+  dataType,
+  categoryId
 ) {
-  const datapointwithKeyIssue = await Datapoints.distinct("_id", {
-    keyIssueId,
-  });
-  if (datapointCodeQuery.length > 0) {
-    datapointwithKeyIssue.push(datapointwithKeyIssue);
-  }
 
-  queryForHasError = {
-    ...queryForHasError,
-    datapointId: { $in: datapointwithKeyIssue },
-  };
-  return queryForHasError;
+  try {
+    let datapointId = [];
+    if (keyIssueId !== '') {
+      const datapointwithKeyIssue = await Datapoints.distinct('_id', {
+        keyIssueId,
+        status: true,
+        categoryId,
+      });
+      datapointId.push(...datapointwithKeyIssue)
+    }
+    if (dataType !== '') {
+      console.log('This is an announcement', getConditionForQualitativeAndQuantitativeDatapoints(dataType));
+      const datapointBasedOnDataTypes = await Datapoints.distinct('_id', {
+        categoryId,
+        ...getConditionForQualitativeAndQuantitativeDatapoints(dataType),
+        status: true
+      });
+      console.log(datapointBasedOnDataTypes)
+      datapointId.push(...datapointBasedOnDataTypes)
+    }
+
+    queryForHasError = {
+      ...queryForHasError,
+      datapointId: { $in: datapointId },
+    };
+    return queryForHasError;
+  } catch (error) {
+    console.log(error?.message);
+  }
 }
 
 export function getSearchQuery(searchValue, searchQuery) {
   searchQuery = {
     $or: [
-      { code: { $regex: new RegExp(searchValue, "gi") } },
-      { name: { $regex: new RegExp(searchValue, "gi") } },
+      { code: { $regex: new RegExp(searchValue, 'gi') } },
+      { name: { $regex: new RegExp(searchValue, 'gi') } },
     ],
   };
 
@@ -294,18 +321,18 @@ export async function getConditionalTaskStatusCount(
   };
   switch (dpType) {
     case STANDALONE:
-      allDpDetails = await StandaloneDatapoints.distinct("datapointId", query);
+      allDpDetails = await StandaloneDatapoints.distinct('datapointId', query);
       break;
     case BOARD_MATRIX:
       allDpDetails = await BoardMembersMatrixDataPoints.distinct(
-        "datapointId",
-        { ...query, memberName: { $regex: memberName, $options: "i" } }
+        'datapointId',
+        { ...query, memberName: { $regex: memberName, $options: 'i' } }
       );
       break;
     case KMP_MATRIX:
-      allDpDetails = await KmpMatrixDataPoints.distinct("datapointId", {
+      allDpDetails = await KmpMatrixDataPoints.distinct('datapointId', {
         ...query,
-        memberName: { $regex: memberName, $options: "i" },
+        memberName: { $regex: memberName, $options: 'i' },
       });
       break;
     default:
@@ -345,17 +372,17 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
     memberDetails.map((member) => {
       console.log(member?.BOSP004);
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
-      terminatedDate = format(terminatedDate, "dd-MM-yyyy");
+      terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const startYear = new Date(member?.startDate).getFullYear();
-      let yearsForDataCollection = "";
+      let yearsForDataCollection = '';
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
-        const splityear = currentYear[yearIndex].split("-");
+        const splityear = currentYear[yearIndex].split('-');
         // ! according to the requirement the member should be collecting data past their startingYear. i.e,
         // ! If starting year = 2018, collection year should be 2019 and henceforth.
         if (startYear < splityear[1] && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > taskStartDate)) {
           yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
           if (yearIndex !== currentYear?.length - 1) {
-            yearsForDataCollection = yearsForDataCollection + ", ";
+            yearsForDataCollection = yearsForDataCollection + ', ';
           }
         }
       }
@@ -378,7 +405,7 @@ export async function getMembers(dpQuery, dpType, taskStartDate, currentYear) {
         label,
         label1,
         value: member.id,
-        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : "",
+        year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : '',
       };
 
       memberList.push(memberValue);
@@ -439,7 +466,7 @@ export async function getFilteredDatapointsForBMAndKM(
               memberId
             );
 
-          if (errorMessage !== "") {
+          if (errorMessage !== '') {
             return errorMessage;
           }
 
@@ -463,7 +490,7 @@ export async function getFilteredDatapointsForBMAndKM(
               ) {
                 datapointObject.status = object.correctionStatus
                   ? object.correctionStatus
-                  : "Completed";
+                  : 'Completed';
               }
             }
           }
@@ -473,7 +500,7 @@ export async function getFilteredDatapointsForBMAndKM(
     }
     return {
       status: 200,
-      message: "Data collection dp codes retrieved successfully!",
+      message: 'Data collection dp codes retrieved successfully!',
       response: {
         datapointList,
       },
@@ -503,12 +530,17 @@ export async function getFilterdDatapointForErrorForBMAndKM(
 ) {
   try {
     let orderedDpCodes;
+    queryForHasError = {
+      ...queryForHasError, year: {
+        $in: currentYear,
+      }
+    }
     queryForHasError =
-      memberName === ""
+      memberName === ''
         ? queryForHasError
         : {
           ...queryForHasError,
-          memberName: { $regex: memberName, $options: "i" },
+          memberName: { $regex: memberName, $options: 'i' },
         };
 
     queryForHasError =
@@ -521,44 +553,40 @@ export async function getFilterdDatapointForErrorForBMAndKM(
     }
       : queryForHasError
 
-    const [findQuery, filterAllMemberWhoseDataIsCollected] = [{
-      ...queryForHasError,
-      year: {
-        $in: currentYear,
-      },
-      memberName
-    }, {
-      ...queryForHasError,
-      year: {
-        $in: currentYear,
-      }
-    }];
+    if (dataType !== '') {
+      const datapointIdBaseOnDataType = await Datapoints.find({
+        categoryId: taskDetails?.categoryId,
+        ...getConditionForQualitativeAndQuantitativeDatapoints(dataType),
+        status: true
+      });
+      queryForHasError = { ...queryForHasError, datapointId: { $in: datapointIdBaseOnDataType } };
+    }
 
     const populateQuery = {
-      path: "datapointId",
+      path: 'datapointId',
       populate: {
-        path: "keyIssueId",
+        path: 'keyIssueId',
       },
     };
 
     let [errorDatapoints, allCollectedMembers] =
       dpType == BOARD_MATRIX
-        ? await Promise.all([BoardMembersMatrixDataPoints.find(findQuery)
+        ? await Promise.all([BoardMembersMatrixDataPoints.find(queryForHasError)
           .skip((page - 1) * limit)
           .limit(+limit)
           .populate([populateQuery]),
-        BoardMembersMatrixDataPoints.distinct('memberName', filterAllMemberWhoseDataIsCollected)
+        BoardMembersMatrixDataPoints.distinct('memberName', queryForHasError)
         ])
-        : await Promise.all([KmpMatrixDataPoints.find(findQuery)
+        : await Promise.all([KmpMatrixDataPoints.find(queryForHasError)
           .skip((page - 1) * limit)
           .limit(+limit)
           .populate([populateQuery])],
-          KmpMatrixDataPoints.distinct('memberName', filterAllMemberWhoseDataIsCollected)
+          KmpMatrixDataPoints.distinct('memberName', queryForHasError)
         );
 
     orderedDpCodes =
-      isCorrectionCompleted && _.uniq(errorDatapoints, "datapointId");
-    orderedDpCodes = _.orderBy(errorDatapoints, ["datapointId.code"], ["asc"]);
+      isCorrectionCompleted && _.uniq(errorDatapoints, 'datapointId');
+    orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
 
     // TODO Step 1: Getting the member details.
     let memberList = await getMembers(
@@ -588,7 +616,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
               memberName
             );
 
-          if (errorMessage !== "") {
+          if (errorMessage !== '') {
             return errorMessage;
           } else {
             let datapointObject = getDpObjectForCorrrection(
@@ -609,7 +637,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
               if (yearfind > -1) {
                 datapointList.dpCodesData[yearfind].fiscalYear =
                   datapointList.dpCodesData[yearfind].fiscalYear.concat(
-                    ", ",
+                    ', ',
                     orderedDpCodes[errorDpIndex].year
                   );
               } else {
@@ -625,7 +653,7 @@ export async function getFilterdDatapointForErrorForBMAndKM(
     }
     return {
       status: 200,
-      message: "Data collection dp codes retrieved successfully!",
+      message: 'Data collection dp codes retrieved successfully!',
       response: {
         datapointList,
         count: datapointList.dpCodesData.length < 1 ? 0 : count,
@@ -651,7 +679,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
     switch (dpType) {
       case BOARD_MATRIX:
         searchQuery =
-          memberId == ""
+          memberId == ''
             ? { BOSP004: memberName, status: true }
             : {
               $or: [{ _id: memberId }, { BOSP004: memberName, status: true }],
@@ -660,26 +688,26 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
         break;
       case KMP_MATRIX:
         searchQuery =
-          memberId == ""
+          memberId == ''
             ? { MASP003: memberName, status: true }
             : {
               $or: [{ _id: memberId }, { MASP003: memberName, status: true }],
             };
         memberData = await Kmp.findOne(searchQuery);
       default:
-        console.log("Wrong dp Type");
+        console.log('Wrong dp Type');
         break;
     }
 
     if (memberData) {
       const gender =
         dpType == BOARD_MATRIX
-          ? memberData.BODR005 == "M"
-            ? "he"
-            : "she"
-          : memberData.MASR008 == "M"
-            ? "he"
-            : "she";
+          ? memberData.BODR005 == 'M'
+            ? 'he'
+            : 'she'
+          : memberData.MASR008 == 'M'
+            ? 'he'
+            : 'she';
       if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0) {
         return {
           status: 200,
@@ -688,7 +716,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
             datapointList,
           },
         };
-      } else if (memberListForDisplay.year == "") {
+      } else if (memberListForDisplay.year == '') {
         return {
           status: 200,
           message: `Member's not part of the task`,
@@ -697,7 +725,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
           },
         };
       } else {
-        return "";
+        return '';
       }
     }
   } catch (error) {
@@ -719,37 +747,34 @@ export async function getFilteredErrorDatapointForStandalone(
 ) {
   try {
     queryForHasError =
-      keyIssueId === ""
+      keyIssueId == '' && dataType == ''
         ? queryForHasError
-        : await getQueryWithKeyIssue(
+        : await getQueryWithKeyIssueOrDataType(
           queryForHasError,
           keyIssueId,
-          datapointCodeQuery
+          dataType,
+          taskDetails?.categoryId
         );
+
     queryForHasError =
       datapointCodeQuery.length > 0
         ? { ...queryForHasError, datapointId: datapointCodeQuery }
         : queryForHasError;
 
-    queryForHasError = dataType !== '' ? {
-      ...queryForHasError, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType)
-    }
-      : queryForHasError
-
     const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
       .skip((page - 1) * limit)
       .limit(+limit)
       .populate({
-        path: "datapointId",
+        path: 'datapointId',
         populate: {
-          path: "keyIssueId",
+          path: 'keyIssueId',
         },
       });
 
     const orderedDpCodes = _.orderBy(
       errorDatapoints,
-      ["datapointId.code"],
-      ["asc"]
+      ['datapointId.code'],
+      ['asc']
     );
     keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
     for (
@@ -763,8 +788,8 @@ export async function getFilteredErrorDatapointForStandalone(
       );
       datapointsObject = {
         ...datapointsObject,
-        memberId: "",
-        memberName: "",
+        memberId: '',
+        memberName: '',
       };
       if (datapointList.dpCodesData.length > 0) {
         let yearfind = datapointList.dpCodesData.findIndex(
@@ -773,7 +798,7 @@ export async function getFilteredErrorDatapointForStandalone(
         if (yearfind > -1) {
           datapointList.dpCodesData[yearfind].fiscalYear =
             datapointList.dpCodesData[yearfind].fiscalYear.concat(
-              ", ",
+              ', ',
               orderedDpCodes[errorDpIndex].year
             );
         } else {
@@ -785,7 +810,7 @@ export async function getFilteredErrorDatapointForStandalone(
     }
     return {
       status: 200,
-      message: "Data correction dp codes retrieved successfully!",
+      message: 'Data correction dp codes retrieved successfully!',
       response: {
         keyIssuesList,
         datapointList,
@@ -800,10 +825,10 @@ export function getConditionForQualitativeAndQuantitativeDatapoints(dataType) {
   let dataTypeCondition;
   if (dataType !== '') {
     switch (dataType) {
-      case 'Qualitative':
+      case QUALITATIVE:
         dataTypeCondition = { dataType: { $ne: NUMBER } };
         break;
-      case 'Quantitative':
+      case QUANTITATIVE:
         dataTypeCondition = { dataType: NUMBER };
         break;
       default:
