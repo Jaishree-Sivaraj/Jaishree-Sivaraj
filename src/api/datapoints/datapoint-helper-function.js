@@ -153,8 +153,10 @@ export function getCompanySourceDetails(companySourceDetails) {
                 sourceName: company.name,
                 value: company.id,
                 url: company.sourceUrl,
+                isPublicationDateRequired: company.sourceTypeId?.typeName == 'Webpages' ? false : true,
                 publicationDate: company.publicationDate,
-                sourceFile: company?.sourceFile ? company?.sourceFile : ''
+                sourceFile: company?.sourceFile ? company?.sourceFile : '',
+                title: company?.sourceTitle ? company?.sourceTitle : '',
             })
         });
 
