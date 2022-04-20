@@ -16,8 +16,9 @@ import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
-
+import { getConditionForQualitativeAndQuantitativeDatapoints } from './get-category-helper-function';
 import { getS3ScreenShot, getSourceDetails, getChildDp, getHistoryDataObject, getPreviousNextDataPoints, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
+
 let requiredFields = [
     "categoryCode",
     "categoryName",
@@ -63,7 +64,7 @@ let requiredFields = [
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
-        const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId } = req.body;
+        const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId, dataType } = req.body;
         const [taskDetails, functionId, measureTypes, allPlaceValues] = await Promise.all([
             TaskAssignment.findOne({
                 _id: taskId
@@ -208,6 +209,8 @@ export const repDatapointDetails = async (req, res, next) => {
 
         let index, prevDatapoint = {}, nextDatapoint = {};
         datapointQuery = keyIssueId == '' ? datapointQuery : { ...datapointQuery, keyIssueId };
+        datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
+            : datapointQuery;
         const allDatapoints = await Datapoints.find(datapointQuery).populate('keyIssueId')
             .populate('categoryId').sort({ code: 1 });
 
