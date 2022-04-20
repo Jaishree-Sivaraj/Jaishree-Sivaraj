@@ -116,7 +116,9 @@ export async function getSourceDetails(object, sourceDetails) {
         let sourceValues = {}, findQuery = {};
         findQuery = companySourceId ? { _id: companySourceId } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
         let sourceValuesStartTime = Date.now()
-        sourceValues = findQuery ? await CompanySources.findOne(findQuery).catch((error) => { return sourceDetails }) : {};
+        sourceValues = findQuery ? await CompanySources.findOne(findQuery)
+        .populate('sourceTypeId')
+        .catch((error) => { return sourceDetails }) : {};
         // let sourceValuesEndTime=Date.now()
         // timeDetails.push({
         //     blockName:' SourceValues Details',
@@ -125,6 +127,7 @@ export async function getSourceDetails(object, sourceDetails) {
         if (sourceValues != null) {
             sourceDetails.url = sourceValues?.sourceUrl;
             sourceDetails.publicationDate = sourceValues?.publicationDate;
+            sourceDetails.isPublicationDateRequired = sourceValues?.sourceTypeId?.typeName == 'Webpages' ? false : true;
             sourceDetails.sourceName = sourceValues?.name;
             sourceDetails.value = sourceValues?._id;
             sourceDetails.title = sourceValues?.sourceTitle;

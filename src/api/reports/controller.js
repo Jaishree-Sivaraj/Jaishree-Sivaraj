@@ -312,7 +312,7 @@ export const exportReport = async (req, res, next) => {
         )
         let dpCodeDetails = datapointDetails.filter(obj => obj.id == data.datapointId['id'])
   
-        let yearVal = data.year.split('-');
+        let yearVal = data?.year.split('-');
   
         let dataType = '';
         if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType != 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {
@@ -370,7 +370,7 @@ export const exportReport = async (req, res, next) => {
       if (allStandaloneDetails.length > 0) {
         if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
           let rows = [];
-          allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
+          allStandaloneDetails =  allStandaloneDetails = _.sortBy(allStandaloneDetails, [function(standaloneData) { return standaloneData.companyId.companyName && standaloneData.datapointId.code }])
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
@@ -822,37 +822,37 @@ export const exportQATasks = async (req, res, next) => {
       { '$unwind': { path: '$uomDetails', preserveNullAndEmptyArrays: true } },
       {
         '$project': {
-          _id: '$_id',
-          taskId: '$taskDetails._id',
           taskNumber: '$taskDetails.taskNumber',
-          companyId: '$companyId',
           company: '$companyDetails.companyName',
-          pillarId: '$categoryDetails._id',
           pillar: '$categoryDetails.categoryName',
-          dpCodeId: '$datapointDetails._id',
           dpCode: '$datapointDetails.code',
           description: '$datapointDetails.description',
+          collectionYear: '$additionalDetails.collectionYear',
           year: '$year',
           response: '$response',
           placeValue: '$placeValue',
           uom: '$uomDetails.uomName',
-          pageNumber: '$pageNumber',
-          textSnippet: '$textSnippet',
-          sourceName: "$sourceName",
-          additionalSourceUsed: '$additionalDetails.additionalSourceUsed?',
-          commentG: "$additionalDetails.commentG",
+          didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
+          typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
           companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
           companyDataElementSubLabel: "$additionalDetails.companyDataElementSubLabel",
-          didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
-          keywordUsed: "$additionalDetails.keywordUsed",
-          sectionOfDocument: "$additionalDetails.sectionOfDocument",
           totalOrSubLineItemForNumbers: "$additionalDetails.totalOrSubLineItemForNumbers",
-          typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
           formatOfDataProvidedByCompanyChartTableText: "$additionalDetails.formatOfDataProvidedByCompanyChartTableText",
-          collectionYear: "$additionalDetails.collectionYear",
+          textSnippet: '$textSnippet',
+          sectionOfDocument: "$additionalDetails.sectionOfDocument",
+          pageNumber: '$pageNumber',
+          sourceName: "$sourceName",
+          keywordUsed: "$additionalDetails.keywordUsed",
+          commentG: "$additionalDetails.commentG",
           hasError: '',
           errorType: '',
-          errorComments: ''
+          errorComments: '',
+          additionalSourceUsed: '$additionalDetails.additionalSourceUsed?',
+          _id: '$_id',
+          taskId: '$taskDetails._id',
+          companyId: '$companyId',
+          pillarId: '$categoryDetails._id',
+          dpCodeId: '$datapointDetails._id'
         }
       }
     ])
@@ -880,33 +880,33 @@ export const exportQATasks = async (req, res, next) => {
         { '$unwind': '$categoryDetails' },
         {
           '$project': {
-            _id: '$_id',
-            taskId: '$taskId',
             taskNumber: '$taskDetails.taskNumber',
-            companyId: '$companyId',
             company: '$companyDetails.companyName',
-            pillarId: '$categoryDetails._id',
             pillar: '$categoryDetails.categoryName',
-            dpCodeId: '$parentDpId',
             dpCode: '$childFields.dpCode',
             description: '$childFields.dpName',
             year: '$year',
             response: '$childFields.response',
             placeValue: '$childFields.placeValue',
             uom: '$childFields.uom',
-            pageNumber: '$childFields.pageNumber',
-            textSnippet: '$childFields.textSnippet',
-            commentG: "$childFields.commentG",
+            didTheCompanyReport: "$childFields.didTheCompanyReport",
+            typeOfValueActualDerivedProxy: "$childFields.typeOfValueActualDerivedProxy",
             companyDataElementLabel: "$childFields.companyDataElementLabel",
             companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
-            didTheCompanyReport: "$childFields.didTheCompanyReport",
-            keywordUsed: "$childFields.keywordUsed",
-            sectionOfDocument: "$childFields.sectionOfDocument",
-            typeOfValueActualDerivedProxy: "$childFields.typeOfValueActualDerivedProxy",
             formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
+            textSnippet: '$childFields.textSnippet',
+            sectionOfDocument: "$childFields.sectionOfDocument",
+            pageNumber: '$childFields.pageNumber',
+            keywordUsed: "$childFields.keywordUsed",
+            commentG: "$childFields.commentG",
             hasError: '',
             errorType: '',
-            errorComments: ''
+            errorComments: '',
+            _id: '$_id',
+            taskId: '$taskId',
+            companyId: '$companyId',
+            pillarId: '$categoryDetails._id',
+            dpCodeId: '$parentDpId',
           }
         }
       ])
