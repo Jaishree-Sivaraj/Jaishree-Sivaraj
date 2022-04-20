@@ -116,7 +116,7 @@ export const getDocumentsByCompanyId = async ({ params }, res, next) =>
         "sourceName": result[index]?.name ? result[index]?.name : "",
         "value": result[index]?._id ? result[index]?._id : "",
         "url": result[index]?.sourceUrl ? result[index]?.sourceUrl : "",
-        "isPublicatioDateRequired": result[index]?.sourceTypeId?.typeName == "Webpages" ? false : true,
+        "isPublicationDateRequired": result[index]?.sourceTypeId?.typeName == "Webpages" ? false : true,
         "publicationDate": result[index]?.publicationDate ? result[index]?.publicationDate : null,
         "sourceFile": result[index]?.sourceFile ? result[index]?.sourceFile : "",
         "title": result[index]?.sourceTitle ? result[index]?.sourceTitle : ""
