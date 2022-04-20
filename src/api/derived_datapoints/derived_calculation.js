@@ -1154,8 +1154,8 @@ export const sumCalculation = async function (taskId, companyId, mergedDetails, 
             if (prev && next) {
               let prevResponse = prev.trim().replace(/[^\d.]/g, '');
               let nextResponse = next.trim().replace(/[^\d.]/g, '');
-              let sum = Number(prevResponse).toFixed(4) + Number(nextResponse).toFixed(4);
-              return sum;
+              let sum = Number(prevResponse) + Number(nextResponse);
+              return sum.toFixed(4);
             } else {
               sumValue = 0;
             }
