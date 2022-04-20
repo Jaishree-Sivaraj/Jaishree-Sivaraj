@@ -370,7 +370,13 @@ export const exportReport = async (req, res, next) => {
       if (allStandaloneDetails.length > 0) {
         if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
           let rows = [];
-          allStandaloneDetails =  allStandaloneDetails = _.sortBy(allStandaloneDetails, [function(standaloneData) { return standaloneData.companyId.companyName && standaloneData.datapointId.code }])
+          var collator = new Intl.Collator(undefined, {
+            numeric: true,
+            sensitivity: 'base'
+          });
+          allStandaloneDetails = allStandaloneDetails.sort(function(a, b) {
+            return collator.compare(a.datapointId.code, b.datapointId.code)
+          });
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
