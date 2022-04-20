@@ -1,27 +1,12 @@
 import _ from "lodash";
-import { Datapoints } from ".";
 import { StandaloneDatapoints } from "../standalone_datapoints";
 import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
 import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
-import { ClientTaxonomy } from "../clientTaxonomy";
-import { Functions } from "../functions";
-import { TaskAssignment } from "../taskAssignment";
-import { ErrorDetails } from "../errorDetails";
-import { CompanySources } from "../companySources";
-import { MeasureUoms } from "../measure_uoms";
-import { Measures } from "../measures";
-import { PlaceValues } from "../place_values";
 import { BoardMembers } from "../boardMembers";
 import { Kmp } from "../kmp";
-import { getConditionForQualitativeAndQuantitativeDatapoints } from './get-category-helper-function';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import {
-  CorrectionPending,
-  ReassignmentPending,
   YetToStart,
-  Error,
-  Correction,
-  CorrectionCompleted,
 } from "../../constants/task-status";
 import {
   getError,
@@ -31,12 +16,21 @@ import {
   getCurrentEmptyObject,
   getS3RefScreenShot,
   getDisplayFields,
-  getHistoryDataObject,
-  getPreviousNextDataPoints,
   getChildDp,
-  getHeaders,
-  getSortedYear,
 } from "./dp-details-functions";
+import {
+  getVariablesValues,
+  getTaskDetailsFunctionIdPlaceValuesAndMeasureType,
+  getDpValuesErrorDetailsCompanySourceDetailsChildHeaders,
+  getCompanySourceDetails,
+  getSortedCurrentYearAndDisplayFields,
+  getUomAndPlaceValues,
+  getInputValues,
+  getPrevAndNextDatapointsDetails,
+  getTotalYearsForDataCollection
+}
+  from './datapoint-helper-function';
+import { SELECT } from "../../constants/measure-type";
 
 export const datapointDetails = async (req, res, next) => {
   try {
@@ -50,312 +44,32 @@ export const datapointDetails = async (req, res, next) => {
       memberId,
       isPriority,
       keyIssueId,
+      dataType
     } = req.body;
-    const taskFunctionMeasurePlaceValuesStartTime = Date.now();
-    const [taskDetails, functionId, measureTypes, allPlaceValues] =
-      await Promise.all([
-        TaskAssignment.findOne({
-          _id: taskId,
-        })
-          .populate({
-            path: "companyId",
-            populate: {
-              path: "clientTaxonomyId",
-            },
-          })
-          .populate("categoryId"),
-        Functions.findOne({
-          functionType: "Negative News",
-          status: true,
-        }),
-        Measures.find({ status: true }),
-        PlaceValues.find({ status: true }).sort({ orderNumber: 1 }),
-      ]);
-    trackTime(
-      timeDetails,
-      taskFunctionMeasurePlaceValuesStartTime,
-      Date.now(),
-      "TaskDetails and Function Details and  Measure Details and PlaceValues Details Promise"
-    );
 
-    let currentYear = year.split(", ");
-    currentYear = getSortedYear(currentYear);
-
-    const clientTaxonomyPromiseStartTime = Date.now();
-    const clienttaxonomyFields = await ClientTaxonomy.findOne({
-      _id: taskDetails.companyId.clientTaxonomyId.id,
-    }).lean();
+    const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
+    const { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields } = await getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear)
+    const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
+    let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
+    const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
+    let inputValues = [];
+    if (dpTypeValues?.dataType == SELECT) {
+      inputValues = getInputValues(dpTypeValues?.unit);
+    }
+    const { prevDatapoint, nextDatapoint } = await getPrevAndNextDatapointsDetails(functionId, memberType, taskDetails,
+      false,
+      keyIssueId, dataType, isPriority, memberId, memberName, datapointId, year);
+    let { currentQuery, historyQuery, datapointsObject, sourceDetails } = getVariablesValues(taskDetails, currentYear, datapointId, taskId, dpTypeValues);
     let isSFDR = false;
     if (!clienttaxonomyFields?.isDerivedCalculationRequired) {
       isSFDR = true;
     }
-    trackTime(
-      timeDetails,
-      clientTaxonomyPromiseStartTime,
-      Date.now(),
-      "Client Taxonomy"
-    );
-
-    const displayFields = clienttaxonomyFields?.fields?.filter(
-      (obj) => obj.toDisplay == true && obj.applicableFor != "Only Controversy"
-    );
-
-    const dpTypeErrorDetailsCompanySourceStartTime = Date.now();
-    const [dpTypeValues, errorDataDetails, companySourceDetails] =
-      await Promise.all([
-        Datapoints.findOne({
-          dataCollection: "Yes",
-          functionId: {
-            $ne: functionId.id,
-          },
-          categoryId: taskDetails.categoryId.id,
-          _id: datapointId,
-          status: true,
-        })
-          .populate("keyIssueId")
-          .populate("categoryId"),
-        ErrorDetails.find({
-          taskId: taskId,
-          companyId: taskDetails.companyId.id,
-          datapointId: datapointId,
-          year: {
-            $in: currentYear,
-          },
-          status: true,
-        }).populate("errorTypeId"),
-        CompanySources.find({ companyId: taskDetails.companyId.id }),
-      ]);
-    trackTime(
-      timeDetails,
-      dpTypeErrorDetailsCompanySourceStartTime,
-      Date.now(),
-      "DpType Details and Error Details and Source Details  Promise "
-    );
-
-    // Saving single data for qualitative datapoints
-    if (
-      !taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired &&
-      dpTypeValues?.dataType !== "Number"
-    ) {
-      currentYear.length = 1;
-    }
-    let dpMeasureType = measureTypes.filter(
-      (obj) =>
-        obj?.measureName?.toLowerCase() ==
-        dpTypeValues?.measureType?.toLowerCase()
-    );
-    let dpMeasureTypeId = dpMeasureType.length > 0 ? dpMeasureType[0].id : null;
-    const taxonomyStart = Date.now();
-    let taxonomyUoms = await MeasureUoms.find({
-      measureId: dpMeasureTypeId,
-      status: true,
-    }).sort({ orderNumber: 1 });
-
-    let placeValues = [],
-      uomValues = [];
-
-    if (
-      dpTypeValues &&
-      dpTypeValues?.measureType != null &&
-      dpTypeValues?.measureType != "NA" &&
-      dpTypeValues?.measureType
-    ) {
-      for (let uomIndex = 0; uomIndex < taxonomyUoms.length; uomIndex++) {
-        const element = taxonomyUoms[uomIndex];
-        uomValues.push({ value: element.id, label: element.uomName });
-      }
-    }
-    if (
-      dpTypeValues &&
-      (dpTypeValues?.measureType == "Currency" ||
-        dpTypeValues?.dataType == "Number")
-    ) {
-      for (let pvIndex = 0; pvIndex < allPlaceValues.length; pvIndex++) {
-        const element = allPlaceValues[pvIndex];
-        placeValues.push({ value: element.name, label: element.name });
-      }
-    }
-
-    let sourceTypeDetails = [];
-    companySourceDetails.map((company) => {
-      sourceTypeDetails.push({
-        sourceName: company.name,
-        value: company.id,
-        url: company.sourceUrl,
-        publicationDate: company.publicationDate,
-        sourceFile: company?.sourceFile ? company?.sourceFile : "",
-        title: company?.sourceTitle ? company?.sourceTitle : "",
-      });
-    });
-    trackTime(
-      timeDetails,
-      taxonomyStart,
-      Date.now(),
-      "Measure Deatils and placeValues Details and Source Details  Promise"
-    );
-
-    const [currentQuery, historyQuery] = [
-      {
-        taskId: taskId,
-        companyId: taskDetails.companyId.id,
-        datapointId: datapointId,
-        year: {
-          $in: currentYear,
-        },
-        isActive: true,
-        status: true,
-      },
-      {
-        companyId: taskDetails.companyId.id,
-        datapointId: datapointId,
-        $and: [
-          { year: { $nin: currentYear } },
-          { year: { $lt: currentYear[0] } },
-        ],
-        isActive: true,
-        status: true,
-      },
-    ];
     // let historyYear;
     let historicalYears = [];
-    let inputValues = [];
     let s3DataScreenshot = [];
     let s3DataRefErrorScreenshot = [];
-    let datapointsObject = {
-      dpCode: dpTypeValues?.code,
-      dpCodeId: dpTypeValues?.id,
-      dpName: dpTypeValues?.name,
-      companyId: taskDetails?.companyId.id,
-      companyName: taskDetails?.companyId.companyName,
-      keyIssueId: dpTypeValues?.keyIssueId.id,
-      keyIssue: dpTypeValues?.keyIssueId.keyIssueName,
-      pillarId: dpTypeValues?.categoryId.id,
-      pillar: dpTypeValues?.categoryId.categoryName,
-      fiscalYear: taskDetails?.year,
-      comments: [],
-      currentData: [],
-      historicalData: [],
-      status: "",
-    };
-    if (dpTypeValues?.dataType == "Select") {
-      const inputs = dpTypeValues.unit.split("/");
-      inputs.map((input) => {
-        inputValues.push({
-          label: input,
-          value: input,
-        });
-      });
-    }
-
-    const chilDpHeaders = await getHeaders(
-      taskDetails.companyId.clientTaxonomyId.id,
-      dpTypeValues.id ? dpTypeValues.id : ""
-    );
-
-    let prevDatapoint = {}, nextDatapoint = {};
-
-    let datapointQuery = {
-      dataCollection: "Yes",
-      functionId: {
-        $ne: functionId.id,
-      },
-      dpType: memberType,
-      clientTaxonomyId: taskDetails.companyId.clientTaxonomyId,
-      categoryId: taskDetails.categoryId.id,
-      status: true,
-    };
-
-    if (isPriority == true) {
-      datapointQuery = { ...datapointQuery, isPriority: true };
-    }
-
-    let allDatapointsStartTime = Date.now();
-    // Another Set of next and prev dp will come in for this taskStatus.
-    if (
-      taskDetails.taskStatus == CorrectionPending ||
-      taskDetails.taskStatus == ReassignmentPending ||
-      taskDetails?.taskStatus == CorrectionCompleted
-    ) {
-      let allDpDetails;
-      let dpStatus =
-        taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
-
-      const errQuery = {
-        taskId: taskDetails?._id,
-        status: true,
-        isActive: true,
-        dpStatus,
-      };
-      switch (memberType) {
-        case STANDALONE:
-          allDpDetails = await StandaloneDatapoints.distinct(
-            "datapointId",
-            errQuery
-          );
-          break;
-        case BOARD_MATRIX:
-          allDpDetails = await BoardMembersMatrixDataPoints.distinct(
-            "datapointId",
-            { ...errQuery, memberName: { $regex: memberName, $options: "i" } }
-          );
-          break;
-        case KMP_MATRIX:
-          allDpDetails = await KmpMatrixDataPoints.distinct("datapointId", {
-            ...errQuery,
-            memberName: { $regex: memberName, $options: "i" },
-          });
-          break;
-        default:
-          break;
-      }
-      datapointQuery = { ...datapointQuery, _id: { $in: allDpDetails } };
-    }
-
-    datapointQuery =
-      keyIssueId == "" ? datapointQuery : { ...datapointQuery, keyIssueId };
-    datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
-      : datapointQuery;
-    const allDatapoints = await Datapoints.find(datapointQuery)
-      .populate("keyIssueId")
-      .populate("categoryId")
-      .sort({ code: 1 });
-
-    trackTime(
-      timeDetails,
-      allDatapointsStartTime,
-      Date.now(),
-      "All datapoint query Details"
-    );
-
-    const alldpStartTime = Date.now();
-    for (let i = 0; i < allDatapoints?.length; i++) {
-      if (allDatapoints[i].id == datapointId) {
-        // find memberName
-        prevDatapoint = i - 1 >= 0
-          ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberId, memberName)
-          : {};
-        nextDatapoint = i + 1 <= allDatapoints?.length - 1
-          ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberId, memberName)
-          : {};
-        break;
-      }
-    }
-
-    trackTime(
-      timeDetails,
-      alldpStartTime,
-      Date.now(),
-      "All loopDatapoints Details"
-    );
-
     let childDp = [];
-    let sourceDetails = {
-      url: "",
-      sourceName: "",
-      value: "",
-      publicationDate: "",
-      sourceFile: "",
-    };
+
     let memberCollectionYears = [];
     switch (memberType) {
       case STANDALONE:
@@ -370,6 +84,7 @@ export const datapointDetails = async (req, res, next) => {
             ,
             StandaloneDatapoints.find(historyQuery),
           ]);
+
         trackTime(
           timeDetails,
           currentHistoryAllStandaloneDetailsStartTime,
@@ -382,30 +97,25 @@ export const datapointDetails = async (req, res, next) => {
           historyYearObject[historyYearData?.year] = historyYearData?.response;
           historicalYears.push(historyYearObject);
         });
+
         datapointsObject = {
           ...datapointsObject,
           status: "",
         };
+
         let CurrentYearLoopStartTime = Date.now();
         for (
-          let currentYearIndex = 0;
-          currentYearIndex < currentYear.length;
-          currentYearIndex++
-        ) {
+          let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
-            if (object.year == memberCollectionYears[currentYearIndex]) {
+            if (object.year == currentYear[currentYearIndex]) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
             }
           });
 
           let currentYearStandaloneLoopStartTime = Date.now();
-          for (
-            let currentIndex = 0;
-            currentIndex < currentAllStandaloneDetails.length;
-            currentIndex++
-          ) {
+          for (let currentIndex = 0; currentIndex < currentAllStandaloneDetails.length; currentIndex++) {
             const object = currentAllStandaloneDetails[currentIndex];
             const { errorTypeId, errorDetailsObject } = getError(
               errorDataDetails,
@@ -639,18 +349,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        const memberStartDate = new Date(
-          memberDetails?.startDate
-        ).getFullYear();
-        for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
-          const splityear = currentYear[yearIndex].split("-");
-          if (
-            memberStartDate <= splityear[0] ||
-            memberStartDate <= splityear[1]
-          ) {
-            memberCollectionYears.push(currentYear[yearIndex]);
-          }
-        }
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails)
 
         historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
           let historyYearObject = {};
@@ -672,10 +371,7 @@ export const datapointDetails = async (req, res, next) => {
         ) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
-            if (
-              object.year == memberCollectionYears[currentYearIndex] &&
-              object.memberName == memberName
-            ) {
+            if (object.year == memberCollectionYears[currentYearIndex] && object.memberName == memberName) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
             }
@@ -756,7 +452,7 @@ export const datapointDetails = async (req, res, next) => {
               );
               currentDatapointsObject = {
                 ...currentDatapointsObject,
-                comments: [],
+                comments: object.comments,
               };
 
               s3DataRefErrorScreenshot = await getS3RefScreenShot(
@@ -948,18 +644,8 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        const kmpMemberStartDate = new Date(
-          kmpMemberDetails?.startDate
-        ).getFullYear();
-        for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
-          const splityear = currentYear[yearIndex].split("-");
-          if (
-            kmpMemberStartDate <= splityear[0] ||
-            kmpMemberStartDate <= splityear[1]
-          ) {
-            memberCollectionYears.push(currentYear[yearIndex]);
-          }
-        }
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails)
+
         trackTime(
           timeDetails,
           currentHistoryAllKmpMatrixDetailsStartTime,
