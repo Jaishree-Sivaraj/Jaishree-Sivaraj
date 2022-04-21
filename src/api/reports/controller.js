@@ -312,7 +312,7 @@ export const exportReport = async (req, res, next) => {
         )
         let dpCodeDetails = datapointDetails.filter(obj => obj.id == data.datapointId['id'])
   
-        let yearVal = data.year.split('-');
+        let yearVal = data?.year.split('-');
   
         let dataType = '';
         if (dpCodeDetails[0].dataType == 'Number' && dpCodeDetails[0].measureType != 'Currency' && (dpCodeDetails[0].measureType != '' || dpCodeDetails[0].measureType != ' ')) {
@@ -370,7 +370,13 @@ export const exportReport = async (req, res, next) => {
       if (allStandaloneDetails.length > 0) {
         if (allStandaloneDetails.length > 0 && clientTaxonomyDetail && clientTaxonomyDetail.outputFields && clientTaxonomyDetail.outputFields.additionalFields.length > 0) {
           let rows = [];
-          allStandaloneDetails = _.sortBy(allStandaloneDetails, 'companyId.id')
+          var collator = new Intl.Collator(undefined, {
+            numeric: true,
+            sensitivity: 'base'
+          });
+          // allStandaloneDetails = allStandaloneDetails.sort(function(a, b) {
+          //   return collator.compare(a.datapointId.code, b.datapointId.code)
+          // });
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
@@ -585,6 +591,9 @@ export const exportReport = async (req, res, next) => {
               console.log("Length", stdIndex);
             }
           }
+          rows.sort(function(a, b) {
+            return collator.compare(a["Item Code"], b["Item Code"]) || collator.compare(a["name_of_company"], b["name_of_company"]) || collator.compare(a["year"], b["year"])
+          });
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
