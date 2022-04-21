@@ -358,7 +358,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
         populate: {
           path: "keyIssueId"
         }});
-        let mergedYear  = _.concat(distinctYears,previousYear)
+        let mergedYear  = previousYear != '' ? _.concat(distinctYears,previousYear) : distinctYears;
         let derivedDatapoints = await DerivedDatapoints.find({ companyId: taskDetailsObject.companyId.id, year :{$in : mergedYear},status: true })
         .populate('datapointId')
         .populate('companyId');
@@ -374,7 +374,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
         let projectedValues = await ProjectedValues.find({clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: {$in : distinctYears}})
         .populate('datapointId');
         let mergedDetails = _.concat(boardMembersMatrixDataPoints,kmpDatapoints,derivedDatapoints, standalone_datapoints);
-        if(dpTypeValues.length > 1){
+        if(dpTypeValues?.length > 1){
           for (let dpTypeIndex = 0; dpTypeIndex < dpTypeValues.length; dpTypeIndex++) {
             let keyIssuesCollection = await Datapoints.find({
               dataCollection: 'Yes',
@@ -1791,14 +1791,14 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 description: []
                 }
                 if(validationRules[validationIndex].validationType == "3"){            
-                  let previousResponseIndex = mergedDetails.findIndex((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == previousYear);
+                  let previousResponseIndex = mergedDetails.findIndex((object, index) => object?.datapointId?.id == validationRules[validationIndex]?.datapointId?.id && object?.companyId?.id == taskDetailsObject?.companyId?.id && object?.year == previousYear);
                   if(previousResponseIndex > -1){
                     let previousResponse = mergedDetails[previousResponseIndex];
                     try {
                         let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex]);
                         if(currentResponse){
-                          if (previousResponse.response.toLowerCase() == 'yes' || previousResponse.response.toLowerCase() == 'y') {
-                            if (currentResponse.response.toLowerCase() == 'yes' || currentResponse.response.toLowerCase() == 'y') {
+                          if (previousResponse?.response.toLowerCase() == 'yes' || previousResponse?.response.toLowerCase() == 'y') {
+                            if (currentResponse?.response.toLowerCase() == 'yes' || currentResponse?.response.toLowerCase() == 'y') {
                               dpCodeObject.isValidResponse = true;
                             } else {
                               dpCodeObject.isValidResponse = false;
@@ -1818,13 +1818,13 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 } else if(validationRules[validationIndex].validationType == "8"){
                   if (validationRules[validationIndex].methodName.trim() == 'OR') {
                     let parameters = validationRules[validationIndex].dependentCodes;
-                    if (parameters.length > 0) {
+                    if (parameters?.length > 0) {
                       for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
                         let parameterDPResponse, previousYearResponse;
                         _.filter(mergedDetails, (object, index) => {
-                          if (object.companyId == taskDetailsObject.companyId.id, object.year == distinctYears[yearIndex], object.datapointId.id == parameters[parameterIndex].id) {
+                          if (object.companyId == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex] && object.datapointId.id == parameters[parameterIndex].id) {
                             parameterDPResponse = object;
-                          } else if (object.companyId == taskDetailsObject.companyId.id, object.year == previousYear, object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                          } else if (object.companyId == taskDetailsObject.companyId.id && object.year == previousYear && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                             previousYearResponse = object;
                           }
                         })
@@ -1832,10 +1832,10 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       
                         if(previousYearResponse){
                           if (parameterDPResponse && currentResponse) {
-                            if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
+                            if (parameterDPResponse?.response.toLowerCase() == 'yes' || parameterDPResponse?.response.toLowerCase() == 'y') {
                               if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
-                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                                if (Number(currentResponse.response) > Number(calculatedResponse)) {
+                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse?.response);
+                                if (Number(currentResponse?.response) > Number(calculatedResponse)) {
                                   dpCodeObject.isValidResponse = true;
                                 } else {
                                   dpCodeObject.isValidResponse = false;
@@ -1870,19 +1870,19 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     if(parameter.length > 0){          
                       for (let parameterIndex = 0; parameterIndex < parameter.length; parameterIndex++) {
                         _.filter(mergedDetails, (object, index) => {
-                          if (object.companyId == taskDetailsObject.companyId.id, object.year == distinctYears[yearIndex], object.datapointId.id == parameter[parameterIndex].id) {
+                          if (object.companyId == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex] && object.datapointId.id == parameter[parameterIndex].id) {
                             parameterDPResponse = object;
-                          } else if (object.companyId == taskDetailsObject.companyId.id, object.year == previousYear, object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                          } else if (object.companyId == taskDetailsObject.companyId.id && object.year == previousYear && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                             previousYearResponse = object;
                           }
                         });
                         let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex]);
                         if(previousYearResponse){
                           if (parameterDPResponse && currentResponse) {
-                            if (parameterDPResponse.response.toLowerCase() == 'yes' || parameterDPResponse.response.toLowerCase() == 'y') {
-                              if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
-                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                                if (Number(currentResponse.response) > Number(calculatedResponse)) {
+                            if (parameterDPResponse?.response?.toLowerCase() == 'yes' || parameterDPResponse?.response?.toLowerCase() == 'y') {
+                              if (validationRules[validationIndex].checkCondition?.trim() == 'greater') {
+                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse?.response);
+                                if (Number(currentResponse?.response) > Number(calculatedResponse)) {
                                   dpCodeObject.isValidResponse = true;
                                 } else {
                                   dpCodeObject.isValidResponse = false;
@@ -1890,8 +1890,8 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                                   dpCodeObject.description.push(validationResponseObject);
                                 }
                               } else {
-                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
-                                if (Number(currentResponse.response) < Number(calculatedResponse)) {
+                                let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse?.response);
+                                if (Number(currentResponse?.response) < Number(calculatedResponse)) {
                                   dpCodeObject.isValidResponse = true;
                                 } else {
                                   dpCodeObject.isValidResponse = false;
@@ -1919,20 +1919,20 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     let param1Value, param2Value, param3Value;
                     let previousYearResponse;
                     _.filter(mergedDetails, (object, index) => {
-                      if (object.companyId.id == taskDetailsObject.companyId.id, object.year == previousYear, object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                      if (object.companyId.id == taskDetailsObject.companyId.id && object.year == previousYear && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                         previousYearResponse = object
-                      } else if (object.datapointId.id == parameters[0].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[0].id && object.year == distinctYears[yearIndex]) {
                         param1Value = object.response ? object.response : ''
-                      } else if (object.datapointId.id == parameters[1].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[1].id && object.year == distinctYears[yearIndex]) {
                         param2Value = object.response ? object.response : ''
-                      } else if (object.datapointId.id == parameters[2].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[2].id && object.year == distinctYears[yearIndex]) {
                         param3Value = object.response ? object.response : ''
                       }
                     });
                     if(previousYearResponse){
                       let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex]);  
                       if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes')) || (param3Value == 'yes' || param3Value == 'Yes')) {
-                        if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
+                        if (validationRules[validationIndex]?.checkCondition?.trim() == 'greater') {
                           let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
                           if (Number(currentResponse.response) > Number(calculatedResponse)) {
                             dpCodeObject.isValidResponse = true;
@@ -1964,21 +1964,21 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     let param1Value, param2Value, param3Value, param4Value;
                     let previousYearResponse;
                     _.filter(mergedDetails, (object, index) => {
-                      if (object.companyId.id == taskDetailsObject.companyId.id, object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                      if (object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex] && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                         previousYearResponse = object
-                      } else if (object.datapointId.id == parameters[0].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[0].id && object.year == distinctYears[yearIndex]) {
                         param1Value = object.response ? object.response : ''
-                      } else if (object.datapointId.id == parameters[1].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[1].id && object.year == distinctYears[yearIndex]) {
                         param2Value = object.response ? object.response : ''
-                      } else if (object.datapointId.id == parameters[2].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[2].id && object.year == distinctYears[yearIndex]) {
                         param3Value = object.response ? object.response : ''
-                      } else if (object.datapointId.id == parameters[3].id, object.year == distinctYears[yearIndex]) {
+                      } else if (object.datapointId.id == parameters[3].id && object.year == distinctYears[yearIndex]) {
                         param4Value = object.response ? object.response : ''
                       }
                     })
                     let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.companyId.id == taskDetailsObject.companyId.id && object.year == distinctYears[yearIndex]);
                     if (((param1Value == 'yes' || param1Value == 'Yes') && (param2Value == 'yes' || param2Value == 'Yes') && (param3Value == 'yes' || param3Value == 'yes') || (param4Value == 'yes' || param4Value == 'Yes'))) {
-                      if (validationRules[validationIndex].checkCondition.trim() == 'greater') {
+                      if (validationRules[validationIndex]?.checkCondition?.trim() == 'greater') {
                         let calculatedResponse = (Number(validationRules[validationIndex].percentileThreasholdValue.replace('%', '')) / 100) * Number(previousYearResponse.response);
                         if (Number(currentResponse.response) > Number(calculatedResponse)) {
                           dpCodeObject.isValidResponse = true;
@@ -1996,11 +1996,11 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   } else if(validationRules[validationIndex].methodName.trim() == 'ResponseCheck'){
                     let dpResponse ;             
                     _.filter(mergedDetails, (object, index) => {
-                      if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                      if (object.year == distinctYears[yearIndex] && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                         dpResponse = object;
                       }
                     });
-                    if(validationRules[validationIndex].checkResponse.includes(dpResponse.response)){           
+                    if(validationRules[validationIndex]?.checkResponse?.includes(dpResponse?.response)){           
                       dpCodeObject.isValidResponse = false;
                       let validationResponseObject = "Type "+validationRules[validationIndex].validationType+" - " +validationRules[validationIndex].errorMessage
                       dpCodeObject.description.push(validationResponseObject);
@@ -2012,16 +2012,16 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     let parameters = validationRules[validationIndex].dependentCodes;
                     if(parameters.length > 0){
                       _.filter(mergedDetails, (object, index) => {
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                        if (object.year == distinctYears[yearIndex] && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                           dpResponse = object;
                         }
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == parameters[0].id) {
+                        if (object.year == distinctYears[yearIndex] && object.datapointId.id == parameters[0].id) {
                           dependantCode = object;
                         }
                       }); 
-                      if(dependantCode.response && dpResponse.response){
-                        if(dependantCode.response.toLowerCase() == 'yes'){
-                          if(dpResponse.response.toLowerCase() == 'yes'){
+                      if(dependantCode?.response && dpResponse?.response){
+                        if(dependantCode?.response?.toLowerCase() == 'yes'){
+                          if(dpResponse?.response?.toLowerCase() == 'yes'){
                             dpCodeObject.isValidResponse = true;
                           } else {
                             dpCodeObject.isValidResponse = false;
@@ -2039,22 +2039,22 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     if(parameters.length > 0){
                       for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
                         _.filter(mergedDetails, (object, index) => {
-                          if (object.year == distinctYears[yearIndex], object.datapointId.id == parameters[parameterIndex].id) {
+                          if (object.year == distinctYears[yearIndex] && object.datapointId.id == parameters[parameterIndex].id) {
                             dependantCode = object;
                           }
                         }); 
-                        if(dependantCode.response.toLowerCase() == 'yes'){
+                        if(dependantCode?.response?.toLowerCase() == 'yes'){
                           count ++;
                         }
                       }
                       _.filter(mergedDetails, (object, index) => {
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                        if (object.year == distinctYears[yearIndex] && object.datapointId.id == validationRules[validationIndex].datapointId.id) {
                           dpResponse = object;
                         }
                       }); 
-                      if(dpResponse.response){
+                      if(dpResponse?.response){
                         if(count > 0){
-                          if(dpResponse.response.toLowerCase() == 'yes'){
+                          if(dpResponse?.response?.toLowerCase() == 'yes'){
                             dpCodeObject.isValidResponse = true;
                           } else {
                             dpCodeObject.isValidResponse = false;
@@ -2066,21 +2066,21 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                         }
                       }
                     }
-                  } else if(validationRules[validationIndex].methodName.trim() == 'Rated'){
+                  } else if(validationRules[validationIndex]?.methodName?.trim() == 'Rated'){
                     let dpResponse, dependantCode;
                     let parameters = validationRules[validationIndex].dependentCodes;
                     if(parameters.length > 0){
                       _.filter(mergedDetails, (object, index) => {
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                        if (object?.year == distinctYears[yearIndex] && object?.datapointId?.id == validationRules[validationIndex]?.datapointId?.id) {
                           dpResponse = object;
                         }
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == parameters[0].id) {
+                        if (object?.year == distinctYears[yearIndex] && object?.datapointId?.id == parameters[0].id) {
                           dependantCode = object;
                         }
                       }); 
-                      if(dependantCode.response && dpResponse.response){
-                        if(isNumber(dependantCode.response)){              
-                          if(isNumber(dpResponse.response)){
+                      if(dependantCode?.response && dpResponse?.response){
+                        if(isNumber(dependantCode?.response)){              
+                          if(isNumber(dpResponse?.response)){
                             dpCodeObject.isValidResponse = true;
                           } else {
                             dpCodeObject.isValidResponse = false;
@@ -2092,28 +2092,28 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                         }
                       }
                     }
-                  } else if(validationRules[validationIndex].methodName.trim() == 'ORRated'){
+                  } else if(validationRules[validationIndex]?.methodName?.trim() == 'ORRated'){
                     let dpResponse, dependantCode,count = 0 ;
-                    let parameters = validationRules[validationIndex].dependentCodes;
+                    let parameters = validationRules[validationIndex]?.dependentCodes;
                     if(parameters.length > 0){
                       for (let parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
                         _.filter(mergedDetails, (object, index) => {
-                          if (object.year == distinctYears[yearIndex], object.datapointId.id == parameters[parameterIndex].id) {
+                          if (object?.year == distinctYears[yearIndex] && object?.datapointId?.id == parameters[parameterIndex].id) {
                             dependantCode = object;
                           }
                         }); 
-                        if(isNumber(dependantCode.response)){
+                        if(isNumber(dependantCode?.response)){
                           count ++;
                         }
                       }
                       _.filter(mergedDetails, (object, index) => {
-                        if (object.year == distinctYears[yearIndex], object.datapointId.id == validationRules[validationIndex].datapointId.id) {
+                        if (object?.year == distinctYears[yearIndex] && object?.datapointId?.id == validationRules[validationIndex].datapointId.id) {
                           dpResponse = object;
                         }
                       }); 
-                      if(dpResponse.response){
+                      if(dpResponse?.response){
                         if(count > 0){
-                          if(isNumber(dpResponse.response)){
+                          if(isNumber(dpResponse?.response)){
                             dpCodeObject.isValidResponse = true;
                           } else {
                             dpCodeObject.isValidResponse = false;
@@ -2126,9 +2126,9 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                       }
                     }
                   }
-                }else if(validationRules[validationIndex].validationType == "7"){
+                }else if(validationRules[validationIndex]?.validationType == "7"){
                   let zscoreValue ,performanceResult ;
-                  let currentResponse = mergedDetails.find((object, index) => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
+                  let currentResponse = mergedDetails.find((object, index) => object?.datapointId?.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
                    let projectedValue = projectedValues.findIndex(object => object.datapointId.id == validationRules[validationIndex].datapointId.id && object.year == distinctYears[yearIndex]);
                   //  console.log(projectedValue)
                   if(projectedValue > -1){
@@ -2174,12 +2174,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   }
                 }
                 }      
-                if(validationResponse.length > 0) {
-                  let yearfind = validationResponse.findIndex(obj => obj.dpCodeId == validationRules[validationIndex].datapointId.id && obj.fiscalYear == distinctYears[yearIndex] );
+                if(validationResponse?.length > 0) {
+                  let yearfind = validationResponse.findIndex(obj => obj?.dpCodeId == validationRules[validationIndex]?.datapointId?.id && obj?.fiscalYear == distinctYears[yearIndex] );
                   if(yearfind > -1){
                     let descriptionDetails = _.concat(validationResponse[yearfind].description,dpCodeObject.description); 
                     validationResponse[yearfind].description = _.concat(validationResponse[yearfind].description,dpCodeObject.description);         
-                    if(validationResponse[yearfind].description.length > 0){
+                    if(validationResponse[yearfind].description?.length > 0){
                       dpCodeObject.isValidResponse = false;
                     } else {
                       dpCodeObject.isValidResponse = true;
@@ -2191,6 +2191,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   validationResponse.push(dpCodeObject)
                 }
               } catch (error) {
+                console.log(error);
                 return res.status(500).json({ status: "500", message: error.message })
               }
             }
@@ -2217,7 +2218,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
       } else {
         return res.status(200).json({
           status: "200",
-          message: "No dp codes available",
+          message: "No validation rules defined!",
           dpCodeData: dpCodesData
         });
       }

@@ -43,14 +43,63 @@ export const show = async ({ params }, res, next) => {
   }
 }
 
-export const update = ({ bodymen: { body }, params }, res, next) =>
-  CompanySources.findById(params.id)
-    .populate('sourceTypeId')
-    .then(notFound(res))
-    .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
-    .then((companySources) => companySources ? companySources.view(true) : null)
-    .then(success(res))
-    .catch(next)
+export const update = async (req, res, next) => {
+  try {
+    const { companyId, sourcePDF, name, url, sourceTitle, publicationDate, fileName } = req.body;
+    const { id } = req.params;
+    let fileUrl;
+    if (sourcePDF !== '') {
+      let fileType = sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
+      fileUrl = companyId + '_' + Date.now() + '.' + fileType;
+      await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, sourcePDF);
+    }
+
+    const companydata = await CompanySources.findOne({ _id: id });
+    const updatedData = {
+      fileName: fileName ? fileName : companydata?.fileName,
+      sourceFile: fileUrl ? fileUrl : companydata?.sourceFile,
+      name: name ? name : companydata?.name,
+      sourceUrl: url ? url : companydata?.url,
+      sourceTitle: sourceTitle ? sourceTitle : companydata?.sourceTitle,
+      publicationDate: publicationDate ? publicationDate : companydata?.publicationDate
+    }
+
+    const updateCompanyDetails = await CompanySources.findOneAndUpdate({ _id: id }, {
+      $set: updatedData
+    }, {
+      new: true
+    });
+    if (!updateCompanyDetails) {
+      return res.status(409).json({
+        status: 409,
+        message: 'Failed to updated company source data'
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: 'Update Successfully',
+      data: updateCompanyDetails
+    });
+
+  } catch (error) {
+    return res.status(409).json({ message: error?.message ? error?.message : 'Failed to update' });
+  }
+}
+// CompanySources.findById(params.id)
+//   .populate('sourceTypeId')
+//   .then(notFound(res))
+//   .then((companySources) => companySources ? Object.assign(companySources, body).save() : null)
+//   .then((companySources) => companySources ? companySources.view(true) : null)
+//   .then(success(res))
+//   .catch(next)
 
 export const destroy = ({ params }, res, next) =>
   CompanySources.findById(params.id)
@@ -60,15 +109,20 @@ export const destroy = ({ params }, res, next) =>
     .catch(next)
 
 export const getDocumentsByCompanyId = async ({ params }, res, next) =>
-  await CompanySources.find({ companyId: params.companyId }).then(async (result) => {
+  await CompanySources.find({ companyId: params.companyId }).populate('sourceTypeId').then(async (result) => {
+    let sourceList = [];
     for (let index = 0; index < result.length; index++) {
-      var s3Data = await fetchFileFromS3(process.env.COMPANY_SOURCES_BUCKET_NAME, result[index].sourceFile).catch((e) => {
-        result[index].sourceFile = "No image";
-      }) //bucket name and file name 
-      console.log('s3', s3Data);
-      result[index].sourceFile = s3Data;
+      sourceList.push({
+        "sourceName": result[index]?.name ? result[index]?.name : "",
+        "value": result[index]?._id ? result[index]?._id : "",
+        "url": result[index]?.sourceUrl ? result[index]?.sourceUrl : "",
+        "isPublicationDateRequired": result[index]?.sourceTypeId?.typeName == "Webpages" ? false : true,
+        "publicationDate": result[index]?.publicationDate ? result[index]?.publicationDate : null,
+        "sourceFile": result[index]?.sourceFile ? result[index]?.sourceFile : "",
+        "title": result[index]?.sourceTitle ? result[index]?.sourceTitle : ""
+      })
     }
-    res.send(result, 200);
+    res.status(200).json({ status: "200", message: "Company Sources retrieved successfully!", sourceList });
   }).catch(next)
 
 export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
@@ -84,17 +138,24 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
   try {
     var fileUrl = '';
     if (body.sourcePDF) {
-      const fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      let fileType = body.sourcePDF.split(';')[0].split('/')[1];
+      if (fileType == 'plain') {
+        fileType = 'txt'
+      } else if(fileType == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        fileType = 'xlsx'
+      } else if (fileType == 'vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        fileType = 'docx'
+      }
       fileUrl = body.companyId + '_' + Date.now() + '.' + fileType;
       await storeFileInS3(process.env.COMPANY_SOURCES_BUCKET_NAME, fileUrl, body.sourcePDF);
-  
+
     }
     let sourceDetails = {
       newSourceTypeName: body.newSourceTypeName,
       newSubSourceTypeName: body.newSubSourceTypeName
     }
     let newSubSourceTypeId, newSourceTypeId;
-    if (sourceDetails.newSubSourceTypeName != "null" && sourceDetails.newSubSourceTypeName != "") {
+    if (sourceDetails.newSubSourceTypeName != null && sourceDetails.newSubSourceTypeName != "") {
       let subTypeName = body.newSubSourceTypeName;
       await SourceSubTypes.create({ subTypeName: subTypeName })
         .then((response) => {
@@ -103,6 +164,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
           }
         })
       // .catch(res.status(400).json({ status: "400", message: "failed to create new sub source type" }));
+    } else if (body.sourceSubTypeId != null && body.sourceSubTypeId != ""){
+      newSubSourceTypeId = body.sourceSubTypeId
     }
     if (sourceDetails.newSourceTypeName != 'null' && sourceDetails.newSourceTypeName != "") {
       let sourceObject = {
@@ -116,9 +179,8 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
           newSourceTypeId = sourceResponse.id;
         }
       })
-    }
-    if (body.sourceSubTypeId) {
-      newSubSourceTypeId = body.sourceSubTypeId;
+    } else if (body.sourceTypeId != null && body.sourceTypeId != "") {
+      newSourceTypeId = body.sourceTypeId;
     }
     let companySourceDetails = {
       companyId: body.companyId,
@@ -128,7 +190,7 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       sourceUrl: body.url,
       sourceSubTypeId: newSubSourceTypeId,
       sourceFile: fileUrl,
-      publicationDate: body.publicationDate,
+      publicationDate: body.publicationDate == 'NA' ? null : body.publicationDate,
       fiscalYear: body.fiscalYear,
       name: body.name,
       sourceTitle: body.sourceTitle,
@@ -138,6 +200,6 @@ export const uploadCompanySource = async ({ bodymen: { body } }, res, next) => {
       res.status(200).json({ status: "200", message: 'data saved sucessfully', data: companySourceDetails })
     });
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source"})
+    return res.status(500).json({ status: "500", message: error.message ? error.message : " Failed to upload the company source" })
   }
 }
