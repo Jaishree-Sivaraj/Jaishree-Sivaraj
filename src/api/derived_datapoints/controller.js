@@ -3059,9 +3059,9 @@ export const derivedCalculation = async ({
         let performanceResult = "";
         let isDpExistInPolarityRule = polarityRulesList.findIndex((object, index) => object.datapointId.id == dataPointsIdList[dataPointIndex].id);
         if (isDpExistInPolarityRule <= -1) {
-          let datapointDetail = dataPointsIdList[dataPointIndex];
+        let datapointDetail = dataPointsIdList[dataPointIndex];
           // if (datapointDetail.dataCollection.toLowerCase() == "yes" || datapointDetail.dataCollection.toLowerCase() == "y") {
-          let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year);
+          let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.companyId.id == taskDetailsObject.companyId.id && object.datapointId.id == dataPointsIdList[dataPointIndex].id && object.year == year[yearIndex]);
           if (foundResponseIndex > -1) {
             let foundResponse = mergedDatapoints[foundResponseIndex];
             if (foundResponse) {
@@ -3125,10 +3125,10 @@ export const derivedCalculation = async ({
                       }
                     });
                   } else if (datapointDetail.finalUnit === 'Percentile' && datapointDetail.signal == 'Yes' && datapointDetail.code == 'ANTR001') {
-                    let performanceResult
+                    let performanceResponse;
                     if (foundResponse.response) {
-                      performanceResult = Number((1 - (foundResponse.response / 7)) * 100).toFixed(4);
-                      allDerivedDatapoints[foundResponseIndex].performanceResult = Math.abs(performanceResult);
+                      performanceResponse = Number((1 - (foundResponse.response / 7)) * 100).toFixed(4);
+                      performanceResult = Math.abs(performanceResponse);
                     } else {
                       performanceResult = foundResponse.response;
                     }
@@ -3155,9 +3155,10 @@ export const derivedCalculation = async ({
             }
           }
         }
-        let projectedValues = await ProjectedValues.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: year[yearIndex] }).populate('datapointId');
-        console.log("projectedValues.length", projectedValues.length);
-        if (projectedValues.length > 0) {
+      }
+      let projectedValues = await ProjectedValues.find({ clientTaxonomyId: taskDetailsObject.companyId.clientTaxonomyId.id, categoryId: taskDetailsObject.categoryId.id, nic: taskDetailsObject.companyId.nic, year: year[yearIndex] }).populate('datapointId');
+      console.log("projectedValues.length", projectedValues.length);
+      if (projectedValues.length > 0) {
           for (let pdpIndex = 0; pdpIndex < percentileDataPointsList.length; pdpIndex++) {
             try {
               let foundResponseIndex = mergedDatapoints.findIndex((object, index) => object.datapointId.id == percentileDataPointsList[pdpIndex].id && object.year == year[yearIndex]);
@@ -3171,14 +3172,11 @@ export const derivedCalculation = async ({
                     } else {
                       await DerivedDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     }
-                    console.log("Step1");
                   } else {
                     let zscoreValue;
-                    console.log("Step1", percentileDataPointsList[pdpIndex].code);
                     if (projectedValue.projectedStdDeviation == 'NA') {
                       await StandaloneDatapoints.updateOne({ _id: foundResponse.id }, { $set: { performanceResult: 'NA' } });
                     } else {
-                      console.log("percentileDataPointsList[pdpIndex].polarity\n\n\n\n", percentileDataPointsList[pdpIndex].code);
                       if (percentileDataPointsList[pdpIndex].polarity == 'Positive') {
                         zscoreValue = (Number(foundResponse.response) - Number(projectedValue.projectedAverage)) / Number(projectedValue.projectedStdDeviation);
                       } else if (percentileDataPointsList[pdpIndex].polarity == 'Negative') {
@@ -3234,12 +3232,11 @@ export const derivedCalculation = async ({
               return res.status(500).json({ status: "500", message: error.message ? error.message : 'Failed to get the response of ' + percentileDataPointsList[pdpIndex].code + ' for ' + year[yearIndex] + ' year' })
             }
           }
-        } else {
-          return res.status(500).json({ status: "500", message: `No projected Standard Deviation and Average values available for ${taskDetailsObject.companyId.clientTaxonomyId.taxonomyName} - ${taskDetailsObject.companyId.companyName} - ${year[yearIndex]}` });
-        }
+      } else {
+        return res.status(500).json({ status: "500", message: `No projected Standard Deviation and Average values available for ${taskDetailsObject.companyId.clientTaxonomyId.taxonomyName} - ${taskDetailsObject.companyId.companyName} - ${year[yearIndex]}` });
       }
     }
-    await TaskAssignment.findOneAndUpdate({ _id: body.taskId }, { isDerviedCalculationCompleted: true });
+    await TaskAssignment.updateOne({ _id: body.taskId },  {$set: { isDerviedCalculationCompleted: true }});
     return res.status(200).json({
       message: "Calculation completed successfuly!",
       derivedDatapoints: allDerivedDatapoints
