@@ -374,9 +374,9 @@ export const exportReport = async (req, res, next) => {
             numeric: true,
             sensitivity: 'base'
           });
-          allStandaloneDetails = allStandaloneDetails.sort(function(a, b) {
-            return collator.compare(a.datapointId.code, b.datapointId.code)
-          });
+          // allStandaloneDetails = allStandaloneDetails.sort(function(a, b) {
+          //   return collator.compare(a.datapointId.code, b.datapointId.code)
+          // });
           let totalStandaloneRecords = allStandaloneDetails.length
           for (let stdIndex = 0; stdIndex < totalStandaloneRecords; stdIndex++) {  
             // console.log("allStandaloneDetails", stdIndex);
@@ -591,6 +591,9 @@ export const exportReport = async (req, res, next) => {
               console.log("Length", stdIndex);
             }
           }
+          rows.sort(function(a, b) {
+            return collator.compare(a["Item Code"], b["Item Code"]) || collator.compare(a["name_of_company"], b["name_of_company"]) || collator.compare(a["year"], b["year"])
+          });
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
