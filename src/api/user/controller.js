@@ -709,7 +709,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
         if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
           User.findById(body.userId).then(async function (userDetails) {
-            var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
+            var link = `${process.env.FRONTEND_URL}onboard/new-user?`;
             if (userDetails && userDetails.userType) {
               userDetails.userType = userDetails.userType.split(" ").join("");
             }
