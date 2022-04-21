@@ -30,7 +30,7 @@ import {
   getTotalYearsForDataCollection
 }
   from './datapoint-helper-function';
-import { SELECT } from "../../constants/measure-type";
+import { SELECT } from "../../constants/dp-datatype";
 
 export const datapointDetails = async (req, res, next) => {
   try {
