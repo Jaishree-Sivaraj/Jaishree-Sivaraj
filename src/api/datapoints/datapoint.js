@@ -4,6 +4,7 @@ import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
 import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
 import { BoardMembers } from "../boardMembers";
 import { Kmp } from "../kmp";
+import { ClientTaxonomy } from '../clientTaxonomy';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import {
   YetToStart,
@@ -46,11 +47,14 @@ export const datapointDetails = async (req, res, next) => {
       keyIssueId,
       dataType
     } = req.body;
-
+    console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
-    const { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields } = await getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear)
-    const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
+    const clienttaxonomyFields = await ClientTaxonomy.findOne({
+      _id: taskDetails.companyId.clientTaxonomyId.id,
+    }).lean()
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
+    const { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders } = await getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear)
+    const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
     const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
     let inputValues = [];
     if (dpTypeValues?.dataType == SELECT) {

@@ -111,7 +111,7 @@ export async function getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId) 
 
 export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear) {
     try {
-        const [dpTypeValues, errorDataDetails, companySourceDetails, clienttaxonomyFields, chilDpHeaders] = await Promise.all([
+        const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
                 functionId: {
@@ -131,12 +131,9 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
                 status: true
             }).populate('errorTypeId'),
             CompanySources.find({ companyId: taskDetails.companyId.id }),
-            ClientTaxonomy.findOne({
-                _id: taskDetails.companyId.clientTaxonomyId.id,
-            }).lean(),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id, datapointId)
         ]);
-        return { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields };
+        return { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders };
     } catch (error) {
         console.log(error?.message)
     }
@@ -170,6 +167,7 @@ export function getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields,
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         currentYear = getSortedYear(currentYear);
+
         if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== NUMBER) {
             currentYear.length = 1
         }
