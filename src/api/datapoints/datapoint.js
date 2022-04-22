@@ -22,13 +22,14 @@ import {
 import {
   getVariablesValues,
   getTaskDetailsFunctionIdPlaceValuesAndMeasureType,
-  getDpValuesErrorDetailsCompanySourceDetailsChildHeaders,
+  getErrorDetailsCompanySourceDetailsChildHeaders,
   getCompanySourceDetails,
   getSortedCurrentYearAndDisplayFields,
   getUomAndPlaceValues,
   getInputValues,
   getPrevAndNextDatapointsDetails,
-  getTotalYearsForDataCollection
+  getTotalYearsForDataCollection,
+  getClientTaxonomyAndDpTypeDetails
 }
   from './datapoint-helper-function';
 import { SELECT } from "../../constants/dp-datatype";
@@ -49,11 +50,10 @@ export const datapointDetails = async (req, res, next) => {
     } = req.body;
     console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
-    const clienttaxonomyFields = await ClientTaxonomy.findOne({
-      _id: taskDetails.companyId.clientTaxonomyId.id,
-    }).lean()
+    const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
+    console.log(dpTypeValues);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
-    const { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders } = await getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear)
+    const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
     const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
     const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
     let inputValues = [];
