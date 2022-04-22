@@ -111,7 +111,7 @@ export async function getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId) 
 
 export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear) {
     try {
-        const [dpTypeValues, errorDataDetails, chilDpHeaders, companySourceDetails, clienttaxonomyFields] = await Promise.all([
+        const [dpTypeValues, errorDataDetails, companySourceDetails, clienttaxonomyFields, chilDpHeaders] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
                 functionId: {
@@ -136,7 +136,6 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
             }).lean(),
             getHeaders(taskDetails.companyId.clientTaxonomyId.id, datapointId)
         ]);
-        console.log(dpTypeValues);
         return { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields };
     } catch (error) {
         console.log(error?.message)
