@@ -111,7 +111,7 @@ export async function getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId) 
 
 export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear) {
     try {
-        const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields] = await Promise.all([
+        const [dpTypeValues, errorDataDetails, chilDpHeaders, companySourceDetails, clienttaxonomyFields] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
                 functionId: {
@@ -121,7 +121,6 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
                 _id: datapointId,
                 status: true
             }).populate('keyIssueId').populate('categoryId'),
-
             ErrorDetails.find({
                 taskId: taskDetails?._id,
                 companyId: taskDetails.companyId.id,
@@ -131,12 +130,11 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
                 categoryId: taskDetails.categoryId.id,
                 status: true
             }).populate('errorTypeId'),
-
             CompanySources.find({ companyId: taskDetails.companyId.id }),
-            getHeaders(taskDetails.companyId.clientTaxonomyId.id),
             ClientTaxonomy.findOne({
                 _id: taskDetails.companyId.clientTaxonomyId.id,
-            }).lean()
+            }).lean(),
+            getHeaders(taskDetails.companyId.clientTaxonomyId.id, datapointId)
         ]);
         console.log(dpTypeValues);
         return { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields };
