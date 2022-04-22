@@ -46,9 +46,10 @@ const config = {
   },
   test: {
     mongo: {
-      uri: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/esgapi-dev?authSource=admin`,
+      // uri: `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/esgapi-dev?authSource=admin`,
+      uri: 'mongodb://localhost:7777/esgapi-dev',
       options: {
-        debug: false
+        debug: true
       }
     }
   },
