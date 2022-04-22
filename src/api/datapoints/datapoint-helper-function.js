@@ -260,9 +260,10 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
         }
 
         if (!isRep) {
-            datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName)
+            datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType);
         }
-
+        console.log(isRep);
+        console.log(datapointQuery);
         datapointQuery =
             keyIssueId == "" ? datapointQuery : { ...datapointQuery, keyIssueId };
         datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
@@ -287,7 +288,7 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
     } catch (error) { console.log(error?.message); }
 }
 
-async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName) {
+async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType) {
     try {
         if (
             taskDetails?.taskStatus == CorrectionPending ||
