@@ -48,10 +48,8 @@ export const datapointDetails = async (req, res, next) => {
       keyIssueId,
       dataType
     } = req.body;
-    console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
     const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
-    console.log(dpTypeValues);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
     const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
     const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
