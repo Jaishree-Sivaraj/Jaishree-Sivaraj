@@ -117,8 +117,8 @@ export async function getSourceDetails(object, sourceDetails) {
         findQuery = companySourceId ? { _id: companySourceId } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
         let sourceValuesStartTime = Date.now()
         sourceValues = findQuery ? await CompanySources.findOne(findQuery)
-        .populate('sourceTypeId')
-        .catch((error) => { return sourceDetails }) : {};
+            .populate('sourceTypeId')
+            .catch((error) => { return sourceDetails }) : {};
         // let sourceValuesEndTime=Date.now()
         // timeDetails.push({
         //     blockName:' SourceValues Details',
@@ -456,9 +456,6 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
 
 export async function getHeaders(clientTaxonomyId, datapointId) {
     try {
-        // let timeDetails=[]
-        let clientTaxDpMeasurePlaceValueDetailsStartTime = Date.now()
-
         const [clientTaxData, dpDetails, measureDetail, uoms, placeValues] = await Promise.all([
             ClientTaxonomy.findOne({
                 _id: clientTaxonomyId
@@ -482,7 +479,7 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
             clientTaxData?.childFields?.additionalFields.map(field => {
                 headers.push(field);
             });
-            if (dpDetails.measureType != '') {
+            if (dpDetails?.measureType != '') {
                 let measureDtl = measureDetail.find(obj => obj.measureName.toLowerCase() == dpDetails.measureType.toLowerCase());
                 let measureUoms = uoms.filter(obj => obj.measureId.id == measureDtl?.id);
                 let uomValues = [];
@@ -504,7 +501,6 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                         :
                         clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length
                 });
-                console.log('this is a headers', headers);
                 if (uomValues.length > 0) {
                     // if (measureDtl.measureName == 'Currency') {
                     // }
