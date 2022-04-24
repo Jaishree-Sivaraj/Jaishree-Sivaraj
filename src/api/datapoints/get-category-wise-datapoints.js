@@ -193,7 +193,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     );
     const isDerivedCalculationRequired = clientTaxonomyDetails?.isDerivedCalculationRequired;
 
-    const dpQuery = { companyId: taskDetails.companyId.id, status: true };
+    const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
     let response = {
       status: 200,
       fiscalYear: taskDetails?.year,
@@ -288,13 +288,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
-                  dpQuery,
-                  dpTypeDatapoints,
-                  memberId,
-                  datapointList,
+                  activeMemberQuery, // this is for finding the active boardMember
+                  dpTypeDatapoints,// this is datapoint found
+                  memberId,//from the payload
+                  datapointList, //the static datas are pre-filled
                   taskDetails,
                   currentAllBoardMemberMatrixDetails,
-                  taskStartDate,
+                  taskStartDate,//starting date.
                   currentYear,
                   BOARD_MATRIX
                 );
@@ -308,7 +308,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
-                  dpQuery,
+                  activeMemberQuery,
                   dpTypeDatapoints,
                   memberId,
                   datapointList,
@@ -406,7 +406,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  dpQuery,
+                  activeMemberQuery,
                   BOARD_MATRIX,
                   taskDetails,
                   currentYear,
@@ -426,7 +426,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  dpQuery,
+                  activeMemberQuery,
                   KMP_MATRIX,
                   taskDetails,
                   currentYear,
@@ -508,7 +508,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  dpQuery,
+                  activeMemberQuery,
                   BOARD_MATRIX,
                   taskDetails,
                   currentYear,
@@ -528,7 +528,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  dpQuery,
+                  activeMemberQuery,
                   KMP_MATRIX,
                   taskDetails,
                   currentYear,
