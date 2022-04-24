@@ -114,7 +114,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         : searchQuery;
 
     queryForDatapointCollection = {
-      ...queryForDatapointCollection,
+      ...queryForDatapointCollection, //code and name based search.
       ...searchQuery,
     };
 
@@ -122,13 +122,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // Query based on searchQuery.
     const datapointCodeQuery =
       searchValue !== ''
-        ? await Datapoints.distinct('_id', {
+        ? await Datapoints.distinct('_id', { // get datapointId for dpType Collections (Standalone, BM and KM * BM=Board Matrix, KM= KMP-Matrix.)
           ...searchQuery,
           categoryId: taskDetails?.categoryId,
         })
         : [];
 
-    let queryToCountDocuments = { ...queryForDatapointCollection, dpType };
+    let queryToCountDocuments = { ...queryForDatapointCollection, dpType }; // for counting only.
 
     let conditionalTaskStatus = [
       CorrectionPending,
@@ -136,7 +136,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       CorrectionCompleted,
     ];
     conditionalTaskStatus.includes(taskDetails?.taskStatus)
-      ? (queryToCountDocuments = await getConditionalTaskStatusCount(
+      // dpStatus is error only error based datapoint is selected.
+      ? (queryToCountDocuments = await getConditionalTaskStatusCount( // getQuery along with datapoints with Error.
         dpType,
         taskDetails,
         queryToCountDocuments,
@@ -144,6 +145,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       ))
       : queryToCountDocuments;
 
+    // When there is a search.
     queryToCountDocuments =
       datapointCodeQuery.length > 0
         ? { ...queryToCountDocuments, dpType, _id: { $in: datapointCodeQuery } }
@@ -417,7 +419,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -436,7 +439,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -517,7 +521,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -536,7 +541,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
