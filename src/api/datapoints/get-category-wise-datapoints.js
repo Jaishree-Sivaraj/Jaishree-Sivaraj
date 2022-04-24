@@ -104,7 +104,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         isActive: true,
         status: true,
       };
-    let queryKeyIssueSearch = queryForDatapointCollection;
+    let queryKeyIssueSearch = { ...queryForDatapointCollection, dpType };
     let queryForTotalPriorityDpCode = queryForDatapointCollection;
 
     // Queries when there is a searchValue added.
