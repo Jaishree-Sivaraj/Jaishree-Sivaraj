@@ -547,7 +547,8 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       const datapointIdBaseOnDataType = await Datapoints.find({
         categoryId: taskDetails?.categoryId,
         ...getConditionForQualitativeAndQuantitativeDatapoints(dataType),
-        status: true
+        status: true,
+        dpType
       });
       queryForHasError = { ...queryForHasError, datapointId: { $in: datapointIdBaseOnDataType } };
     }
