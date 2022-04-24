@@ -28,6 +28,7 @@ import {
   getFilterdDatapointForErrorForBMAndKM,
   getFilteredErrorDatapointForStandalone,
   getResponse,
+  getMembers,
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
@@ -202,6 +203,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;
+
+    if (memberName !== '') {
+      datapointList.memberList = await getMembers(
+        activeMemberQuery,
+        dpType,
+        taskStartDate,
+        currentYear
+      )
+    }
     switch (taskDetails.taskStatus) {
       case Pending:
       case CollectionCompleted:
@@ -482,6 +492,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).json({
             status: 200,
             message: 'No datapoints available',
+            datapointList,
+            count
           });
         }
       case CorrectionCompleted:
