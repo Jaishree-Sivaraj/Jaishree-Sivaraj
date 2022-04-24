@@ -257,7 +257,8 @@ export async function getQueryWithKeyIssueOrDataType(
   queryForHasError,
   keyIssueId,
   dataType,
-  categoryId
+  categoryId,
+  datapointCodeQuery
 ) {
 
   try {
@@ -278,6 +279,11 @@ export async function getQueryWithKeyIssueOrDataType(
       });
       datapointId.push(...datapointBasedOnDataTypes)
     }
+    if (datapointCodeQuery.length > 0) {
+      datapointId.push(...datapointCodeQuery)
+
+    }
+
 
     queryForHasError = {
       ...queryForHasError,
@@ -349,11 +355,13 @@ export function getFilteredData(data) {
   return data;
 }
 
-export async function getMembers(activeMemberQuery, dpType, taskStartDate, currentYear) {
+// taskStartDate = starting year, company's endDate and endMonth.
+export async function getMembers(activeMemberQuery, dpType, taskStartDate, currentYear, fiscalYearEndMonth, fiscalYearEndDate) {
   try {
     let memberList = []
     let memberDetails, terminatedDate, memberValue;
 
+    // Getting all the active members
     switch (dpType) {
       case BOARD_MATRIX:
         memberDetails = await BoardMembers.find(activeMemberQuery);
@@ -366,20 +374,28 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     }
 
     memberDetails?.length > 0 && memberDetails?.map((member) => {
-      terminatedDate = new Date(member?.endDateTimeStamp * 1000);
+      console.log(member?.BOSP004)
+      terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
-      const startYear = new Date(member?.startDate).getFullYear();
+      const memberJoinDate = new Date(member?.startDate).getDate()
+      const memberJoinMonth = new Date(member?.startDate).getMonth()
+      const memberJoinYear = new Date(member?.startDate).getFullYear()
+      const memberJoiningDate = (new Date(memberJoinYear, memberJoinMonth, memberJoinDate).getTime()) / 1000; // starting year
       let yearsForDataCollection = '';
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split('-');
-        // ! according to the requirement the member should be collecting data past their startingYear. i.e,
-        // ! If starting year = 2018, collection year should be 2019 and henceforth.
-        if (startYear < splityear[1] && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > taskStartDate)) {
+        fiscalYearEndMonth = fiscalYearEndMonth - 1;
+        const currentYearEndDate = (new Date(splityear[1], fiscalYearEndMonth, fiscalYearEndDate).getTime()) / 1000;
+        // [31st March, 2020 - 30th April, 2021]
+        const logicForDecidingWhetherToConsiderYear = memberJoiningDate <= currentYearEndDate && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > currentYearEndDate);
+        if (logicForDecidingWhetherToConsiderYear) {
           yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
           if (yearIndex !== currentYear?.length - 1) {
             yearsForDataCollection = yearsForDataCollection + ', ';
           }
+
         }
+
       }
 
       const memberName =
@@ -719,7 +735,8 @@ export async function getFilteredErrorDatapointForStandalone(
           queryForHasError,
           keyIssueId,
           dataType,
-          taskDetails?.categoryId
+          taskDetails?.categoryId,
+          datapointCodeQuery
         );
 
     queryForHasError =
