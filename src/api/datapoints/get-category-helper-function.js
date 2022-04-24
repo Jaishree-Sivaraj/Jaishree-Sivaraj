@@ -365,7 +365,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         break;
     }
 
-    memberDetails.map((member) => {
+    memberDetails?.length > 0 && memberDetails?.map((member) => {
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const startYear = new Date(member?.startDate).getFullYear();
