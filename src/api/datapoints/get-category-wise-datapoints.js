@@ -203,15 +203,15 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;
+    const memberList = await getMembers(
+      activeMemberQuery,
+      dpType,
+      taskStartDate,
+      currentYear
+    );
 
-    if (memberName !== '') {
-      datapointList.memberList = await getMembers(
-        activeMemberQuery,
-        dpType,
-        taskStartDate,
-        currentYear
-      )
-    }
+    datapointList.memberList = memberList;
+
     switch (taskDetails.taskStatus) {
       case Pending:
       case CollectionCompleted:
@@ -298,7 +298,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
-                  activeMemberQuery, // this is for finding the active boardMember
+                  memberList, // this is for finding the active boardMember
                   dpTypeDatapoints,// this is datapoint found
                   memberId,//from the payload
                   datapointList, //the static datas are pre-filled
@@ -318,7 +318,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
-                  activeMemberQuery,
+                  memberList,
                   dpTypeDatapoints,
                   memberId,
                   datapointList,
@@ -416,7 +416,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  activeMemberQuery,
+                  memberList,
                   BOARD_MATRIX,
                   taskDetails,
                   currentYear,
@@ -436,7 +436,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  activeMemberQuery,
+                  memberList,
                   KMP_MATRIX,
                   taskDetails,
                   currentYear,
@@ -520,7 +520,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case BOARD_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  activeMemberQuery,
+                  memberList,
                   BOARD_MATRIX,
                   taskDetails,
                   currentYear,
@@ -540,7 +540,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 return res.status(200).json(result);
               case KMP_MATRIX:
                 result = await getFilterdDatapointForErrorForBMAndKM(
-                  activeMemberQuery,
+                  memberList,
                   KMP_MATRIX,
                   taskDetails,
                   currentYear,

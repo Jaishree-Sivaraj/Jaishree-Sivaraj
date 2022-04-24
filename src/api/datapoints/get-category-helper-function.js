@@ -413,7 +413,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
 }
 
 export async function getFilteredDatapointsForBMAndKM(
-  activeMemberQuery,
+  memberList,
   dpTypeDatapoints,
   memberId,
   datapointList,
@@ -430,8 +430,6 @@ export async function getFilteredDatapointsForBMAndKM(
       dpType == BOARD_MATRIX ?
         await BoardMembersMatrixDataPoints.distinct('memberName', searchQueryForMemberName) :
         await KmpMatrixDataPoints.distinct('memberName', searchQueryForMemberName)
-
-    datapointList.memberList = memberList;
 
     // TODO Step2: Iterating through the datapoints to get the list.
     for (
@@ -501,7 +499,7 @@ export async function getFilteredDatapointsForBMAndKM(
 }
 
 export async function getFilterdDatapointForErrorForBMAndKM(
-  activeMemberQuery,
+  memberList,
   dpType,
   taskDetails,
   currentYear,
@@ -572,15 +570,6 @@ export async function getFilterdDatapointForErrorForBMAndKM(
     orderedDpCodes =
       isCorrectionCompleted && _.uniq(errorDatapoints, 'datapointId');
     orderedDpCodes = _.orderBy(errorDatapoints, ['datapointId.code'], ['asc']);
-
-    // TODO Step 1: Getting the member details.
-    let memberList = await getMembers(
-      activeMemberQuery,
-      dpType,
-      taskStartDate,
-      currentYear
-    );
-    datapointList.memberList = memberList;
     for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
       let object = orderedDpCodes[errorDpIndex].memberName;
       if (memberName.toLowerCase().includes(object.toLowerCase())) {
