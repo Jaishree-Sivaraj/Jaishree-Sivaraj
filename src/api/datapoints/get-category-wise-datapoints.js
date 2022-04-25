@@ -294,7 +294,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllBoardMemberMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  BOARD_MATRIX
+                  BOARD_MATRIX,
+                  dataType
                 );
                 result = getResponse(
                   result,
@@ -314,7 +315,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllKmpMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  KMP_MATRIX
+                  KMP_MATRIX,
+                  dataType
                 );
                 result = getResponse(
                   result,
@@ -417,7 +419,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -436,7 +439,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -465,7 +469,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               taskDetails,
               datapointList,
               page,
-              limit
+              limit,
+              dataType
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);
@@ -498,7 +503,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskDetails,
                   datapointList,
                   page,
-                  limit
+                  limit,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -517,7 +523,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -536,7 +543,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   memberId,
-                  count
+                  count,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -565,7 +573,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               taskDetails,
               datapointList,
               page,
-              limit
+              limit,
+              dataType
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);

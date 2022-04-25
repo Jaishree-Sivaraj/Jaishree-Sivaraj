@@ -143,6 +143,7 @@ export async function getErrorDetailsCompanySourceDetailsChildHeaders(taskDetail
                 year: {
                     $in: currentYear
                 },
+                datapointId,
                 categoryId: taskDetails.categoryId.id,
                 status: true
             }).populate('errorTypeId'),
