@@ -25,15 +25,11 @@ import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import { CompanyRepresentatives } from '../company-representatives';
 import { ClientRepresentatives } from '../client-representatives';
-import { getTotalExpectedYear, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
+import { checkIfAllDpCodeAreFilled, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
 import {
   VerificationCompleted,
-  CorrectionPending,
   ReassignmentPending,
-  CorrectionCompleted,
   Completed,
-  CollectionCompleted,
-  Correction,
   Incomplete
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
@@ -1992,9 +1988,14 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
 
     // Get distinct years
     let distinctYears = taskDetails.year.split(', ');
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     let totalDatapointsCollectedCount = 0;
-    let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
-    const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
+    let [reqDpCodes, negativeNews] = await Promise.all([
+      Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true }),
+      Functions.findOne({ functionType: "Negative News", status: true })
+    ]);
+
     const query = {
       taskId: body.taskId,
       companyId: taskDetails.companyId.id,
@@ -2039,6 +2040,14 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       Datapoints.find({ ...datapointQuery, dpType: KMP_MATRIX }),
     ]);
 
+    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
+
+    const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails);
+    const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails);
+
+    if (Object.keys(errorMessageForBM)?.length !== 0 || Object.keys(errorMessageForKM)?.length !== 0) {
+      return res.status(409).json(errorMessageForBM);
+    }
 
     // mergedDetails is the Dp codes of all Dp Types.
     let [hasError, hasCorrection, isCorrectionStatusIncomplete] = [
@@ -2046,14 +2055,13 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
-    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
-    const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR);
+    const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
       ? totalDatapointsCollectedCount >= multipliedValue : totalDatapointsCollectedCount >= multipliedValue && !isCorrectionStatusIncomplete
 
     const { message, taskStatusValue } = await conditionalResult(body, hasError, hasCorrection, condition);
-    console.log();
+
     if (message !== '') {
       return res.status(409).json({
         status: 409,
