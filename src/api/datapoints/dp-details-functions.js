@@ -551,3 +551,13 @@ export function getSortedYear(currentYear) {
     return newArray;
 }
 
+export function getMemberJoiningDate(date) {
+    try {
+        const memberJoinDate = new Date(date).getDate()
+        const memberJoinMonth = new Date(date).getMonth()
+        const memberJoinYear = new Date(date).getFullYear();
+        const memberJoiningDate = (new Date(memberJoinYear, memberJoinMonth, memberJoinDate).getTime()) / 1000; // starting year
+        return memberJoiningDate;
+    } catch (error) { console.log(error?.message); }
+
+}

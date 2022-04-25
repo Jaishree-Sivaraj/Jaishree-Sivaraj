@@ -17,6 +17,7 @@ import {
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { format } from 'date-fns';
 import { NUMBER } from '../../constants/dp-datatype';
+import { getMemberJoiningDate } from './dp-details-functions';
 
 const QUALITATIVE = 'Qualitative';
 const QUANTITATIVE = 'Quantitative';
@@ -377,10 +378,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       console.log(member?.BOSP004)
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
-      const memberJoinDate = new Date(member?.startDate).getDate()
-      const memberJoinMonth = new Date(member?.startDate).getMonth()
-      const memberJoinYear = new Date(member?.startDate).getFullYear()
-      const memberJoiningDate = (new Date(memberJoinYear, memberJoinMonth, memberJoinDate).getTime()) / 1000; // starting year
+      const memberJoiningDate = getMemberJoiningDate(member?.startDate);
       let yearsForDataCollection = '';
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split('-');
