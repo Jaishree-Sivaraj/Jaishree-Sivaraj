@@ -4,6 +4,7 @@ import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
 import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
 import { BoardMembers } from "../boardMembers";
 import { Kmp } from "../kmp";
+import { ClientTaxonomy } from '../clientTaxonomy';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import {
   YetToStart,
@@ -21,13 +22,14 @@ import {
 import {
   getVariablesValues,
   getTaskDetailsFunctionIdPlaceValuesAndMeasureType,
-  getDpValuesErrorDetailsCompanySourceDetailsChildHeaders,
+  getErrorDetailsCompanySourceDetailsChildHeaders,
   getCompanySourceDetails,
   getSortedCurrentYearAndDisplayFields,
   getUomAndPlaceValues,
   getInputValues,
   getPrevAndNextDatapointsDetails,
-  getTotalYearsForDataCollection
+  getTotalYearsForDataCollection,
+  getClientTaxonomyAndDpTypeDetails
 }
   from './datapoint-helper-function';
 import { SELECT } from "../../constants/dp-datatype";
@@ -46,11 +48,13 @@ export const datapointDetails = async (req, res, next) => {
       keyIssueId,
       dataType
     } = req.body;
-
+    console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
-    const { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields } = await getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear)
-    const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
+    const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
+    console.log(dpTypeValues);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
+    const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
+    const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
     const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
     let inputValues = [];
     if (dpTypeValues?.dataType == SELECT) {
