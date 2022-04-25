@@ -561,3 +561,21 @@ export function getMemberJoiningDate(date) {
     } catch (error) { console.log(error?.message); }
 
 }
+
+
+export function getTaskStartDate(currentyear, month, date) {
+    // We will get the first year
+    let [taskStartingYear] = currentyear.split('-');
+    const taskStartingDate =
+        new Date(taskStartingYear, month, 0).getDate() == date
+            ? 1
+            : Number(date) + 1;
+    const taskStartingMonth = new Date(taskStartingYear, month, 0).getMonth() == 11 ? 0 : Number(month);
+    // because month starts with 0 hence 3 is April and not march. Therefore, we are not increamenting the month.
+    if (month == 12) {
+        taskStartingYear = Number(taskStartingYear) + 1;
+    }
+    const yearTimeStamp = Math.floor(new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() / 1000
+    );
+    return yearTimeStamp;
+}
