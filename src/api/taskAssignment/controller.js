@@ -2045,8 +2045,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails);
     const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails);
 
-    if (Object.keys(errorMessageForBM)?.length !== 0 || Object.keys(errorMessageForKM)?.length !== 0) {
+    if (Object.keys(errorMessageForBM)?.length !== 0) {
       return res.status(409).json(errorMessageForBM);
+    }
+
+    if (Object.keys(errorMessageForKM)?.length !== 0) {
+      return res.status(409).json(errorMessageForKM);
     }
 
     // mergedDetails is the Dp codes of all Dp Types.
