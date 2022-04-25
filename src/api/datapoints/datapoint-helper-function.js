@@ -109,9 +109,9 @@ export async function getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId) 
     }
 }
 
-export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(functionId, taskDetails, datapointId, currentYear) {
+export async function getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId) {
     try {
-        const [dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields] = await Promise.all([
+        const [dpTypeValues, clienttaxonomyFields] = await Promise.all([
             Datapoints.findOne({
                 dataCollection: 'Yes',
                 functionId: {
@@ -121,6 +121,21 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
                 _id: datapointId,
                 status: true
             }).populate('keyIssueId').populate('categoryId'),
+            ClientTaxonomy.findOne({
+                _id: taskDetails.companyId.clientTaxonomyId.id,
+            }).lean()
+        ]);
+
+        return { dpTypeValues, clienttaxonomyFields }
+
+    } catch (error) {
+        console.log(error?.message);
+    }
+}
+
+export async function getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear) {
+    try {
+        const [errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
 
             ErrorDetails.find({
                 taskId: taskDetails?._id,
@@ -131,15 +146,10 @@ export async function getDpValuesErrorDetailsCompanySourceDetailsChildHeaders(fu
                 categoryId: taskDetails.categoryId.id,
                 status: true
             }).populate('errorTypeId'),
-
             CompanySources.find({ companyId: taskDetails.companyId.id }),
-            getHeaders(taskDetails.companyId.clientTaxonomyId.id),
-            ClientTaxonomy.findOne({
-                _id: taskDetails.companyId.clientTaxonomyId.id,
-            }).lean()
+            getHeaders(taskDetails.companyId.clientTaxonomyId.id, datapointId)
         ]);
-        console.log(dpTypeValues);
-        return { dpTypeValues, errorDataDetails, companySourceDetails, chilDpHeaders, clienttaxonomyFields };
+        return { errorDataDetails, companySourceDetails, chilDpHeaders };
     } catch (error) {
         console.log(error?.message)
     }
@@ -173,6 +183,7 @@ export function getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields,
             clienttaxonomyFields.filter(obj => obj?.toDisplay == true && obj?.applicableFor != 'Only Controversy')
         ];
         currentYear = getSortedYear(currentYear);
+
         if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired && dpTypeValues?.dataType !== NUMBER) {
             currentYear.length = 1
         }
@@ -249,9 +260,10 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
         }
 
         if (!isRep) {
-            datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName)
+            datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType);
         }
-
+        console.log(isRep);
+        console.log(datapointQuery);
         datapointQuery =
             keyIssueId == "" ? datapointQuery : { ...datapointQuery, keyIssueId };
         datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
@@ -276,7 +288,7 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
     } catch (error) { console.log(error?.message); }
 }
 
-async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName) {
+async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType) {
     try {
         if (
             taskDetails?.taskStatus == CorrectionPending ||
