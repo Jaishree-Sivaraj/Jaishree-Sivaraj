@@ -104,7 +104,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         isActive: true,
         status: true,
       };
-    let queryKeyIssueSearch = queryForDatapointCollection;
+    let queryKeyIssueSearch = { ...queryForDatapointCollection, dpType };
     let queryForTotalPriorityDpCode = queryForDatapointCollection;
 
     // Queries when there is a searchValue added.
@@ -207,7 +207,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       activeMemberQuery,
       dpType,
       taskStartDate,
-      currentYear
+      currentYear,
+      fiscalYearEndMonth,
+      fiscalYearEndDate
     );
 
     datapointList.memberList = memberList;
@@ -479,7 +481,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               taskDetails,
               datapointList,
               page,
-              limit
+              limit,
+              dataType
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);
@@ -514,7 +517,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   taskDetails,
                   datapointList,
                   page,
-                  limit
+                  limit,
+                  dataType
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -583,7 +587,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               taskDetails,
               datapointList,
               page,
-              limit
+              limit,
+              dataType
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);

@@ -17,6 +17,7 @@ import {
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { format } from 'date-fns';
 import { NUMBER } from '../../constants/dp-datatype';
+import { getMemberJoiningDate } from './dp-details-functions';
 
 const QUALITATIVE = 'Qualitative';
 const QUANTITATIVE = 'Quantitative';
@@ -257,7 +258,8 @@ export async function getQueryWithKeyIssueOrDataType(
   queryForHasError,
   keyIssueId,
   dataType,
-  categoryId
+  categoryId,
+  datapointCodeQuery
 ) {
 
   try {
@@ -278,6 +280,11 @@ export async function getQueryWithKeyIssueOrDataType(
       });
       datapointId.push(...datapointBasedOnDataTypes)
     }
+    if (datapointCodeQuery.length > 0) {
+      datapointId.push(...datapointCodeQuery)
+
+    }
+
 
     queryForHasError = {
       ...queryForHasError,
@@ -349,11 +356,13 @@ export function getFilteredData(data) {
   return data;
 }
 
-export async function getMembers(activeMemberQuery, dpType, taskStartDate, currentYear) {
+// taskStartDate = starting year, company's endDate and endMonth.
+export async function getMembers(activeMemberQuery, dpType, taskStartDate, currentYear, fiscalYearEndMonth, fiscalYearEndDate) {
   try {
     let memberList = []
     let memberDetails, terminatedDate, memberValue;
 
+    // Getting all the active members
     switch (dpType) {
       case BOARD_MATRIX:
         memberDetails = await BoardMembers.find(activeMemberQuery);
@@ -366,19 +375,23 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     }
 
     memberDetails?.length > 0 && memberDetails?.map((member) => {
-      terminatedDate = new Date(member?.endDateTimeStamp * 1000);
+      terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
-      const startYear = new Date(member?.startDate).getFullYear();
+      const memberJoiningDate = getMemberJoiningDate(member?.startDate);
       let yearsForDataCollection = '';
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split('-');
-        // ! according to the requirement the member should be collecting data past their startingYear. i.e,
-        // ! If starting year = 2018, collection year should be 2019 and henceforth.
-        if (startYear < splityear[1] && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > taskStartDate)) {
-          yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
-          if (yearIndex !== currentYear?.length - 1) {
+        // 1st date is one more than the end date, i.e, if it is 1st then new date is 2nd
+        const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+        const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+        const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
+          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate);
+        if (logicForDecidingWhetherToConsiderYear) {
+          if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
           }
+          yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
+
         }
       }
 
@@ -719,7 +732,8 @@ export async function getFilteredErrorDatapointForStandalone(
           queryForHasError,
           keyIssueId,
           dataType,
-          taskDetails?.categoryId
+          taskDetails?.categoryId,
+          datapointCodeQuery
         );
 
     queryForHasError =

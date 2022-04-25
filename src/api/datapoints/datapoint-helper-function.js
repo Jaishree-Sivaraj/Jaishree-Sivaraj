@@ -28,6 +28,7 @@ import {
 } from "./dp-details-functions";
 import { NUMBER } from "../../constants/dp-datatype";
 import { CURRENCY, NA } from "../../constants/measure-type";
+import { getMemberJoiningDate } from './dp-details-functions';
 
 export function getVariablesValues(taskDetails, currentYear, datapointId, taskId, dpTypeValues) {
 
@@ -335,18 +336,29 @@ async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName
     }
 }
 
-export function getTotalYearsForDataCollection(currentYear, memberDetails) {
+export function getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate) {
     try {
-        const memberStartDate = new Date(memberDetails?.startDate).getFullYear();
+        const memberJoiningDate = getMemberJoiningDate(memberDetails?.startDate);
         let memberCollectionYears = [];
         for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
             const splityear = currentYear[yearIndex].split("-");
-            if (
-                memberStartDate <= splityear[0] ||
-                memberStartDate <= splityear[1]
-            ) {
-                memberCollectionYears.push(currentYear[yearIndex]);
+            fiscalYearEndMonth = fiscalYearEndMonth - 1;
+            const currentYearEndDate = (new Date(splityear[1], fiscalYearEndMonth, fiscalYearEndDate).getTime()) / 1000;
+            // [31st March, 2020 - 30th April, 2021]
+            const logicForDecidingWhetherToConsiderYear = memberJoiningDate <= currentYearEndDate
+                && (memberDetails?.endDateTimeStamp == 0 || memberDetails?.endDateTimeStamp > currentYearEndDate);
+            if (logicForDecidingWhetherToConsiderYear) {
+                yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
+                if (yearIndex !== currentYear?.length - 1) {
+                    yearsForDataCollection = yearsForDataCollection + ', ';
+                }
             }
+            // if (
+            //     memberStartDate <= splityear[0] ||
+            //     memberStartDate <= splityear[1]
+            // ) {
+            //     memberCollectionYears.push(currentYear[yearIndex]);
+            // }
         }
         return memberCollectionYears;
     } catch (error) { console.log(error?.message); }
