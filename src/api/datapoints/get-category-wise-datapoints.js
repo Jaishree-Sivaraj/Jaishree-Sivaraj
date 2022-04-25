@@ -309,7 +309,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllBoardMemberMatrixDetails,
                   taskStartDate,//starting date.
                   currentYear,
-                  BOARD_MATRIX
+                  BOARD_MATRIX,
+                  dataType
                 );
                 result = getResponse(
                   result,
@@ -329,7 +330,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllKmpMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  KMP_MATRIX
+                  KMP_MATRIX,
+                  dataType
                 );
                 result = getResponse(
                   result,
