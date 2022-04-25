@@ -44,16 +44,18 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType, fi
                 let totalCollectedYears = 0;
                 const memberJoiningDate = getMemberJoiningDate(memberDetails[memberIndex]?.startDate);
                 for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+                    const splityear = distinctYears[yearIndex].split('-');
                     const firstHalfDate = getTaskStartDate(distinctYears[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
                     const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
                     const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-                        && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate);
+                        && (memberDetails[memberIndex].endDateTimeStamp == 0 || memberDetails[memberIndex].endDateTimeStamp > firstHalfDate);
                     if (logicForDecidingWhetherToConsiderYear) {
                         totalCollectedYears += 1;
                     }
                 }
+
+                totalCollectionYearForMembers.push(totalCollectedYears);
             }
-            totalCollectionYearForMembers.push(totalCollectedYears);
         }
         return totalCollectionYearForMembers;
     } catch (error) {
@@ -99,10 +101,10 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
     }
 }
 
-export function checkIfAllDpCodeAreFilled(datapoint, collectedData) {
+export function checkIfAllDpCodeAreFilled(datapoint, collectedData, dpType) {
     let errorMessage = {}
     if (datapoint?.length > 0 && collectedData?.length <= 0) {
-        errorMessage = { status: 409, message: "Task Status not updated. Check all DPcodes" }
+        errorMessage = { status: 409, message: `Task Status not updated. Check ${dpType} DPcodes` }
     }
     return errorMessage;
 }
