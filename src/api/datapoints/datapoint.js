@@ -49,6 +49,8 @@ export const datapointDetails = async (req, res, next) => {
       dataType
     } = req.body;
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
     const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
@@ -351,7 +353,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
           let historyYearObject = {};
@@ -646,7 +648,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         trackTime(
           timeDetails,
