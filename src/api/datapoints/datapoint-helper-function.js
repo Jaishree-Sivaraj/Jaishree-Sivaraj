@@ -28,7 +28,7 @@ import {
 } from "./dp-details-functions";
 import { NUMBER } from "../../constants/dp-datatype";
 import { CURRENCY, NA } from "../../constants/measure-type";
-import { getMemberJoiningDate } from './dp-details-functions';
+import { getTaskStartDate, getMemberJoiningDate } from './dp-details-functions';
 
 export function getVariablesValues(taskDetails, currentYear, datapointId, taskId, dpTypeValues) {
 
@@ -264,7 +264,8 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
         if (!isRep) {
             datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType);
         }
-
+        console.log(isRep);
+        console.log(datapointQuery);
         datapointQuery =
             keyIssueId == "" ? datapointQuery : { ...datapointQuery, keyIssueId };
         datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
@@ -338,27 +339,30 @@ async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName
 
 export function getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate) {
     try {
+        // const memberStartDate = new Date(memberDetails?.startDate).getFullYear();
+        // let memberCollectionYears = [];
+        // for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
+        //     const splityear = currentYear[yearIndex].split("-");
+        //     if (
+        //         memberStartDate <= splityear[0] ||
+        //         memberStartDate <= splityear[1]
+        //     ) {
+        //         memberCollectionYears.push(currentYear[yearIndex]);
+        //     }
+        // }
+
         const memberJoiningDate = getMemberJoiningDate(memberDetails?.startDate);
         let memberCollectionYears = [];
         for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
-            const splityear = currentYear[yearIndex].split("-");
-            fiscalYearEndMonth = fiscalYearEndMonth - 1;
-            const currentYearEndDate = (new Date(splityear[1], fiscalYearEndMonth, fiscalYearEndDate).getTime()) / 1000;
-            // [31st March, 2020 - 30th April, 2021]
-            const logicForDecidingWhetherToConsiderYear = memberJoiningDate <= currentYearEndDate
-                && (memberDetails?.endDateTimeStamp == 0 || memberDetails?.endDateTimeStamp > currentYearEndDate);
+            const splityear = currentYear[yearIndex].split('-');
+            const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+            const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+            const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
+                && (memberDetails.endDateTimeStamp == 0 || memberDetails.endDateTimeStamp > firstHalfDate);
             if (logicForDecidingWhetherToConsiderYear) {
-                yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
-                if (yearIndex !== currentYear?.length - 1) {
-                    yearsForDataCollection = yearsForDataCollection + ', ';
-                }
+                memberCollectionYears.push(currentYear[yearIndex])
             }
-            // if (
-            //     memberStartDate <= splityear[0] ||
-            //     memberStartDate <= splityear[1]
-            // ) {
-            //     memberCollectionYears.push(currentYear[yearIndex]);
-            // }
+
         }
         return memberCollectionYears;
     } catch (error) { console.log(error?.message); }
