@@ -375,25 +375,24 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     }
 
     memberDetails?.length > 0 && memberDetails?.map((member) => {
-      console.log(member?.BOSP004)
       terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const memberJoiningDate = getMemberJoiningDate(member?.startDate);
       let yearsForDataCollection = '';
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split('-');
-        fiscalYearEndMonth = fiscalYearEndMonth - 1;
-        const currentYearEndDate = (new Date(splityear[1], fiscalYearEndMonth, fiscalYearEndDate).getTime()) / 1000;
-        // [31st March, 2020 - 30th April, 2021]
-        const logicForDecidingWhetherToConsiderYear = memberJoiningDate <= currentYearEndDate && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > currentYearEndDate);
+        // 1st date is one more than the end date, i.e, if it is 1st then new date is 2nd
+        const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+        const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+        const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
+          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
-          yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
-          if (yearIndex !== currentYear?.length - 1) {
+          if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
           }
+          yearsForDataCollection = yearsForDataCollection + currentYear[yearIndex];
 
         }
-
       }
 
       const memberName =
