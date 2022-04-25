@@ -19,7 +19,6 @@ import {
 } from '../../constants/roles';
 import { ClientTaxonomy } from '../clientTaxonomy';
 import {
-  getTaskStartDate,
   getSearchQuery,
   getConditionalTaskStatusCount,
   getDocumentCountAndPriorityDataAndAllDpTypeDetails,
@@ -31,6 +30,8 @@ import {
   getMembers,
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
+import { getTaskStartDate } from './dp-details-functions';
+
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
