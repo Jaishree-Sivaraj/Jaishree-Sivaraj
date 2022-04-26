@@ -1990,7 +1990,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     let distinctYears = taskDetails.year.split(', ');
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
-    let totalDatapointsCollectedCount = 0;
     let [reqDpCodes, negativeNews] = await Promise.all([
       Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true }),
       Functions.findOne({ functionType: "Negative News", status: true })
@@ -2018,8 +2017,10 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.distinct('memberName', query)
     ]);
 
+    let totalDatapointsCollectedCount = 0;
     // Getting all the collected Datas.
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
+    // total collected data.
     totalDatapointsCollectedCount = totalDatapointsCollectedCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
     let datapointQuery = {
@@ -2042,6 +2043,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
 
     const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
 
+    // Comment the purpose.
     const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
     const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
 
@@ -2059,6 +2061,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
+    // Compare the totalDatapoint * collected year == totalDatapointsCollectedCount
     const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
