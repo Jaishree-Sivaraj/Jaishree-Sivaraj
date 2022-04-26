@@ -202,9 +202,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;
+    let memberList
     // member List is only needed when dpType is Kmp or board-matrix.
     if (dpType == BOARD_MATRIX || dpType == KMP_MATRIX) {
-      const memberList = await getMembers(
+      memberList = await getMembers(
         activeMemberQuery,
         dpType,
         taskStartDate,
