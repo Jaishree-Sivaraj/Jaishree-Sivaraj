@@ -4,7 +4,6 @@ import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
 import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
 import { BoardMembers } from "../boardMembers";
 import { Kmp } from "../kmp";
-import { ClientTaxonomy } from '../clientTaxonomy';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import {
   YetToStart,
@@ -370,7 +369,7 @@ export const datapointDetails = async (req, res, next) => {
         let currentYearLoopBoardMemberStartTime = Date.now();
         for (
           let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
+          currentYearIndex < memberCollectionYears?.length;
           currentYearIndex++
         ) {
           let currentDatapointsObject = {};
@@ -671,7 +670,7 @@ export const datapointDetails = async (req, res, next) => {
         const startKmpLoop = Date.now();
         for (
           let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
+          currentYearIndex < memberCollectionYears?.length;
           currentYearIndex++
         ) {
           let currentDatapointsObject = {};
