@@ -416,7 +416,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   datapointList,
                   page,
                   limit,
-                  dataType
+                  dataType,
+                  currentYear
                 );
                 result = getResponse(
                   result,
@@ -492,7 +493,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               datapointList,
               page,
               limit,
-              dataType
+              dataType,
+              currentYear
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);
@@ -533,7 +535,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   datapointList,
                   page,
                   limit,
-                  dataType
+                  dataType,
+                  currentYear
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -603,7 +606,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               datapointList,
               page,
               limit,
-              dataType
+              dataType,
+              currentYear
             );
             result = getResponse(result, response, count, false);
             return res.status(200).json(result);

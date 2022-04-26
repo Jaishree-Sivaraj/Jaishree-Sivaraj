@@ -552,13 +552,13 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       dpType == BOARD_MATRIX
         ? await Promise.all([BoardMembersMatrixDataPoints.find(queryForHasError)
           .skip((page - 1) * limit)
-          .limit(+limit)
+          .limit(+limit * currentYear?.length)
           .populate([populateQuery]),
         BoardMembersMatrixDataPoints.distinct('memberName', queryForHasError)
         ])
         : await Promise.all([KmpMatrixDataPoints.find(queryForHasError)
           .skip((page - 1) * limit)
-          .limit(+limit)
+          .limit(+limit * currentYear?.length)
           .populate([populateQuery])],
           KmpMatrixDataPoints.distinct('memberName', queryForHasError)
         );
@@ -705,7 +705,8 @@ export async function getFilteredErrorDatapointForStandalone(
   datapointList,
   page,
   limit,
-  dataType
+  dataType,
+  currentYear
 ) {
   try {
     queryForHasError =
@@ -726,7 +727,7 @@ export async function getFilteredErrorDatapointForStandalone(
 
     const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
       .skip((page - 1) * limit)
-      .limit(+limit)
+      .limit(+limit * currentYear?.length)
       .populate({
         path: 'datapointId',
         populate: {
