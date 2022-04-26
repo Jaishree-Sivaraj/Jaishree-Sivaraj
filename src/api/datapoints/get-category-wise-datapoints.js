@@ -387,6 +387,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).json({
             status: 200,
             message: 'No datapoints available',
+            response: {
+              datapointList,
+              ...response,
+              count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+              repFinalSubmit: repFinalSubmit ? repFinalSubmit : '',
+              isPriority: false,
+            }
           });
         }
       case ReassignmentPending:
@@ -498,8 +505,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).json({
             status: 200,
             message: 'No datapoints available',
-            datapointList,
-            count
+            response: {
+              datapointList,
+              ...response,
+              count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+              repFinalSubmit: repFinalSubmit ? repFinalSubmit : '',
+              isPriority: false,
+            }
           });
         }
       case CorrectionCompleted:
@@ -604,6 +616,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           return res.status(200).json({
             status: 200,
             message: 'No datapoints available',
+            response: {
+              datapointList,
+              ...response,
+              count: datapointList?.dpCodesData?.length < 1 ? 0 : count,
+              repFinalSubmit: repFinalSubmit ? repFinalSubmit : '',
+              isPriority: false,
+            }
           });
         }
 
