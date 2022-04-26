@@ -218,7 +218,7 @@ export function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails) {
   };
 }
 
-export function getDpObjectForCorrrection(orderedDpCodes, taskDetails, memberId, memberName) {
+export function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
   return {
     dpCode: orderedDpCodes?.datapointId?.code,
     dpCodeId: orderedDpCodes?.datapointId?.id,
@@ -231,9 +231,7 @@ export function getDpObjectForCorrrection(orderedDpCodes, taskDetails, memberId,
     pillarId: taskDetails?.categoryId?.id,
     pillar: taskDetails?.categoryId.categoryName,
     fiscalYear: orderedDpCodes?.year,
-    status: orderedDpCodes?.correctionStatus,
-    memberName,
-    memberId
+    status: orderedDpCodes?.correctionStatus
   };
 }
 
@@ -585,13 +583,11 @@ export async function getFilterdDatapointForErrorForBMAndKM(
           let datapointObject = getDpObjectForCorrrection(
             orderedDpCodes[errorDpIndex],
             taskDetails,
-            memberId,
-            memberName
           );
           datapointObject = {
             ...datapointObject,
-            memberName: object.label,
-            memberId: object.value,
+            memberName,
+            memberId,
           };
           if (datapointList.dpCodesData.length > 0) {
             let yearfind = datapointList.dpCodesData.findIndex(
@@ -749,9 +745,7 @@ export async function getFilteredErrorDatapointForStandalone(
     ) {
       let datapointsObject = getDpObjectForCorrrection(
         orderedDpCodes[errorDpIndex],
-        taskDetails,
-        memberId,
-        memberName
+        taskDetails
       );
       datapointsObject = {
         ...datapointsObject,
