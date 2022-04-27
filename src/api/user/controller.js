@@ -709,7 +709,8 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
       User.updateOne({ _id: body.userId }, { $set: body.userDetails }).then(function (userUpdates) {
         if (body.userDetails && body.userDetails.hasOwnProperty('isUserApproved') && !body.userDetails.isUserApproved) {
           User.findById(body.userId).then(async function (userDetails) {
-            var link = `${process.env.FRONTEND_URL}/onboard/new-user?`;
+            var link = `${process.env.FRONTEND_URL}onboard/new-user?`;
+            console.log(link);
             if (userDetails && userDetails.userType) {
               userDetails.userType = userDetails.userType.split(" ").join("");
             }
@@ -938,11 +939,11 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
               let link;
               if (rolesDetails) {
                 if (rolesDetails.roleName == Employee) {
-                  link = `/onboard/new-user?role=Employee&email=${rowObject['email']}`
+                  link = `onboard/new-user?role=Employee&email=${rowObject['email']}`
                 } else if ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative")) {
-                  link = `/onboard/new-user?role=CompanyRepresentative&email=${rowObject['email']}`
+                  link = `onboard/new-user?role=CompanyRepresentative&email=${rowObject['email']}`
                 } else {
-                  link = `/onboard/new-user?role=ClientRepresentative&email=${rowObject['email']}`
+                  link = `onboard/new-user?role=ClientRepresentative&email=${rowObject['email']}`
                 }
 
                 if (!emailAlreadyExists) {
@@ -1051,11 +1052,11 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
         let rolesDetails = rolesList.find(object => object._id == rowObject['onboardingtype']);
         let link;
         if (rolesDetails && rolesDetails.roleName == Employee) {
-          link = `/onboard/new-user?role=Employee`
+          link = `onboard/new-user?role=Employee`
         } else if (rolesDetails && ((rolesDetails.roleName == CompanyRepresentative) || (rolesDetails.roleName == "CompanyRepresentative"))) {
-          link = `/onboard/new-user?role=CompanyRepresentative`
+          link = `onboard/new-user?role=CompanyRepresentative`
         } else {
-          link = `/onboard/new-user?role=ClientRepresentative`
+          link = `onboard/new-user?role=ClientRepresentative`
         }
         if (!emailAlreadyExists) {
           if (rolesDetails && rolesDetails.roleName == Employee) {
