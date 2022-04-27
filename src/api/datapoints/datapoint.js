@@ -367,14 +367,10 @@ export const datapointDetails = async (req, res, next) => {
           status: "",
         };
         let currentYearLoopBoardMemberStartTime = Date.now();
-        for (
-          let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears?.length;
-          currentYearIndex++
-        ) {
+        for ( let currentYearIndex = 0; currentYearIndex < memberCollectionYears?.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
-            if (object.year == memberCollectionYears[currentYearIndex] && object.memberName == memberName) {
+            if (object.year == memberCollectionYears[currentYearIndex] ) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
             }
@@ -676,8 +672,7 @@ export const datapointDetails = async (req, res, next) => {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
             if (
-              object.year == memberCollectionYears[currentYearIndex] &&
-              object.memberName == memberName
+              object.year == memberCollectionYears[currentYearIndex]
             ) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
