@@ -235,7 +235,7 @@ export function getDpObjectForCorrrection(orderedDpCodes, taskDetails) {
   };
 }
 
-export async function getQueryWithKeyIssueOrDataType(
+export async function getQueryWithKeyIssueOrDataTypeOrSearch(
   queryForHasError,
   keyIssueId,
   dataType,
@@ -244,31 +244,24 @@ export async function getQueryWithKeyIssueOrDataType(
 ) {
 
   try {
-    let datapointId = [];
-    if (keyIssueId !== '') {
-      const datapointwithKeyIssue = await Datapoints.distinct('_id', {
-        keyIssueId,
-        status: true,
-        categoryId,
-      });
-      datapointId.push(...datapointwithKeyIssue)
-    }
-    if (dataType !== '') {
-      const datapointBasedOnDataTypes = await Datapoints.distinct('_id', {
-        categoryId,
-        ...getConditionForQualitativeAndQuantitativeDatapoints(dataType),
-        status: true
-      });
-      datapointId.push(...datapointBasedOnDataTypes)
-    }
-    if (datapointCodeQuery.length > 0) {
-      datapointId.push(...datapointCodeQuery)
+    let query = {};
+    if (datapointCodeQuery?.length > 0) {
+      query = { ...query, _id: { $in: datapointCodeQuery } };
 
     }
+   
+    if (keyIssueId !== '' && keyIssueId) {
+      query = { ...query, keyIssueId };
+    }
 
+    if (dataType !== '' && dataType) {
+      query = { ...query,  ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) };
+    }
+
+    const uniquedatapointId = await Datapoints.distinct('_id', query);
     queryForHasError = {
       ...queryForHasError,
-      datapointId: { $in: datapointId },
+      datapointId: { $in: uniquedatapointId },
     };
     return queryForHasError;
   } catch (error) {
@@ -707,24 +700,32 @@ export async function getFilteredErrorDatapointForStandalone(
 ) {
   try {
     queryForHasError =
-      keyIssueId == '' && dataType == ''
+      (keyIssueId == '' || !keyIssueId) && (dataType == '' || !dataType) && datapointCodeQuery?.length == 0
         ? queryForHasError
-        : await getQueryWithKeyIssueOrDataType(
+        : await getQueryWithKeyIssueOrDataTypeOrSearch(
           queryForHasError,
           keyIssueId,
           dataType,
-          taskDetails?.categoryId,
+          taskDetails?.categoryId?._id,
           datapointCodeQuery
         );
 
-    queryForHasError =
-      datapointCodeQuery.length > 0
-        ? { ...queryForHasError, datapointId: datapointCodeQuery }
-        : queryForHasError;
-
-    const errorDatapoints = await StandaloneDatapoints.find(queryForHasError)
+    const distinctDatapoint = await StandaloneDatapoints.distinct('datapointId', queryForHasError);
+    const dpWithSkipAndlimit = await Datapoints.find({ _id: distinctDatapoint })
       .skip((page - 1) * limit)
-      .limit(+limit * currentYear?.length)
+      .limit(+limit)
+
+    let dp = [];
+    dpWithSkipAndlimit?.map(dpData => {
+      dp.push(dpData?._id)
+    });
+
+    const errorDatapoints = await StandaloneDatapoints.find({
+      taskId: taskDetails?._id,
+      status: true,
+      isActive: true,
+      datapointId: { $in: dp }
+    })
       .populate({
         path: 'datapointId',
         populate: {
@@ -738,11 +739,7 @@ export async function getFilteredErrorDatapointForStandalone(
       ['asc']
     );
     keyIssuesList = await getKeyIssues(queryKeyIssueSearch, keyIssuesList);
-    for (
-      let errorDpIndex = 0;
-      errorDpIndex < orderedDpCodes.length;
-      errorDpIndex++
-    ) {
+    for (let errorDpIndex = 0; errorDpIndex < orderedDpCodes.length; errorDpIndex++) {
       let datapointsObject = getDpObjectForCorrrection(
         orderedDpCodes[errorDpIndex],
         taskDetails
