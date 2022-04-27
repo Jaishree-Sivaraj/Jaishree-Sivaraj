@@ -101,7 +101,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // Queries when there is a searchValue added.
     let searchQuery = {};
     searchQuery =
-      searchValue !== ''
+      searchValue !== '' && searchValue
         ? getSearchQuery(searchValue, searchQuery)
         : searchQuery;
 
@@ -113,7 +113,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     // Query based on searchQuery.
     const datapointCodeQuery =
-      searchValue !== ''
+      searchValue !== '' && searchValue
         ? await Datapoints.distinct('_id', { // get datapointId for dpType Collections (Standalone, BM and KM * BM=Board Matrix, KM= KMP-Matrix.)
           ...searchQuery,
           categoryId: taskDetails?.categoryId,
@@ -137,20 +137,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       ))
       : queryToCountDocuments;
 
-    // When there is a search.
-    queryToCountDocuments =
-      datapointCodeQuery.length > 0
-        ? { ...queryToCountDocuments, dpType, _id: { $in: datapointCodeQuery } }
-        : queryToCountDocuments;
-
     // When keyIssue filter is selected
-    if (keyIssueId !== '') {
+    if (keyIssueId !== '' && keyIssueId) {
       queryToCountDocuments = { ...queryToCountDocuments, keyIssueId };
       queryForDatapointCollection = { ...queryForDatapointCollection, keyIssueId }
     }
 
     // When Qualitative or Quantitative data-point is selected.
-    if (dataType !== '') {
+    if (dataType !== '' && dataType) {
       queryForDatapointCollection = {
         ...queryForDatapointCollection, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType)
       };
@@ -162,12 +156,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     // Reps will only be shown those datapoints that have isRequiredForReps= true
     if (
-      req.user.userType == CompanyRepresentative ||
-      req.user.userType == ClientRepresentative
+      req?.user?.userType == CompanyRepresentative ||
+      req?.user?.userType == ClientRepresentative
     ) {
       queryToCountDocuments.isRequiredForReps = true;
     }
-
+    
     const {
       count,
       dpTypeValues,
