@@ -1,16 +1,17 @@
 import mongoose, { Schema } from 'mongoose'
 
-const boardOfDirectors = new Schema({
+const boardDirectorSchema = new Schema({
   din: {
     type: String,
-    required: true
+    required: true,
+    unique : true
   },
   name: {
     type: String
   },
   gender: {
     type: String
-    },
+  },
   companies: {
     type: [],
   }
@@ -22,15 +23,15 @@ const boardOfDirectors = new Schema({
   }
 })
 
-boardOfDirectors.methods = {
-  view(full) {
+boardDirectorSchema.methods = {
+  view (full) {
     const view = {
       // simple view
       id: this.id,
-      din: this.din ? this.din : '',
+      din: this.din,
       name: this.name,
       gender: this.gender,
-      companies: this.companies ? this.companies : '',
+      companies: this.companies,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
@@ -42,7 +43,7 @@ boardOfDirectors.methods = {
   }
 }
 
-const model = mongoose.model('BoardOfDirectors', boardOfDirectors)
+const model = mongoose.model('BoardDirector', boardDirectorSchema)
 
 export const schema = model.schema
 export default model
