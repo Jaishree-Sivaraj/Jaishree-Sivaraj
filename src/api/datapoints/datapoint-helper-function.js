@@ -28,6 +28,7 @@ import {
 } from "./dp-details-functions";
 import { NUMBER } from "../../constants/dp-datatype";
 import { CURRENCY, NA } from "../../constants/measure-type";
+import { getTaskStartDate, getMemberJoiningDate } from './dp-details-functions';
 
 export function getVariablesValues(taskDetails, currentYear, datapointId, taskId, dpTypeValues) {
 
@@ -336,18 +337,32 @@ async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName
     }
 }
 
-export function getTotalYearsForDataCollection(currentYear, memberDetails) {
+export function getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate) {
     try {
-        const memberStartDate = new Date(memberDetails?.startDate).getFullYear();
+        // const memberStartDate = new Date(memberDetails?.startDate).getFullYear();
+        // let memberCollectionYears = [];
+        // for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
+        //     const splityear = currentYear[yearIndex].split("-");
+        //     if (
+        //         memberStartDate <= splityear[0] ||
+        //         memberStartDate <= splityear[1]
+        //     ) {
+        //         memberCollectionYears.push(currentYear[yearIndex]);
+        //     }
+        // }
+
+        const memberJoiningDate = getMemberJoiningDate(memberDetails?.startDate);
         let memberCollectionYears = [];
         for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
-            const splityear = currentYear[yearIndex].split("-");
-            if (
-                memberStartDate <= splityear[0] ||
-                memberStartDate <= splityear[1]
-            ) {
-                memberCollectionYears.push(currentYear[yearIndex]);
+            const splityear = currentYear[yearIndex].split('-');
+            const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+            const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+            const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
+                && (memberDetails.endDateTimeStamp == 0 || memberDetails.endDateTimeStamp > firstHalfDate);
+            if (logicForDecidingWhetherToConsiderYear) {
+                memberCollectionYears.push(currentYear[yearIndex])
             }
+
         }
         return memberCollectionYears;
     } catch (error) { console.log(error?.message); }

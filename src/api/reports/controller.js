@@ -200,7 +200,7 @@ export const exportReport = async (req, res, next) => {
       }
     }
   
-    let taxonomyDetails = await ClientTaxonomy.find({ _id: clientTaxonomyId, status: true });
+    let taxonomyDetails = await ClientTaxonomy.findOne({ _id: clientTaxonomyId, status: true });
   
 
     // const [ allChildDpDetails, allCompanySourceDetails] = await Promise.all([
