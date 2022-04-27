@@ -17,7 +17,6 @@ import derivedDatapoints from './derived_datapoints'
 import role from './role'
 import batches from './batches'
 import boardMembers from './boardMembers'
-import boardOfDirector from './boardOfDirectors'
 import boardMembersMatrixDataPoints from './boardMembersMatrixDataPoints'
 import kmp from './kmp'
 import kmpMatrixDataPoints from './kmpMatrixDataPoints'
@@ -56,6 +55,7 @@ import validationResults from './validation_results'
 import childDp from './child-dp'
 import reports from './reports'
 import temp from './temp'
+import boardDirector from './boardDirector'
 
 const router = new Router()
 
@@ -99,7 +99,6 @@ router.use('/standalone_datapoints', standaloneDatapoints)
 router.use('/derived_datapoints', derivedDatapoints)
 router.use('/role', role)
 router.use('/batches', batches)
-router.use('/boardOfDirector', boardOfDirector)
 router.use('/boardMembers', boardMembers)
 router.use('/boardMembersMatrixDataPoints', boardMembersMatrixDataPoints)
 router.use('/kmp', kmp)
@@ -139,6 +138,7 @@ router.use('/validation_results', validationResults)
 router.use('/child-dps', childDp)
 router.use('/reports', reports)
 router.use('/temp', temp)
+router.use('/boardDirector', boardDirector)
 router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
 
 export default router
