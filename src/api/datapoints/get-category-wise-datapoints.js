@@ -35,17 +35,7 @@ import { getTaskStartDate } from './dp-details-functions';
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
-    const {
-      taskId,
-      dpType,
-      keyIssueId,
-      memberId,
-      memberName,
-      page,
-      limit,
-      searchValue,
-      dataType
-    } = req.body;
+    const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValue, dataType } = req.body;
 
     // Error message
     if (!page || !limit) {
@@ -153,11 +143,13 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         ? { ...queryToCountDocuments, dpType, _id: { $in: datapointCodeQuery } }
         : queryToCountDocuments;
 
+    // When keyIssue filter is selected
     if (keyIssueId !== '') {
       queryToCountDocuments = { ...queryToCountDocuments, keyIssueId };
       queryForDatapointCollection = { ...queryForDatapointCollection, keyIssueId }
     }
 
+    // When Qualitative or Quantitative data-point is selected.
     if (dataType !== '') {
       queryForDatapointCollection = {
         ...queryForDatapointCollection, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType)
@@ -168,16 +160,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       };
     }
 
+    // Reps will only be shown those datapoints that have isRequiredForReps= true
     if (
       req.user.userType == CompanyRepresentative ||
       req.user.userType == ClientRepresentative
     ) {
       queryToCountDocuments.isRequiredForReps = true;
     }
+
     const {
       count,
       dpTypeValues,
+      // priority Datapoints is for displaying.
       priorityDpCodes,
+      // This is for checking whether priority dps have been completed or not.
       totalPriorityDpWithoutFilter,
       currentAllStandaloneDetails,
       currentAllBoardMemberMatrixDetails,
@@ -193,7 +189,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { _id: taskDetails?.categoryId?.clientTaxonomyId },
       { isDerivedCalculationRequired: 1 }
     );
+    // This is to check whether the taxonomy is SFDR or not [i.e,SFDR have non-governance task contrary to non-SFDR or currently Acuite]
     const isDerivedCalculationRequired = clientTaxonomyDetails?.isDerivedCalculationRequired;
+    // If true then Acuite, false then SFDR ['Non- SFDR have derived calculations]
 
     const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
     let response = {
@@ -204,16 +202,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     };
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;
-    const memberList = await getMembers(
-      activeMemberQuery,
-      dpType,
-      taskStartDate,
-      currentYear,
-      fiscalYearEndMonth,
-      fiscalYearEndDate
-    );
+    let memberList
+    // member List is only needed when dpType is Kmp or board-matrix.
+    if (dpType == BOARD_MATRIX || dpType == KMP_MATRIX) {
+      memberList = await getMembers(
+        activeMemberQuery,
+        dpType,
+        taskStartDate,
+        currentYear,
+        fiscalYearEndMonth,
+        fiscalYearEndDate
+      );
 
-    datapointList.memberList = memberList;
+      datapointList.memberList = memberList;
+    }
 
     switch (taskDetails.taskStatus) {
       case Pending:
@@ -227,16 +229,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             message: 'No dp codes available',
           });
         }
-
+        // This flag is when reps raises an error 
+        // Like rep do not have to perform any action like submit until and unless they raises an error
         let repFinalSubmit = false;
         let mergedDatapoints = _.concat(
           currentAllStandaloneDetails,
           currentAllBoardMemberMatrixDetails,
           currentAllKmpMatrixDetails
         );
+
         const checkHasError = _.filter(mergedDatapoints, function (o) {
           return o?.hasError == true;
         });
+
         repFinalSubmit = checkHasError?.length > 0 && true;
 
         const totalPriortyDataCollected = mergedDatapoints.filter(
@@ -248,12 +253,12 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         );
 
         const totalUniquePriortyDpCollected = totalPriortyDataCollected?.length / currentYear?.length;
-        if (totalPriorityDpWithoutFilter?.length !== totalUniquePriortyDpCollected) {
+        if (totalPriorityDpWithoutFilter?.length !== totalUniquePriortyDpCollected /* for calculating that oriority dps are completed/not*/) {
           result = await getFilteredDatapointForStandalone(
             keyIssuesList,
             datapointList,
             queryKeyIssueSearch,
-            priorityDpCodes,
+            priorityDpCodes, // for displaying 
             currentYear,
             currentAllStandaloneDetails,
             taskDetails,
@@ -289,7 +294,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentYear,
                   currentAllStandaloneDetails,
                   taskDetails,
-                  false
+                  false //8
                 );
                 result = getResponse(
                   result,
@@ -309,8 +314,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllBoardMemberMatrixDetails,
                   taskStartDate,//starting date.
                   currentYear,
-                  BOARD_MATRIX,
-                  dataType
+                  BOARD_MATRIX //9
                 );
                 result = getResponse(
                   result,
@@ -330,8 +334,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllKmpMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  KMP_MATRIX,
-                  dataType
+                  KMP_MATRIX //9
                 );
                 result = getResponse(
                   result,
@@ -365,7 +368,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               currentYear,
               currentAllStandaloneDetails,
               taskDetails,
-              false
+              false //8
             );
             result = getResponse(
               result,
@@ -417,7 +420,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   dataType,
-                  currentYear
+                  currentYear//11
                 );
                 result = getResponse(
                   result,
@@ -463,7 +466,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   limit,
                   memberId,
                   count,
-                  dataType
+                  dataType//15
                 );
                 result = getResponse(result, response, count, false);
                 return res.status(200).json(result);
@@ -643,5 +646,3 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     });
   }
 };
-
-// Generic Functions.
