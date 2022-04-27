@@ -17,6 +17,7 @@ import derivedDatapoints from './derived_datapoints'
 import role from './role'
 import batches from './batches'
 import boardMembers from './boardMembers'
+import boardOfDirector from './boardOfDirectors'
 import boardMembersMatrixDataPoints from './boardMembersMatrixDataPoints'
 import kmp from './kmp'
 import kmpMatrixDataPoints from './kmpMatrixDataPoints'
@@ -98,6 +99,7 @@ router.use('/standalone_datapoints', standaloneDatapoints)
 router.use('/derived_datapoints', derivedDatapoints)
 router.use('/role', role)
 router.use('/batches', batches)
+router.use('/boardOfDirector', boardOfDirector)
 router.use('/boardMembers', boardMembers)
 router.use('/boardMembersMatrixDataPoints', boardMembersMatrixDataPoints)
 router.use('/kmp', kmp)
