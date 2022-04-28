@@ -137,7 +137,6 @@ export async function getClientTaxonomyAndDpTypeDetails(functionId, taskDetails,
 export async function getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear) {
     try {
         const [errorDataDetails, companySourceDetails, chilDpHeaders] = await Promise.all([
-
             ErrorDetails.find({
                 taskId: taskDetails?._id,
                 companyId: taskDetails.companyId.id,
@@ -264,8 +263,7 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
         if (!isRep) {
             datapointQuery = await getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType);
         }
-        console.log(isRep);
-        console.log(datapointQuery);
+
         datapointQuery =
             keyIssueId == "" ? datapointQuery : { ...datapointQuery, keyIssueId };
         datapointQuery = dataType !== '' ? { ...datapointQuery, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) }
@@ -277,17 +275,122 @@ export async function getPrevAndNextDatapointsDetails(functionId, memberType, ta
 
         for (let i = 0; i < allDatapoints?.length; i++) {
             if (allDatapoints[i].id == datapointId) {
+                const { prevyears, nextyears } = taskDetails?.taskStatus == CorrectionPending ||
+                    taskDetails?.taskStatus == ReassignmentPending ||
+                    taskDetails?.taskStatus == CorrectionCompleted ?
+                    await getPrevAndNextYear(allDatapoints[i - 1]?.id, allDatapoints[i + 1]?.id, taskDetails, memberType, memberName) :
+                    { prevyears: year, nextyears: year };
+
                 prevDatapoint = i - 1 >= 0
-                    ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, year, memberId, memberName)
+                    ? getPreviousNextDataPoints(allDatapoints[i - 1], taskDetails, prevyears, memberId, memberName)
                     : {};
                 nextDatapoint = i + 1 <= allDatapoints?.length - 1
-                    ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, year, memberId, memberName)
+                    ? getPreviousNextDataPoints(allDatapoints[i + 1], taskDetails, nextyears, memberId, memberName)
                     : {};
                 break;
             }
         }
         return { prevDatapoint, nextDatapoint };
     } catch (error) { console.log(error?.message); }
+}
+
+async function getPrevAndNextYear(prevDatapointId, nextDatapointId, taskDetails, memberType, memberName) {
+    try {
+        let prevYear = [], nextYear = [];
+        const errorQuery = {
+            taskId: taskDetails?._id,
+            status: true, isActive: true,
+            dpStatus: taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error
+
+        }
+        switch (memberType) {
+            case STANDALONE:
+                [prevYear, nextYear] = await Promise.all([
+                    StandaloneDatapoints.distinct('year', {
+                        datapointId: prevDatapointId,
+                        ...errorQuery
+                    }),
+                    StandaloneDatapoints.distinct('year', {
+                        datapointId: nextDatapointId,
+                        ...errorQuery
+                    })
+                ]);
+                break;
+            case BOARD_MATRIX:
+                [prevYear, nextYear] = await Promise.all([
+                    BoardMembersMatrixDataPoints.distinct('year', {
+                        datapointId: prevDatapointId,
+                        ...errorQuery,
+                        memberName
+                    }),
+                    BoardMembersMatrixDataPoints.distinct('year', {
+                        datapointId: nextDatapointId,
+                        ...errorQuery
+                    })
+                ]);
+                break;
+            case KMP_MATRIX:
+                [prevYear, nextYear] = await Promise.all([
+                    KmpMatrixDataPoints.distinct('year', {
+                        datapointId: prevDatapointId,
+                        ...errorQuery,
+                        memberName
+                    }),
+                    KmpMatrixDataPoints.distinct('year', {
+                        datapointId: nextDatapointId,
+                        ...errorQuery
+                    })
+                ]);
+                console.log(prevYear)
+                console.log(nextYear)
+                break;
+            default:
+                console.log('Dp type is incorrect');
+                break;
+        }
+
+        // let prevyears = ''
+        // for (let yearIndex = 0; yearIndex < prevYear?.length; prevYear++) {
+        //     if (prevyears !== '') {
+        //         prevyears = prevyears + ' ,'
+
+        //     }
+        //     prevyears = prevyears + prevYear[yearIndex];
+
+        // }
+
+        let prevyears = ''
+        prevYear?.map(year => {
+            if (prevyears !== '') {
+                prevyears = prevyears + ', '
+                console.log(prevyears)
+            }
+            prevyears = prevyears + year;
+        });
+
+        let nextyears = ''
+        nextYear?.map(year => {
+            if (nextyears !== '') {
+                nextyears = nextyears + ', '
+                console.log(nextyears)
+            }
+            nextyears = nextyears + year;
+        });
+        // for (let yearIndex = 0; yearIndex < nextYear?.length; nextYear++) {
+        //     if (nextyears !== '') {
+        //         nextyears = nextyears + ' ,'
+        //         console.log(nextyears)
+        //     }
+        //     nextyears = nextyears + nextYear[yearIndex];
+        //     console.log(nextyears);
+        // }
+        console.log({ prevyears, nextyears })
+        return { prevyears, nextyears };
+
+
+    } catch (error) {
+        console.log(error?.message);
+    }
 }
 
 async function getQueryBasedOnTaskStatus(taskDetails, datapointQuery, memberName, memberType) {
