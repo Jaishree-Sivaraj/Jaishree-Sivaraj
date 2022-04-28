@@ -1971,7 +1971,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.role == Analyst && !body.skipValidation) {
       let failedCount = await ValidationResults.countDocuments({ taskId: body.taskId, isValidResponse: false, status: true });
       if (failedCount > 0) {
-        return res.status(400).json({ status: "400", message: "Few validations are still failed, Please check before submitting or skip the validation!" })
+        return res.status(400).json({ status: 400, message: "Few validations are still failed, Please check before submitting or skip the validation!" })
       }
     }
     // get all task details.
@@ -2008,6 +2008,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.skipValidation) {
       query.datapointId = { $in: reqDpCodes }
     }
+
     // StandAlone, BoardMatrix and KMP are DpTypes.
     const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctBMMembers, distinctKmpMembers] = await Promise.all([
       StandaloneDatapoints.find(query),
@@ -2062,10 +2063,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
     // Compare the totalDatapoint * collected year == totalDatapointsCollectedCount
-    const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
+    const expectedDataCount = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
-      ? totalDatapointsCollectedCount >= multipliedValue : totalDatapointsCollectedCount >= multipliedValue && !isCorrectionStatusIncomplete
+      ? totalDatapointsCollectedCount >= expectedDataCount :
+      totalDatapointsCollectedCount >= expectedDataCount && !isCorrectionStatusIncomplete
 
     const { message, taskStatusValue } = await conditionalResult(body, hasError, hasCorrection, condition);
 
