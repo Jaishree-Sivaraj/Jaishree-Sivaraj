@@ -249,13 +249,13 @@ export async function getQueryWithKeyIssueOrDataTypeOrSearch(
       query = { ...query, _id: { $in: datapointCodeQuery } };
 
     }
-   
+
     if (keyIssueId !== '' && keyIssueId) {
       query = { ...query, keyIssueId };
     }
 
     if (dataType !== '' && dataType) {
-      query = { ...query,  ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) };
+      query = { ...query, ...getConditionForQualitativeAndQuantitativeDatapoints(dataType) };
     }
 
     const uniquedatapointId = await Datapoints.distinct('_id', query);
@@ -287,8 +287,7 @@ export async function getConditionalTaskStatusCount(
   memberName
 ) {
   let allDpDetails;
-  let dpStatus =
-    taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
+  let dpStatus = taskDetails?.taskStatus == CorrectionCompleted ? Correction : Error;
   const query = {
     taskId: taskDetails?._id,
     status: true,
@@ -352,11 +351,17 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const memberJoiningDate = getMemberJoiningDate(member?.startDate);
       let yearsForDataCollection = '';
+      //  2018-2019,2019-2020,2020-2021
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
         const splityear = currentYear[yearIndex].split('-');
         // 1st date is one more than the end date, i.e, if it is 1st then new date is 2nd
         const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
-        const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+        const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000;
+
+        // memberJoiningDate= 2nd Sept 2016
+        //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
+        // secondHalf= 31st March 2019
+
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
           && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
@@ -531,24 +536,39 @@ export async function getFilterdDatapointForErrorForBMAndKM(
       queryForHasError = { ...queryForHasError, datapointId: { $in: datapointIdBaseOnDataType } };
     }
 
-    const populateQuery = {
+    const distinctDatapoint = dpType == BOARD_MATRIX ?
+      await BoardMembersMatrixDataPoints.distinct('datapointId', queryForHasError)
+      : await KmpMatrixDataPoints.distinct('datapointId', queryForHasError);
+
+    const dpWithSkipAndlimit = await Datapoints.find({ _id: distinctDatapoint })
+      .skip((page - 1) * limit)
+      .limit(+limit)
+
+    let dp = [];
+    dpWithSkipAndlimit?.map(dpData => {
+      dp.push(dpData?._id)
+    });
+
+    const [populateQuery, dpQuery] = [{
       path: 'datapointId',
       populate: {
         path: 'keyIssueId',
       },
-    };
+    }, {
+      taskId: taskDetails?._id,
+      status: true,
+      isActive: true,
+      datapointId: { $in: dp },
+      dpStatus: queryForHasError?.dpStatus
+    }]
 
     let [errorDatapoints, allCollectedMembers] =
       dpType == BOARD_MATRIX
-        ? await Promise.all([BoardMembersMatrixDataPoints.find(queryForHasError)
-          .skip((page - 1) * limit)
-          .limit(+limit * currentYear?.length)
+        ? await Promise.all([BoardMembersMatrixDataPoints.find(dpQuery)
           .populate([populateQuery]),
         BoardMembersMatrixDataPoints.distinct('memberName', queryForHasError)
         ])
-        : await Promise.all([KmpMatrixDataPoints.find(queryForHasError)
-          .skip((page - 1) * limit)
-          .limit(+limit * currentYear?.length)
+        : await Promise.all([KmpMatrixDataPoints.find(dpQuery)
           .populate([populateQuery])],
           KmpMatrixDataPoints.distinct('memberName', queryForHasError)
         );
@@ -671,7 +691,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
       } else if (memberListForDisplay.year == '') {
         return {
           status: 200,
-          message: `Member's not part of the task`,
+          message: `Member is not part of the task's fiscal years`,
           response: {
             datapointList,
           },
@@ -724,7 +744,9 @@ export async function getFilteredErrorDatapointForStandalone(
       taskId: taskDetails?._id,
       status: true,
       isActive: true,
-      datapointId: { $in: dp }
+      datapointId: { $in: dp },
+      dpStatus: queryForHasError?.dpStatus, // this filter makes a difference alottt of them
+      companyId: taskDetails?.companyId?._id
     })
       .populate({
         path: 'datapointId',
@@ -749,6 +771,11 @@ export async function getFilteredErrorDatapointForStandalone(
         memberId: '',
         memberName: '',
       };
+
+      if (orderedDpCodes[errorDpIndex].datapointId.code == '444') {
+        console.log('Here');
+      }
+
       if (datapointList.dpCodesData.length > 0) {
         let yearfind = datapointList.dpCodesData.findIndex(
           (obj) => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code

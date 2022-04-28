@@ -53,7 +53,6 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType, fi
                         totalCollectedYears += 1;
                     }
                 }
-
                 totalCollectionYearForMembers.push(totalCollectedYears);
             }
         }
@@ -74,7 +73,7 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
             if (!isSFDR) {
                 totalExpectedBoardMatrixCount = getTotalCount(totalBoardMemberYearsCount, boardMatrixDatapoints);
                 totalExpectedKmpMatrixCount = getTotalCount(totalKmpMemberYearsCount, kmpMatrixDatapoints);
-                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints?.length * distinctYears?.length
+                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints?.length * distinctYears?.length;
             } else {
                 const totalStandaloneDatapoints = getQualitativeAndQuantitativeCount(standaloneDatapoints);
                 const standaloneQualitative = totalStandaloneDatapoints[0], standaloneQuantitative = totalStandaloneDatapoints[1];
