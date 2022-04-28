@@ -575,7 +575,6 @@ export function getTaskStartDate(currentyear, month, date) {
     if (month == 12) {
         taskStartingYear = Number(taskStartingYear) + 1;
     }
-    const yearTimeStamp = Math.floor(new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() / 1000
-    );
+    const yearTimeStamp = Math.floor(new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() / 1000);
     return yearTimeStamp;
 }
