@@ -1,0 +1,55 @@
+import { MasterCompanies } from '.'
+
+let masterCompanies
+
+beforeEach(async () => {
+  masterCompanies = await MasterCompanies.create({ createdBy: 'test', companyName: 'test', cin: 'test', nicCode: 'test', nic: 'test', nicIndustry: 'test', isinCode: 'test', cmieProwessCode: 'test', socialAnalystName: 'test', socialQAName: 'test', companyMemberDetails: 'test', fiscalYearEndDate: 'test', fiscalYearEndMonth: 'test', isAssignedToBatch: 'test', status: 'test' })
+})
+
+describe('view', () => {
+  it('returns simple view', () => {
+    const view = masterCompanies.view()
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(masterCompanies.id)
+    expect(view.createdBy).toBe(masterCompanies.createdBy)
+    expect(view.companyName).toBe(masterCompanies.companyName)
+    expect(view.cin).toBe(masterCompanies.cin)
+    expect(view.nicCode).toBe(masterCompanies.nicCode)
+    expect(view.nic).toBe(masterCompanies.nic)
+    expect(view.nicIndustry).toBe(masterCompanies.nicIndustry)
+    expect(view.isinCode).toBe(masterCompanies.isinCode)
+    expect(view.cmieProwessCode).toBe(masterCompanies.cmieProwessCode)
+    expect(view.socialAnalystName).toBe(masterCompanies.socialAnalystName)
+    expect(view.socialQAName).toBe(masterCompanies.socialQAName)
+    expect(view.companyMemberDetails).toBe(masterCompanies.companyMemberDetails)
+    expect(view.fiscalYearEndDate).toBe(masterCompanies.fiscalYearEndDate)
+    expect(view.fiscalYearEndMonth).toBe(masterCompanies.fiscalYearEndMonth)
+    expect(view.isAssignedToBatch).toBe(masterCompanies.isAssignedToBatch)
+    expect(view.status).toBe(masterCompanies.status)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
+
+  it('returns full view', () => {
+    const view = masterCompanies.view(true)
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(masterCompanies.id)
+    expect(view.createdBy).toBe(masterCompanies.createdBy)
+    expect(view.companyName).toBe(masterCompanies.companyName)
+    expect(view.cin).toBe(masterCompanies.cin)
+    expect(view.nicCode).toBe(masterCompanies.nicCode)
+    expect(view.nic).toBe(masterCompanies.nic)
+    expect(view.nicIndustry).toBe(masterCompanies.nicIndustry)
+    expect(view.isinCode).toBe(masterCompanies.isinCode)
+    expect(view.cmieProwessCode).toBe(masterCompanies.cmieProwessCode)
+    expect(view.socialAnalystName).toBe(masterCompanies.socialAnalystName)
+    expect(view.socialQAName).toBe(masterCompanies.socialQAName)
+    expect(view.companyMemberDetails).toBe(masterCompanies.companyMemberDetails)
+    expect(view.fiscalYearEndDate).toBe(masterCompanies.fiscalYearEndDate)
+    expect(view.fiscalYearEndMonth).toBe(masterCompanies.fiscalYearEndMonth)
+    expect(view.isAssignedToBatch).toBe(masterCompanies.isAssignedToBatch)
+    expect(view.status).toBe(masterCompanies.status)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
+})
