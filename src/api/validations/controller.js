@@ -466,6 +466,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
             }
             for (let validationIndex = 0; validationIndex < validationRules.length; validationIndex++) {
+              await Ztables.findOne();
               let validationDpType = keyIssuesCollection.find(obj => obj._id == validationRules[validationIndex].datapointId.id);
               if(validationDpType){
                 if(validationDpType.dpType == 'Board Matrix'){
@@ -474,7 +475,6 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     let yearIndex = 0, yearsLength = distinctYears.length; 
                     updatedPreviousYear = (previousYear != '' && previousYear != undefined) ? previousYear :  mergedYear[yearIndex-1]
                     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-                      await Ztables.count();
                       updatedPreviousYear =  mergedYear[(yearIndex == 0 && yearIndex.length > 1) ? yearIndex : yearIndex-1];
                       try {
                         let dpCodeObject = {
@@ -908,7 +908,6 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                     let yearIndex = 0, yearsLength = distinctYears.length; 
                     updatedPreviousYear = (previousYear != '' && previousYear != undefined) ? previousYear :  mergedYear[yearIndex-1]
                     for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-                      await Ztables.count();
                       updatedPreviousYear =  mergedYear[(yearIndex == 0 && yearIndex.length > 1) ? yearIndex : yearIndex-1];
                       try {
                         let dpCodeObject = {
@@ -1333,7 +1332,6 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                   let yearIndex = 0, yearsLength = distinctYears.length; 
                   updatedPreviousYear = (previousYear != '' && previousYear != undefined) ? previousYear :  mergedYear[yearIndex-1]
                   for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-                    await Ztables.count();
                     updatedPreviousYear =  mergedYear[(yearIndex == 0 && yearIndex.length > 1) ? yearIndex : yearIndex-1];
                     let dpCodeObject = {
                       taskId: params.taskId ? params.taskId : '',
@@ -1801,12 +1799,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             keyIssuesList.push(keyIssues);
           }
           for(let validationIndex = 0; validationIndex < validationRules.length; validationIndex++){
+            await Ztables.findOne();
             let updatedPreviousYear;
             let yearIndex = 0, yearsLength = distinctYears.length; 
             updatedPreviousYear = (previousYear != '' && previousYear != undefined) ? previousYear :  mergedYear[yearIndex-1]
             while(yearIndex < yearsLength){
               updatedPreviousYear =  mergedYear[(yearIndex == 0 && yearIndex.length > 1) ? yearIndex : yearIndex-1];
-              await Ztables.count();
               try {
                 let dpCodeObject = {
                 taskId: params.taskId ? params.taskId : "",
