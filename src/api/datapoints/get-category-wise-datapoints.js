@@ -65,9 +65,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         status: true,
       }),
     ]);
+
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     const currentYear = taskDetails.year.split(', ');
+
     //  Starting date of the task.
     let taskStartDate = getTaskStartDate(
       currentYear[0],
@@ -77,14 +79,14 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     let queryForDpTypeCollection = {
       taskId: taskId,
-      companyId: taskDetails.companyId.id,
+      companyId: taskDetails?.companyId?.id,
       year: { $in: currentYear },
       isActive: true,
       status: true,
     },
       queryForDatapointCollection = {
         dataCollection: 'Yes',
-        functionId: { $ne: functionId.id },
+        functionId: { $ne: functionId?.id },
         clientTaxonomyId: taskDetails?.categoryId?.clientTaxonomyId,
         categoryId: taskDetails?.categoryId.id,
         status: true,
@@ -127,6 +129,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       ReassignmentPending,
       CorrectionCompleted,
     ];
+
     conditionalTaskStatus.includes(taskDetails?.taskStatus)
       // dpStatus is error only error based datapoint is selected.
       ? (queryToCountDocuments = await getConditionalTaskStatusCount( // getQuery along with datapoints with Error.
@@ -161,7 +164,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     ) {
       queryToCountDocuments.isRequiredForReps = true;
     }
-    
+
     const {
       count,
       dpTypeValues,
@@ -219,7 +222,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         // Error message if there is no dpTypes.
         if (dpTypeValues?.length < 0) {
           return res.status(400).json({
-            status: '400',
+            status: 400,
             message: 'No dp codes available',
           });
         }
@@ -246,8 +249,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
           }
         );
 
+        // total number of priority dp code 0 != collected number of  priority dpCode 0
         const totalUniquePriortyDpCollected = totalPriortyDataCollected?.length / currentYear?.length;
-        if (totalPriorityDpWithoutFilter?.length !== totalUniquePriortyDpCollected /* for calculating that oriority dps are completed/not*/) {
+        if (totalPriorityDpWithoutFilter?.length !== totalUniquePriortyDpCollected /* for calculating that priority dps are completed/not*/) {
           result = await getFilteredDatapointForStandalone(
             keyIssuesList,
             datapointList,
