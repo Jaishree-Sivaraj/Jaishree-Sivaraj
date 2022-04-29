@@ -1449,12 +1449,12 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                  Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true, response: { $nin: ["", " "] } }).limit(1).sort({ updatedAt: -1 }),
+                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true}),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
-                object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                // object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0]?.reassessmentDate : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
