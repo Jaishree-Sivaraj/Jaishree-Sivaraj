@@ -232,11 +232,9 @@ export const updateReassesmentDate = (req, res, next) => {
   if (req.body) {
     let reassessmentDate = req.body.reassesmentDate;
     reassessmentDate = new Date(reassessmentDate).toISOString()
-    Controversy.updateMany({
-      taskId: req.body.taskId,
-      status: true,
-      isActive: true,
-      "controversyDetails.sourceName": { $exists: true }
+    ControversyTasks.updateOne({
+      _id: req.body.taskId,
+      status: true
     },
     {
       $set: { reassessmentDate: reassessmentDate }
