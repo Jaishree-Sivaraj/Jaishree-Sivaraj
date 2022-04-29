@@ -300,7 +300,7 @@ export const saveErrorDetails = async ({
               }),
               ChildDp.insertMany(childpDpDataDetails),
               ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-                { $set: errorDp })
+                { $set: errorDp }, { upsert: true })
             ])
           }
           else if (item.isUnfreezed == true) {
@@ -432,7 +432,7 @@ export const saveErrorDetails = async ({
               }),
               ChildDp.insertMany(childpDpDataDetails),
               ErrorDetails.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], status: true },
-                { $set: errorDp })
+                { $set: errorDp }, { upsert: true })
             ])
           } else if (item.isUnfreezed == true) {
             await KmpMatrixDataPoints.updateOne({ taskId: body.taskId, memberName: { "$regex": body.memberName, "$options": "i" }, datapointId: body.dpCodeId, year: item['fiscalYear'], isActive: true, status: true },
