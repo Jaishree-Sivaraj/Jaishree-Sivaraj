@@ -80,15 +80,13 @@ export const update = async ({bodymen: {body}, params}, res, next) => {
             boardDirector =>
               boardDirector ? Object.assign (boardDirector, body).save () : null
           )
-          .then (
-            boardDirector => {
-              return res.status (200).json ({
-                message: 'Board Director Updated successfully',
-                status: '200',
-                data: boardDirector.view (true),
-              });
-            }
-          )
+          .then (boardDirector => {
+            return res.status (200).json ({
+              message: 'Board Director Updated successfully',
+              status: '200',
+              data: boardDirector.view (true),
+            });
+          })
           .then (success (res))
           .catch (next);
       } else if (obj._id != params.id) {
@@ -118,3 +116,21 @@ export const destroy = ({params}, res, next) =>
     .then (boardDirector => (boardDirector ? boardDirector.remove () : null))
     .then (success (res, 204))
     .catch (next);
+
+export const retrieveFilteredDataDirector = (
+  {params, query, select, cursor},
+  res,
+  next
+) => {
+  BoardDirector.find ({}).then (boardDirector => {
+      var data = boardDirector.filter(function(v,i) {
+          if(v.name.toLowerCase().indexOf(query.company.toLowerCase()) >=0 || v.din.toLowerCase().indexOf(query.company.toLowerCase()) >=0) {
+              return true;
+          } else false;
+      });
+      return res.status (200).json ({
+        message: 'Board Director Retrieved successfully',
+        status: '200',
+        data: data,
+      });  });
+};

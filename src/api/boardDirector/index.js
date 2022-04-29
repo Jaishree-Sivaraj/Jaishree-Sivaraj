@@ -2,12 +2,13 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, retrieveFilteredDataDirector } from './controller'
 import { schema } from './model'
 export BoardDirector, { schema } from './model'
 
 const router = new Router()
 const { din, name, gender, companies } = schema.tree
+const company = [];
 
 /**
  * @api {post} /boardDirector Create board director
@@ -94,5 +95,33 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+  /**
+* @api {get} /boardDirector/:role Retrieve board director
+* @apiName RetrieveBoardDirector
+* @apiGroup BoardDirector
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiUse listParams
+* @apiSuccess {Number} count Total amount of Board director.
+* @apiSuccess {Object[]} rows List of Board director.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 401 user access only.
+*/
+router.get('/search/:role',
+token({
+  required: true
+}),
+query({
+  page: {
+    max: Infinity
+  },
+  limit: {
+    max: Infinity
+  },
+  company
+}),
+retrieveFilteredDataDirector)  
+
 
 export default router
