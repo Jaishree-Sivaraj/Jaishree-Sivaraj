@@ -199,38 +199,42 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       if (row > headerRowsNumber[1] && row != 1 && row > 32 && row < 63) {
                         if (!data[row]) data[row] = {};
                         if (col != 'A') {
-                          if (headers1['A']) {
-                            if (data[row][headers1['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers1[col]] = value;
-                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers1[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers1[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers1['A']) {
+                              if (data[row][headers1['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers1[col]] = value;
+                                if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers1[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers1[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
                                 }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -242,38 +246,42 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       } else if (row > headerRowsNumber[1] && row != 1 && row > 63) {
                         if (!data[row]) data[row] = {};
                         if (col != 'A') {
-                          if (headers2['A']) {
-                            if (data[row][headers2['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers2[col]] = value;
-                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers2[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers2[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers2['A']) {
+                              if (data[row][headers2['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers2[col]] = value;
+                                if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers2[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers2[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
                                 }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -289,41 +297,45 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                         }
 
                         if (col != 'A') {
-                          if (headers['A']) {
-                            if (data[row][headers['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers[col]] = value;
-                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers['A']) {
+                              if (data[row][headers['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers[col]] = value;
+                                if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
+                                  // if (!worksheet[nextCellId]) {
+                                  //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                  // }
                                 }
-                                // if (!worksheet[nextCellId]) {
-                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
-                                // }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the headers" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -359,38 +371,42 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       if (row > headerRowsNumber[1] && row != 1 && row > 12 && row < 23) {
                         if (!data[row]) data[row] = {};
                         if (col != 'A') {
-                          if (headers1['A']) {
-                            if (data[row][headers1['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers1[col]] = value;
-                              if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers1[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers1[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers1['A']) {
+                              if (data[row][headers1['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers1[col]] = value;
+                                if (!data[row][headers1[allColumnNames[previousColumnIndex]]] && data[row][headers1[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers1[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers1[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers1[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers1[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers1[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
                                 }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -402,38 +418,42 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                       } else if (row > headerRowsNumber[1] && row != 1 && row > 23) {
                         if (!data[row]) data[row] = {};
                         if (col != 'A') {
-                          if (headers2['A']) {
-                            if (data[row][headers2['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers2[col]] = value;
-                              if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers2[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers2[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers2['A']) {
+                              if (data[row][headers2['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers2[col]] = value;
+                                if (!data[row][headers2[allColumnNames[previousColumnIndex]]] && data[row][headers2[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers2[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers2[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers2[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers2[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers2[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
                                 }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -449,41 +469,45 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                         }
 
                         if (col != 'A') {
-                          if (headers['A']) {
-                            if (data[row][headers['A']]) {
-                              //take all column names in an array
-                              let currentColumnIndex = allColumnNames.indexOf(col);
-                              let previousColumnIndex = currentColumnIndex - 1;
-                              let nextColumnIndex = currentColumnIndex + 1;
-                              data[row][headers[col]] = value;
-                              if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                                data[row][headers[allColumnNames[previousColumnIndex]]] = '';
-                              }
-                              if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
-                                data[row][headers[allColumnNames[nextColumnIndex]]] = '';
-                                let nextCellId = allColumnNames[nextColumnIndex] + row;
-                                if (nextCellId) {
-                                  let expectedNextCol = allColumnNames[nextColumnIndex];
-                                  if (nextCol != expectedNextCol) {
-                                    let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                    let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
-                                    let difference = indexOfActualNextCol - indexOfExpectedNextCol;
-                                    if (difference > 1) {
-                                      for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
-                                        data[row][headers[allColumnNames[inx]]] = '';
-                                      }
-                                    } else {
-                                      for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
-                                        data[row][headers[allColumnNames[inx]]] = '';
+                          try {
+                            if (headers['A']) {
+                              if (data[row][headers['A']]) {
+                                //take all column names in an array
+                                let currentColumnIndex = allColumnNames.indexOf(col);
+                                let previousColumnIndex = currentColumnIndex - 1;
+                                let nextColumnIndex = currentColumnIndex + 1;
+                                data[row][headers[col]] = value;
+                                if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                                  data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                                }
+                                if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                                  data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                                  let nextCellId = allColumnNames[nextColumnIndex] + row;
+                                  if (nextCellId) {
+                                    let expectedNextCol = allColumnNames[nextColumnIndex];
+                                    if (nextCol != expectedNextCol) {
+                                      let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
+                                      let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                      let difference = indexOfActualNextCol - indexOfExpectedNextCol;
+                                      if (difference > 1) {
+                                        for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
+                                          data[row][headers[allColumnNames[inx]]] = '';
+                                        }
+                                      } else {
+                                        for (let inx = indexOfExpectedNextCol; inx < allColumnNames.length-1; inx++) {
+                                          data[row][headers[allColumnNames[inx]]] = '';
+                                        }
                                       }
                                     }
                                   }
+                                  // if (!worksheet[nextCellId]) {
+                                  //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
+                                  // }
                                 }
-                                // if (!worksheet[nextCellId]) {
-                                //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
-                                // }
                               }
                             }
+                          } catch (error) {
+                            return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                           }
                         } else {
                           if (isNaN(value)) {
@@ -610,13 +634,14 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
           if (missingFiles.length < 1) {
 
             let categoriesObject = await Categories.find({
+              clientTaxonomyId: "60c76f299def09f5ef0dca5c",
               status: true
             });
             let taskObject = await TaskAssignment.find({
               status: true
             });
             let companyTaskObject = await CompaniesTasks.find({
-              status: true
+              status: true,
             });
             let errorTypeDetails = await Errors.find({
               status: true
@@ -641,6 +666,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 createdBy: userDetail
               }
               await Companies.updateOne({
+                clientTaxonomyId: "60c76f299def09f5ef0dca5c",
                 cin: item['CIN'].replace(/[\s\r\n]/g, '').trim()
               }, {
                 $set: companyObject
@@ -650,6 +676,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               structuredCompanyDetails.push(companyObject);
             }
             const datapointList = await Datapoints.find({
+              clientTaxonomyId: clientTaxonomyId,
               status: true
             }).populate('updatedBy').populate('keyIssueId').populate('functionId');
             const companiesList = await Companies.find({
@@ -674,98 +701,104 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
                 }
               }
             });
-            const structuredStandaloneDetails = allStandaloneDetails.map(function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\r\n]/g, ''));
-              let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let responseValue, hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase())
-              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
-              if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
-                hasError = true;
-                // console.log("companyTaskObjectValue[0].taskId", companyTaskObjectValue[0].taskId);
-                let errorListObject = {
-                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
+            let structuredStandaloneDetails = [];
+            for (let strStdIindex = 0; strStdIindex < allStandaloneDetails.length; strStdIindex++) {
+              try {
+                const item = allStandaloneDetails[strStdIindex];
+                let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\r\n]/g, ''));
+                let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
+                let responseValue, hasError;
+                let categoriesObjectValues = categoriesObject.filter(obj => obj?.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase())
+                let companyTaskObjectValue = companyTaskObject.filter(obj => obj?.companyId == companyObject[0]?.id && obj?.categoryId == categoriesObjectValues[0]?.id && obj?.year == item['Fiscal Year']);
+                if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                  let errorTypeObject = errorTypeDetails.filter(obj => obj?.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
+                  hasError = true;
+                  // console.log("companyTaskObjectValue[0].taskId", companyTaskObjectValue[0].taskId);
+                  let errorListObject = {
+                    datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                    dpCode: item['DP Code'] ? item['DP Code'] : '',
+                    year: item['Fiscal Year'],
+                    companyId: companyObject[0] ? companyObject[0].id : null,
+                    categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                    taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                    errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                    raisedBy: "",
+                    comments: [],
+                    errorLoggedDate: Date.now(),
+                    errorCaughtByRep: [],
+                    errorStatus: true,
+                    isErrorAccepted: false,
+                    isErrorRejected: false,
+                    rejectComment: "",
+                    status: true,
+                    createdBy: userDetail
+                  }
+                  errorDetails.push(errorListObject);
+                } else {
+                  hasError = false
+                }
+  
+                if (String(item['Response']).length > 0) {
+                  if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
+                    if (item['Response'] == "0" || item['Response'] == 0) {
+                      responseValue = item['Response'];
+                    } else {
+                      responseValue = "NA";
+                    }
+                  } else {
+                    responseValue = item['Response'];
+                  }
+                } else {
+                  responseValue = "NA";
+                }
+                let structuredStandaloneDetailsObject = {
+                  categoryName: item['Category'],
+                  keyIssueName: item['Key Issues'],
                   dpCode: item['DP Code'] ? item['DP Code'] : '',
+                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
                   year: item['Fiscal Year'],
+                  fiscalYearEndDate: item['Fiscal Year End Date'],
+                  response: responseValue,
                   companyId: companyObject[0] ? companyObject[0].id : null,
-                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-                  raisedBy: "",
+                  sourceName: item['Source name'],
+                  url: item['URL'] ? item['URL'].toString() : '',
+                  pageNumber: item['Page number'],
+                  isRestated: item['isRestated'],
+                  restatedForYear: item['restatedForYear'],
+                  restatedInYear: item['restatedInYear'],
+                  restatedValue: item['restatedValue'],
+                  publicationDate: item['Publication date'],
+                  textSnippet: item['Text snippet'],
+                  screenShot: item['Screenshot (in png)'],
+                  sourceFileType: 'pdf',
+                  filePathway: item['File pathway'],
+                  commentCalculations: item['Comments/Calculations'],
+                  internalFileSource: item['Internal file source'],
                   comments: [],
-                  errorLoggedDate: Date.now(),
-                  errorCaughtByRep: [],
-                  errorStatus: true,
-                  isErrorAccepted: false,
-                  isErrorRejected: false,
-                  rejectComment: "",
+                  collectionStatus: false,
+                  verificationStatus: false,
+                  hasError: false,
+                  hasCorrection: false,
+                  performanceResult: '',
+                  standaloneStatus: '',
+                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                  submittedBy: '',
+                  submittedDate: '',
+                  standaradDeviation: '',
+                  average: '',
+                  activeStatus: '',
+                  lastModifiedDate: '',
+                  modifiedBy: '',
+                  isSubmitted: false,
                   status: true,
                   createdBy: userDetail
                 }
-                errorDetails.push(errorListObject);
-              } else {
-                hasError = false
+                structuredStandaloneDetails.push(structuredStandaloneDetailsObject);
+              } catch (error) {
+                return res.status(500).json({ status: "500", message: error.message ? error.message : "Invalid category name please check!" });
               }
-
-              if (String(item['Response']).length > 0) {
-                if (item['Response'] == "" || item['Response'] == " " || item['Response'] == undefined) {
-                  if (item['Response'] == "0" || item['Response'] == 0) {
-                    responseValue = item['Response'];
-                  } else {
-                    responseValue = "NA";
-                  }
-                } else {
-                  responseValue = item['Response'];
-                }
-              } else {
-                responseValue = "NA";
-              }
-              return {
-                categoryName: item['Category'],
-                keyIssueName: item['Key Issues'],
-                dpCode: item['DP Code'] ? item['DP Code'] : '',
-                datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                year: item['Fiscal Year'],
-                fiscalYearEndDate: item['Fiscal Year End Date'],
-                response: responseValue,
-                companyId: companyObject[0] ? companyObject[0].id : null,
-                sourceName: item['Source name'],
-                url: item['URL'] ? item['URL'].toString() : '',
-                pageNumber: item['Page number'],
-                optionalAnalystComment: item['optionalAnalystComment'],
-                optionalAnalystComment: item['optionalAnalystComment'],
-                isRestated: item['isRestated'],
-                restatedForYear: item['restatedForYear'],
-                restatedInYear: item['restatedInYear'],
-                restatedValue: item['restatedValue'],
-                publicationDate: item['Publication date'],
-                textSnippet: item['Text snippet'],
-                screenShot: item['Screenshot (in png)'],
-                sourceFileType: 'pdf',
-                filePathway: item['File pathway'],
-                commentCalculations: item['Comments/Calculations'],
-                internalFileSource: item['Internal file source'],
-                comments: [],
-                collectionStatus: false,
-                verificationStatus: false,
-                hasError: false,
-                hasCorrection: false,
-                performanceResult: '',
-                standaloneStatus: '',
-                taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                submittedBy: '',
-                submittedDate: '',
-                standaradDeviation: '',
-                average: '',
-                activeStatus: '',
-                lastModifiedDate: '',
-                modifiedBy: '',
-                isSubmitted: false,
-                status: true,
-                createdBy: userDetail
-              }
-            });
+            }
+              
             for (let stdIndex = 0; stdIndex < structuredStandaloneDetails.length; stdIndex++) {
               let item = structuredStandaloneDetails[stdIndex];
               let companyObject = companiesList.filter(obj => obj.id === item['companyId']);
@@ -800,120 +833,130 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             let boardMembersList = [];
             let inactiveBoardMembersList = [];
             let kmpMembersList = [];
-            const structuredBoardMemberMatrixDetails = filteredBoardMemberMatrixDetails.map(async function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
-              let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let allKeyNamesList = Object.keys(item);
-              const boardMembersNameList = _.filter(allKeyNamesList, function (keyName) {
-                let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
-                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
-                  trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
-                  trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
-                  trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
-                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&  //TODO
-                  trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
-                  trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
-                  trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
-                  trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
-                  trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
-                  trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
-                  trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
-                  trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
-                  trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
-              });
-              let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
-              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
-              if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
-                hasError = true;
-                let errorListObject = {
-                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                  dpCode: item['DP Code'] ? item['DP Code'] : '',
-                  year: item['Fiscal Year'],
-                  companyId: companyObject[0] ? companyObject[0].id : null,
-                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-                  raisedBy: "",
-                  comments: [],
-                  errorLoggedDate: Date.now(),
-                  errorCaughtByRep: [],
-                  errorStatus: true,
-                  isErrorAccepted: false,
-                  isErrorRejected: false,
-                  rejectComment: "",
-                  status: true,
-                  createdBy: userDetail
+            for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails.length; filterIndex++) {
+              try {
+                let item = filteredBoardMemberMatrixDetails[filterIndex];
+                let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
+                let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
+                let allKeyNamesList = Object.keys(item);
+                const boardMembersNameList = _.filter(allKeyNamesList, function (keyName) {
+                  let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
+                  return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
+                    trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
+                    trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
+                    trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
+                    trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" &&  //TODO
+                    trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
+                    trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
+                    trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
+                    trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
+                    trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
+                    trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
+                    trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
+                    trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
+                    trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
+                });
+                let hasError;
+                let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
+                let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
+                if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                  let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
+                  hasError = true;
+                  let errorListObject = {
+                    datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                    dpCode: item['DP Code'] ? item['DP Code'] : '',
+                    year: item['Fiscal Year'],
+                    companyId: companyObject[0] ? companyObject[0].id : null,
+                    categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                    taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                    errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                    raisedBy: "",
+                    comments: [],
+                    errorLoggedDate: Date.now(),
+                    errorCaughtByRep: [],
+                    errorStatus: true,
+                    isErrorAccepted: false,
+                    isErrorRejected: false,
+                    rejectComment: "",
+                    status: true,
+                    createdBy: userDetail
+                  }
+                  errorDetails.push(errorListObject);
+                } else {
+                  hasError = false
                 }
-                errorDetails.push(errorListObject);
-              } else {
-                hasError = false
-              }
-              _.forEach(boardMembersNameList, function (value) {
-                let memberDetail = {
-                  memberName: value,
-                  dpCode: item['DP Code'] ? item['DP Code'] : '',
-                  response: item[value],
-                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                  companyId: companyObject[0] ? companyObject[0].id : null,
-                  year: item['Fiscal Year'],
-                  fiscalYearEndDate: item['Fiscal Year End Date'],
-                  sourceName: item['Source name'],
-                  url: item['URL'] ? item['URL'].toString() : '',
-                  pageNumber: item['Page number'],
-                  optionalAnalystComment: item['optionalAnalystComment'],
-                  isRestated: item['isRestated'],
-                  restatedForYear: item['restatedForYear'],
-                  restatedInYear: item['restatedInYear'],
-                  restatedValue: item['restatedValue'],
-                  publicationDate: item['Publication date'],
-                  textSnippet: item['Text snippet'],
-                  screenShot: item['Screenshot (in png)'],
-                  sourceFileType: 'pdf',
-                  filePathway: item['File pathway'],
-                  commentCalculations: item['Comments/Calculations'],
-                  internalFileSource: item['Internal file source'],
-                  collectionStatus: false,
-                  verificationStatus: false,
-                  comments: [],
-                  hasError: false,
-                  hasCorrection: false,
-                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                  memberStatus: true,
-                  status: true,
-                  createdBy: userDetail
-                };
-                boardMembersList.push(memberDetail);
-                if (item['DP Code'] == 'BOIR018') {
-                  if ((item[value].toString().toLowerCase() != 'n' || item[value].toString().toLowerCase() != 'no') && item[value].toString() != '' && item[value] != undefined && item[value] != null) {
-
-                    let cessaDate;
-                    try {
-                      cessaDate = getJsDateFromExcel(item[value]);
-                    } catch (error) {
-                      return res.status(500).json({
-                        status: "500",
-                        message: `Found invalid date format in ${companyObject ? companyObject.companyName : 'a company'}, please correct and try again!`
-                      })
-                    }
-                    let currentDate = new Date();
-                    if (cessaDate < currentDate) {
-                      inactiveBoardMembersList.push(memberDetail)
+                let promiseArr = [];
+                for(let boardMemIndex = 0; boardMemIndex<boardMembersNameList.length; boardMemIndex++) {
+                  let value = boardMembersNameList[boardMemIndex];
+                  let memberDetail = {
+                    memberName: value,
+                    dpCode: item['DP Code'] ? item['DP Code'] : '',
+                    response: item[value],
+                    datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                    companyId: companyObject[0] ? companyObject[0].id : null,
+                    year: item['Fiscal Year'],
+                    fiscalYearEndDate: item['Fiscal Year End Date'],
+                    sourceName: item['Source name'],
+                    url: item['URL'] ? item['URL'].toString() : '',
+                    pageNumber: item['Page number'],
+                    isRestated: item['isRestated'],
+                    restatedForYear: item['restatedForYear'],
+                    restatedInYear: item['restatedInYear'],
+                    restatedValue: item['restatedValue'],
+                    publicationDate: item['Publication date'],
+                    textSnippet: item['Text snippet'],
+                    screenShot: item['Screenshot (in png)'],
+                    sourceFileType: 'pdf',
+                    filePathway: item['File pathway'],
+                    commentCalculations: item['Comments/Calculations'],
+                    internalFileSource: item['Internal file source'],
+                    collectionStatus: false,
+                    verificationStatus: false,
+                    comments: [],
+                    hasError: false,
+                    hasCorrection: false,
+                    taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                    memberStatus: true,
+                    status: true,
+                    createdBy: userDetail
+                  };
+                  boardMembersList.push(memberDetail);
+                  if (item['DP Code'] == 'BOIR018') {
+                    if ((item[value].toString().toLowerCase() != 'n' || item[value].toString().toLowerCase() != 'no') && item[value].toString() != '' && item[value] != undefined && item[value] != null) {
+  
+                      let cessaDate;
+                      try {
+                        cessaDate = getJsDateFromExcel(item[value]);
+                      } catch (error) {
+                        return res.status(500).json({
+                          status: "500",
+                          message: `Found invalid date format in ${companyObject[0] ? companyObject[0].companyName : 'a company'}, please correct and try again!`
+                        }) 
+                        // return next(error);
+                      }
+                      // let currentDate = new Date();
+                      let currentDate = getJsDateFromExcel(item['Fiscal Year End Date']);
+                      console.log("currentDate", currentDate);
+                      if (cessaDate < currentDate) {
+                        inactiveBoardMembersList.push(memberDetail)
+                      }
                     }
                   }
                 }
-              });
-              return {
-                datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                companyId: companyObject[0] ? companyObject[0].id : null,
-                year: item['Fiscal Year'],
-                response: (item['Response'] == '0' || item['Response'] == 0 || item['Response']) ? item['Response'] : '',
-                fiscalYearEndDate: item['Fiscal Year End Date'],
-                status: true,
-                createdBy: userDetail
+                // return {
+                //   datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                //   companyId: companyObject[0] ? companyObject[0].id : null,
+                //   year: item['Fiscal Year'],
+                //   response: (item['Response'] == '0' || item['Response'] == 0 || item['Response']) ? item['Response'] : '',
+                //   fiscalYearEndDate: item['Fiscal Year End Date'],
+                //   status: true,
+                //   createdBy: userDetail
+                // }
+              } catch (error) {
+                  return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
+                  // return next(error);
               }
-            });
+            };
 
             _.forEach(inactiveBoardMembersList, function (object) {
               let indexToUpdate = _.findIndex(boardMembersList, object);
@@ -935,104 +978,99 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               }
             });
 
-            const structuredKmpMatrixDetails = filteredKmpMatrixDetails.map(async function (item) {
-              let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
-              let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
-              let allKeyNamesList = Object.keys(item);
-              const kmpMembersNameList = _.filter(allKeyNamesList, function (keyName) {
-                let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
-                return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
-                  trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
-                  trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
-                  trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
-                  trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" && //TODO
-                  trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
-                  trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
-                  trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
-                  trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
-                  trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
-                  trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
-                  trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
-                  trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
-                  trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
-              });
-              let hasError;
-              let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
-              let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
-              if (item['Error Type'] != undefined && item['Error Type'] != "") {
-                let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
-                hasError = true;
-                let errorListObject = {
-                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                  dpCode: item['DP Code'] ? item['DP Code'] : '',
-                  year: item['Fiscal Year'],
-                  companyId: companyObject[0] ? companyObject[0].id : null,
-                  categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
-                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                  errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
-                  raisedBy: "",
-                  comments: [],
-                  errorLoggedDate: Date.now(),
-                  errorCaughtByRep: [],
-                  errorStatus: true,
-                  isErrorAccepted: false,
-                  isErrorRejected: false,
-                  rejectComment: "",
-                  status: true,
-                  createdBy: userDetail
+            for (let filterKmpIndex = 0; filterKmpIndex < filteredKmpMatrixDetails.length; filterKmpIndex++) {
+              try {
+                let item = filteredKmpMatrixDetails[filterKmpIndex];
+                let companyObject = companiesList.filter(obj => obj.cin === item['CIN'].replace(/[\s\r\n]/g, ''));
+                let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
+                let allKeyNamesList = Object.keys(item);
+                const kmpMembersNameList = _.filter(allKeyNamesList, function (keyName) {
+                  let trimmedKeyName = keyName.replace(/\s/g, "").replace(/[\s\r\n]/g, '').toLowerCase();
+                  return trimmedKeyName != "category" && trimmedKeyName != "keyissues" && trimmedKeyName != "dpcode" &&
+                    trimmedKeyName != "indicator" && trimmedKeyName != "description" && trimmedKeyName != "datatype" &&
+                    trimmedKeyName != "unit" && trimmedKeyName != "fiscalyear" && trimmedKeyName != "fiscalyearenddate" &&
+                    trimmedKeyName != "cin" && trimmedKeyName != "sourcename" && trimmedKeyName != "url" &&
+                    trimmedKeyName != "pagenumber" && trimmedKeyName != "publicationdate" && trimmedKeyName != "textsnippet" && //TODO
+                    trimmedKeyName != "screenshot(inpng)" && trimmedKeyName != "worddoc(.docx)" && trimmedKeyName != "excel(.xlsx)" &&
+                    trimmedKeyName != "excel(.xlxsx)" && trimmedKeyName != "pdf" && trimmedKeyName != "filepathway(ifany)" &&
+                    trimmedKeyName != "comments/calculations" && trimmedKeyName != "dataverification" &&
+                    trimmedKeyName != "errortype" && trimmedKeyName != "errorcomments" && trimmedKeyName != "internalfilesource" &&
+                    trimmedKeyName != "errorstatus" && trimmedKeyName != "analystcomments" && trimmedKeyName != "additionalcomments" &&
+                    trimmedKeyName != "errortypesanddefinitions" && trimmedKeyName != "errortypesanddefinations" && trimmedKeyName != "count" && trimmedKeyName != "20" &&
+                    trimmedKeyName != "t2.evidencenotsubstantive" && trimmedKeyName != "0" && trimmedKeyName != "7" &&
+                    trimmedKeyName != "goodtohave" && trimmedKeyName != "t2.others/noerror" && trimmedKeyName != "percentile" &&
+                    trimmedKeyName != "whenitisnotananalysterror/itisjustasuggestion" && trimmedKeyName != "undefined" && trimmedKeyName.length > 2;
+                });
+                let hasError;
+                let categoriesObjectValues = categoriesObject.filter(obj => obj.categoryName.toLowerCase() == item['Category'].replace(/[\r\n]/g, '').toLowerCase());
+                let companyTaskObjectValue = companyTaskObject.filter(obj => obj.companyId == companyObject[0].id && obj.categoryId == categoriesObjectValues[0].id && obj.year == item['Fiscal Year']);
+                if (item['Error Type'] != undefined && item['Error Type'] != "") {
+                  let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
+                  hasError = true;
+                  let errorListObject = {
+                    datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                    dpCode: item['DP Code'] ? item['DP Code'] : '',
+                    year: item['Fiscal Year'],
+                    companyId: companyObject[0] ? companyObject[0].id : null,
+                    categoryId: categoriesObjectValues ? categoriesObjectValues[0].id : null,
+                    taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                    errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+                    raisedBy: "",
+                    comments: [],
+                    errorLoggedDate: Date.now(),
+                    errorCaughtByRep: [],
+                    errorStatus: true,
+                    isErrorAccepted: false,
+                    isErrorRejected: false,
+                    rejectComment: "",
+                    status: true,
+                    createdBy: userDetail
+                  }
+                  errorDetails.push(errorListObject);
+                } else {
+                  hasError = false
                 }
-                errorDetails.push(errorListObject);
-              } else {
-                hasError = false
-              }
-              let currentMemberStatus;
-              _.forEach(kmpMembersNameList, function (value) {
-                let memberDetail = {
-                  memberName: value,
-                  response: item[value],
-                  dpCode: item['DP Code'] ? item['DP Code'] : '',
-                  memberStatus: true,
-                  datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                  companyId: companyObject[0] ? companyObject[0].id : null,
-                  year: item['Fiscal Year'],
-                  fiscalYearEndDate: item['Fiscal Year End Date'],
-                  sourceName: item['Source name'],
-                  url: item['URL'] ? item['URL'].toString() : '',
-                  pageNumber: item['Page number'],
-                  optionalAnalystComment: item['optionalAnalystComment'],
-                  isRestated: item['isRestated'],
-                  restatedForYear: item['restatedForYear'],
-                  restatedInYear: item['restatedInYear'],
-                  restatedValue: item['restatedValue'],
-                  publicationDate: item['Publication date'],
-                  textSnippet: item['Text snippet'],
-                  screenShot: item['Screenshot (in png)'],
-                  sourceFileType: 'pdf',
-                  filePathway: item['File pathway'],
-                  commentCalculations: item['Comments/Calculations'],
-                  internalFileSource: item['Internal file source'],
-                  collectionStatus: false,
-                  verificationStatus: false,
-                  hasCorrection: false,
-                  comments: [],
-                  hasError: false,
-                  taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
-                  status: true,
-                  createdBy: userDetail
+                for (let kmpIndex = 0; kmpIndex < kmpMembersNameList.length; kmpIndex++) {
+                  let value = kmpMembersNameList[kmpIndex];
+                  let memberDetail = {
+                    memberName: value,
+                    response: item[value],
+                    dpCode: item['DP Code'] ? item['DP Code'] : '',
+                    memberStatus: true,
+                    datapointId: datapointObject[0] ? datapointObject[0].id : null,
+                    companyId: companyObject[0] ? companyObject[0].id : null,
+                    year: item['Fiscal Year'],
+                    fiscalYearEndDate: item['Fiscal Year End Date'],
+                    sourceName: item['Source name'],
+                    url: item['URL'] ? item['URL'].toString() : '',
+                    pageNumber: item['Page number'],
+                    isRestated: item['isRestated'],
+                    restatedForYear: item['restatedForYear'],
+                    restatedInYear: item['restatedInYear'],
+                    restatedValue: item['restatedValue'],
+                    publicationDate: item['Publication date'],
+                    textSnippet: item['Text snippet'],
+                    screenShot: item['Screenshot (in png)'],
+                    sourceFileType: 'pdf',
+                    filePathway: item['File pathway'],
+                    commentCalculations: item['Comments/Calculations'],
+                    internalFileSource: item['Internal file source'],
+                    collectionStatus: false,
+                    verificationStatus: false,
+                    hasCorrection: false,
+                    comments: [],
+                    hasError: false,
+                    taskId: companyTaskObjectValue[0] ? companyTaskObjectValue[0].taskId : null,
+                    status: true,
+                    createdBy: userDetail
+                  }
+                  kmpMembersList.push(memberDetail);
                 }
-                kmpMembersList.push(memberDetail);
-              });
-
-              return {
-                datapointId: datapointObject[0] ? datapointObject[0].id : null,
-                companyId: companyObject[0] ? companyObject[0].id : null,
-                year: item['Fiscal Year'],
-                response: (item['Response'] == '0' || item['Response'] == 0 || item['Response']) ? item['Response'] : '',
-                fiscalYearEndDate: item['Fiscal Year End Date'],
-                status: true,
-                createdBy: userDetail
+              } catch (error) {
+                // return next(error);
+                return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
               }
-            });
+            }
 
             let dpToFind = await Datapoints.findOne({
               code: "BOIP007"
@@ -1070,45 +1108,57 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             });
             if (dpToFind) {
               for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
-                const year = distinctYears[yearIndex];
-                for (let companyIndex = 0; companyIndex < insertedCompanyIds.length; companyIndex++) {
-                  const companyId = insertedCompanyIds[companyIndex];
-                  let executiveMembersList = _.filter(boardMembersList, function (object) {
-                    if (object.datapointId == dpToFind.id && object.companyId == companyId && object.year == year && object.response == 'Yes') {
-                      return object;
-                    }
-                  });
-                  if (executiveMembersList.length > 0) {
-                    for (let executiveMemberIndex = 0; executiveMemberIndex < executiveMembersList.length; executiveMemberIndex++) {
-                      const executiveMemberObject = executiveMembersList[executiveMemberIndex];
-
-                      for (let findIndex = 0; findIndex < bmmDpsToFind.length; findIndex++) {
-                        const bmmDpObject = bmmDpsToFind[findIndex];
-                        let kmpDatapointCode = dpMapping.find((obj) => obj[bmmDpObject.code]);
-                        let matchingKmpObject = kmpDpsToUpdate.find((obj) => obj.code == kmpDatapointCode[bmmDpObject.code]);
-                        let responseToUpdate = _.filter(boardMembersList, function (obj) {
-                          return obj.datapointId == bmmDpObject.id &&
-                            obj.companyId == companyId &&
-                            obj.year == year &&
-                            obj.memberName == executiveMemberObject.memberName;
-                        });
-                        if (responseToUpdate.length > 0) {
-                          let memberDetail = {
-                            memberName: executiveMemberObject.memberName,
-                            response: (responseToUpdate[0].response == '0' || responseToUpdate[0].response == 0 || responseToUpdate[0].response) ? responseToUpdate[0].response : '',
-                            memberStatus: true,
-                            datapointId: matchingKmpObject ? matchingKmpObject.id : null,
-                            companyId: companyId,
-                            year: year,
-                            fiscalYearEndDate: executiveMemberObject.fiscalYearEndDate,
-                            status: true,
-                            createdBy: userDetail
-                          };
-                          kmpMembersList.push(memberDetail)
+                try {
+                  const year = distinctYears[yearIndex];
+                  for (let companyIndex = 0; companyIndex < insertedCompanyIds.length; companyIndex++) {
+                    const companyId = insertedCompanyIds[companyIndex];
+                    let executiveMembersList = _.filter(boardMembersList, function (object) {
+                      if (object.datapointId == dpToFind.id && object.companyId == companyId && object.year == year && object.response == 'Yes') {
+                        return object;
+                      }
+                    });
+                    if (executiveMembersList.length > 0) {
+                      for (let executiveMemberIndex = 0; executiveMemberIndex < executiveMembersList.length; executiveMemberIndex++) {
+                        const executiveMemberObject = executiveMembersList[executiveMemberIndex];
+  
+                        for (let findIndex = 0; findIndex < bmmDpsToFind.length; findIndex++) {
+                          const bmmDpObject = bmmDpsToFind[findIndex];
+                          let kmpDatapointCode = dpMapping.find((obj) => obj[bmmDpObject.code]);
+                          let matchingKmpObject = kmpDpsToUpdate.find((obj) => obj.code == kmpDatapointCode[bmmDpObject.code]);
+                          let responseToUpdate = _.filter(boardMembersList, function (obj) {
+                            return obj.datapointId == bmmDpObject.id &&
+                              obj.companyId == companyId &&
+                              obj.year == year &&
+                              obj.memberName == executiveMemberObject.memberName;
+                          });
+                          if (responseToUpdate.length > 0) {
+                            let memberDetail = {
+                              memberName: executiveMemberObject.memberName,
+                              response: (responseToUpdate[0].response == '0' || responseToUpdate[0].response == 0 || responseToUpdate[0].response) ? responseToUpdate[0].response : '',
+                              sourceName: responseToUpdate[0].sourceName ? responseToUpdate[0].sourceName : '',
+                              url: responseToUpdate[0].url ? responseToUpdate[0].url : '',
+                              pageNumber: responseToUpdate[0].pageNumber ? responseToUpdate[0].pageNumber : '',
+                              publicationDate: responseToUpdate[0].publicationDate ? responseToUpdate[0].publicationDate : '',
+                              textSnippet: responseToUpdate[0].textSnippet ? responseToUpdate[0].textSnippet : '',
+                              screenShot: responseToUpdate[0].screenShot ? responseToUpdate[0].screenShot : '',
+                              taskId: responseToUpdate[0].taskId ? responseToUpdate[0].taskId : null,
+                              memberStatus: true,
+                              datapointId: matchingKmpObject ? matchingKmpObject.id : null,
+                              companyId: companyId,
+                              year: year,
+                              fiscalYearEndDate: executiveMemberObject.fiscalYearEndDate,
+                              status: true,
+                              createdBy: userDetail
+                            };
+                            kmpMembersList.push(memberDetail)
+                          }
                         }
                       }
                     }
                   }
+                } catch (error) {
+                  // return next(error);
+                  return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
                 }
               }
             }
@@ -1122,7 +1172,9 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
               dataCollection: "Yes",
               functionId: {
                 "$ne": '609bcceb1d64cd01eeda092c'
-              }
+              },
+              clientTaxonomyId: clientTaxonomyId,
+              status: true
             })
             //actualDPlist, expectedDPlist(548) 
             for (let expectedDPIndex = 0; expectedDPIndex < standaloneDatapointsList.length; expectedDPIndex++) {
@@ -1353,6 +1405,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
     });
   }
 }
+
 export const dataCollection = async ({
   user,
   bodymen: {
