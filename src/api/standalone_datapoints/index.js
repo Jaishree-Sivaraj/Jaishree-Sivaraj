@@ -109,12 +109,12 @@ router.post('/',
  * @apiError 404 StandaloneDatapoints not found.
  * @apiError 401 user access only.
  */
-// router.post('/upload-company-esg',
-//   token({
-//     required: false
-//   }),
-//   query(),
-//   uploadCompanyESGFiles)
+router.post('/upload-company-esg',
+  token({
+    required: false
+  }),
+  query(),
+  uploadCompanyESGFiles)
 
 /**
  * @api {post} /standalone_datapoints/saveDatapointDetails Save DataPoint Details
