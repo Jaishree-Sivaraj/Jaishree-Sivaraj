@@ -2,8 +2,10 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, retrieveFilteredDataDirector } from './controller'
-import { schema } from './model'
+import { create, index, show, update, destroy, retrieveFilteredDataDirector, uploadBoardDirector } from './controller'
+import { schema } from './model';
+import multer from 'multer';
+import XLSX from 'xlsx';
 export BoardDirector, { schema } from './model'
 
 const router = new Router()
@@ -123,5 +125,57 @@ query({
 }),
 retrieveFilteredDataDirector)  
 
+var storage = multer.diskStorage({ //multers disk storage settings
+
+  destination: function (req, file, cb) {
+
+    cb(null, __dirname.replace('routes', '') + '/uploads');
+
+  },
+
+  filename: function (req, file, cb) {
+
+    var datetimestamp = Date.now();
+
+    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+
+  }
+
+});
+
+var uploadDatapoints = multer({ //multer settings
+
+  storage: storage,
+
+  fileFilter: function (req, file, callback) { //file filter
+
+    if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
+
+      return callback(new Error('Wrong extension type'));
+
+    }
+
+    callback(null, true);
+
+  }
+
+});
+/**
+ * @api {post} /boardDirector/upload-board-director Create Board director
+ * @apiName UploadBoardDirector
+ * @apiGroup BoardDirector
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess {Object} board director's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 BoardDirector not found.
+ * @apiError 401 user access only.
+ */
+
+ router.post('/upload-board-director',
+ token({ required: true }),
+ uploadDatapoints.single("file"),
+ uploadBoardDirector)
+ 
 
 export default router
