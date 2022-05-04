@@ -2,7 +2,7 @@ import {success, notFound} from '../../services/response/';
 import {BoardDirector} from '.';
 import XLSX from 'xlsx';
 import multer from 'multer';
-import { MasterCompanies } from '../masterCompanies'
+import {MasterCompanies} from '../masterCompanies';
 
 export const create = async ({bodymen: {body}}, res, next) => {
   let checkDirectorDin = await BoardDirector.find ({din: body.din});
@@ -122,7 +122,9 @@ export const destroy = ({params}, res, next) =>
 export const retrieveFilteredDataDirector = ({query}, res, next) => {
   BoardDirector.find ({}).then (boardDirector => {
     var data = boardDirector.filter (function (v, i) {
-      if (v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 || v.din.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0
+      if (
+        v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 ||
+        v.din.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0
       ) {
         return true;
       } else false;
@@ -135,60 +137,50 @@ export const retrieveFilteredDataDirector = ({query}, res, next) => {
   });
 };
 
-export const uploadBoardDirector =  async (req, res, next) => {
+export const uploadBoardDirector = async (req, res, next) => {
   const filePath = req.file.path;
   let directorsData = [];
-
-  var workbook = XLSX.readFile(filePath, {
-
+  var workbook = XLSX.readFile (filePath, {
     sheetStubs: false,
-
-    defval: ''
-
+    defval: '',
   });
 
   var sheet_name_list = workbook.SheetNames;
-
-  sheet_name_list.forEach(function async (currentSheetName) {
-
+  sheet_name_list.forEach (function async (currentSheetName) {
     var worksheet = workbook.Sheets[currentSheetName];
-
-      var sheetAsJson = XLSX.utils.sheet_to_json(worksheet, {defval: " "});
-      directorsData.push(sheetAsJson);
-  });  
+    var sheetAsJson = XLSX.utils.sheet_to_json (worksheet, {defval: ' '});
+    directorsData.push (sheetAsJson);
+  });
   var data = directorsData[0];
-  for(var i = 0; i< data.length; i++){
+  for (var i = 0; i < data.length; i++) {
     let checkDirectorDin = await BoardDirector.find ({din: data[i].DIN});
-    var nameArr = data[i].Companies.split(',');
+    var nameArr = data[i].Companies.split (',');
     let fetchId;
-    var companyData = []
-    if(nameArr.length > 1){
-      for(var j=0; j<nameArr.length; j++){
+    var companyData = [];
+    if (nameArr.length > 1) {
+      for (var j = 0; j < nameArr.length; j++) {
         fetchId = await MasterCompanies.find ({cin: nameArr[j]});
-        companyData.push({"label": nameArr[j], "value": fetchId[0]._id})
+        companyData.push ({label: nameArr[j], value: fetchId[0]._id});
       }
-    }else if(nameArr.length === 1){
-       fetchId = await MasterCompanies.find ({cin: data[i].Companies});
-       companyData.push({"label": data[i].Companies, "value": fetchId[0]._id})
+    } else if (nameArr.length === 1) {
+      fetchId = await MasterCompanies.find ({cin: data[i].Companies});
+      companyData.push ({label: data[i].Companies, value: fetchId[0]._id});
     }
-    const isEmpty = Object.keys(checkDirectorDin).length === 0;
-    if(isEmpty == true){
+    const isEmpty = Object.keys (checkDirectorDin).length === 0;
+    if (isEmpty == true) {
       var directorObjects = {
         din: data[i].DIN,
         name: data[i].Name,
         gender: data[i].Gender,
         companies: companyData,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-      await BoardDirector.insertMany(directorObjects)
-      .then((result) => {
-        return res.status(200).json({             
-           message: 'Board Director uploaded successfully',
-           status: '200'
-        });
+        createdAt: new Date (),
+        updatedAt: new Date (),
+      };
+      await BoardDirector.insertMany (directorObjects).then (result => {
+        return res.send ({message: 'Board Director uploaded Successfully'});
       });
-
+    } else {
+      return res.send ({message: 'Board Director uploaded Failed...'});
     }
   }
-}
+};
