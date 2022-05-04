@@ -1455,6 +1455,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 ]);
                 // object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
                 object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0]?.reassessmentDate : "";
+                object.reviewedByCommittee = lastModifiedDate[0] ? lastModifiedDate[0]?.reviewedByCommittee : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
