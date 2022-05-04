@@ -119,17 +119,17 @@ export const destroy = ({params}, res, next) =>
     .catch (next);
 
 export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}, res, next) => {
-  BoardDirector.count ({})
+  console.log(query.searchValue, query.searchValue)
+  let searchValue = query.searchValue;
+  const searchQuery = {
+    $or: [
+    { din: { $regex: new RegExp(searchValue, 'gi') } },
+    { name: { $regex: new RegExp(searchValue, 'gi') } }
+    ],
+    };
+  BoardDirector.count(searchQuery)
   .then (count =>
-  BoardDirector.find ({},select, cursor).then (boardDirector => {
-    let boardDirectors = boardDirector.filter (function (v, i) {
-      if (
-        v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 ||
-        v.din.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0
-      ) {
-        return true;
-      } else false;
-    });
+  BoardDirector.find (searchQuery,select, cursor).then (boardDirectors => {
     let directorObjects = [];
     if (boardDirectors.length > 0) {
       boardDirectors.forEach (obj => {
