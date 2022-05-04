@@ -118,8 +118,9 @@ export const destroy = ({params}, res, next) =>
     .then (success (res, 204))
     .catch (next);
 
-export const retrieveFilteredDataDirector = ({query}, res, next) => {
-  BoardDirector.find ({}).then (boardDirector => {
+export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}, res, next) => {
+  BoardDirector.find ({},select, cursor).then (boardDirector => {
+    console.log(boardDirector, "boardDirector")
     var data = boardDirector.filter (function (v, i) {
       if (
         v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 ||
