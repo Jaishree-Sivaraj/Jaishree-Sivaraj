@@ -122,7 +122,7 @@ export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}
   BoardDirector.count ({})
   .then (count =>
   BoardDirector.find ({},select, cursor).then (boardDirector => {
-    var data = boardDirector.filter (function (v, i) {
+    let boardDirectors = boardDirector.filter (function (v, i) {
       if (
         v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 ||
         v.din.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0
@@ -130,11 +130,25 @@ export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}
         return true;
       } else false;
     });
+    let directorObjects = [];
+    if (boardDirectors.length > 0) {
+      boardDirectors.forEach (obj => {
+        directorObjects.push ({
+          _id: obj._id,
+          din: obj.din,
+          name: obj.name,
+          gender: obj.gender,
+          companies: obj.companies,
+          createdAt: obj.createdAt,
+          updatedAt: obj.updatedAt,
+        });
+      });
+    }
     return res.status (200).json ({
       message: 'Board Director Retrieved successfully',
       status: '200',
       count: count,
-      data: data,
+      data: directorObjects,
     });
   })
 )
