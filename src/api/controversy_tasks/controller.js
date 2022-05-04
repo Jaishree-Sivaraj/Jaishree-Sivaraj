@@ -237,8 +237,8 @@ export const updateReassesmentDate = (req, res, next) => {
       isJsonGenerate = false, 
       canJsonGenerate = false
     }
-    if (req.body.committeeReview != '' && req.body.reassesmentDate != '') {
-      let reassessmentDate = req.body.reassesmentDate;
+    if (req.body.committeeReview != '' && req.body.reassessmentDate != '') {
+      let reassessmentDate = req.body.reassessmentDate;
       reassessmentDate = new Date(reassessmentDate).toISOString()
       ControversyTasks.updateOne({
         _id: req.body.taskId,
