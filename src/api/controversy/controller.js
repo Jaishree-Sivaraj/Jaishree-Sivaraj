@@ -44,7 +44,6 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEndDate,
-        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,

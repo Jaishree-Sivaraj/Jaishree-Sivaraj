@@ -228,23 +228,73 @@ export const updateControversyTask = ({ user, bodymen: { body }, params }, res, 
 } 
 
 export const updateReassesmentDate = (req, res, next) => {
-  // console.log(req.body);
   if (req.body) {
-    let reassessmentDate = req.body.reassesmentDate;
-    reassessmentDate = new Date(reassessmentDate).toISOString()
-    ControversyTasks.updateOne({
-      _id: req.body.taskId,
-      status: true
-    },
-    {
-      $set: { reassessmentDate: reassessmentDate }
-    })
-    .then((result) => {
-      return res.status(200).json({ status: "200", message: "Last Review date is updated sucessfully" });
-    })
-    .catch((error) => {
-      return res.status(500).json({ status: "500", message: "Falied to update Reassesment date " });
-    })
+    let isJsonGenerate, canJsonGenerate;
+    if(req.body.committeeReview == "Yes") {
+      isJsonGenerate = false; 
+      canJsonGenerate = true
+    } else {
+      isJsonGenerate = false, 
+      canJsonGenerate = false
+    }
+    if (req.body.committeeReview != '' && req.body.reassesmentDate != '') {
+      let reassessmentDate = req.body.reassesmentDate;
+      reassessmentDate = new Date(reassessmentDate).toISOString()
+      ControversyTasks.updateOne({
+        _id: req.body.taskId,
+        status: true
+      },
+      {
+        $set: 
+        { 
+          reassessmentDate: reassessmentDate, 
+          reviewedByCommittee: req.body.committeeReview,
+          canGenerateJson: canJsonGenerate,
+          isJsonGenerated: isJsonGenerate  
+        }
+      })
+      .then((result) => {
+        return res.status(200).json({ status: "200", message: "Date is updated sucessfully" });
+      })
+      .catch((error) => {
+        return res.status(500).json({ status: "500", message: "Falied to update Reassesment date " });
+      })
+    } else if(req.body.committeeReview != ''){
+      // let reassessmentDate = req.body.reassesmentDate;
+      // reassessmentDate = new Date(reassessmentDate).toISOString()
+      ControversyTasks.updateOne({
+        _id: req.body.taskId,
+        status: true
+      },
+      {
+        $set: 
+        {  
+          reviewedByCommittee: req.body.committeeReview,
+          canGenerateJson: canJsonGenerate,
+          isJsonGenerated: isJsonGenerate  
+        }
+      })
+      .then((result) => {
+        return res.status(200).json({ status: "200", message: "Date is updated sucessfully" });
+      })
+    } else {
+      let reassessmentDate = req.body.reassesmentDate;
+      reassessmentDate = new Date(reassessmentDate).toISOString()
+      ControversyTasks.updateOne({
+        _id: req.body.taskId,
+        status: true
+      },
+      {
+        $set: 
+        { 
+          reassessmentDate: reassessmentDate,
+        }
+      })
+      .then((result) => {
+        return res.status(200).json({ status: "200", message: "Data is updated sucessfully" });
+      })
+
+    }
   } else {
     return res.status(500).json({ status: "500", message: "No details found in the body...!" })
   }
