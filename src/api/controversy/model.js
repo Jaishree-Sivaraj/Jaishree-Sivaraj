@@ -37,10 +37,6 @@ const controversySchema = new Schema({
     type: Boolean,
     default: true
   },
-  reviewedByCommittee:{
-    type: Boolean,
-    default: false
-  },
   controversyDetails: {
     type: Object,
     default: []
@@ -143,7 +139,6 @@ controversySchema.methods = {
       year: this.year,
       fiscalYearEndDate: this.fiscalYearEndDate,
       isActive: this.isActive,
-      reviewedByCommittee: this.reviewedByCommittee,
       response: this.response,
       assessmentDate: this.assessmentDate,
       reassessmentDate: this. reassessmentDate,
