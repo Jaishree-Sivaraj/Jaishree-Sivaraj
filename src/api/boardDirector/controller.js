@@ -177,10 +177,16 @@ export const uploadBoardDirector = async (req, res, next) => {
         updatedAt: new Date (),
       };
       await BoardDirector.insertMany (directorObjects).then (result => {
-        return res.send ({message: 'Board Director uploaded Successfully'});
+        return res.status (200).json ({
+          message: 'Board Director uploaded Successfully',
+          status: '200'
+        });
       });
     } else {
-      return res.send ({message: 'Board Director uploaded Failed...'});
+      return res.status (400).json ({
+        message: 'Board Director uploaded Failed...',
+        status: '400'
+      });
     }
   }
 };
