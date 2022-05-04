@@ -14,6 +14,7 @@ const boardDirectorSchema = new Schema({
   },
   companies: {
     type: [],
+    ref: 'MasterCompanies',
   }
 }, {
   timestamps: true,
