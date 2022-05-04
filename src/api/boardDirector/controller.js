@@ -56,7 +56,7 @@ export const index = ({querymen: {query, select, cursor}}, res, next) =>
         return res.status (200).json ({
           message: 'Board Director Retrieved successfully',
           status: '200',
-          count: directorObjects,
+          count: count,
           data: directorObjects,
         });
       })
@@ -119,10 +119,9 @@ export const destroy = ({params}, res, next) =>
     .catch (next);
 
 export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}, res, next) => {
-  BoardDirector.count (query)
+  BoardDirector.count ({})
   .then (count =>
   BoardDirector.find ({},select, cursor).then (boardDirector => {
-    console.log(boardDirector, "boardDirector")
     var data = boardDirector.filter (function (v, i) {
       if (
         v.name.toLowerCase ().indexOf (query.company.toLowerCase ()) >= 0 ||
@@ -134,7 +133,7 @@ export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}
     return res.status (200).json ({
       message: 'Board Director Retrieved successfully',
       status: '200',
-      count: data.length,
+      count: count,
       data: data,
     });
   })
