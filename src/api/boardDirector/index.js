@@ -10,7 +10,7 @@ export BoardDirector, { schema } from './model'
 
 const router = new Router()
 const { din, name, gender, companies } = schema.tree
-const company = [];
+const company = [], searchValue = [];
 
 /**
  * @api {post} /boardDirector Create board director
@@ -121,7 +121,7 @@ query({
   limit: {
     max: Infinity
   },
-  company
+  searchValue
 }),
 retrieveFilteredDataDirector)  
 
