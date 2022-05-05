@@ -124,7 +124,8 @@ export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}
   const searchQuery = {
     $or: [
     { din: { $regex: new RegExp(searchValue, 'gi') } },
-    { name: { $regex: new RegExp(searchValue, 'gi') } }
+    { name: { $regex: new RegExp(searchValue, 'gi') } },
+    { 'companies.label': { $regex: new RegExp(searchValue, 'gi') } }
     ],
     };
   BoardDirector.count(searchQuery)
