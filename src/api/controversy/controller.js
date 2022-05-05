@@ -76,9 +76,9 @@ export const addNewControversy = async ({ user, bodymen: { body } }, res, next) 
         comments: body.comments
       };
       controversyObject.controversyDetails.push(controversyDetailsObject);
-      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
-        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
-      }
+      // if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+      //   await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      // }
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "New controversy created!", data: controversyDetail });
@@ -111,7 +111,7 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
         comments: body.comments,
         year: body.controversyFiscalYear,
         fiscalYearEndDate: body.controversyFiscalYearEndDate,
-        reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
+        // reviewedByCommittee: body.isApplicableForCommiteeReview ? body.isApplicableForCommiteeReview.value : false,
         assessmentDate: body.assessmentDate,
         reassessmentDate: body.reassessmentDate,
         reviewDate: body.reviewDate,
@@ -149,9 +149,9 @@ export const updateControversy = async ({ user, bodymen: { body }, params }, res
       };
       controversyObject.controversyDetails.push(controversyDetailsObject)      
       await Controversy.updateOne({ _id: params.id }, { $set: {isActive : false} });
-      if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
-        await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
-      }
+      // if(body.isApplicableForCommiteeReview && body.isApplicableForCommiteeReview.value == true){
+      //   await ControversyTasks.updateOne({_id: body.taskId }, {$set: { canGenerateJson: true, isJsonGenerated: false, status: true }});
+      // }
       await Controversy.create(controversyObject)
         .then((controversyDetail) => {
           return res.status(200).json({ status: "200", message: "Controversy updated!", data: controversyObject });
@@ -688,7 +688,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.reassessmentDate = controversyList[cIndex].reassessmentDate ? controversyList[cIndex].reassessmentDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex].year ? controversyList[cIndex].year : '';
                 controversyObject.controversyFiscalYearEndDate = controversyList[cIndex].fiscalYearEndDate ? controversyList[cIndex].fiscalYearEndDate : '';
-                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                // controversyObject.isApplicableForCommiteeReview = controversyList[cIndex].reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.updatedAt = controversyList[cIndex].updatedAt ? controversyList[cIndex].updatedAt : '';
                 controversyObject.additionalDetails = [];
                 let s3DataScreenshot = [];
@@ -849,7 +849,7 @@ export const fetchDatapointControversy = async ({ params, user }, res, next) => 
                 controversyObject.sourcePublicationDate = controversyList[cIndex]?.sourcePublicationDate ? controversyList[cIndex]?.sourcePublicationDate : '';
                 controversyObject.controversyFiscalYear = controversyList[cIndex]?.year ? controversyList[cIndex]?.year : '';
                 controversyObject.controversyFiscalYearEndDate = controversyList[cIndex]?.fiscalYearEndDate ? controversyList[cIndex]?.fiscalYearEndDate : "";
-                controversyObject.isApplicableForCommiteeReview = controversyList[cIndex]?.reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
+                // controversyObject.isApplicableForCommiteeReview = controversyList[cIndex]?.reviewedByCommittee == true ? {label : 'Yes', value: true} : {label : 'No', value: false}
                 controversyObject.historicalData = historicalData;
                 controversyObject.additionalDetails = [];
                 let s3DataScreenshot = [];
