@@ -278,7 +278,7 @@ export const updateReassesmentDate = (req, res, next) => {
         return res.status(200).json({ status: "200", message: "Data is updated sucessfully" });
       })
     } else {
-      let reassessmentDate = req.body.reassesmentDate;
+      let reassessmentDate = req.body.reassessmentDate;
       reassessmentDate = new Date(reassessmentDate).toISOString()
       ControversyTasks.updateOne({
         _id: req.body.taskId,
