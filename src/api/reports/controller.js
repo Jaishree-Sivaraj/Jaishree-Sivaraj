@@ -131,6 +131,7 @@ export const exportReport = async (req, res, next) => {
   try {
     let { clientTaxonomyId, selectedCompanies, yearsList, pillarList, batchList, filteredCompanies, isSelectedAll } = req.body;
     let matchQuery = { status: true, isActive: true }, datapointFindQuery = { status: true }, datapointIds = [], dsnctTaskIds = [];
+    let errorQuery = { status: true };
     let childAndSourceFindQuery = { status: true};
     // if (clientTaxonomyId && selectedCompanies.length > 0) {
     if (clientTaxonomyId) {
@@ -142,6 +143,7 @@ export const exportReport = async (req, res, next) => {
           years.push(yearsList[yearIndex].value);
         }
         matchQuery.year = { $in: years };
+        errorQuery.year = { $in: years };
       }
       if (pillarList.length > 0) {
         let pillars = [];
@@ -156,6 +158,7 @@ export const exportReport = async (req, res, next) => {
           status: true
         }).distinct('_id')
         matchQuery.taskId = { $in: dsnctTaskIds };
+        errorQuery.taskId = { $in: dsnctTaskIds };
       // datapointFindQuery.categoryId = { $in: dsnctTaskIds };
       }
       if (isSelectedAll && batchList && batchList.length > 0) {
@@ -188,11 +191,13 @@ export const exportReport = async (req, res, next) => {
       }
       if (selectedCompanies.length > 0) {
         matchQuery.companyId = { $in: selectedCompanies };
+        errorQuery.companyId = { $in: selectedCompanies };
         childAndSourceFindQuery.companyId = { $in: selectedCompanies };
       }
       datapointFindQuery.isRequiredForJson = true;
       datapointIds = await Datapoints.find(datapointFindQuery).distinct('_id');
       matchQuery.datapointId = { $in: datapointIds };
+      errorQuery.datapointId = { $in: datapointIds };
     } else {
       if (!clientTaxonomyId) {
         return res.status(400).json({ status: "400", message: "clientTaxonomyId is missing!", count: 0, rows: [] });
@@ -208,7 +213,7 @@ export const exportReport = async (req, res, next) => {
     //   ChildDp.find(childAndSourceFindQuery),
     //   CompanySources.find(childAndSourceFindQuery).populate('companyId')
     // ])
-    let [allChildDpDetails, allCompanySourceDetails, allStandaloneDetails, clientTaxonomyDetail, datapointDetails] = await Promise.all([
+    let [allChildDpDetails, allCompanySourceDetails, allStandaloneDetails, clientTaxonomyDetail, datapointDetails, allErrorDetails] = await Promise.all([
       ChildDp.find({...childAndSourceFindQuery, isActive: true}),
       CompanySources.find(childAndSourceFindQuery).populate('companyId'),
       StandaloneDatapoints.find(matchQuery)
@@ -279,7 +284,11 @@ export const exportReport = async (req, res, next) => {
       })
         .populate('categoryId')
         .populate('themeId')
-        .populate('keyIssueId')
+        .populate('keyIssueId'),
+      ErrorDetails.find(errorQuery)
+        .populate('errorTypeId')
+        .populate('companyId')
+        .populate('datapointId')
     ]);
     console.log('allStandaloneDetails', allStandaloneDetails.length);
   
@@ -389,6 +398,9 @@ export const exportReport = async (req, res, next) => {
             let childDpDetails = allChildDpDetails.filter((obj) =>
               obj.parentDpId == stdData?.datapointId?.id && obj?.companyId == stdData?.companyId?.id && obj?.year == stdData?.year
             )
+            let errorDpDetails = allErrorDetails.filter((obj) =>
+              obj?.datapointId?.id == stdData?.datapointId?.id && obj?.companyId?.id == stdData?.companyId?.id && obj?.year == stdData?.year
+            )
             let yearVal = stdData?.additionalDetails?.collectionYear.split('-');
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['cin']);
             cltTaxoDetails.push(clientTaxonomyDetail.outputFields['companyName']);
@@ -486,6 +498,12 @@ export const exportReport = async (req, res, next) => {
                     break;
                   case 'sourceTitle':
                     objectToPush[cltTaxoDetails[outIndex].displayName] = sourceDetails[0]?.sourceTitle ? sourceDetails[0]?.sourceTitle : "";
+                    break;
+                  case 'errorComments':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
+                    break;
+                  case 'errorType':
+                    objectToPush[cltTaxoDetails[outIndex].displayName] = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
                     break;
                   default:
                     objectToPush[cltTaxoDetails[outIndex].displayName] = "";
