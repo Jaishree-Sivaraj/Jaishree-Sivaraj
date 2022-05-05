@@ -11,6 +11,7 @@ import { CompanySources } from '../companySources'
 import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
 import { Role } from '../role'
+import { ErrorDetails } from '../errorDetails'
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -722,8 +723,8 @@ export const companySearch = async (req, res, next) => {
 export const exportQATasks = async (req, res, next) => {
   const { selectedTasks, isSelectedAll, role } = req.body;
   let exportQuery = {}, taxonomyBatchIds = [];
-  let taxonomyDetail = await ClientTaxonomy.findOne({ $or:[{taxonomyName: "SFDR"},{
-    taxonomyName: "SFDR_V1"}], status: true });
+  let taxonomyDetail = await ClientTaxonomy.findOne({$or:[{taxonomyName: "SFDR"},{
+      taxonomyName: "SFDR_V1"}], status: true });
   if (taxonomyDetail) {
     taxonomyBatchIds = await Batches.find({ clientTaxonomy: taxonomyDetail.id }).distinct('_id');
   } else {
@@ -733,7 +734,7 @@ export const exportQATasks = async (req, res, next) => {
     let sfdrTaskIds = await TaskAssignment.find({
       batchId: { $in: taxonomyBatchIds },
       _id: { $in: selectedTasks },
-      taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+      taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
       status: true
     }).distinct('_id');
     if (sfdrTaskIds.length > 0) {
@@ -753,7 +754,7 @@ export const exportQATasks = async (req, res, next) => {
         let groupTaskIds = await TaskAssignment.find({
           batchId: { $in: taxonomyBatchIds },
           groupId: { $in: adminGroupIds },
-          taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+          taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
           status: true
         }).distinct('_id');
         if (groupTaskIds.length > 0) {
@@ -771,7 +772,7 @@ export const exportQATasks = async (req, res, next) => {
     } else if (role == "Admin" || role == "SuperAdmin") {
       let batchTaskIds = await TaskAssignment.find({
         batchId: { $in: taxonomyBatchIds },
-        taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+        taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
         status: true
       }).distinct('_id');
       if (batchTaskIds.length > 0) {
@@ -787,10 +788,10 @@ export const exportQATasks = async (req, res, next) => {
         }
       }
     } else if (role == "QA") {
-      let qaTaskIds = await TaskAssignment.find({ 
+      let qaTaskIds = await TaskAssignment.find({
         batchId: { $in: taxonomyBatchIds },
         qaId: req.user.id,
-        taskStatus: { $in: [ "Collection Completed", "Correction Completed" ] },
+        taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
         status: true
       }).distinct('_id');
       if (qaTaskIds.length > 0) {
@@ -809,6 +810,7 @@ export const exportQATasks = async (req, res, next) => {
     return res.status(400).json({ status: "400", message: "No tasks selected to export data!", data: [] });
   }
   let distinctTaskIds = await StandaloneDatapoints.find(exportQuery).distinct('taskId');
+  let allErrorDetails = await ErrorDetails.find({ taskId: { $in: distinctTaskIds }, status: true }).populate('errorTypeId').populate('datapointId').populate('companyId')
   let selectedTaskData = await TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('_id');
   if (selectedTaskData.length > 0) {
     StandaloneDatapoints.aggregate([
@@ -864,77 +866,88 @@ export const exportQATasks = async (req, res, next) => {
         }
       }
     ])
-    .then((standaloneData) => {
-      const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
-      ChildDp.aggregate([
-        {
-          $match: {
-            taskId: { $in: distinctTaskIdList },
-            status: true,
-            isActive: true
-          }
-        },
-        {
-          $addFields: {
-            convertedTaskId: { $toObjectId: "$taskId" },
-            convertedDatapointId: { $toObjectId: "$parentDpId" }
-          }
-        },
-        { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
-        { '$unwind': '$taskDetails' },
-        { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
-        { '$unwind': '$companyDetails' },
-        { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
-        { '$unwind': '$categoryDetails' },
-        {
-          '$project': {
-            taskNumber: '$taskDetails.taskNumber',
-            company: '$companyDetails.companyName',
-            pillar: '$categoryDetails.categoryName',
-            dpCode: '$childFields.dpCode',
-            year: '$year',
-            response: '$childFields.response',
-            placeValue: '$childFields.placeValue',
-            uom: '$childFields.uom',
-            didTheCompanyReport: "$childFields.didTheCompanyReport",
-            typeOfValueActualDerivedProxy: "$childFields.typeOfValueActualDerivedProxy",
-            companyDataElementLabel: "$childFields.companyDataElementLabel",
-            companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
-            formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
-            textSnippet: '$childFields.textSnippet',
-            sectionOfDocument: "$childFields.sectionOfDocument",
-            pageNumber: '$childFields.pageNumber',
-            keywordUsed: "$childFields.keywordUsed",
-            commentG: "$childFields.commentG",
-            hasError: '',
-            errorType: '',
-            errorComments: '',
-            _id: '$_id',
-            taskId: '$taskId',
-            companyId: '$companyId',
-            pillarId: '$categoryDetails._id',
-            dpCodeId: '$parentDpId',
+      .then((standaloneData) => {
+        for (let index = 0; index < standaloneData.length; index++) {
+          const element = standaloneData[index];
+          let errorDpDetails = allErrorDetails.filter((obj) => 
+          obj?.datapointId?.code == element?.dpCode && obj?.companyId?.companyName == element?.company && obj?.year == element?.year
+          )
+          if (errorDpDetails.length > 0) {
+            standaloneData[index].hasError = true;
+            standaloneData[index].errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
+            standaloneData[index].errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
           }
         }
-      ])
-      .then((childData) => {
-        let responseData = _.concat(standaloneData, childData);
-        responseData = _.sortBy(responseData, 'dpCode')
-        responseData = _.sortBy(responseData, 'company')
-        // var collator = new Intl.Collator(undefined, {
-        //   numeric: true,
-        //   sensitivity: 'base'
-        // });
-        // responseData.sort(function(a, b) {
-        //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
-        // });
-        
-        return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
+        const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
+        ChildDp.aggregate([
+          {
+            $match: {
+              taskId: { $in: distinctTaskIdList },
+              status: true,
+              isActive: true
+            }
+          },
+          {
+            $addFields: {
+              convertedTaskId: { $toObjectId: "$taskId" },
+              convertedDatapointId: { $toObjectId: "$parentDpId" }
+            }
+          },
+          { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
+          { '$unwind': '$taskDetails' },
+          { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
+          { '$unwind': '$companyDetails' },
+          { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
+          { '$unwind': '$categoryDetails' },
+          {
+            '$project': {
+              taskNumber: '$taskDetails.taskNumber',
+              company: '$companyDetails.companyName',
+              pillar: '$categoryDetails.categoryName',
+              dpCode: '$childFields.dpCode',
+              year: '$year',
+              response: '$childFields.response',
+              placeValue: '$childFields.placeValue',
+              uom: '$childFields.uom',
+              didTheCompanyReport: "$childFields.didTheCompanyReport",
+              typeOfValueActualDerivedProxy: "$childFields.typeOfValueActualDerivedProxy",
+              companyDataElementLabel: "$childFields.companyDataElementLabel",
+              companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
+              formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
+              textSnippet: '$childFields.textSnippet',
+              sectionOfDocument: "$childFields.sectionOfDocument",
+              pageNumber: '$childFields.pageNumber',
+              keywordUsed: "$childFields.keywordUsed",
+              commentG: "$childFields.commentG",
+              hasError: '',
+              errorType: '',
+              errorComments: '',
+              _id: '$_id',
+              taskId: '$taskId',
+              companyId: '$companyId',
+              pillarId: '$categoryDetails._id',
+              dpCodeId: '$parentDpId',
+            }
+          }
+        ])
+          .then((childData) => {
+            let responseData = _.concat(standaloneData, childData);
+            responseData = _.sortBy(responseData, 'dpCode')
+            responseData = _.sortBy(responseData, 'company')
+            // var collator = new Intl.Collator(undefined, {
+            //   numeric: true,
+            //   sensitivity: 'base'
+            // });
+            // responseData.sort(function(a, b) {
+            //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
+            // });
+
+            return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
+          })
       })
-    })
-    .catch((error) => {
-      return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
-    })
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
+      })
   } else {
     return res.status(400).json({ status: "400", message: "No records found!", data: [] });
   }
