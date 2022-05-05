@@ -814,7 +814,6 @@ export const exportQATasks = async (req, res, next) => {
     StandaloneDatapoints.aggregate([
       { '$match': {
           taskId: { $in: distinctTaskIds },
-          dpStatus: "Correction",
           status: true,
           isActive: true
         }
@@ -921,6 +920,16 @@ export const exportQATasks = async (req, res, next) => {
       ])
       .then((childData) => {
         let responseData = _.concat(standaloneData, childData);
+        responseData = _.sortBy(responseData, 'dpCode')
+        responseData = _.sortBy(responseData, 'company')
+        // var collator = new Intl.Collator(undefined, {
+        //   numeric: true,
+        //   sensitivity: 'base'
+        // });
+        // responseData.sort(function(a, b) {
+        //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
+        // });
+        
         return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
       })
     })
