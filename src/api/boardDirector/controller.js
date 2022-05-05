@@ -1,7 +1,8 @@
 import {success, notFound} from '../../services/response/';
 import {BoardDirector} from '.';
+import _ from 'lodash'
 import XLSX from 'xlsx';
-import multer from 'multer';
+import moment from 'moment'
 import {MasterCompanies} from '../masterCompanies';
 
 export const create = async ({bodymen: {body}}, res, next) => {
@@ -119,7 +120,6 @@ export const destroy = ({params}, res, next) =>
     .catch (next);
 
 export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}, res, next) => {
-  console.log(query.searchValue, query.searchValue)
   let searchValue = query.searchValue;
   const searchQuery = {
     $or: [
@@ -158,53 +158,69 @@ export const retrieveFilteredDataDirector = ({querymen: {query, select, cursor}}
 export const uploadBoardDirector = async (req, res, next) => {
   const filePath = req.file.path;
   let directorsData = [];
+  let directorInfo = [];
   var workbook = XLSX.readFile (filePath, {
     sheetStubs: false,
     defval: '',
   });
 
   var sheet_name_list = workbook.SheetNames;
-  sheet_name_list.forEach (function async (currentSheetName) {
+  sheet_name_list.forEach (async function(currentSheetName) {
     var worksheet = workbook.Sheets[currentSheetName];
     var sheetAsJson = XLSX.utils.sheet_to_json (worksheet, {defval: ' '});
-    directorsData.push (sheetAsJson);
-  });
-  var data = directorsData[0];
-  for (var i = 0; i < data.length; i++) {
-    let checkDirectorDin = await BoardDirector.find ({din: data[i].DIN});
-    var nameArr = data[i].Companies.split (',');
-    let fetchId;
-    var companyData = [];
-    if (nameArr.length > 1) {
-      for (var j = 0; j < nameArr.length; j++) {
-        fetchId = await MasterCompanies.find ({cin: nameArr[j]});
-        companyData.push ({label: nameArr[j], value: fetchId[0]._id});
+    if (sheetAsJson.length > 0) {
+      for (let index1 = 0; index1 < sheetAsJson.length; index1++) {
+        const rowObject = sheetAsJson[index1];
+        let companyObject = {
+          din: rowObject['DIN'],
+          name: rowObject['Name'],
+          gender: rowObject['Gender'],
+          companies: rowObject['Companies'],
+        }
+        directorInfo.push(companyObject);
       }
-    } else if (nameArr.length === 1) {
-      fetchId = await MasterCompanies.find ({cin: data[i].Companies});
-      companyData.push ({label: data[i].Companies, value: fetchId[0]._id});
+      if (directorInfo.length > 0) {
+        let directorHeaders = [ "DIN", "Name", "Gender", "Companies" ]
+        if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
+          let inputFileHeaders = Object.keys(sheetAsJson[0]);
+          let missingHeaders =  _.difference(directorHeaders, inputFileHeaders);
+          if (missingHeaders.length > 0) {
+            return res.status(400).json({ status: "400", message: missingHeaders.join() + " fields are required but missing in the uploaded file!" });
+          } 
+        }
+        let message = {
+          message: 'Board Director uploaded Failed...',
+          status: '400'
+        }
+        for (let index = 0; index < directorInfo.length; index++) {
+          let checkDirectorDin = await BoardDirector.find ({din: directorInfo[index].din});
+          var companiesArr = directorInfo[index].companies.split (',');
+          var companyData = [];
+          if (companiesArr.length > 1) {
+            for (var comIndex = 0; comIndex < companiesArr.length; comIndex++) {
+              let fetchId = await MasterCompanies.find ({cin: companiesArr[comIndex]});
+              if (fetchId.length != 0) {
+              companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id.valueOf ()});
+              }
+            }
+          } else if (companiesArr.length === 1) {
+            let fetchId = await MasterCompanies.find ({cin: companiesArr[comIndex]});
+            if (fetchId.length != 0) {
+            companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id.valueOf ()});
+            }
+          }
+          directorInfo[index].companies = companyData;
+          const isEmpty = Object.keys (checkDirectorDin).length === 0;         
+          if (isEmpty == true) {
+            await BoardDirector.create (directorInfo[index]).then (result => {
+            message = {
+              message: "Board Director Uploaded Sucessfully..",
+              status: 200
+            }
+            });
+          }
+        } return res.status(message?.status).json (message)
+      }
     }
-    const isEmpty = Object.keys (checkDirectorDin).length === 0;
-    if (isEmpty == true) {
-      var directorObjects = {
-        din: data[i].DIN,
-        name: data[i].Name,
-        gender: data[i].Gender,
-        companies: companyData,
-        createdAt: new Date (),
-        updatedAt: new Date (),
-      };
-      await BoardDirector.insertMany (directorObjects).then (result => {
-        return res.status (200).json ({
-          message: 'Board Director uploaded Successfully',
-          status: '200'
-        });
-      });
-    } else {
-      return res.status (400).json ({
-        message: 'Board Director uploaded Failed...',
-        status: '400'
-      });
-    }
-  }
+  }); 
 };
