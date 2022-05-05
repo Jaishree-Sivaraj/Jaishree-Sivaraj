@@ -254,10 +254,10 @@ export const updateReassesmentDate = (req, res, next) => {
         }
       })
       .then((result) => {
-        return res.status(200).json({ status: "200", message: "Date is updated sucessfully" });
+        return res.status(200).json({ status: "200", message: "Data is updated sucessfully" });
       })
       .catch((error) => {
-        return res.status(500).json({ status: "500", message: "Falied to update Reassesment date " });
+        return res.status(500).json({ status: "500", message: "Falied to update Reassesment date and committeReview " });
       })
     } else if(req.body.committeeReview != ''){
       // let reassessmentDate = req.body.reassesmentDate;
@@ -275,7 +275,7 @@ export const updateReassesmentDate = (req, res, next) => {
         }
       })
       .then((result) => {
-        return res.status(200).json({ status: "200", message: "Date is updated sucessfully" });
+        return res.status(200).json({ status: "200", message: "Data is updated sucessfully" });
       })
     } else {
       let reassessmentDate = req.body.reassesmentDate;
