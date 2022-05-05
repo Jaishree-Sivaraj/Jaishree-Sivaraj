@@ -9,6 +9,8 @@ import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
 import { Companies } from "../companies";
 import { QA, Analyst } from "../../constants/roles";
+import { ClientRepresentatives } from '../client-representatives';
+import { CompanyRepresentatives } from '../company-representatives';
 import {
     VerificationCompleted,
     CorrectionPending,
