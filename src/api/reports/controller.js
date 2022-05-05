@@ -892,7 +892,6 @@ export const exportQATasks = async (req, res, next) => {
             company: '$companyDetails.companyName',
             pillar: '$categoryDetails.categoryName',
             dpCode: '$childFields.dpCode',
-            description: '$childFields.dpName',
             year: '$year',
             response: '$childFields.response',
             placeValue: '$childFields.placeValue',
