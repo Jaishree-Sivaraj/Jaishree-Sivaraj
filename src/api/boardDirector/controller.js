@@ -196,17 +196,12 @@ export const uploadBoardDirector = async (req, res, next) => {
           let checkDirectorDin = await BoardDirector.find ({din: directorInfo[index].din});
           var companiesArr = directorInfo[index].companies.split (',');
           var companyData = [];
-          if (companiesArr.length > 1) {
+          if (companiesArr.length > 0) {
             for (var comIndex = 0; comIndex < companiesArr.length; comIndex++) {
               let fetchId = await MasterCompanies.find ({cin: companiesArr[comIndex]});
               if (fetchId.length != 0) {
               companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id.valueOf ()});
               }
-            }
-          } else if (companiesArr.length === 1) {
-            let fetchId = await MasterCompanies.find ({cin: companiesArr[comIndex]});
-            if (fetchId.length != 0) {
-            companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id.valueOf ()});
             }
           }
           directorInfo[index].companies = companyData;
