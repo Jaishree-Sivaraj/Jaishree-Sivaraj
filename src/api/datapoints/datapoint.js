@@ -126,14 +126,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+       
             const condition =
               object.datapointId._id == datapointId &&
               object.year == currentYear[currentYearIndex];
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -171,6 +172,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -208,6 +213,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -389,15 +398,16 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+          
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
 
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -435,6 +445,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -475,6 +489,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -691,14 +709,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+            
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
             if (condition && object.hasError == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -736,6 +755,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -777,6 +800,10 @@ export const datapointDetails = async (req, res, next) => {
               object.hasCorrection == false &&
               object.hasError == false
             ) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
