@@ -69,6 +69,7 @@ export const retrieveValidationResults = async(req, res, next) => {
           _id: 0,
           value: "$memberId", 
           label: "$memberName", 
+          label1:"$memberName",
           year: "$fiscalYear"
         }
       }
