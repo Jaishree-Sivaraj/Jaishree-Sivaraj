@@ -4,7 +4,6 @@ import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
 import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
 import { BoardMembers } from "../boardMembers";
 import { Kmp } from "../kmp";
-import { ClientTaxonomy } from '../clientTaxonomy';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import {
   YetToStart,
@@ -48,10 +47,10 @@ export const datapointDetails = async (req, res, next) => {
       keyIssueId,
       dataType
     } = req.body;
-    console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
-    console.log(dpTypeValues);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
     const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
     const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
@@ -127,14 +126,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+       
             const condition =
               object.datapointId._id == datapointId &&
               object.year == currentYear[currentYearIndex];
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -172,6 +172,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -209,6 +213,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -353,7 +361,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
           let historyYearObject = {};
@@ -368,14 +376,10 @@ export const datapointDetails = async (req, res, next) => {
           status: "",
         };
         let currentYearLoopBoardMemberStartTime = Date.now();
-        for (
-          let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
-          currentYearIndex++
-        ) {
+        for ( let currentYearIndex = 0; currentYearIndex < memberCollectionYears?.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
-            if (object.year == memberCollectionYears[currentYearIndex] && object.memberName == memberName) {
+            if (object.year == memberCollectionYears[currentYearIndex] ) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
             }
@@ -394,15 +398,16 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+          
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
 
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -440,6 +445,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -480,6 +489,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -648,7 +661,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         trackTime(
           timeDetails,
@@ -671,14 +684,13 @@ export const datapointDetails = async (req, res, next) => {
         const startKmpLoop = Date.now();
         for (
           let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
+          currentYearIndex < memberCollectionYears?.length;
           currentYearIndex++
         ) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
             if (
-              object.year == memberCollectionYears[currentYearIndex] &&
-              object.memberName == memberName
+              object.year == memberCollectionYears[currentYearIndex]
             ) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
@@ -697,14 +709,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+            
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
             if (condition && object.hasError == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -742,6 +755,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -783,6 +800,10 @@ export const datapointDetails = async (req, res, next) => {
               object.hasCorrection == false &&
               object.hasError == false
             ) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
