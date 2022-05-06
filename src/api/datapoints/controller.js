@@ -4565,7 +4565,7 @@ export const repDatapointDetails = async (req, res, next) => {
             }            
           }
       }
-      return res.status(200).send({
+      return res.status(200).json({
         status: "200",
         message: "Data collection dp codes retrieved successfully!",
         dpCodeData: kmpDatapointsObject
