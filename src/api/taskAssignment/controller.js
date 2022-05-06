@@ -2090,9 +2090,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2169,9 +2171,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
 
     }
