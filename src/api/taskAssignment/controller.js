@@ -491,7 +491,7 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
       };
     } else if (params.taskStatus == "Pending") {
       findQuery = {
-        taskStatus: { $in: ["Pending", "Reassignment Pending"] },
+        taskStatus: { $nin: ["Completed", "Verification Completed"] },
         groupId: { $in: groupIds },
         status: true
       };
@@ -1453,7 +1453,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true}),
+                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
@@ -2131,103 +2131,103 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         await sendEmail(e, subject, emailDetails?.message)
           .then((resp) => {
-          console.log('Mail sent!')
-        })
-        .catch(err => {
-          console.log(err?.message);
-        })
-    })
-  }
+            console.log('Mail sent!')
+          })
+          .catch(err => {
+            console.log(err?.message);
+          })
+      })
+    }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
     if (taskStatusValue == 'Reassignment Pending') {
-    const query = {
-      notificationType: "/tasklist",
-      content: "Reassign the task for Analyst as it has some errors TaskID - " + `${taskDetails.taskNumber}, CompanyName - ${taskDetails.companyId.companyName}`,
-      notificationTitle: "Reassignment Pending",
-      status: true,
-      isRead: false
-    }
-    // creating notiification for groupAdmin
-    await Notifications.create({
-      notifyToUser: taskDetails.groupId.groupAdmin,
-      ...query
-    }).catch((error) => {
-      return res.status(500).json({
-        status: "500",
-        message: error.message ? error.message : "Failed to sent notification!"
-      });
-    });
-
-    const adminRoleIds = await Role.find({
-      roleName: { $in: adminRoles },
-      status: true
-    }).distinct('_id');
-
-    const allAdminUserIds = await User.find({
-      $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, {
-        "roleDetails.primaryRole": { $in: adminRoleIds }
-      }],
-      status: true
-    })
-      .distinct('_id');
-    // creating notiification for Admin and SuperAdmin
-    for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
+      const query = {
+        notificationType: "/tasklist",
+        content: "Reassign the task for Analyst as it has some errors TaskID - " + `${taskDetails.taskNumber}, CompanyName - ${taskDetails.companyId.companyName}`,
+        notificationTitle: "Reassignment Pending",
+        status: true,
+        isRead: false
+      }
+      // creating notiification for groupAdmin
       await Notifications.create({
-        notifyToUser: allAdminUserIds[admIndex],
+        notifyToUser: taskDetails.groupId.groupAdmin,
         ...query
       }).catch((error) => {
-        return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        return res.status(500).json({
+          status: "500",
+          message: error.message ? error.message : "Failed to sent notification!"
+        });
       });
-    }
-  }
 
-  const [categoriesLength, taskDetailsObject] = await Promise.all([
-    Categories.count({
-      clientTaxonomyId: body.clientTaxonomyId,
-      status: true,
-    }),
-    TaskAssignment.count({
-      companyId: body.companyId,
-      year: body.year,
-      taskStatus: { $in: [VerificationCompleted, Completed] }
-    })
-  ]);
+      const adminRoleIds = await Role.find({
+        roleName: { $in: adminRoles },
+        status: true
+      }).distinct('_id');
 
-  // All the task for a particular category is completed.
-  if (categoriesLength == taskDetailsObject) {
-    await CompaniesTasks.updateMany(
-      {
-        companyId: body.companyId,
-        year: body.year
-      },
-      {
-        $set: {
-          overAllCompanyTaskStatus: true,
-          completedDate: Date.now()
-        },
+      const allAdminUserIds = await User.find({
+        $or: [{ "roleDetails.roles": { $in: adminRoleIds } }, {
+          "roleDetails.primaryRole": { $in: adminRoleIds }
+        }],
+        status: true
+      })
+        .distinct('_id');
+      // creating notiification for Admin and SuperAdmin
+      for (let admIndex = 0; admIndex < allAdminUserIds.length; admIndex++) {
+        await Notifications.create({
+          notifyToUser: allAdminUserIds[admIndex],
+          ...query
+        }).catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to sent notification!" });
+        });
       }
-    );
-    // Send Email to Client or Company Rep.
-    const companyDetails = await getCompanyDetails(body.companyId)
-    const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
-    companyDetails?.email.map(async (e) => {
-      const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-      await sendEmail(e, subject, emailDetails)
-        .then((resp) => { console.log('Mail sent!') })
-        .catch(err => console.log(err))
-    })
+    }
 
+    const [categoriesLength, taskDetailsObject] = await Promise.all([
+      Categories.count({
+        clientTaxonomyId: body.clientTaxonomyId,
+        status: true,
+      }),
+      TaskAssignment.count({
+        companyId: body.companyId,
+        year: body.year,
+        taskStatus: { $in: [VerificationCompleted, Completed] }
+      })
+    ]);
+
+    // All the task for a particular category is completed.
+    if (categoriesLength == taskDetailsObject) {
+      await CompaniesTasks.updateMany(
+        {
+          companyId: body.companyId,
+          year: body.year
+        },
+        {
+          $set: {
+            overAllCompanyTaskStatus: true,
+            completedDate: Date.now()
+          },
+        }
+      );
+      // Send Email to Client or Company Rep.
+      const companyDetails = await getCompanyDetails(body.companyId)
+      const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
+      companyDetails?.email.map(async (e) => {
+        const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
+        await sendEmail(e, subject, emailDetails)
+          .then((resp) => { console.log('Mail sent!') })
+          .catch(err => console.log(err))
+      })
+
+    }
+    return res.status(200).json({
+      message: "Company Status update succesfully!",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: "500",
+      message: error.message ? error.message : "Failed to update task status",
+    });
   }
-  return res.status(200).json({
-    message: "Company Status update succesfully!",
-  });
-
-} catch (error) {
-  return res.status(500).json({
-    status: "500",
-    message: error.message ? error.message : "Failed to update task status",
-  });
-}
 };
 
 export const reports = async ({ user, params }, res, next) => {
