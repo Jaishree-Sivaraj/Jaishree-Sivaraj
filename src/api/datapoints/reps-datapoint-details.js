@@ -70,6 +70,8 @@ export const repDatapointDetails = async (req, res, next) => {
         const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId, dataType } = req.body;
 
         const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
+        const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+        const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
         const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
         let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
         const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
@@ -120,7 +122,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         const object = currentAllStandaloneDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object?.screenShot),
-                            getSourceDetails(object, sourceDetails)
+                            getSourceDetails(object)
                         ]);
                         if (object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex] && object.hasError) {
                             let errorDetailsObject = errorDataDetails.filter(obj =>
@@ -153,7 +155,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             let object = currentAllStandaloneDetails[currentIndex];
                             [s3DataScreenshot, sourceDetails] = await Promise.all([
                                 getS3ScreenShot(object?.screenShot),
-                                getSourceDetails(object, sourceDetails)
+                                getSourceDetails(object)
                             ]);
                             if (object.datapointId.id == datapointId && object.year == currentYear[currentYearIndex] && object.hasError == false) {
                                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId
@@ -256,7 +258,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         let object = currentAllBoardMemberMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object?.screenShot),
-                            getSourceDetails(object, sourceDetails)
+                            getSourceDetails(object)
                         ]);
                         if (object.datapointId.id == datapointId && object.year == memberCollectionYears[currentYearIndex] && object.hasError == true) {
                             const errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId
@@ -290,7 +292,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             const object = currentAllBoardMemberMatrixDetails[currentIndex];
                             [s3DataScreenshot, sourceDetails] = await Promise.all([
                                 getS3ScreenShot(object?.screenShot),
-                                getSourceDetails(object, sourceDetails)
+                                getSourceDetails(object)
                             ]);
                             if (object.datapointId.id == datapointId && object.year == memberCollectionYears[currentYearIndex] && object.hasError == false) {
                                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId && obj.year == memberCollectionYears[currentYearIndex] && obj.taskId == taskId && obj.raisedBy == role)
@@ -390,7 +392,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         let object = currentAllKmpMatrixDetails[currentIndex];
                         [s3DataScreenshot, sourceDetails] = await Promise.all([
                             getS3ScreenShot(object?.screenShot),
-                            getSourceDetails(object, sourceDetails)
+                            getSourceDetails(object)
                         ]);
                         let errorDetailsObject;
                         if (object.datapointId.id == datapointId && object.year == memberCollectionYears[currentYearIndex] && object.hasError == true) {
@@ -423,7 +425,7 @@ export const repDatapointDetails = async (req, res, next) => {
                             const object = currentAllKmpMatrixDetails[currentIndex];
                             [s3DataScreenshot, sourceDetails] = await Promise.all([
                                 getS3ScreenShot(object?.screenShot),
-                                getSourceDetails(object, sourceDetails)
+                                getSourceDetails(object)
                             ]);
                             if (object.datapointId.id == datapointId && object.year == memberCollectionYears[currentYearIndex] && object.hasError == false) {
                                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId && obj.year == memberCollectionYears[currentYearIndex] && obj.taskId == taskId && obj.raisedBy == role)
