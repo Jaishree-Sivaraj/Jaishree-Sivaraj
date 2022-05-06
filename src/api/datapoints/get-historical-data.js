@@ -116,7 +116,7 @@ export const getHistoricalData = async (req, res, next) => {
         });
 
     } catch (error) {
-        return res.json(409).json({
+        return res.status(409).json({
             status: 409,
             message: error?.message ? error?.message : 'Failed to fetch all datas'
         });
