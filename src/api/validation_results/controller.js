@@ -2,6 +2,7 @@ import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { ValidationResults } from '.'
 import { KeyIssues } from '../key_issues'
 import _ from 'lodash'
+import { STANDALONE } from '../../constants/dp-type'
 
 export const create = ({ bodymen: { body } }, res, next) =>
   ValidationResults.create({ ...body })
@@ -20,7 +21,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const retrieveValidationResults = async(req, res, next) => {
+export const retrieveValidationResults = async (req, res, next) => {
   const { taskId, dpType, keyIssueId, memberId, memberName, categoryId, page, limit } = req.body;
   let keyIssueFindQuery = { status: true }, resultQuery = { taskId: taskId, status: true };
   if (!page || !limit) {
@@ -36,7 +37,7 @@ export const retrieveValidationResults = async(req, res, next) => {
   if (keyIssueId) {
     resultQuery.pillarId = keyIssueId;
   }
-  if (dpType != '' && dpType != 'Standalone') {
+  if (dpType != '' && dpType != STANDALONE) {
     if (memberId) {
       resultQuery.memberId = memberId;
     } else {
@@ -45,31 +46,33 @@ export const retrieveValidationResults = async(req, res, next) => {
     }
     if (memberName) {
       resultQuery.memberName = memberName;
+    } else {
+      resultQuery.memberName = '';
     }
   }
-  const [ keyIssuesList, resultsCount, results, memberList ] = await Promise.all([
+  const [keyIssuesList, resultsCount, results, memberList] = await Promise.all([
     KeyIssues.aggregate([
       { $match: keyIssueFindQuery }, { $project: { _id: 0, value: "$_id", label: "$keyIssueName" } }]),
     ValidationResults.countDocuments(resultQuery),
     ValidationResults.find(resultQuery).skip((page - 1) * limit)
-    .limit(+limit)
-    .sort({ dpCode: 1 }),
+      .limit(+limit)
+      .sort({ dpCode: 1 }),
     ValidationResults.aggregate([
       {
-        $match: { 
-          taskId: taskId, 
-          memberId: { $ne: '' }, 
-          memberName: { $ne: '' }, 
-          memberType: dpType, 
-          status: true 
+        $match: {
+          taskId: taskId,
+          memberId: { $ne: '' },
+          memberName: { $ne: '' },
+          memberType: dpType,
+          status: true
         }
       },
       {
         $project: {
           _id: 0,
-          value: "$memberId", 
-          label: "$memberName", 
-          label1:"$memberName",
+          value: "$memberId",
+          label: "$memberName",
+          label1: "$memberName",
           year: "$fiscalYear"
         }
       }
@@ -77,10 +80,10 @@ export const retrieveValidationResults = async(req, res, next) => {
   ]);
 
   let data = {
-    count: resultsCount,
+    count: (dpType !== STANDALONE && dpType !== '') ? 0 : resultsCount,
     keyIssuesList,
-    datapointList : {
-      dpCodesData: results,
+    datapointList: {
+      dpCodesData: (dpType !== STANDALONE && dpType !== '') ? [] : results,
       memberList: memberList.length > 0 ? _.uniqBy(memberList, 'value') : []
     }
   }
