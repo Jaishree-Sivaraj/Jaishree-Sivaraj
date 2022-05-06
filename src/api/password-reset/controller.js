@@ -31,9 +31,11 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
             //   subject: 'ESGAPI - Password Reset',
             //   html: content.toString()
             // });
-            await sendEmail(email, emailDetails.subject, emailDetails.message)
-              .then((resp) => { console.log('Mail sent!'); });
-            return res.status(200).json({ status: "200", message: "Email sent successfully!" })
+            if (process.env.NODE_ENV === 'production') {
+              await sendEmail(email, emailDetails.subject, emailDetails.message)
+                .then((resp) => { console.log('Mail sent!'); });
+              return res.status(200).json({ status: "200", message: "Email sent successfully!" })
+            }
           })
           .catch((error) => {
             return res.status(400).json({ status: "400", message: error.message ? error.message : 'Failed to send password reset mail!' })
@@ -78,13 +80,15 @@ export const update = ({ params: { token }, bodymen: { body: { password } } }, r
 
 export const testMail = async (req, res, next) => {
   if (req.query.mailId != '' && req.query.mailId, req.query.mailId.length > 0) {
-    await sendEmail(req.query.mailId, 'New Test Mail', '<b>Test generic zoho html mail</b>').then((resp) => {
-      console.log('resp', resp);
-      if (resp) {
-        return res.json({ status: "200", message: "Mail sent successfully!" })
-      } else {
-        return res.json({ status: "400", message: "Failed to send mail!" })
-      }
-    });
+    if (process.env.NODE_ENV === 'production') {
+      await sendEmail(req.query.mailId, 'New Test Mail', '<b>Test generic zoho html mail</b>').then((resp) => {
+        console.log('resp', resp);
+        if (resp) {
+          return res.json({ status: "200", message: "Mail sent successfully!" })
+        } else {
+          return res.json({ status: "400", message: "Failed to send mail!" })
+        }
+      });
+    }
   }
 }

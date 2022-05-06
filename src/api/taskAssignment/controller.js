@@ -1459,6 +1459,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 ]);
                 // object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
                 object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0]?.reassessmentDate : "";
+                object.reviewedByCommittee = lastModifiedDate[0] ? lastModifiedDate[0]?.reviewedByCommittee : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
@@ -2129,13 +2130,12 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const subject = `Error Updated for task ${taskDetails.taskNumber}`
 
       companyDetails?.email.map(async (e) => {
-        await sendEmail(e, subject, emailDetails?.message)
-          .then((resp) => {
-            console.log('Mail sent!')
-          })
-          .catch(err => {
-            console.log(err?.message);
-          })
+        const subject = `Error Updated for task ${taskDetails.taskNumber}`
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2212,9 +2212,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
 
     }

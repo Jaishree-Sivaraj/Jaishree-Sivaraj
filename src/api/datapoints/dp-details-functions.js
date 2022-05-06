@@ -110,7 +110,8 @@ export async function getS3ScreenShot(screenShot) {
     return s3DataScreenshot;
 }
 
-export async function getSourceDetails(object, sourceDetails) {
+export async function getSourceDetails(object) {
+    let sourceDetails = {};
     if (object?.sourceName !== "" || object?.sourceName !== " ") {
         let companySourceId = object?.sourceName?.split(';')[1];
         let sourceValues = {}, findQuery = {};
