@@ -2,13 +2,16 @@
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
+import _ from 'lodash'
 import { NUMBER } from '../../constants/dp-datatype';
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
-import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
+import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
+import { BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
 import { Companies } from "../companies";
-import { QA, Analyst } from "../../constants/roles";
+import { QA, Analyst, ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import {
     VerificationCompleted,
     CorrectionPending,
@@ -139,7 +142,18 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
     try {
         let taskStatusValue;
         if (hasError && condition) {
-            taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
+
+            taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending;
+            const hasRepRaisedAnError = body.role == ClientRepresentative || body?.role == CompanyRepresentative
+                ? true
+                : false;
+                
+            await TaskAssignment.updateOne({ _id: body.taskId }, {
+                $set: {
+                    hasRepRaisedAnError
+                }
+            });
+
 
             const [query, update, query1, update1] = [
                 { taskId: body.taskId, isActive: true, status: true, hasError: true },
@@ -176,6 +190,14 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
             ]);
             return { message: '', taskStatusValue };
         } else if (!hasError && !hasCorrection && condition) {
+            if (body.role !== ClientRepresentative || body?.role !== CompanyRepresentative) {
+                await TaskAssignment.updateOne({ _id: body.taskId }, {
+                    $set: {
+                        hasRepRaisedAnError: false
+                    }
+                });
+            }
+            
             taskStatusValue = body.role == QA ? VerificationCompleted : Completed
             taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
             const [query, update,] = [
