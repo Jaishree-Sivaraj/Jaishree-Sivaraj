@@ -34,6 +34,12 @@ const controversyTasksSchema = new Schema({
     type: Boolean,
     required: false
   },
+  reassessmentDate: {
+    type: String,
+  },
+  reviewedByCommittee:{
+    type: String
+  },
   createdBy: {
     type: Schema.ObjectId,
     ref: 'User',
@@ -56,7 +62,9 @@ controversyTasksSchema.methods = {
       companyId: this.companyId ? this.companyId.view(full) : null,
       analystId: this.analystId ? this.analystId.view(full) : null,
       taskStatus: this.taskStatus,
+      reviewedByCommittee: this.reviewedByCommittee,
       completedDate: this.completedDate,
+      reassessmentDate: this.reassessmentDate,
       status: this.status,
       canGenerateJson: this.canGenerateJson,
       isJsonGenerated: this.isJsonGenerated,
