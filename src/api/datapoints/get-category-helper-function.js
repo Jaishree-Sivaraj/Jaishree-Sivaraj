@@ -362,7 +362,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
         // secondHalf= 31st March 2019*/
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate || member.endDateTimeStamp == null);
+          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp == null || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
           if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
@@ -376,7 +376,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         dpType == BOARD_MATRIX ? member.BOSP004 : member.MASP003;
       let label1 = memberName;
       //! If they have a termination date then.
-      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0) {
+      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, last working date ${terminatedDate}`
       }
 
@@ -679,15 +679,6 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
           : memberData.MASR008 == 'M'
             ? 'he'
             : 'she';
-      if (memberData?.startDate == '') {
-        return {
-          status: 200,
-          message: `Member's start date is empty kindly update`,
-          response: {
-            datapointList,
-          },
-        };
-      }
       if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0 && memberData?.endDateTimeStamp !== null) {
         return {
           status: 200,
