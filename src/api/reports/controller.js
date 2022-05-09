@@ -962,7 +962,7 @@ export const exportQATasks = async (req, res, next) => {
               }
             }
             let responseData = _.concat(standaloneData, childData);
-            responseData = _.sortBy(responseData, 'year')
+            responseData = _.orderBy(responseData, ['year'], ['desc'])
             responseData = _.sortBy(responseData, 'dpCode')
             responseData = _.sortBy(responseData, 'company')
             // var collator = new Intl.Collator(undefined, {
