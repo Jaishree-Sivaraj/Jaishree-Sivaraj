@@ -461,7 +461,7 @@ export function getTotalYearsForDataCollection(currentYear, memberDetails, fisca
             const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
             const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
             const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-                && (memberDetails.endDateTimeStamp == 0 || memberDetails.endDateTimeStamp > firstHalfDate);
+                && (memberDetails.endDateTimeStamp == 0 || memberDetails.endDateTimeStamp == null || memberDetails.endDateTimeStamp > firstHalfDate);
             if (logicForDecidingWhetherToConsiderYear) {
                 memberCollectionYears.push(currentYear[yearIndex])
             }
