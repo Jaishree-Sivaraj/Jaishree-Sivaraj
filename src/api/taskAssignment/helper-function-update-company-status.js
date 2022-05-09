@@ -1,4 +1,5 @@
 'use strict';
+import _ from 'lodash';
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
