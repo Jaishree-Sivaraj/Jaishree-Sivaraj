@@ -340,7 +340,7 @@ export const retrieveClientTaxonomies = async (req, res, next) => {
     });
 
   } catch (error) {
-    return res.json(500).json({
+    return res.status(500).json({
       status: 500,
       message: error?.message ? error?.message : 'Failed to retrieve all taxonomies'
     });

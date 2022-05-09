@@ -489,6 +489,12 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
         groupId: { $in: groupIds },
         status: true
       };
+    } else if (params.taskStatus == "Pending") {
+      findQuery = {
+        taskStatus: { $nin: ["Completed", "Verification Completed"] },
+        groupId: { $in: groupIds },
+        status: true
+      };
     } else {
       findQuery = {
         taskStatus: params.taskStatus ? params.taskStatus : '',
@@ -1246,9 +1252,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
-              }, {
-                taskStatus: "Reassignment Pending"
               }
+              // {
+              //   taskStatus: "Reassignment Pending"
+              // }
             ],
             status: true,
           }
@@ -1431,6 +1438,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         return res.status(400).json({ status: "400", message: "User role not found!" });
       }
     }
+    console.log(params.type);
     if (params.type == "ControversyCollection" || params.type == "ControversyReview") {
       count = await ControversyTasks.count(findQuery);
       await ControversyTasks.find(findQuery, select, cursor)
@@ -1445,7 +1453,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true}),
+                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
@@ -1469,7 +1477,12 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               }
             }
           }
-          return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+          return res.status(200).json({
+            status: "200",
+            rows: rows,
+            count: count,
+            message: "Task retrieved succesfully!"
+          });
         })
         .catch((error) => {
           return res.status(400).json({
@@ -1531,7 +1544,12 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
             }
             rows.push(taskObject);
           }
-          return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+          return res.status(200).json({
+            status: "200",
+            rows: rows,
+            count: count,
+            message: "Task retrieved succesfully!"
+          });
         })
         .catch((error) => {
           return res.status(400).json({
@@ -1541,7 +1559,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         });
     }
   } catch (error) {
-    return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve the tasks!" });
+    return res.status(500).json({
+      status: "500",
+      message: error.message ? error.message : "Failed to retrieve the tasks!"
+    });
   }
 }
 
@@ -2105,6 +2126,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       // Send Email to Client or Company Rep.
       const companyDetails = await getCompanyDetails(body.companyId);
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
+
+      const subject = `Error Updated for task ${taskDetails.taskNumber}`
+
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
         if (process.env.NODE_ENV === 'production') {

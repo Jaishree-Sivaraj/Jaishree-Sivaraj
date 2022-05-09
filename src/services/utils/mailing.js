@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer'
 
 async function sendEmail(toAddress, subject, body) {
-    
     return new Promise(function (resolve, reject) {
         var transporter = nodemailer.createTransport({
             host: 'smtppro.zoho.in',
