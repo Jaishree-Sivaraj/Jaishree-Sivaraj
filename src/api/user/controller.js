@@ -717,8 +717,10 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             link = link + `role=${userDetails.userType}&email=${userDetails.email}&id=${userDetails.id}`;
             userDetails = userDetails.toObject();
             const emailDetails = EmailContent(body.userDetails.comments, FAILED_TO_ONBOARD);
-            await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
-              .then((resp) => { console.log('Mail sent!'); });
+            if (process.env.NODE_ENV === 'production') {
+              await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
+                .then((resp) => { console.log('Mail sent!'); });
+            }
           })
           // await OnboardingEmails.updateOne({ emailId: userDetails.email }, { $set: { emailId: userDetails.email, isOnboarded: false } }, { upsert: true } )
           return res.status(200).json({
@@ -729,9 +731,11 @@ export const update = ({ bodymen: { body }, params, user }, res, next) => {
             userDetails = userDetails.toObject();
             const emailDetails = EmailContent(process.env.FRONTEND_URL, ACCESS_TO_LOGIN); // get content from email-content-file
 
-
-            await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
-              .then((response) => { console.log('Mail sent!'); });
+            
+            if (process.env.NODE_ENV === 'production') {
+              await sendEmail(userDetails['email'], emailDetails?.subject, emailDetails?.message)
+                .then((response) => { console.log('Mail sent!'); });
+            }
           })
         }
         return res.status(200).json({
@@ -952,9 +956,12 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                     //nodemail code will come here to send OTP
 
                     const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER); // getting email from email-content(constant file)
-
-                    await sendEmail(rowObject['email'], emailDetails?.subject, emailDetails?.message)
-                      .then((resp) => { console.log('Mail sent!'); });
+                    
+                    
+                    if (process.env.NODE_ENV === 'production') {
+                      await sendEmail(rowObject['email'], emailDetails?.subject, emailDetails?.message)
+                        .then((resp) => { console.log('Mail sent!'); });
+                    }
                     let email = `${rowObject['email']}`;
                     await OnboardingEmails.updateOne({
                       emailId: email
@@ -985,9 +992,11 @@ export const uploadEmailsFile = async ({ body, user }, res, next) => {
                       const content = `
                         Email: ${rowObject['email']}<br/><br/>
                         Link: ${url}<br/><br/>`;
-
-                      await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
-                        .then((resp) => { console.log('Mail sent!'); });
+                      
+                      if (process.env.NODE_ENV === 'production') {
+                        await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+                          .then((resp) => { console.log('Mail sent!'); });
+                      }
                       let email = `${rowObject['email']}`;
 
                       await OnboardingEmails.updateOne({
@@ -1063,8 +1072,10 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             let url = `${process.env.FRONTEND_URL}${link}&email=${rowObject['email']}`
             //nodemail code will come here to send OTP
             const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER);
-            await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
-              .then((resp) => { console.log('Mail sent!'); });
+            if (process.env.NODE_ENV === 'production') {
+              await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
+                .then((resp) => { console.log('Mail sent!'); });
+            }
             let email = `${rowObject['email']}`;
             await OnboardingEmails.updateOne({
               emailId: email
@@ -1095,9 +1106,11 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
               const content = `
                 Email: ${rowObject['email']}<br/><br/>
                 Link: ${url}<br/><br/>`;
-
-              await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
-                .then((resp) => { console.log('Mail sent!'); });
+              
+              if (process.env.NODE_ENV === 'production') {
+                await sendEmail(allAdminUserEmailIds[index], 'ESG - Onboarding', content)
+                  .then((resp) => { console.log('Mail sent!'); });
+              }
               let email = `${rowObject['email']}`;
               await OnboardingEmails.updateOne({
                 emailId: email
