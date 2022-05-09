@@ -1,4 +1,5 @@
 'use strict';
+import _ from 'lodash';
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
@@ -50,7 +51,7 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType, fi
                     const firstHalfDate = getTaskStartDate(distinctYears[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
                     const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
                     const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-                        && (memberDetails[memberIndex].endDateTimeStamp == 0 || memberDetails[memberIndex].endDateTimeStamp > firstHalfDate);
+                        && (memberDetails[memberIndex].endDateTimeStamp == 0 || memberDetails[memberIndex].endDateTimeStamp == null || memberDetails[memberIndex].endDateTimeStamp > firstHalfDate);
                     if (logicForDecidingWhetherToConsiderYear) {
                         totalCollectedYears += 1;
                     }

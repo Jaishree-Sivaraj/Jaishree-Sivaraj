@@ -363,7 +363,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         // secondHalf= 31st March 2019
 
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp > firstHalfDate);
+          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp == null || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
           if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
@@ -377,12 +377,12 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         dpType == BOARD_MATRIX ? member.BOSP004 : member.MASP003;
       let label1 = memberName;
       //! If they have a termination date then.
-      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0) {
+      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, last working date ${terminatedDate}`
       }
 
       //! If the member is terminated then.
-      if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0) {
+      if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, is terminated on ${terminatedDate}`
       }
 
@@ -680,7 +680,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
           : memberData.MASR008 == 'M'
             ? 'he'
             : 'she';
-      if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0) {
+      if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0 && memberData?.endDateTimeStamp !== null) {
         return {
           status: 200,
           message: `Member is terminated, ${gender} is no longer part of this task`,

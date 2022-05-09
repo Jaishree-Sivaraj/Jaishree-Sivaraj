@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { success, notFound, authorOrAdmin } from "../../services/response/";
 import { TaskAssignment } from ".";
 import { User } from "../user";
@@ -20,7 +21,6 @@ import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
 import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
-import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import { CompanyRepresentatives } from '../company-representatives';
@@ -1445,7 +1445,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true}),
+                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
@@ -2302,6 +2302,7 @@ export const reports = async ({ user, params }, res, next) => {
         }
         var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
       }
+      console.log('HEre is the error')
       if (allTasks[i].categoryId) {
         var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
       }
