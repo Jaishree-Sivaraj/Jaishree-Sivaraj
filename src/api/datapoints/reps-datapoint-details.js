@@ -244,7 +244,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     })
                 ]);
 
-                memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails);
+                memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate);
                 // historyYear = _.orderBy(_.uniqBy(historyAllBoardMemberMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
@@ -372,7 +372,7 @@ export const repDatapointDetails = async (req, res, next) => {
                     })
                 ]);
 
-                memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails);
+                memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
                 // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
