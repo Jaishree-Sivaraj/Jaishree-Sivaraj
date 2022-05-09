@@ -828,8 +828,12 @@ export const exportQATasks = async (req, res, next) => {
     return res.status(400).json({ status: "400", message: "No tasks selected to export data!", data: [] });
   }
   let distinctTaskIds = await StandaloneDatapoints.find(exportQuery).distinct('taskId');
-  let allErrorDetails = await ErrorDetails.find({ taskId: { $in: distinctTaskIds }, status: true }).populate('errorTypeId').populate('datapointId').populate('companyId')
-  let selectedTaskData = await TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('_id');
+  let selectedCompanyIds = await TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('companyId');
+  const [allErrorDetails, selectedTaskData, allSourceDetails ] = await Promise.all([
+    ErrorDetails.find({ taskId: { $in: distinctTaskIds }, status: true }).populate('errorTypeId').populate('datapointId').populate('companyId'),
+    TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('_id'),
+    CompanySources.find({status: true, companyId: { $in: selectedCompanyIds} })
+  ]);
   if (selectedTaskData.length > 0) {
     StandaloneDatapoints.aggregate([
       { '$match': {
@@ -928,7 +932,7 @@ export const exportQATasks = async (req, res, next) => {
               placeValue: '$childFields.placeValue',
               uom: '$childFields.uom',
               didTheCompanyReport: "$childFields.didTheCompanyReport",
-              typeOfValueActualDerivedProxy: "$childFields.typeOfValueActualDerivedProxy",
+              typeOfValueActualDerivedProxy: "$childFields.typeOf",
               companyDataElementLabel: "$childFields.companyDataElementLabel",
               companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
               formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
@@ -937,6 +941,7 @@ export const exportQATasks = async (req, res, next) => {
               pageNumber: '$childFields.pageNumber',
               keywordUsed: "$childFields.keywordUsed",
               commentG: "$childFields.commentG",
+              sourceName: "$childFields.source",
               hasError: '',
               errorType: '',
               errorComments: '',
@@ -949,7 +954,15 @@ export const exportQATasks = async (req, res, next) => {
           }
         ])
           .then((childData) => {
+            for (let index = 0; index < childData.length; index++) {
+              const element = childData[index];
+              if (element.sourceName != '' || element.sourceName != ' ') {
+                let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
+                childData[index].sourceName = sourceDet.name;
+              }
+            }
             let responseData = _.concat(standaloneData, childData);
+            responseData = _.orderBy(responseData, ['year'], ['desc'])
             responseData = _.sortBy(responseData, 'dpCode')
             responseData = _.sortBy(responseData, 'company')
             // var collator = new Intl.Collator(undefined, {
