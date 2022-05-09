@@ -23,6 +23,7 @@ import {
     Error,
     Collection
 } from '../../constants/task-status';
+import _ from 'lodash'
 import { getMemberJoiningDate, getTaskStartDate } from '../datapoints/dp-details-functions';
 
 export async function getTotalExpectedYear(memberName, distinctYears, dpType, fiscalYearEndMonth, fiscalYearEndDate) {
