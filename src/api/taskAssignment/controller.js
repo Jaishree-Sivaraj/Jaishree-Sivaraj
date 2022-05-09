@@ -25,15 +25,11 @@ import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import { CompanyRepresentatives } from '../company-representatives';
 import { ClientRepresentatives } from '../client-representatives';
-import { getTotalExpectedYear, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
+import { checkIfAllDpCodeAreFilled, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
 import {
   VerificationCompleted,
-  CorrectionPending,
   ReassignmentPending,
-  CorrectionCompleted,
   Completed,
-  CollectionCompleted,
-  Correction,
   Incomplete
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
@@ -1976,7 +1972,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.role == Analyst && !body.skipValidation) {
       let failedCount = await ValidationResults.countDocuments({ taskId: body.taskId, isValidResponse: false, status: true });
       if (failedCount > 0) {
-        return res.status(400).json({ status: "400", message: "Few validations are still failed, Please check before submitting or skip the validation!" })
+        return res.status(400).json({ status: 400, message: "Few validations are still failed, Please check before submitting or skip the validation!" })
       }
     }
     // get all task details.
@@ -1993,9 +1989,13 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
 
     // Get distinct years
     let distinctYears = taskDetails.year.split(', ');
-    let totalDatapointsCollectedCount = 0;
-    let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
-    const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
+    let [reqDpCodes, negativeNews] = await Promise.all([
+      Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true }),
+      Functions.findOne({ functionType: "Negative News", status: true })
+    ]);
+
     const query = {
       taskId: body.taskId,
       companyId: taskDetails.companyId.id,
@@ -2009,6 +2009,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.skipValidation) {
       query.datapointId = { $in: reqDpCodes }
     }
+
     // StandAlone, BoardMatrix and KMP are DpTypes.
     const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctBMMembers, distinctKmpMembers] = await Promise.all([
       StandaloneDatapoints.find(query),
@@ -2018,8 +2019,10 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       KmpMatrixDataPoints.distinct('memberName', query)
     ]);
 
+    let totalDatapointsCollectedCount = 0;
     // Getting all the collected Datas.
     const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
+    // total collected data.
     totalDatapointsCollectedCount = totalDatapointsCollectedCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
     let datapointQuery = {
@@ -2040,6 +2043,19 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       Datapoints.find({ ...datapointQuery, dpType: KMP_MATRIX }),
     ]);
 
+    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
+
+    // Comment the purpose.
+    const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
+    const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
+
+    if (Object.keys(errorMessageForBM)?.length !== 0) {
+      return res.status(409).json(errorMessageForBM);
+    }
+
+    if (Object.keys(errorMessageForKM)?.length !== 0) {
+      return res.status(409).json(errorMessageForKM);
+    }
 
     // mergedDetails is the Dp codes of all Dp Types.
     let [hasError, hasCorrection, isCorrectionStatusIncomplete] = [
@@ -2047,14 +2063,15 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       mergedDetails.find(object => object.hasCorrection == true),
       mergedDetails.find(object => object.correctionStatus == Incomplete)];
 
-    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
-    const multipliedValue = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR);
+    // Compare the totalDatapoint * collected year == totalDatapointsCollectedCount
+    const expectedDataCount = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
 
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
-      ? totalDatapointsCollectedCount >= multipliedValue : totalDatapointsCollectedCount >= multipliedValue && !isCorrectionStatusIncomplete
+      ? totalDatapointsCollectedCount >= expectedDataCount :
+      totalDatapointsCollectedCount >= expectedDataCount && !isCorrectionStatusIncomplete
 
     const { message, taskStatusValue } = await conditionalResult(body, hasError, hasCorrection, condition);
-    console.log();
+
     if (message !== '') {
       return res.status(409).json({
         status: 409,
@@ -2090,9 +2107,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2169,9 +2188,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
 
     }
