@@ -15,7 +15,44 @@ const boardDirectorSchema = new Schema({
   companies: {
     type: [],
     ref: 'MasterCompanies',
-  }
+  },
+  taskId: {
+    type: Schema.ObjectId,
+    ref: 'TaskAssignment',
+    required: false
+  },
+  memberName: {
+    type: String,
+    default: ''
+  },
+  memberId: {
+    type: String,
+    default: ''
+  }, 
+  startDate: {
+    type: String,
+    default: ''
+  }, 
+  endDate: {
+    type: String,
+    default: ''
+  },
+  dateOfBirth: {
+    type: String,
+    default: ''
+  },
+  financialExp: {
+    type: String,
+    default: ''
+  },
+  nationality: {
+    type: String,
+    default: ''
+  },
+  industrialExp: {
+    type: String,
+    default: ''
+  } 
 }, {
   timestamps: true,
   toJSON: {
@@ -33,6 +70,14 @@ boardDirectorSchema.methods = {
       name: this.name,
       gender: this.gender,
       companies: this.companies,
+      taskId: this.taskId ? this.taskId.view(full) : null,
+      memberName: this.memberName,
+      memberId: this.memberId,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      financialExp: this.financialExp,
+      nationality: this.nationality,
+      industrialExp: this.industrialExp,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

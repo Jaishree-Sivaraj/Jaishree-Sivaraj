@@ -73,6 +73,7 @@ export const show = ({params}, res, next) =>
 
 export const update = async ({bodymen: {body}, params}, res, next) => {
   let checkDirectorDin = await BoardDirector.find ({din: body.din});
+  console.log("gg",body)
   if (checkDirectorDin.length > 0) {
     checkDirectorDin.forEach (obj => {
       if (obj._id == params.id) {
@@ -89,7 +90,6 @@ export const update = async ({bodymen: {body}, params}, res, next) => {
               data: boardDirector.view (true),
             });
           })
-          .then (success (res))
           .catch (next);
       } else if (obj._id != params.id) {
         return res.status (402).json ({
@@ -107,7 +107,6 @@ export const update = async ({bodymen: {body}, params}, res, next) => {
       .then (
         boardDirector => (boardDirector ? boardDirector.view (true) : null)
       )
-      .then (success (res))
       .catch (next);
   }
 };
