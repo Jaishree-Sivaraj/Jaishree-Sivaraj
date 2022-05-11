@@ -73,7 +73,6 @@ export const show = ({params}, res, next) =>
 
 export const update = async ({bodymen: {body}, params}, res, next) => {
   let checkDirectorDin = await BoardDirector.find ({din: body.din});
-  console.log("gg",body)
   if (checkDirectorDin.length > 0) {
     checkDirectorDin.forEach (obj => {
       if (obj._id == params.id) {
@@ -199,7 +198,7 @@ export const uploadBoardDirector = async (req, res, next) => {
             for (var comIndex = 0; comIndex < companiesArr.length; comIndex++) {
               let fetchId = await MasterCompanies.find ({cin: companiesArr[comIndex]});
               if (fetchId.length != 0) {
-              companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id.valueOf ()});
+              companyData.push ({label: companiesArr[comIndex], value: fetchId[0]._id + ''});
               }
             }
           }
