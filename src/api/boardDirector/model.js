@@ -18,8 +18,7 @@ const boardDirectorSchema = new Schema({
   },
   taskId: {
     type: Schema.ObjectId,
-    ref: 'TaskAssignment',
-    required: false
+    ref: 'TaskAssignment'
   },
   memberName: {
     type: String,
