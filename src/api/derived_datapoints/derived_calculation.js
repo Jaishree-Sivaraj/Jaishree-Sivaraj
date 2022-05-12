@@ -206,9 +206,9 @@ export const matrixPercentageCalculation = async function (taskId, companyId, me
         });
         let numeratorDpId = numeratorDpObject[0] ? numeratorDpObject[0].id : '';
         let denominatorDpId = denominatorDpObject[0] ? denominatorDpObject[0].id : '';
-        let numeratorValues = [];
-        let denominatorValue = '';
         for (let k = 0; k < distinctYears.length; k++) {
+          let numeratorValues = [];
+          let denominatorValue = '';
           const year = distinctYears[k];
           _.filter(mergedDetails, (object, index) => {
             if (object.datapointId.id == numeratorDpId && object.companyId.id == companyId && object.year == year && object.memberStatus == true) {
