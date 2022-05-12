@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
-import _ from 'lodash'
 import { NUMBER } from '../../constants/dp-datatype';
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
