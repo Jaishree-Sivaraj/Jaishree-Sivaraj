@@ -113,8 +113,15 @@ export async function getS3ScreenShot(screenShot) {
 export async function getSourceDetails(object, sourceDetails) {
     if (object?.sourceName !== "" || object?.sourceName !== " ") {
         let companySourceId = object?.sourceName?.split(';')[1];
-        let sourceValues = {}, findQuery = {};
-        findQuery = companySourceId ? { _id: companySourceId } : { companyId: object?.companyId ? object.companyId.id : null, sourceFile: object?.sourceFile ? object?.sourceFile : null };
+        let sourceValues = {}, findQuery = {}, matchQuery;
+        if (object?.url != '') {
+            matchQuery = {
+                companyId: object?.companyId ? object.companyId.id : null,
+                sourceUrl: object?.url ? object?.url : null, 
+                fiscalYear: object?.year ? object?.year : null
+            }
+        }
+        findQuery = companySourceId ? { _id: companySourceId } : matchQuery;
         let sourceValuesStartTime = Date.now()
         sourceValues = findQuery ? await CompanySources.findOne(findQuery)
             .populate('sourceTypeId')
