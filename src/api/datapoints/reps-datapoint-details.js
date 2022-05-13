@@ -371,8 +371,9 @@ export const repDatapointDetails = async (req, res, next) => {
                         status: true
                     })
                 ]);
+
                 memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
-                
+
                 // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,

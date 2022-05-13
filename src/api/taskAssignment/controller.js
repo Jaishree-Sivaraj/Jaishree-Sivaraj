@@ -2308,6 +2308,7 @@ export const reports = async ({ user, params }, res, next) => {
         }
         var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
       }
+      console.log('HEre is the error')
       if (allTasks[i].categoryId) {
         var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
       }
