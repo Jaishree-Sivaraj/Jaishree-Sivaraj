@@ -583,7 +583,8 @@ export const exportReport = async (req, res, next) => {
                 objectToPushAsChild["type of value(actual/derived/Proxy)"] = item?.childFields?.typeOf ? item?.childFields?.typeOf : "";
                 objectToPushAsChild["Format_of_data_provided_by_company (chart, table, text)"] = item?.childFields?.formatOfDataProvidedByCompanyChartTableText ? item?.childFields?.formatOfDataProvidedByCompanyChartTableText : "";
                 objectToPushAsChild["did_the_company_report"] = item?.childFields?.didTheCompanyReport ? item?.childFields?.didTheCompanyReport : "";
-                objectToPushAsChild["name_of_document_as_saved"] = item?.childFields?.sourceName ? item?.childFields?.sourceName : "";
+                let childSourceDetails = allCompanySourceDetails.filter(obj => obj.id == item?.childFields?.source)
+                objectToPushAsChild["name_of_document_as_saved"] = childSourceDetails[0]?.fileName ? childSourceDetails[0]?.fileName : "";
                 objectToPushAsChild["name_of_document (as listed on title page)"] = item?.childFields?.sourceTitle ? item?.childFields?.sourceTitle : "";
                 objectToPushAsChild["HTML Link of Document"] = item?.childFields?.url ? item?.childFields?.url : "";
                 objectToPushAsChild["Document Year"] = documentYear;
