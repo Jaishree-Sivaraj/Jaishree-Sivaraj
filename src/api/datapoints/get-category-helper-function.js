@@ -17,7 +17,9 @@ import {
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { format } from 'date-fns';
 import { NUMBER } from '../../constants/dp-datatype';
-import { getMemberJoiningDate, getTaskStartDate } from './dp-details-functions';
+import { getMemberJoiningDate, getSortedYear, getTaskStartDate } from './dp-details-functions';
+import { ClientRepresentative } from '../../constants/roles';
+import { CLIENT_EMAIL } from '../../constants/client-email';
 
 const QUALITATIVE = 'Qualitative';
 const QUANTITATIVE = 'Quantitative';
@@ -79,6 +81,21 @@ export async function getDocumentCountAndPriorityDataAndAllDpTypeDetails(
   }
 }
 
+function getLatestCurrentYear(role, email, currentYear) {
+  try {
+    if (role == ClientRepresentative && email.split('@')[1] == CLIENT_EMAIL) {
+      currentYear = currentYear.split(', ');
+      currentYear = getSortedYear(currentYear);
+      const latestYear = currentYear[0];
+      currentYear = [];
+      currentYear = latestYear
+    }
+    return currentYear;
+  } catch (error) {
+    console.log(error?.message);
+  }
+}
+
 export async function getFilteredDatapointForStandalone(
   keyIssuesList,
   datapointList,
@@ -87,19 +104,22 @@ export async function getFilteredDatapointForStandalone(
   currentYear,
   currentAllStandaloneDetails,
   taskDetails,
-  isPriority
+  isPriority,
+  user
 ) {
   try {
     keyIssuesList = await getKeyIssues(
       { ...queryKeyIssueSearch, isPriority: isPriority },
       keyIssuesList
     );
+
     datapointList = await getDataPointListForStandalone(
       dpTypeDatapoints,
       currentYear,
       currentAllStandaloneDetails,
       taskDetails,
-      datapointList
+      datapointList,
+      user
     );
     return {
       status: '200',
@@ -136,11 +156,12 @@ export function getDataPointListForStandalone(
   currentYear,
   currentAllStandaloneDetails,
   taskDetails,
-  datapointList
+  datapointList,
+  user
 ) {
   try {
     for (let datapointsIndex = 0; datapointsIndex < datapointData.length; datapointsIndex++) {
-      let datapointsObject = getDpObjectDetailsForStandalone(datapointData[datapointsIndex], taskDetails);
+      let datapointsObject = getDpObjectDetailsForStandalone(datapointData[datapointsIndex], taskDetails, user);
 
       for (let currentYearIndex = 0; currentYearIndex < currentYear.length; currentYearIndex++) {
         _.filter(currentAllStandaloneDetails, (object) => {
@@ -179,7 +200,8 @@ export function getResponse(
   return result;
 }
 
-export function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails) {
+export function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails, user) {
+  taskDetails.year = getLatestCurrentYear(user?.userType, user?.email, taskDetails?.year);
   return {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
@@ -198,7 +220,10 @@ export function getDpObjectDetailsForStandalone(dpTypeDatapoints, taskDetails) {
   };
 }
 
-export function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails) {
+export function getMemberDataPoint(dpTypeDatapoints, memberData, taskDetails, user) {
+
+  memberData.year = getLatestCurrentYear(user?.userType, user?.email, memberData?.year);
+
   return {
     dpCode: dpTypeDatapoints?.code,
     dpCodeId: dpTypeDatapoints?.id,
@@ -411,7 +436,8 @@ export async function getFilteredDatapointsForBMAndKM(
   allDatapoints,
   taskStartDate,
   currentYear,
-  dpType
+  dpType,
+  user
 ) {
   try {
     const searchQueryForMemberName = { taskId: taskDetails?.id, status: true, isActive: true };
@@ -420,7 +446,6 @@ export async function getFilteredDatapointsForBMAndKM(
       dpType == BOARD_MATRIX ?
         await BoardMembersMatrixDataPoints.distinct('memberName', searchQueryForMemberName) :
         await KmpMatrixDataPoints.distinct('memberName', searchQueryForMemberName)
-
     // TODO Step2: Iterating through the datapoints to get the list.
     for (
       let datapointsIndex = 0;
@@ -451,7 +476,8 @@ export async function getFilteredDatapointsForBMAndKM(
           let datapointObject = getMemberDataPoint(
             dpTypeDatapoints[datapointsIndex],
             memberList[datapointListIndex],
-            taskDetails
+            taskDetails,
+            user
           );
 
           // TODO 2.3: Checking for the correction status whether it is complete or incomplete based on the collected data and members.
@@ -679,6 +705,15 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
           : memberData.MASR008 == 'M'
             ? 'he'
             : 'she';
+      if (memberData?.startDate == '') {
+        return {
+          status: 200,
+          message: `Member's start date is empty kindly update`,
+          response: {
+            datapointList,
+          },
+        };
+      }
       if (memberData?.endDateTimeStamp < taskStartDate && memberData?.endDateTimeStamp !== 0 && memberData?.endDateTimeStamp !== null) {
         return {
           status: 200,
@@ -715,7 +750,7 @@ export async function getFilteredErrorDatapointForStandalone(
   page,
   limit,
   dataType,
-  currentYear//11
+  currentYear
 ) {
   try {
     queryForHasError =

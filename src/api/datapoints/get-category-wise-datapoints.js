@@ -17,6 +17,7 @@ import {
   CompanyRepresentative,
   ClientRepresentative,
 } from '../../constants/roles';
+import { CLIENT_EMAIL } from '../../constants/client-email';
 import { ClientTaxonomy } from '../clientTaxonomy';
 import {
   getSearchQuery,
@@ -30,12 +31,14 @@ import {
   getMembers,
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
-import { getTaskStartDate } from './dp-details-functions';
+import { getTaskStartDate, getSortedYear, getCurrentYearForClient } from './dp-details-functions';
+
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
     const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValue, dataType } = req.body;
+    const { user } = req;
 
     // Error message
     if (!page || !limit) {
@@ -68,7 +71,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
-    const currentYear = taskDetails.year.split(', ');
+    let currentYear = taskDetails.year.split(', ');
 
     //  Starting date of the task.
     let taskStartDate = getTaskStartDate(
@@ -191,6 +194,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // If true then Acuite, false then SFDR ['Non- SFDR have derived calculations]
 
     const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
+    if (req?.user?.userType == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
+      currentYear = getCurrentYearForClient(currentYear);
+      taskDetails.year = currentYear;
+    }
+
     let response = {
       status: 200,
       fiscalYear: taskDetails?.year,
@@ -260,7 +268,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             currentYear,
             currentAllStandaloneDetails,
             taskDetails,
-            true
+            true,
+            user
           );
           result = getResponse(result, response, count, true, repFinalSubmit);
           return res.status(200).json(result);
@@ -292,7 +301,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentYear,
                   currentAllStandaloneDetails,
                   taskDetails,
-                  false //8
+                  false, //8,
+                  user
                 );
                 result = getResponse(
                   result,
@@ -312,7 +322,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllBoardMemberMatrixDetails,
                   taskStartDate,//starting date.
                   currentYear,
-                  BOARD_MATRIX //9
+                  BOARD_MATRIX, //9
+                  user
                 );
                 result = getResponse(
                   result,
@@ -332,7 +343,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllKmpMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  KMP_MATRIX //9
+                  KMP_MATRIX, //,
+                  user
                 );
                 result = getResponse(
                   result,
@@ -366,7 +378,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               currentYear,
               currentAllStandaloneDetails,
               taskDetails,
-              false //8
+              false, //8
+              user
             );
             result = getResponse(
               result,
@@ -418,7 +431,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   dataType,
-                  currentYear//11
+                  currentYear
                 );
                 result = getResponse(
                   result,

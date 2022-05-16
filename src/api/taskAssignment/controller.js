@@ -35,6 +35,9 @@ import {
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
+import { getSortedYear } from '../datapoints/dp-details-functions';
+import { CLIENT_EMAIL } from '../../constants/client-email';
+
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1375,6 +1378,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         }).populate('companiesList')
           .catch((err) => { return res.status(400).json({ status: "400", message: err.message ? err.message : "Invalid user Id" }) });
         if (clientRepDetail && clientRepDetail.companiesList) {
+          const taskIds = await TaskAssignment.distinct('_id', { companyId: { $in: clientRepDetail.companiesList }, status: true });
+
+
+
           if (params.type == "DataReview") {
             findQuery = {
               companyId: { $in: clientRepDetail.companiesList },
@@ -1499,6 +1506,12 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
             if (params.role == "Analyst") {
               categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
                 .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+            }
+            if (params.role == ClientRepresentative && completeUserDetail?.email.split('@')[1] == CLIENT_EMAIL) {
+              let currentYear = object.year.split(', ');
+              currentYear = getSortedYear(currentYear);
+              object.year = currentYear[0];
+
             }
             let taskObject = {
               taskId: object.id,
