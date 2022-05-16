@@ -31,8 +31,9 @@ import {
   getMembers,
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
-import { getTaskStartDate, getSortedYear, getCurrentYearForClient } from './dp-details-functions';
-
+import { getTaskStartDate } from './dp-details-functions';
+import { CLIENT_EMAIL } from '../../constants/client-email';
+import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
@@ -71,7 +72,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
-    let currentYear = taskDetails.year.split(', ');
+    let currentYear = taskDetails?.year.split(', ');
 
     //  Starting date of the task.
     let taskStartDate = getTaskStartDate(
@@ -195,8 +196,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
 
     const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
     if (req?.user?.userType == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
-      currentYear = getCurrentYearForClient(currentYear);
-      taskDetails.year = currentYear;
+      // We have to get only those years with respect to latest year 
+      // As we are are getting latest-year-based-task.(filtering done while getting task.)
+      let latestCurrentYear = getLatestCurrentYear(taskDetails?.year);
+      taskDetails.year = latestCurrentYear;
+      currentYear = [];
+      
+      if (latestCurrentYear.includes(', ')) {
+        latestCurrentYear = latestCurrentYear.split(', ' );
+        currentYear.push(...latestCurrentYear);
+      } else {
+        currentYear.push(latestCurrentYear);
+      }
+      
     }
 
     let response = {
