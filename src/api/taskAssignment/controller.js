@@ -2063,7 +2063,8 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
-      functionId: { "$ne": negativeNews.id }
+      functionId: { "$ne": negativeNews.id },
+      status:true
     }
 
     if (body.skipValidation) {
