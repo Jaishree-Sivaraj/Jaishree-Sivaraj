@@ -2,30 +2,40 @@ import {success, notFound} from '../../services/response/';
 import {BoardDirector} from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
-import moment from 'moment'
+import moment from 'moment';
 import {MasterCompanies} from '../masterCompanies';
+import mongoose, { Schema } from 'mongoose';
 
-export const create = async ({bodymen: {body}}, res, next) => {
-  let checkDirectorDin = await BoardDirector.find ({din: body.din});
+export const create = async ({user, bodymen: {body}}, res, next) => {
   try {
-    if (checkDirectorDin.length > 0) {
-      return res.status (402).json ({
-        message: 'DIN already exists',
-      });
-    } else {
-      if (body.din != '') {
-        await BoardDirector.create ({
-          din: body.din,
-          name: body.name,
-          gender: body.gender,
-          companies: body.companies,
-        }).then (async boardDirector => {
-          return res.status (200).json ({
-            message: 'Board Director created successfully',
-            status: '200',
-            data: boardDirector.view (true),
-          });
+    if(body.memberType == "Board Matrix"){
+      let checkDirectorDin = await BoardDirector.find ({$and: [{din : body.din, companyId : mongoose.Types.ObjectId(body.companyId) }]});
+      if (checkDirectorDin.length > 0) {
+        return res.status (402).json ({
+          message: 'DIN and companyId already exists',
         });
+      }else {
+        if (body.din != '' && body.companyId != ''  ) {
+          await BoardDirector.create ({
+            din: body.din,
+            BOSP004: body.name,
+            BODR005: body.gender,
+            dob: body.dob,
+            companyId: body.companyId,
+            cin: body.cin,
+            companyName: body.companyName,
+            joiningDate: body.joiningDate,
+            cessationDate: body.cessationDate,
+            memberType: body.memberType,
+            createdBy: user
+          }).then (async boardDirector => {
+            return res.status (200).json ({
+              message: 'Board Director created successfully',
+              status: '200',
+              data: boardDirector.view (true),
+            });
+          });
+        }
       }
     }
   } catch (error) {
