@@ -2048,7 +2048,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       dataCollection: "Yes",
       functionId: { "$ne": negativeNews.id },
       status:true
-
     }
 
     if (body.skipValidation) {
