@@ -1,57 +1,47 @@
 import mongoose, { Schema } from 'mongoose'
 
 const boardDirectorSchema = new Schema({
+  createdBy: {
+    type: Schema.ObjectId,
+    ref: 'User',
+    required: true
+  },
   din: {
     type: String,
-    required: true,
-    unique : true
+    default : ''
   },
-  name: {
+  BOSP004: {
     type: String
   },
-  gender: {
+  BODR005: {
+    //gender
     type: String
   },
-  companies: {
-    type: [],
-    ref: 'MasterCompanies',
+  dob: {
+    type: String
   },
-  taskId: {
+  companyId: {
     type: Schema.ObjectId,
-    ref: 'TaskAssignment'
-  },
-  memberName: {
-    type: String,
-    default: ''
-  },
-  memberId: {
-    type: String,
-    default: ''
+    ref: 'Companies',
+    required: true
   }, 
-  startDate: {
+  companyName: {
     type: String,
-    default: ''
+  },
+  cin: {
+    type: String,
+  },
+  joiningDate: {
+    type: String,
   }, 
-  endDate: {
+  cessationDate: {
     type: String,
     default: ''
   },
-  dateOfBirth: {
+  memberType: {
     type: String,
-    default: ''
-  },
-  financialExp: {
-    type: String,
-    default: ''
-  },
-  nationality: {
-    type: String,
-    default: ''
-  },
-  industrialExp: {
-    type: String,
-    default: ''
-  } 
+  }
+
 }, {
   timestamps: true,
   toJSON: {
@@ -65,18 +55,17 @@ boardDirectorSchema.methods = {
     const view = {
       // simple view
       id: this.id,
+      createdBy:  this.createdBy ? this.createdBy.view(full) : null,
       din: this.din,
-      name: this.name,
-      gender: this.gender,
-      companies: this.companies,
-      taskId: this.taskId ? this.taskId.view(full) : null,
-      memberName: this.memberName,
-      memberId: this.memberId,
-      startDate: this.startDate,
-      endDate: this.endDate,
-      financialExp: this.financialExp,
-      nationality: this.nationality,
-      industrialExp: this.industrialExp,
+      BOSP004: this.BOSP004,
+      BODR005: this.BODR005,
+      dob: this.dob,
+      companyId: this.companyId ? this.companyId.view(full) : null,
+      companyName: this.companyName,
+      cin: this.cin,
+      joiningDate: this.joiningDate,
+      cessationDate: this.cessationDate,
+      memberType: this.memberType,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
