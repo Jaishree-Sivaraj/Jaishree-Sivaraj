@@ -356,12 +356,11 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         const splityear = currentYear[yearIndex].split('-');
         // 1st date is one more than the end date, i.e, if it is 1st then new date is 2nd
         const firstHalfDate = getTaskStartDate(currentYear[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
-        const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000;
+        const secondHalfDate = (new Date(splityear[1], Number(fiscalYearEndMonth) - 1, fiscalYearEndDate).getTime()) / 1000;
 
-        // memberJoiningDate= 2nd Sept 2016
+        /*memberJoiningDate= 2nd Sept 2016
         //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
-        // secondHalf= 31st March 2019
-
+        // secondHalf= 31st March 2019*/
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
           && (member.endDateTimeStamp == 0 || member.endDateTimeStamp == null || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {

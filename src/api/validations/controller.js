@@ -1799,7 +1799,7 @@ export const getAllValidation =async ({ user, params }, res, next) => {
             keyIssuesList.push(keyIssues);
           }
           for(let validationIndex = 0; validationIndex < validationRules.length; validationIndex++){
-            await Ztables.count();
+            await Ztables.findOne();
             let updatedPreviousYear;
             let yearIndex = 0, yearsLength = distinctYears.length; 
             updatedPreviousYear = (previousYear != '' && previousYear != undefined) ? previousYear :  mergedYear[yearIndex-1]

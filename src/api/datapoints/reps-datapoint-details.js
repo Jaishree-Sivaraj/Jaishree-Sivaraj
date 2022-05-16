@@ -23,47 +23,47 @@ import {
 import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
 
 let requiredFields = [
-    "categoryCode",
-    "categoryName",
-    "code",
-    "comments",
-    "dataCollection",
-    "dataCollectionGuide",
-    "description",
-    "dpType",
-    "errorType",
-    "finalUnit",
-    "functionType",
-    "hasError",
-    "industryRelevant",
-    "isPriority",
-    "keyIssueCode",
-    "keyIssueName",
-    "name",
-    "normalizedBy",
-    "pageNumber",
-    "optionalAnalystComment",
-    "isRestated",
-    "restatedForYear",
-    "restatedInYear",
-    "restatedValue",
-    "percentile",
-    "polarity",
-    "publicationDate",
-    "reference",
-    "response",
-    "screenShot",
-    "signal",
-    "sourceName",
-    "isRequiredForJson",
-    "textSnippet",
-    "themeCode",
-    "themeName",
-    "unit",
-    "url",
-    "weighted",
-    "year",
-    "measureType"
+    'categoryCode',
+    'categoryName',
+    'code',
+    'comments',
+    'dataCollection',
+    'dataCollectionGuide',
+    'description',
+    'dpType',
+    'errorType',
+    'finalUnit',
+    'functionType',
+    'hasError',
+    'industryRelevant',
+    'isPriority',
+    'keyIssueCode',
+    'keyIssueName',
+    'name',
+    'normalizedBy',
+    'pageNumber',
+    'optionalAnalystComment',
+    'isRestated',
+    'restatedForYear',
+    'restatedInYear',
+    'restatedValue',
+    'percentile',
+    'polarity',
+    'publicationDate',
+    'reference',
+    'response',
+    'screenShot',
+    'signal',
+    'sourceName',
+    'isRequiredForJson',
+    'textSnippet',
+    'themeCode',
+    'themeName',
+    'unit',
+    'url',
+    'weighted',
+    'year',
+    'measureType'
 ];
 export const repDatapointDetails = async (req, res, next) => {
     try {
@@ -132,8 +132,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                 && obj.raisedBy == role);
                             if (errorDetailsObject.length > 0) {
                                 if (errorDetailsObject[0]?.raisedBy == role) {
-                                    let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : "";
-                                    let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : "";
+                                    let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : '';
+                                    let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : '';
                                     datapointsObject.comments.push(comments);
                                     datapointsObject.comments.push(rejectComment);
                                 }
@@ -191,8 +191,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 //     let historicalDatapointsObject = {};
                 //     let sourceDetails = {
                 //         url: '',
-                //         sourceName: "",
-                //         value: "",
+                //         sourceName: '',
+                //         value: '',
                 //         publicationDate: ''
                 //     };
                 //     for (let historyStandaloneIndex = 0; historyStandaloneIndex < historyAllStandaloneDetails.length; historyStandaloneIndex++) {
@@ -216,8 +216,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 //     }
                 // }
                 return res.status(200).send({
-                    status: "200",
-                    message: "Data collection dp codes retrieved successfully!",
+                    status: '200',
+                    message: 'Data collection dp codes retrieved successfully!',
                     response: {
 
                         prevDatapoint,
@@ -232,7 +232,7 @@ export const repDatapointDetails = async (req, res, next) => {
                 const [currentAllBoardMemberMatrixDetails, memberDetails] = await Promise.all([
                     BoardMembersMatrixDataPoints.find({
                         ...currentQuery,
-                        memberName: { "$regex": memberName, "$options": "i" }
+                        memberName: { '$regex': memberName, '$options': 'i' }
                     }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -267,8 +267,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                 && obj.raisedBy == role)
                             if (errorDetailsObject.length !== 0) {
                                 if (errorDetailsObject[0]?.raisedBy == role) {
-                                    let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.comments : "";
-                                    let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.rejectComment : "";
+                                    let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.comments : '';
+                                    let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.rejectComment : '';
                                     datapointsObject.comments.push(comments);
                                     datapointsObject.comments.push(rejectComment);
                                 }
@@ -298,8 +298,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId && obj.year == memberCollectionYears[currentYearIndex] && obj.taskId == taskId && obj.raisedBy == role)
                                 if (errorDetailsObject.length !== 0) {
                                     if (errorDetailsObject[0]?.raisedBy == role) {
-                                        let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.comments : "";
-                                        let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.rejectComment : "";
+                                        let comments = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.comments : '';
+                                        let rejectComment = errorDetailsObject.length !== 0 ? errorDetailsObject[0]?.rejectComment : '';
                                         datapointsObject.comments.push(comments);
                                         datapointsObject.comments.push(rejectComment);
                                     }
@@ -323,8 +323,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 //     let historicalDatapointsObject = {};
                 //     let sourceDetails = {
                 //         url: '',
-                //         sourceName: "",
-                //         value: "",
+                //         sourceName: '',
+                //         value: '',
                 //         publicationDate: ''
                 //     };
                 //     for (let historyAllBoardMemberIndex = 0; historyAllBoardMemberIndex < historyAllBoardMemberMatrixDetails.length; historyAllBoardMemberIndex++) {
@@ -346,8 +346,8 @@ export const repDatapointDetails = async (req, res, next) => {
                 //     }
                 // }
                 return res.status(200).send({
-                    status: "200",
-                    message: "Data collection dp codes retrieved successfully!",
+                    status: '200',
+                    message: 'Data collection dp codes retrieved successfully!',
                     response: {
 
                         prevDatapoint,
@@ -360,7 +360,7 @@ export const repDatapointDetails = async (req, res, next) => {
             case KMP_MATRIX:
                 const [currentAllKmpMatrixDetails, kmpMemberDetails] = await Promise.all([
                     KmpMatrixDataPoints.find({
-                        ...currentQuery, memberName: { "$regex": memberName, "$options": "i" },
+                        ...currentQuery, memberName: { '$regex': memberName, '$options': 'i' },
                     }).populate('createdBy')
                         .populate('datapointId')
                         .populate('companyId')
@@ -399,8 +399,8 @@ export const repDatapointDetails = async (req, res, next) => {
                             errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId && obj.year == memberCollectionYears[currentYearIndex] && obj.taskId == taskId && obj.raisedBy == role)
                             if (errorDetailsObject.length !== 0) {
                                 if (errorDetailsObject[0]?.raisedBy == role) {
-                                    let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : "";
-                                    let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : "";
+                                    let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : '';
+                                    let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : '';
                                     datapointsObject.comments.push(comments);
                                     datapointsObject.comments.push(rejectComment);
                                 }
@@ -431,8 +431,8 @@ export const repDatapointDetails = async (req, res, next) => {
                                 let errorDetailsObject = errorDataDetails.filter(obj => obj.datapointId == datapointId && obj.year == memberCollectionYears[currentYearIndex] && obj.taskId == taskId && obj.raisedBy == role)
                                 if (errorDetailsObject.length !== 0) {
                                     if (errorDetailsObject[0]?.raisedBy == role) {
-                                        let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : "";
-                                        let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : "";
+                                        let comments = errorDetailsObject[0] ? errorDetailsObject[0]?.comments : '';
+                                        let rejectComment = errorDetailsObject[0] ? errorDetailsObject[0]?.rejectComment : '';
                                         datapointsObject.comments.push(comments);
                                         datapointsObject.comments.push(rejectComment);
                                     }
@@ -452,8 +452,8 @@ export const repDatapointDetails = async (req, res, next) => {
                     // for (let hitoryYearIndex = 0; hitoryYearIndex < totalHistories; hitoryYearIndex++) {
                     //     let sourceDetails = {
                     //         url: '',
-                    //         sourceName: "",
-                    //         value: "",
+                    //         sourceName: '',
+                    //         value: '',
                     //         publicationDate: ''
                     //     };
                     //     let historicalDatapointsObject = {};
@@ -476,8 +476,8 @@ export const repDatapointDetails = async (req, res, next) => {
                     // }
                 }
                 return res.status(200).send({
-                    status: "200",
-                    message: "Data collection dp codes retrieved successfully!",
+                    status: '200',
+                    message: 'Data collection dp codes retrieved successfully!',
                     response: {
 
                         prevDatapoint,

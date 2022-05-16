@@ -489,7 +489,13 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
         groupId: { $in: groupIds },
         status: true
       };
-    } else {
+    } else if (params.taskStatus == "Pending") {
+      findQuery = {
+        taskStatus: { $nin: ["Completed", "Verification Completed"] },
+        groupId: { $in: groupIds },
+        status: true
+      };
+    }else {
       findQuery = {
         taskStatus: params.taskStatus ? params.taskStatus : '',
         groupId: { $in: groupIds },
@@ -1246,8 +1252,6 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
-              }, {
-                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -2029,7 +2033,9 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
-      functionId: { "$ne": negativeNews.id }
+      functionId: { "$ne": negativeNews.id },
+      status:true
+
     }
 
     if (body.skipValidation) {
@@ -2108,7 +2114,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
         if (process.env.NODE_ENV === 'production') {
-          await sendEmail(e, subject, emailDetails)
+          await sendEmail(e, subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!') })
             .catch(err => console.log(err))
         }
