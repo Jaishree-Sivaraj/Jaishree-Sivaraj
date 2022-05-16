@@ -10,17 +10,13 @@ export const create = async ({user},body, res, next) => {
   var directorData = body.body;
   try {
     for (let index = 0; index < directorData.length; index++) {
-    let message = {
-      message: 'DIN and companyId already exists',
-      status: 402
-    }
     if(directorData[index].memberType == "Board Matrix"){
       let checkDirectorDin = await BoardDirector.find ({$and: [{din : directorData[index].din, companyId : mongoose.Types.ObjectId(directorData[index].companyId) }]});
       if (checkDirectorDin.length > 0) {
-        message = {
+        return res.status (402).json ({
           message: 'DIN and companyId already exists',
           status: 402
-        }
+        });
       }else {
         if (directorData[index].din != '' && directorData[index].companyId != ''  ) {
           await BoardDirector.create ({
@@ -35,17 +31,15 @@ export const create = async ({user},body, res, next) => {
             cessationDate: directorData[index].cessationDate,
             memberType: directorData[index].memberType,
             createdBy: body.user
-          }).then (async boardDirector => {
-            message = {
-              message: 'Board Director created successfully',
-              status: '200',
-              data: boardDirector.view (true)
-            }
-          });
+          })
         }
       }
-    }return res.status(message?.status).json (message)
+    }
   }
+  return res.status (200).json ({
+       message: 'Board Director created successfully',
+       status: '200'
+     }); 
   } catch (error) {
     return res.status (500).json ({
       message: error.message,
@@ -59,19 +53,20 @@ export const index = ({querymen: {query, select, cursor}}, res, next) =>
     .then (count =>
       BoardDirector.find (query, select, cursor).then (boardDirectors => {
         let directorObjects = [];
-        if (boardDirectors.length > 0) {
-          boardDirectors.forEach (obj => {
-            directorObjects.push ({
-              _id: obj._id,
-              din: obj.din,
-              name: obj.name,
-              gender: obj.gender,
-              companies: obj.companies,
-              createdAt: obj.createdAt,
-              updatedAt: obj.updatedAt,
-            });
-          });
-        }
+        console.log(boardDirectors)
+        // if (boardDirectors.length > 0) {
+        //   boardDirectors.forEach (obj => {
+        //     directorObjects.push ({
+        //       _id: obj._id,
+        //       din: obj.din,
+        //       name: obj.name,
+        //       gender: obj.gender,
+        //       companies: obj.companies,
+        //       createdAt: obj.createdAt,
+        //       updatedAt: obj.updatedAt,
+        //     });
+        //   });
+        // }
         return res.status (200).json ({
           message: 'Board Director Retrieved successfully',
           status: '200',
