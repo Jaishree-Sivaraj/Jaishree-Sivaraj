@@ -6,6 +6,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BoardMembers } from '../boardMembers';
+import { BoardDirector } from '../boardDirector'
 import { Kmp } from '../kmp';
 import {
   YetToStart,
@@ -337,6 +338,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     // Getting all the active members
     switch (dpType) {
       case BOARD_MATRIX:
+        // memberDetails = await BoardDirector.find(activeMemberQuery);
         memberDetails = await BoardMembers.find(activeMemberQuery);
         break;
       case KMP_MATRIX:
@@ -391,6 +393,8 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         label1,
         value: member.id,
         year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : '',
+        startDate: member.startDate,
+        endDate: member.endDateTimeStamp,
       };
 
       memberList.push(memberValue);

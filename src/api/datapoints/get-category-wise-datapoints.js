@@ -321,7 +321,18 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                return res.status(200).json(result);
+                let allMembersFullDetails = result.response.datapointList.memberList;
+                let memberDetail = allMembersFullDetails.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                console.log(memberDetail);
+                if (memberName != '') {
+                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null && memberDetail?.endDate != '' && memberDetail?.endDate != null) {
+                    return res.status(200).json(result);
+                  } else {
+                    return res.status(400).json({ status: "400", message: "StartDate and EndDate is not updated, Please check!"})
+                  }
+                } else {
+                  return res.status(200).json(result);
+                }
               case KMP_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
                   memberList,
@@ -341,7 +352,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                return res.status(200).json(result);
+                let allMembersFullDetails1 = result.response.datapointList.memberList;
+                let memberDetail1 = allMembersFullDetails1.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                console.log(memberDetail1);
+                if (memberName != '') {
+                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null && memberDetail1?.endDate != '' && memberDetail1?.endDate != null) {
+                    return res.status(200).json(result);
+                  } else {
+                    return res.status(400).json({ status: "400", message: "StartDate and EndDate is not updated, Please check!"})
+                  }
+                } else {
+                  return res.status(200).json(result);
+                }
+                // return res.status(200).json(result);
               default:
                 return res.status(500).send({
                   status: '500',
