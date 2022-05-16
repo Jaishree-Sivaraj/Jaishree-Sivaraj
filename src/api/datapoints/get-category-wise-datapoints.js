@@ -32,7 +32,6 @@ import {
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
 import { getTaskStartDate } from './dp-details-functions';
-import { CLIENT_EMAIL } from '../../constants/client-email';
 import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.

@@ -77,9 +77,6 @@ export const repDatapointDetails = async (req, res, next) => {
         const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
         const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
         let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
-        if (role == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
-            currentYear = getCurrentYearForClient(currentYear);
-        }
 
         const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
         const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
