@@ -218,7 +218,7 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       return res.status(500).json({ status: "500", message: err.message ? err.message : `errror while storing json files ` });
     });
   } else if (body.type && body.type === 'controversy') {
-    let companyDetails = await Companies.findOne({ _id: body.companyId, status: true });
+    let companyDetails = await Companies.findOne({ _id: body.companyId, status: true }).populate('clientTaxonomyId');
     if (companyDetails) {
       let controversyJsonDatapoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id');
       let companyControversyYears = await Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year');
