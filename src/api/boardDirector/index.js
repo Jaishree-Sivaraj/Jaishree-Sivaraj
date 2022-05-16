@@ -9,8 +9,9 @@ import XLSX from 'xlsx';
 export BoardDirector, { schema } from './model'
 
 const router = new Router()
-const { din, name, gender, companies, taskId, memberName, memberId, startDate, endDate, financialExp, nationality, industrialExp } = schema.tree
-const company = [], searchValue = [];
+const { companyId,companyName, din, BOSP004, BODR005, dob, joiningDate, cessationDate, memberType } = schema.tree
+let name = "",  gender = "", company = [], searchValue = [];;
+
 
 /**
  * @api {post} /boardDirector Create board director
@@ -29,7 +30,7 @@ const company = [], searchValue = [];
  */
 router.post('/',
   token({ required: true }),
-  body({ din, name, gender, companies }),
+  body({ companyId,companyName, din, name, gender, dob, joiningDate, cessationDate, memberType }),
   create)
 
 /**
@@ -81,7 +82,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ din, name, gender, companies,taskId, memberName, memberId, startDate, endDate, financialExp, nationality, industrialExp }),
+  body({ din, name, gender }),
   update)
 
 /**
