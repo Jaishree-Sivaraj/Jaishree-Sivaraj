@@ -23,7 +23,6 @@ import {
 import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot } from './dp-details-functions';
 import { ClientRepresentative } from '../../constants/roles';
 import { CLIENT_EMAIL } from '../../constants/client-email';
-import { LATEST_YEARS } from '../../constants/latest-year';
 import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 let requiredFields = [
