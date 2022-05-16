@@ -20,7 +20,11 @@ import {
     getClientTaxonomyAndDpTypeDetails
 }
     from './datapoint-helper-function';
-import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot } from './dp-details-functions';
+import { ClientRepresentative } from '../../constants/roles';
+import { CLIENT_EMAIL } from '../../constants/client-email';
+import { LATEST_YEARS } from '../../constants/latest-year';
+import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 let requiredFields = [
     "categoryCode",
@@ -94,8 +98,21 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataScreenshot = [];
         let s3DataRefErrorScreenshot = [];
         let childDp = [];
-
         let memberCollectionYears = [];
+
+        if (role == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
+            // As we are already getting task with latest year
+            // So, here we are just supposed to iterate the latest year.
+            let latestCurrentYear = getLatestCurrentYear(year);
+            currentYear = [];
+            let latestCurrentYearArray = []
+            if (latestCurrentYear.includes(', ')) {
+                latestCurrentYearArray = latestCurrentYear.split(', ');
+            } else {
+                latestCurrentYearArray.push(latestCurrentYear)
+            }
+            currentYear.push(...latestCurrentYearArray);
+        }
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
@@ -372,20 +389,13 @@ export const repDatapointDetails = async (req, res, next) => {
                     })
                 ]);
 
-                memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
-
-                // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
+                memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate)                // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
                 datapointsObject = {
                     ...datapointsObject,
                     status: 'Yet to Start'
                 }
                 // totalHistories = historyYear.length > 5 ? 5 : historyYear.length;
                 const kmpMemberStartDate = new Date(kmpMemberDetails?.startDate).getFullYear();
-                currentYear.map(year => {
-                    if (year.includes(kmpMemberStartDate)) {
-                        memberCollectionYears.push(year);
-                    }
-                });
                 for (let currentYearIndex = 0; currentYearIndex < memberCollectionYears.length; currentYearIndex++) {
                     let currentDatapointsObject = {};
                     for (let currentIndex = 0; currentIndex < currentAllKmpMatrixDetails.length; currentIndex++) {
