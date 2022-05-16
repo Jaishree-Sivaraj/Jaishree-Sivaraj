@@ -2082,15 +2082,17 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
 
     // Comment the purpose.
-    const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
-    const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
+    if (body.role !== ClientRepresentative && body.role !== CompanyRepresentative) {
+      const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
+      const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
 
-    if (Object.keys(errorMessageForBM)?.length !== 0) {
-      return res.status(409).json(errorMessageForBM);
-    }
+      if (Object.keys(errorMessageForBM)?.length !== 0) {
+        return res.status(409).json(errorMessageForBM);
+      }
 
-    if (Object.keys(errorMessageForKM)?.length !== 0) {
-      return res.status(409).json(errorMessageForKM);
+      if (Object.keys(errorMessageForKM)?.length !== 0) {
+        return res.status(409).json(errorMessageForKM);
+      }
     }
 
     // mergedDetails is the Dp codes of all Dp Types.
