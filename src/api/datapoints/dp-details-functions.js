@@ -570,7 +570,6 @@ export function getMemberJoiningDate(date) {
 
 }
 
-
 export function getTaskStartDate(currentyear, month, date) {
     let [taskStartingYear] = currentyear.split('-');
     let taskStartingDate, taskStartingMonth;
@@ -590,4 +589,13 @@ export function getTaskStartDate(currentyear, month, date) {
     }
     const yearTimeStamp = Math.floor(new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() / 1000);
     return yearTimeStamp;
+}
+
+export function getCurrentYearForClient(currentYear) {
+    currentYear = getSortedYear(currentYear);
+    const latestYear = currentYear[0];
+    currentYear = [];
+    currentYear.push(latestYear);
+
+    return currentYear;
 }

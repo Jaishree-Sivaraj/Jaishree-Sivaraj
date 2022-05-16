@@ -20,7 +20,9 @@ import {
     getClientTaxonomyAndDpTypeDetails
 }
     from './datapoint-helper-function';
-import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot, getHeaders, getSortedYear } from './dp-details-functions';
+import { getS3ScreenShot, getSourceDetails, getChildDp, getDisplayFields, getS3RefScreenShot, getHeaders, getCurrentYearForClient } from './dp-details-functions';
+import { ClientRepresentative } from '../../constants/roles';
+import { CLIENT_EMAIL } from '../../constants/client-email';
 
 let requiredFields = [
     'categoryCode',
@@ -68,12 +70,15 @@ let requiredFields = [
 export const repDatapointDetails = async (req, res, next) => {
     try {
         const { taskId, datapointId, memberType, memberName, role, year, memberId, keyIssueId, dataType } = req.body;
-
         const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
         const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
         const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
         const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
         let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
+        if (role == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
+            currentYear = getCurrentYearForClient(currentYear);
+        }
+
         const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
         const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
         const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
@@ -371,7 +376,6 @@ export const repDatapointDetails = async (req, res, next) => {
                         status: true
                     })
                 ]);
-
                 memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
                 // historyYear = _.orderBy(_.uniqBy(historyAllKmpMatrixDetails, 'year'), 'year', 'desc');
