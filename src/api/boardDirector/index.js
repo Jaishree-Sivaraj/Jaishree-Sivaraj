@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, retrieveFilteredDataDirector, uploadBoardDirector, getAllBoardDirectors } from './controller'
+import { create, index, show, update, destroy, retrieveFilteredDataDirector, uploadBoardDirector, getAllBoardDirectors, getDirectorByDINAndCompanyId} from './controller'
 import { schema } from './model';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -66,6 +66,22 @@ router.get('/all-directors',
   token({ required: true }),
   query(),
   getAllBoardDirectors)
+
+/**
+ * @api {get} /boardDirector/:din Retrieve board director
+ * @apiName RetrieveBoardDirector
+ * @apiGroup BoardDirector
+ * @apiPermission master
+ * @apiParam {String} access_token master access token.
+ * @apiSuccess {Object} boardDirector Board director's data.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 404 Board director not found.
+ * @apiError 401 master access only.
+ */
+ router.get('/:din',
+ token({ required: true }),
+ getDirectorByDINAndCompanyId)
+
 
 /**
  * @api {get} /boardDirector/:id Retrieve board director
