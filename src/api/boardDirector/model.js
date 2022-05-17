@@ -8,7 +8,7 @@ const boardDirectorSchema = new Schema({
   },
   din: {
     type: String,
-    default : ''
+    default: ''
   },
   BOSP004: {
     type: String
@@ -24,7 +24,7 @@ const boardDirectorSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'Companies',
     required: true
-  }, 
+  },
   companyName: {
     type: String,
   },
@@ -33,13 +33,17 @@ const boardDirectorSchema = new Schema({
   },
   joiningDate: {
     type: String,
-  }, 
+  },
   cessationDate: {
     type: String,
     default: ''
   },
   memberType: {
     type: String,
+  },
+  status: {
+    type: Boolean,
+    default: true
   }
 
 }, {
@@ -51,11 +55,11 @@ const boardDirectorSchema = new Schema({
 })
 
 boardDirectorSchema.methods = {
-  view (full) {
+  view(full) {
     const view = {
       // simple view
       id: this.id,
-      createdBy:  this.createdBy ? this.createdBy.view(full) : null,
+      createdBy: this.createdBy ? this.createdBy.view(full) : null,
       din: this.din,
       BOSP004: this.BOSP004,
       BODR005: this.BODR005,
