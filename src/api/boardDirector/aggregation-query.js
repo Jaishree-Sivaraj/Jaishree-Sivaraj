@@ -29,8 +29,8 @@ export function getAggregationQueryToGetAllDirectors(page, limit) {
                 {
                     din: 1,
                     _id: 0,
-                    BOSP004: 1,
-                    BODR005: 1,
+                    name: '$BOSP004',
+                    gender: '$BODR005',
                     dob: 1,
                     'companies.companyId': 1,
                     'companies.cin': 1,
@@ -83,8 +83,8 @@ export function getDirector(din) {
                 {
                     din: 1,
                     _id: 0,
-                    BOSP004: 1,
-                    BODR005: 1,
+                    name: '$BOSP004',
+                    gender: '$BODR005',
                     dob: 1,
                     'companies.companyId': 1,
                     'companies.cin': 1,

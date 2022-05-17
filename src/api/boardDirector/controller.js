@@ -89,7 +89,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
     const findQuery = getAggregationQueryToGetAllDirectors(page, limit);
     const [allDirectors, totalDirectors] = await Promise.all([
       BoardDirector.aggregate(findQuery),
-      BoardDirector.distinct('companyId', { status: true })
+      BoardDirector.distinct('din', { status: true })
     ]);
 
     return res.status(200).json({
