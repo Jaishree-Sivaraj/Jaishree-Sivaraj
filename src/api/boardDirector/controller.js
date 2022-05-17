@@ -3,11 +3,12 @@ import { BoardDirector } from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
 import moment from 'moment';
-import { MasterCompanies } from '../masterCompanies';
+import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
 import { getAggregationQueryToGetAllDirectors } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
+  console.log("ggg")
   var directorData = body.body;
   try {
     for (let index = 0; index < directorData.length; index++) {
@@ -194,7 +195,7 @@ export const retrieveFilteredDataDirector = ({ querymen: { query, select, cursor
 
 export const uploadBoardDirector = async (req, res, next) => {
   const filePath = req.file.path;
-  let directorsData = [];
+  const user = req.user;
   let directorInfo = [];
   var workbook = XLSX.readFile(filePath, {
     sheetStubs: false,
@@ -210,14 +211,18 @@ export const uploadBoardDirector = async (req, res, next) => {
         const rowObject = sheetAsJson[index1];
         let companyObject = {
           din: rowObject['DIN'],
-          name: rowObject['Name'],
-          gender: rowObject['Gender'],
-          companies: rowObject['Companies'],
+          BOSP004: rowObject['Name'],
+          BODR005: rowObject['Gender'],
+          dob: rowObject['DOB'],
+          cin: rowObject['CIN'],
+          joiningDate: rowObject['JoiningDate'],
+          cessationDate: rowObject['cessationDate'],
+          memberType: rowObject['memberType']
         }
         directorInfo.push(companyObject);
       }
       if (directorInfo.length > 0) {
-        let directorHeaders = ["DIN", "Name", "Gender", "Companies"]
+        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate","memberType"]
         if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
           let inputFileHeaders = Object.keys(sheetAsJson[0]);
           let missingHeaders = _.difference(directorHeaders, inputFileHeaders);
@@ -230,18 +235,11 @@ export const uploadBoardDirector = async (req, res, next) => {
           status: '400'
         }
         for (let index = 0; index < directorInfo.length; index++) {
-          let checkDirectorDin = await BoardDirector.find({ din: directorInfo[index].din });
-          var companiesArr = directorInfo[index].companies.split(',');
-          var companyData = [];
-          if (companiesArr.length > 0) {
-            for (var comIndex = 0; comIndex < companiesArr.length; comIndex++) {
-              let fetchId = await MasterCompanies.find({ cin: companiesArr[comIndex] });
-              if (fetchId.length != 0) {
-                companyData.push({ label: companiesArr[comIndex], value: fetchId[0]._id + '' });
-              }
-            }
-          }
-          directorInfo[index].companies = companyData;
+          let fetchId = await Companies.find({ cin: directorInfo[index].cin });
+          directorInfo[index].companyName = fetchId[0].companyName;
+          directorInfo[index].companyId = fetchId[0]._id
+          directorInfo[index].createdBy = user;
+          let checkDirectorDin = await BoardDirector.find({$and: [{din : directorInfo[index].din, companyId : mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
           const isEmpty = Object.keys(checkDirectorDin).length === 0;
           if (isEmpty == true) {
             await BoardDirector.create(directorInfo[index]).then(result => {
