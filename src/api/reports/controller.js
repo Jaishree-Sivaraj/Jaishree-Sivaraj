@@ -614,9 +614,9 @@ export const exportReport = async (req, res, next) => {
           // rows.sort(function(a, b) {
           //   return collator.compare(a["Item Code"], b["Item Code"]) || collator.compare(a["name_of_company"], b["name_of_company"]) || collator.compare(a["year"], b["year"])
           // });
-          rows = _.orderBy(rows, ['year'], ['desc'])
-          rows = _.sortBy(rows, 'name_of_company')
           rows = _.sortBy(rows, 'Item Code')
+          rows = _.sortBy(rows, 'name_of_company')
+          // rows = _.orderBy(rows, ['year'], ['desc'])
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
