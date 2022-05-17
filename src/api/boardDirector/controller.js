@@ -5,7 +5,7 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { MasterCompanies } from '../masterCompanies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
@@ -102,6 +102,23 @@ export const getAllBoardDirectors = async (req, res, next) => {
   }
 }
 
+export const getDirectorByDINAndCompanyId = async (req, res, next) => {
+  try {
+    const { din } = req.params;
+    const [boardDirector] = await BoardDirector.aggregate(getDirector(din));
+    return res.status(200).json({
+      status: 200,
+      message: `Successfully retrived Director's data`,
+      data: boardDirector
+    });
+
+  } catch (error) {
+    return res.status(409).json({
+      status: 409,
+      message: error?.message ? error?.message : `Failed to retrieve Director's data`
+    })
+  }
+}
 
 export const show = ({ params }, res, next) =>
   BoardDirector.findById(params.id)
