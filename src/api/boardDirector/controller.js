@@ -284,22 +284,11 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { din } = req.params;
     const { body } = req;
-    let findQuery = { din };
-    let updateObject, updateDirector, directorsDetails;
-
-    if (body?.companies?.length > 0) {
-      for (let i = 0; i < body?.companies?.length; i++) {
-        findQuery = { ...findQuery, companyId: body?.companies[i]?.companyId };
-        directorsDetails = await BoardDirector.findOne(findQuery).lean();
-        updateObject = getUpdateObject(body, body?.companies[i], directorsDetails);
-        updateDirector = await BoardDirector.updateMany(findQuery, {
-          $set: updateObject
-        });
-      }
-
-    } else {
-      let directorsDetails = await BoardDirector.findOne(findQuery).lean();
-      updateObject = getUpdateObject(body, {}, directorsDetails);
+    let updateDirector;
+    for (let i = 0; i < body?.length; i++) {
+      const findQuery = { din, companyId: body[i]?.companyId };
+      const directorsDetails = await BoardDirector.findOne(findQuery).lean();
+      const updateObject = getUpdateObject(body[i], directorsDetails);
       updateDirector = await BoardDirector.updateMany(findQuery, {
         $set: updateObject
       });
@@ -308,7 +297,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     if (!updateDirector) {
       return res.status(409).json({
         status: 409,
-        message: `Failed to updated director's details`
+        message: `Failed to update director's details`
 
       })
     }
