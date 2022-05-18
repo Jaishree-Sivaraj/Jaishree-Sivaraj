@@ -867,7 +867,13 @@ export const exportQATasks = async (req, res, next) => {
           year: '$year',
           response: '$response',
           placeValue: '$placeValue',
-          uom: '$uomDetails.uomName',
+          measureUom: 1,"uom": {
+            "$cond": {  
+              "if": { $lte: ["$uomDetails", null] }, 
+              "then" : "",
+               "else" : "$uomDetails.uomName"
+              }
+          },
           didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
           typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
           companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
@@ -934,7 +940,14 @@ export const exportQATasks = async (req, res, next) => {
               year: '$year',
               response: '$childFields.response',
               placeValue: '$childFields.placeValue',
-              uom: '$childFields.uom',
+              // uom: '$childFields.uom',
+              measureUom: 1,"uom": {
+                "$cond": {  
+                  "if": { $lte: ["$childFields.uom", null] }, 
+                  "then" : "",
+                   "else" : "$childFields.uom"
+                  }
+              },
               didTheCompanyReport: "$childFields.didTheCompanyReport",
               typeOfValueActualDerivedProxy: "$childFields.typeOf",
               companyDataElementLabel: "$childFields.companyDataElementLabel",
