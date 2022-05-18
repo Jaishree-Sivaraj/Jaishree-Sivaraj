@@ -131,21 +131,21 @@ export function getDirector(din) {
     }
 }
 
-export function getUpdateObject(body, company, directorsDetails) {
+export function getUpdateObject(body, directorsDetails) {
     let data = {
-        cessationDate: company?.cessationDate ? company?.cessationDate : directorsDetails?.cessationDate,
+        cessationDate: body?.cessationDate ? body?.cessationDate : directorsDetails?.cessationDate,
         BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
         BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
         dob: body?.dob ? body?.dob : directorsDetails?.dob,
-        companyName: company && company?.companyName ? company?.companyName : directorsDetails?.companyName,
-        joiningDate: company && company?.joiningDate ? company?.joiningDate : directorsDetails?.joiningDate,
-        memberType: company && company?.memberType ? company?.memberType : directorsDetails?.memberType
+        companyName: body?.companyName ? body?.companyName : directorsDetails?.companyName,
+        joiningDate: body?.joiningDate ? body?.joiningDate : directorsDetails?.joiningDate,
+        memberType: body?.memberType ? body?.memberType : directorsDetails?.memberType
     }
 
-    if (company?.status == true || company?.status == false) {
+    if (body?.status == true || body?.status == false) {
         data = {
             ...data,
-            status: company?.status
+            status: body?.status
         }
     }
     return data;
