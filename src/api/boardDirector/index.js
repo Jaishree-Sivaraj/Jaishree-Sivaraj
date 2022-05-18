@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, retrieveFilteredDataDirector, uploadBoardDirector, getAllBoardDirectors, getDirectorByDINAndCompanyId} from './controller'
+import { create, index, show, update, destroy, retrieveFilteredDataDirector, uploadBoardDirector, getAllBoardDirectors, getDirectorByDINAndCompanyId, updateAndDeleteDirector } from './controller'
 import { schema } from './model';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -78,9 +78,9 @@ router.get('/all-directors',
  * @apiError 404 Board director not found.
  * @apiError 401 master access only.
  */
- router.get('/:din',
- token({ required: true }),
- getDirectorByDINAndCompanyId)
+router.get('/:din',
+  token({ required: true }),
+  getDirectorByDINAndCompanyId)
 
 
 /**
@@ -105,7 +105,7 @@ router.get('/:id',
  * @apiPermission master
  * @apiParam {String} access_token master access token.
  * @apiParam din Board director's din.
- * @apiParam name Board director's name.
+ * @apiParam name Boargenderd director's name.
  * @apiParam gender Board director's gender.
  * @apiParam companies Board director's companies.
  * @apiSuccess {Object} boardDirector Board director's data.
@@ -117,6 +117,28 @@ router.put('/:id',
   token({ required: true }),
   body({ din, name, gender }),
   update)
+
+/**
+* @api {put} /boardDirector/:din/:companyId Update board director
+* @apiName UpdateBoardDirector
+* @apiGroup BoardDirector
+* @apiPermission master
+* @apiParam {String} access_token master access token.
+* @apiParam din Board director's din.
+* @apiParam name Board director's name.
+* @apiParam gender Board director's gender.
+* @apiParam companies Board director's companies.
+* @apiSuccess {Object} boardDirector Board director's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Board director not found.
+* @apiError 401 master access only.
+*/
+router.patch('/:din',
+  token({ required: true }),
+  body(),
+  updateAndDeleteDirector)
+
+
 
 /**
  * @api {delete} /boardDirector/:id Delete board director

@@ -10,7 +10,7 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                     { din: { $regex: new RegExp(searchValue, 'gi') } },
                     { cin: { $regex: new RegExp(searchValue, 'gi') } },
                     { companyName: { $regex: new RegExp(searchValue, 'gi') } },
-                    { name: { $regex: new RegExp(searchValue, 'gi') } },
+                    { BOSP004: { $regex: new RegExp(searchValue, 'gi') } },
                 ],
             }
             query.push({ $match: searchQuery })
@@ -128,5 +128,18 @@ export function getDirector(din) {
 
     } catch (error) {
         console.log(error?.message);
+    }
+}
+
+export function getUpdateObject(body, company, directorsDetails) {
+    return {
+        cessationDate: company?.cessationDate ? company?.cessationDate : directorsDetails?.cessationDate,
+        BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
+        BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
+        dob: body?.dob ? body?.dob : directorsDetails?.dob,
+        companyName: company && company?.companyName ? company?.companyName : directorsDetails?.companyName,
+        joiningDate: company && company?.joiningDate ? company?.joiningDate : directorsDetails?.joiningDate,
+        memberType: company && company?.memberType ? company?.memberType : directorsDetails?.memberType,
+        status: company ? company?.status : directorsDetails?.status
     }
 }
