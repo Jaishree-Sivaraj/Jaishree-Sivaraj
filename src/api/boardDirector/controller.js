@@ -91,8 +91,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
       BoardDirector.aggregate(query),
       BoardDirector.distinct('din', { ...searchQuery, status: true })
     ]);
-
-    console.log(allDirectors.length);
+    
     return res.status(200).json({
       status: 200,
       message: 'Successfully retrieved Dierctors',
