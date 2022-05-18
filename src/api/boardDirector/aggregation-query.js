@@ -1,21 +1,43 @@
 'use strict';
 
-export function getAggregationQueryToGetAllDirectors(page, limit) {
+export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
     try {
-        const query = [
-            //TODO: update using  din and companyId .
-            { $skip: (page - 1) * limit },
-            { $limit: +limit },
-            {
-                $group: {
+        const query = [];
+        let searchQuery = {}
+        if (searchValue && searchValue !== '') {
+            searchQuery = {
+                $or: [
+                    { din: { $regex: new RegExp(searchValue, 'gi') } },
+                    { cin: { $regex: new RegExp(searchValue, 'gi') } },
+                    { companyName: { $regex: new RegExp(searchValue, 'gi') } },
+                    { name: { $regex: new RegExp(searchValue, 'gi') } },
+                ],
+            }
+            query.push({ $match: searchQuery })
+        }
 
-                    _id: '$din',
-                    din: { '$first': '$din' },
-                    BOSP004: { '$first': '$BOSP004' },
-                    BODR005: { '$first': '$BODR005' },
-                    dob: { '$first': '$dob' }
+        query.push( //TODO: update using  din and companyId .
+            {
+                $match: {
+                    status: true
                 }
             }, {
+            $group: {
+
+                _id: '$din',
+                din: { '$first': '$din' },
+                BOSP004: { '$first': '$BOSP004' },
+                BODR005: { '$first': '$BODR005' },
+                dob: { '$first': '$dob' }
+            }
+        },
+            {
+                $skip: (page - 1) * limit
+            },
+            {
+                $limit: +limit
+            },
+            {
                 $lookup: {
 
                     from: 'boarddirectors',
@@ -40,10 +62,9 @@ export function getAggregationQueryToGetAllDirectors(page, limit) {
                     'companies.memberType': 1
                 }
             }
+        )
 
-        ];
-
-        return query;
+        return { query, searchQuery };
 
     } catch (error) {
         console.log(error?.message);
