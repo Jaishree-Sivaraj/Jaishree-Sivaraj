@@ -3,25 +3,22 @@ import { BoardDirector } from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
 import moment from 'moment';
-import { MasterCompanies } from '../masterCompanies';
+import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
 import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
+  console.log("ggg")
   var directorData = body.body;
   try {
     for (let index = 0; index < directorData.length; index++) {
-      let message = {
-        message: 'DIN and companyId already exists',
-        status: 402
-      }
       if (directorData[index].memberType == "Board Matrix") {
         let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorData[index].din, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
         if (checkDirectorDin.length > 0) {
-          message = {
+          return res.status(402).json({
             message: 'DIN and companyId already exists',
             status: 402
-          }
+          });
         } else {
           if (directorData[index].din != '' && directorData[index].companyId != '') {
             await BoardDirector.create({
@@ -36,17 +33,15 @@ export const create = async ({ user }, body, res, next) => {
               cessationDate: directorData[index].cessationDate,
               memberType: directorData[index].memberType,
               createdBy: body.user
-            }).then(async boardDirector => {
-              message = {
-                message: 'Board Director created successfully',
-                status: '200',
-                data: boardDirector.view(true)
-              }
-            });
+            })
           }
         }
-      } return res.status(message?.status).json(message)
+      }
     }
+    return res.status(200).json({
+      message: 'Board Director created successfully',
+      status: '200'
+    });
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -60,19 +55,20 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(count =>
       BoardDirector.find(query, select, cursor).then(boardDirectors => {
         let directorObjects = [];
-        if (boardDirectors.length > 0) {
-          boardDirectors.forEach(obj => {
-            directorObjects.push({
-              _id: obj._id,
-              din: obj.din,
-              name: obj.name,
-              gender: obj.gender,
-              companies: obj.companies,
-              createdAt: obj.createdAt,
-              updatedAt: obj.updatedAt,
-            });
-          });
-        }
+        console.log(boardDirectors)
+        // if (boardDirectors.length > 0) {
+        //   boardDirectors.forEach (obj => {
+        //     directorObjects.push ({
+        //       _id: obj._id,
+        //       din: obj.din,
+        //       name: obj.name,
+        //       gender: obj.gender,
+        //       companies: obj.companies,
+        //       createdAt: obj.createdAt,
+        //       updatedAt: obj.updatedAt,
+        //     });
+        //   });
+        // }
         return res.status(200).json({
           message: 'Board Director Retrieved successfully',
           status: '200',
@@ -224,7 +220,7 @@ export const retrieveFilteredDataDirector = ({ querymen: { query, select, cursor
 
 export const uploadBoardDirector = async (req, res, next) => {
   const filePath = req.file.path;
-  let directorsData = [];
+  const user = req.user;
   let directorInfo = [];
   var workbook = XLSX.readFile(filePath, {
     sheetStubs: false,
@@ -240,14 +236,18 @@ export const uploadBoardDirector = async (req, res, next) => {
         const rowObject = sheetAsJson[index1];
         let companyObject = {
           din: rowObject['DIN'],
-          name: rowObject['Name'],
-          gender: rowObject['Gender'],
-          companies: rowObject['Companies'],
+          BOSP004: rowObject['Name'],
+          BODR005: rowObject['Gender'],
+          dob: rowObject['DOB'],
+          cin: rowObject['CIN'],
+          joiningDate: rowObject['JoiningDate'],
+          cessationDate: rowObject['cessationDate'],
+          memberType: rowObject['memberType']
         }
         directorInfo.push(companyObject);
       }
       if (directorInfo.length > 0) {
-        let directorHeaders = ["DIN", "Name", "Gender", "Companies"]
+        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType"]
         if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
           let inputFileHeaders = Object.keys(sheetAsJson[0]);
           let missingHeaders = _.difference(directorHeaders, inputFileHeaders);
@@ -260,18 +260,11 @@ export const uploadBoardDirector = async (req, res, next) => {
           status: '400'
         }
         for (let index = 0; index < directorInfo.length; index++) {
-          let checkDirectorDin = await BoardDirector.find({ din: directorInfo[index].din });
-          var companiesArr = directorInfo[index].companies.split(',');
-          var companyData = [];
-          if (companiesArr.length > 0) {
-            for (var comIndex = 0; comIndex < companiesArr.length; comIndex++) {
-              let fetchId = await MasterCompanies.find({ cin: companiesArr[comIndex] });
-              if (fetchId.length != 0) {
-                companyData.push({ label: companiesArr[comIndex], value: fetchId[0]._id + '' });
-              }
-            }
-          }
-          directorInfo[index].companies = companyData;
+          let fetchId = await Companies.find({ cin: directorInfo[index].cin });
+          directorInfo[index].companyName = fetchId[0].companyName;
+          directorInfo[index].companyId = fetchId[0]._id
+          directorInfo[index].createdBy = user;
+          let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
           const isEmpty = Object.keys(checkDirectorDin).length === 0;
           if (isEmpty == true) {
             await BoardDirector.create(directorInfo[index]).then(result => {
@@ -291,22 +284,11 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { din } = req.params;
     const { body } = req;
-    let findQuery = { din };
-    let updateObject, updateDirector, directorsDetails;
-
-    if (body?.companies?.length > 0) {
-      for (let i = 0; i < body?.companies?.length; i++) {
-        findQuery = { ...findQuery, companyId: body?.companies[i]?.companyId };
-        directorsDetails = await BoardDirector.findOne(findQuery).lean();
-        updateObject = getUpdateObject(body, body?.companies[i], directorsDetails);
-        updateDirector = await BoardDirector.updateMany(findQuery, {
-          $set: updateObject
-        });
-      }
-
-    } else {
-      let directorsDetails = await BoardDirector.findOne(findQuery).lean();
-      updateObject = getUpdateObject(body, {}, directorsDetails);
+    let updateDirector;
+    for (let i = 0; i < body?.length; i++) {
+      const findQuery = { din, companyId: body[i]?.companyId };
+      const directorsDetails = await BoardDirector.findOne(findQuery).lean();
+      const updateObject = getUpdateObject(body[i], directorsDetails);
       updateDirector = await BoardDirector.updateMany(findQuery, {
         $set: updateObject
       });
@@ -315,7 +297,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     if (!updateDirector) {
       return res.status(409).json({
         status: 409,
-        message: `Failed to updated director's details`
+        message: `Failed to update director's details`
 
       })
     }
