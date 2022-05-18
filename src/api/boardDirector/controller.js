@@ -111,6 +111,14 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { din } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(din));
+    
+    if(!boardDirector){
+      return res.status(200).json({
+        status: 200,
+        message: `DIN number does not belong to any director`,
+      });
+    }
+
     return res.status(200).json({
       status: 200,
       message: `Successfully retrived Director's data`,
