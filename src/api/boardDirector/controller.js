@@ -5,7 +5,7 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { MasterCompanies } from '../masterCompanies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors, getDirector } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
@@ -91,7 +91,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
       BoardDirector.aggregate(query),
       BoardDirector.distinct('din', { ...searchQuery, status: true })
     ]);
-    
+
     return res.status(200).json({
       status: 200,
       message: 'Successfully retrieved Dierctors',
@@ -111,7 +111,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { din } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(din));
-
+    console.log(boardDirector)
     if (!boardDirector) {
       return res.status(200).json({
         status: 200,
@@ -286,3 +286,49 @@ export const uploadBoardDirector = async (req, res, next) => {
     }
   });
 };
+
+export const updateAndDeleteDirector = async (req, res, next) => {
+  try {
+    const { din } = req.params;
+    const { body } = req;
+    let findQuery = { din };
+    let updateObject, updateDirector, directorsDetails;
+
+    if (body?.companies?.length > 0) {
+      for (let i = 0; i < body?.companies?.length; i++) {
+        findQuery = { ...findQuery, companyId: body?.companies[i]?.companyId };
+        directorsDetails = await BoardDirector.findOne(findQuery).lean();
+        updateObject = getUpdateObject(body, body?.companies[i], directorsDetails);
+        updateDirector = await BoardDirector.updateMany(findQuery, {
+          $set: updateObject
+        });
+      }
+
+    } else {
+      let directorsDetails = await BoardDirector.findOne(findQuery).lean();
+      updateObject = getUpdateObject(body, {}, directorsDetails);
+      updateDirector = await BoardDirector.updateMany(findQuery, {
+        $set: updateObject
+      });
+    }
+
+    if (!updateDirector) {
+      return res.status(409).json({
+        status: 409,
+        message: `Failed to updated director's details`
+
+      })
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: `Director's details updated successfully `
+    })
+  } catch (error) {
+    return res.status(409).json({
+      status: 409,
+      message: error?.message ? error?.message : `Failed to update director's details`
+    })
+  }
+}
+
