@@ -99,6 +99,27 @@ router.get('/:id',
   show)
 
 /**
+* @api {put} /boardDirector/:din/:companyId Update board director
+* @apiName UpdateBoardDirector
+* @apiGroup BoardDirector
+* @apiPermission master
+* @apiParam {String} access_token master access token.
+* @apiParam din Board director's din.
+* @apiParam name Board director's name.
+* @apiParam gender Board director's gender.
+* @apiParam companies Board director's companies.
+* @apiSuccess {Object} boardDirector Board director's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 Board director not found.
+* @apiError 401 master access only.
+*/
+router.put('/:din',
+  token({ required: true }),
+  body(),
+  updateAndDeleteDirector)  
+
+
+/**
  * @api {put} /boardDirector/:id Update board director
  * @apiName UpdateBoardDirector
  * @apiGroup BoardDirector
@@ -117,28 +138,7 @@ router.put('/:id',
   token({ required: true }),
   body({ din, name, gender }),
   update)
-
-/**
-* @api {put} /boardDirector/:din/:companyId Update board director
-* @apiName UpdateBoardDirector
-* @apiGroup BoardDirector
-* @apiPermission master
-* @apiParam {String} access_token master access token.
-* @apiParam din Board director's din.
-* @apiParam name Board director's name.
-* @apiParam gender Board director's gender.
-* @apiParam companies Board director's companies.
-* @apiSuccess {Object} boardDirector Board director's data.
-* @apiError {Object} 400 Some parameters may contain invalid values.
-* @apiError 404 Board director not found.
-* @apiError 401 master access only.
-*/
-router.patch('/:din',
-  token({ required: true }),
-  body(),
-  updateAndDeleteDirector)
-
-
+  
 
 /**
  * @api {delete} /boardDirector/:id Delete board director
