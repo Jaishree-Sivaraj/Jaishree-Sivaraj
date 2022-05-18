@@ -28,9 +28,15 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                 din: { '$first': '$din' },
                 BOSP004: { '$first': '$BOSP004' },
                 BODR005: { '$first': '$BODR005' },
-                dob: { '$first': '$dob' }
+                dob: { '$first': '$dob' },
+                createdAt: { '$first': '$createdAt' }
             }
         },
+            {
+                $sort: {
+                    createdAt: -1
+                }
+            },
             {
                 $skip: (page - 1) * limit
             },
