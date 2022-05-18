@@ -81,13 +81,14 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const getAllBoardDirectors = async (req, res, next) => {
   try {
-    const { page, limit } = req.query;
-    const findQuery = getAggregationQueryToGetAllDirectors(page, limit);
+    const { page, limit, searchValue } = req.query;
+    const { query, searchQuery } = getAggregationQueryToGetAllDirectors(page, limit, searchValue);
     const [allDirectors, totalDirectors] = await Promise.all([
-      BoardDirector.aggregate(findQuery),
-      BoardDirector.distinct('din', { status: true })
+      BoardDirector.aggregate(query),
+      BoardDirector.distinct('din', { ...searchQuery, status: true })
     ]);
 
+    console.log(allDirectors.length);
     return res.status(200).json({
       status: 200,
       message: 'Successfully retrieved Dierctors',
@@ -107,8 +108,8 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { din } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(din));
-    
-    if(!boardDirector){
+
+    if (!boardDirector) {
       return res.status(200).json({
         status: 200,
         message: `DIN number does not belong to any director`,
