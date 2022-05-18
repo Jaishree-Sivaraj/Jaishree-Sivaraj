@@ -77,7 +77,19 @@ export const repDatapointDetails = async (req, res, next) => {
         const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
         const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
         let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
-
+        if (role == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
+            // As we are already getting task with latest year
+            // So, here we are just supposed to iterate the latest year.
+            let latestCurrentYear = getLatestCurrentYear(year);
+            currentYear = [];
+            let latestCurrentYearArray = []
+            if (latestCurrentYear.includes(', ')) {
+                latestCurrentYearArray = latestCurrentYear.split(', ');
+            } else {
+                latestCurrentYearArray.push(latestCurrentYear)
+            }
+            currentYear.push(...latestCurrentYearArray);
+        }
         const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
         const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
         const { uomValues, placeValues } = await getUomAndPlaceValues(measureTypes, dpTypeValues, allPlaceValues);
@@ -99,20 +111,6 @@ export const repDatapointDetails = async (req, res, next) => {
         let s3DataRefErrorScreenshot = [];
         let childDp = [];
         let memberCollectionYears = [];
-
-        if (role == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
-            // As we are already getting task with latest year
-            // So, here we are just supposed to iterate the latest year.
-            let latestCurrentYear = getLatestCurrentYear(year);
-            currentYear = [];
-            let latestCurrentYearArray = []
-            if (latestCurrentYear.includes(', ')) {
-                latestCurrentYearArray = latestCurrentYear.split(', ');
-            } else {
-                latestCurrentYearArray.push(latestCurrentYear)
-            }
-            currentYear.push(...latestCurrentYearArray);
-        }
         switch (memberType) {
             case STANDALONE:
                 const [currentAllStandaloneDetails /*, historyAllStandaloneDetails*/] = await Promise.all([
