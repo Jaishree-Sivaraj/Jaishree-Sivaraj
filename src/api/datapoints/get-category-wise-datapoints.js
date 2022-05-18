@@ -72,6 +72,22 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     let currentYear = taskDetails?.year.split(', ');
+    
+    if (req?.user?.userType == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
+      // We have to get only those years with respect to latest year 
+      // As we are are getting latest-year-based-task.(filtering done while getting task.)
+      let latestCurrentYear = getLatestCurrentYear(taskDetails?.year);
+      taskDetails.year = latestCurrentYear;
+      currentYear = [];
+      
+      if (latestCurrentYear.includes(', ')) {
+        latestCurrentYear = latestCurrentYear.split(', ' );
+        currentYear.push(...latestCurrentYear);
+      } else {
+        currentYear.push(latestCurrentYear);
+      }
+      
+    }
 
     //  Starting date of the task.
     let taskStartDate = getTaskStartDate(
@@ -194,21 +210,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // If true then Acuite, false then SFDR ['Non- SFDR have derived calculations]
 
     const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
-    if (req?.user?.userType == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
-      // We have to get only those years with respect to latest year 
-      // As we are are getting latest-year-based-task.(filtering done while getting task.)
-      let latestCurrentYear = getLatestCurrentYear(taskDetails?.year);
-      taskDetails.year = latestCurrentYear;
-      currentYear = [];
-      
-      if (latestCurrentYear.includes(', ')) {
-        latestCurrentYear = latestCurrentYear.split(', ' );
-        currentYear.push(...latestCurrentYear);
-      } else {
-        currentYear.push(latestCurrentYear);
-      }
-      
-    }
 
     let response = {
       status: 200,
