@@ -35,6 +35,9 @@ import {
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
+import { CLIENT_EMAIL } from '../../constants/client-email';
+import { LATEST_YEARS } from '../../constants/latest-year';
+import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -1478,6 +1481,19 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
           });
         });
     } else if (params.type == "DataCollection" || params.type == "DataCorrection" || params.type == "DataVerification" || params.type == "DataReview") {
+      // ! Changes ECS-1152
+      if (params.role == ClientRepresentative && completeUserDetail?.email.split('@')[1] == CLIENT_EMAIL) {
+        let latestYear = '';
+        // Adding query to get only the task that involves these years.
+        LATEST_YEARS.map((latest) => {
+          if (latestYear !== '') {
+            latestYear = latestYear + ', ';
+          }
+          latestYear = latestYear + latest; //'2020-2021, 2021-2022'
+        })
+        findQuery = { ...findQuery, year: { $regex: new RegExp(latestYear, 'gi') } }
+      }
+
       count = await TaskAssignment.count(findQuery);
       await TaskAssignment.find(findQuery, select, cursor)
         .sort({ createdAt: -1 })
@@ -1490,34 +1506,41 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         .populate("qaId")
         .then(async (taskAssignments) => {
           for (let index = 0; index < taskAssignments.length; index++) {
-            const object = taskAssignments[index];
+            let object = taskAssignments[index];
             let categoryValidationRules = [];
             if (params.role == "Analyst") {
               categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
                 .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
             }
+            // ! Changes ECS-1152
+            if (params.role == ClientRepresentative && completeUserDetail?.email.split('@')[1] == CLIENT_EMAIL) {
+              // Even after getting the task for the latest year I have to make sure that only years 
+              //  with respect to latest years is shown.
+              object.year = getLatestCurrentYear(object.year);
+            }
+
             let taskObject = {
-              taskId: object.id,
-              taskNumber: object.taskNumber,
-              pillar: object.categoryId ? object.categoryId.categoryName : null,
-              pillarId: object.categoryId ? object.categoryId.id : null,
-              group: object.groupId ? object.groupId.groupName : null,
-              groupId: object.groupId ? object.groupId.id : null,
-              batch: object.batchId ? object.batchId.batchName : null,
-              batchId: object.batchId ? object.batchId.id : null,
-              company: object.companyId ? object.companyId.companyName : null,
-              clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
-              companyId: object.companyId ? object.companyId.id : null,
-              analyst: object.analystId ? object.analystId.name : null,
-              analystId: object.analystId ? object.analystId.id : null,
-              analystSLADate: object.analystSLADate ? object.analystSLADate : null,
-              qa: object.qaId ? object.qaId.name : null,
-              qaId: object.qaId ? object.qaId.id : null,
-              qaSLADate: object.qaSLADate ? object.qaSLADate : null,
-              fiscalYear: object.year,
-              taskStatus: object.taskStatus,
-              createdBy: object.createdBy ? object.createdBy.name : null,
-              createdById: object.createdBy ? object.createdBy.id : null
+              taskId: object?.id,
+              taskNumber: object?.taskNumber,
+              pillar: object?.categoryId ? object?.categoryId.categoryName : null,
+              pillarId: object?.categoryId ? object?.categoryId.id : null,
+              group: object?.groupId ? object?.groupId.groupName : null,
+              groupId: object?.groupId ? object?.groupId.id : null,
+              batch: object?.batchId ? object?.batchId.batchName : null,
+              batchId: object?.batchId ? object?.batchId.id : null,
+              company: object?.companyId ? object?.companyId.companyName : null,
+              clientTaxonomyId: object?.companyId ? object?.companyId.clientTaxonomyId : null,
+              companyId: object?.companyId ? object?.companyId.id : null,
+              analyst: object?.analystId ? object?.analystId.name : null,
+              analystId: object?.analystId ? object?.analystId.id : null,
+              analystSLADate: object?.analystSLADate ? object?.analystSLADate : null,
+              qa: object?.qaId ? object?.qaId.name : null,
+              qaId: object?.qaId ? object?.qaId.id : null,
+              qaSLADate: object?.qaSLADate ? object?.qaSLADate : null,
+              fiscalYear: object?.year,
+              taskStatus: object?.taskStatus,
+              createdBy: object?.createdBy ? object?.createdBy.name : null,
+              createdById: object?.createdBy ? object?.createdBy.id : null
             };
             if (params.role == "Analyst") {
               if (categoryValidationRules.length > 0) {
@@ -1988,7 +2011,19 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       .populate('categoryId');
 
     // Get distinct years
-    let distinctYears = taskDetails.year.split(', ');
+
+    let distinctYears = [];
+    // ! Changes ECS-1152
+    if (user?.userType == ClientRepresentative && user?.email.split('@')[1] == CLIENT_EMAIL) {
+      let newYear = getLatestCurrentYear(taskDetails.year);
+      if (newYear.includes(',')) {
+        distinctYears = newYear.split(', ')
+      } else {
+        distinctYears.push(newYear)
+      }
+    } else {
+      distinctYears = taskDetails.year.split(', ')
+    }
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     let [reqDpCodes, negativeNews] = await Promise.all([
@@ -2029,7 +2064,8 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
-      functionId: { "$ne": negativeNews.id }
+      functionId: { "$ne": negativeNews.id },
+      status: true
     }
 
     if (body.skipValidation) {
@@ -2046,15 +2082,17 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
 
     // Comment the purpose.
-    const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
-    const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
+    if (body.role !== ClientRepresentative && body.role !== CompanyRepresentative) {
+      const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
+      const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
 
-    if (Object.keys(errorMessageForBM)?.length !== 0) {
-      return res.status(409).json(errorMessageForBM);
-    }
+      if (Object.keys(errorMessageForBM)?.length !== 0) {
+        return res.status(409).json(errorMessageForBM);
+      }
 
-    if (Object.keys(errorMessageForKM)?.length !== 0) {
-      return res.status(409).json(errorMessageForKM);
+      if (Object.keys(errorMessageForKM)?.length !== 0) {
+        return res.status(409).json(errorMessageForKM);
+      }
     }
 
     // mergedDetails is the Dp codes of all Dp Types.
