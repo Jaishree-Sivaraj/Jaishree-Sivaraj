@@ -18,20 +18,16 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
 
         query.push( //TODO: update using  din and companyId .
             {
-                $match: {
-                    status: true
-                }
-            }, {
-            $group: {
+                $group: {
 
-                _id: '$din',
-                din: { '$first': '$din' },
-                BOSP004: { '$first': '$BOSP004' },
-                BODR005: { '$first': '$BODR005' },
-                dob: { '$first': '$dob' },
-                createdAt: { '$first': '$createdAt' }
-            }
-        },
+                    _id: '$din',
+                    din: { '$first': '$din' },
+                    BOSP004: { '$first': '$BOSP004' },
+                    BODR005: { '$first': '$BODR005' },
+                    dob: { '$first': '$dob' },
+                    createdAt: { '$first': '$createdAt' }
+                }
+            },
             {
                 $sort: {
                     createdAt: -1
@@ -45,12 +41,20 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
             },
             {
                 $lookup: {
-
-                    from: 'boarddirectors',
-                    localField: 'din',
-                    foreignField: 'din',
-                    as: 'companies'
+                    from: "boarddirectors",
+                    localField: "din",
+                    foreignField: "din",
+                    let: { status: "$status" },
+                    pipeline: [{
+                        $match: {
+                            "status": true
+                        }
+                    }],
+                    as: "companies"
                 }
+
+
+
             },
             {
                 $project:
@@ -65,7 +69,8 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                     'companies.companyName': 1,
                     'companies.joiningDate': 1,
                     'companies.cessationDate': 1,
-                    'companies.memberType': 1
+                    'companies.memberType': 1,
+                    'companies._id': 1
                 }
             }
         )
@@ -84,7 +89,7 @@ export function getDirector(din) {
             {
                 $match: {
                     din,
-                    status: true
+                    // status: true
                 }
             },
             {
@@ -98,11 +103,16 @@ export function getDirector(din) {
                 }
             }, {
                 $lookup: {
-
-                    from: 'boarddirectors',
-                    localField: 'din',
-                    foreignField: 'din',
-                    as: 'companies'
+                    from: "boarddirectors",
+                    localField: "din",
+                    foreignField: "din",
+                    let: { status: "$status" },
+                    pipeline: [{
+                        $match: {
+                            "status": true
+                        }
+                    }],
+                    as: "companies"
                 }
             },
             {
@@ -118,7 +128,8 @@ export function getDirector(din) {
                     'companies.companyName': 1,
                     'companies.joiningDate': 1,
                     'companies.cessationDate': 1,
-                    'companies.memberType': 1
+                    'companies.memberType': 1,
+                    'companies._id': 1
                 }
             }
 
@@ -131,15 +142,18 @@ export function getDirector(din) {
     }
 }
 
-export function getUpdateObject(body, directorsDetails) {
+export function getUpdateObject(body, directorsDetails, user) {
     let data = {
-        cessationDate: body?.cessationDate ? body?.cessationDate : directorsDetails?.cessationDate,
+        cessationDate: new Date(body?.cessationDate) ? new Date(body?.cessationDate) : directorsDetails?.cessationDate,
         BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
         BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
         dob: body?.dob ? body?.dob : directorsDetails?.dob,
         companyName: body?.companyName ? body?.companyName : directorsDetails?.companyName,
-        joiningDate: body?.joiningDate ? body?.joiningDate : directorsDetails?.joiningDate,
-        memberType: body?.memberType ? body?.memberType : directorsDetails?.memberType
+        joiningDate: new Date(body?.joiningDate) ? new Date(body?.joiningDate) : directorsDetails?.joiningDate,
+        memberType: body?.memberType ? body?.memberType : directorsDetails?.memberType,
+        cin: body?.cin ? body?.cin : directorsDetails?.cin,
+        user: user,
+        status: true
     }
 
     if (body?.status == true || body?.status == false) {
@@ -147,6 +161,34 @@ export function getUpdateObject(body, directorsDetails) {
             ...data,
             status: body?.status
         }
+    } else if (directorsDetails?.status == true || directorsDetails?.status == false) {
+        data = {
+            ...data,
+            status: directorsDetails?.status
+        }
     }
     return data;
+}
+
+export function getUpdateObjectForDirector(body, directorsDetails, user) {
+    let data = {
+        cessationDate: directorsDetails?.cessationDate,
+        BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
+        BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
+        dob: body?.dob ? body?.dob : directorsDetails?.dob,
+        companyName: directorsDetails?.companyName,
+        joiningDate: directorsDetails?.joiningDate,
+        memberType: directorsDetails?.memberType,
+        cin: directorsDetails?.cin,
+        user: user,
+        status: true
+
+    }
+    if (directorsDetails?.status == true || directorsDetails?.status == false) {
+        data = {
+            ...data,
+            status: directorsDetails?.status
+        }
+    }
+    return
 }
