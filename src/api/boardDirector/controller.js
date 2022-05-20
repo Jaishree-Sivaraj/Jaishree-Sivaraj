@@ -11,7 +11,7 @@ export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
   try {
     for (let index = 0; index < directorData.length; index++) {
-    if(directorData[index].memberType == "Board Matrix" || directorData[index].memberType == "Board&KMP Matrix"){
+    if(directorData[index].memberType == "Board Member" || directorData[index].memberType == "Board&KMP Matrix"){
       let checkDirectorDin = await BoardDirector.find ({$and: [{din : directorData[index].din, companyId : mongoose.Types.ObjectId(directorData[index].companyId) }]});
       if (checkDirectorDin.length > 0) {
         return res.status (402).json ({
