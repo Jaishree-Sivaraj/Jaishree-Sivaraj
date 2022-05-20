@@ -5,66 +5,66 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
   try {
     for (let index = 0; index < directorData.length; index++) {
-    if(directorData[index].memberType == "Board Matrix" || directorData[index].memberType == "Board&KMP Matrix"){
-      let checkDirectorDin = await BoardDirector.find ({$and: [{din : directorData[index].din, companyId : mongoose.Types.ObjectId(directorData[index].companyId) }]});
-      if (checkDirectorDin.length > 0) {
-        return res.status (402).json ({
-          message: 'DIN and companyId already exists',
-          status: 402
-        });
-      }else {
-        if (directorData[index].din != '' && directorData[index].companyId != ''  ) {
-          await BoardDirector.create ({
-            din: directorData[index].din,
-            BOSP004: directorData[index].name,
-            BODR005: directorData[index].gender,
-            dob: directorData[index].dob,
-            companyId: directorData[index].companyId,
-            cin: directorData[index].cin,
-            companyName: directorData[index].companyName,
-            joiningDate: directorData[index].joiningDate,
-            cessationDate: directorData[index].cessationDate,
-            memberType: directorData[index].memberType,
-            createdBy: body.user
-          })
+      if (directorData[index].memberType == "Board Matrix" || directorData[index].memberType == "Board&KMP Matrix") {
+        let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorData[index].din, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+        if (checkDirectorDin.length > 0) {
+          return res.status(402).json({
+            message: 'DIN and companyId already exists',
+            status: 402
+          });
+        } else {
+          if (directorData[index].din != '' && directorData[index].companyId != '') {
+            await BoardDirector.create({
+              din: directorData[index].din,
+              BOSP004: directorData[index].name,
+              BODR005: directorData[index].gender,
+              dob: directorData[index].dob,
+              companyId: directorData[index].companyId,
+              cin: directorData[index].cin,
+              companyName: directorData[index].companyName,
+              joiningDate: directorData[index].joiningDate,
+              cessationDate: directorData[index].cessationDate,
+              memberType: directorData[index].memberType,
+              createdBy: body.user
+            })
+          }
         }
-      }
-    }else if(directorData[index].memberType == "KMP Matrix"){
-      let checkDirectorDin = await BoardDirector.find ({$and: [{name : directorData[index].name, companyId : mongoose.Types.ObjectId(directorData[index].companyId) }]});
-      if (checkDirectorDin.length > 0) {
-        return res.status (402).json ({
-          message: 'Name and companyId already exists',
-          status: 402
-        });
-      }else {
-        if (directorData[index].name != '' && directorData[index].companyId != ''  ) {
-          await BoardDirector.create ({
-            din: directorData[index].din,
-            BOSP004: directorData[index].name,
-            BODR005: directorData[index].gender,
-            dob: directorData[index].dob,
-            companyId: directorData[index].companyId,
-            cin: directorData[index].cin,
-            companyName: directorData[index].companyName,
-            joiningDate: directorData[index].joiningDate,
-            cessationDate: directorData[index].cessationDate,
-            memberType: directorData[index].memberType,
-            createdBy: body.user
-          })
+      } else if (directorData[index].memberType == "KMP Matrix") {
+        let checkDirectorDin = await BoardDirector.find({ $and: [{ name: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+        if (checkDirectorDin.length > 0) {
+          return res.status(402).json({
+            message: 'Name and companyId already exists',
+            status: 402
+          });
+        } else {
+          if (directorData[index].name != '' && directorData[index].companyId != '') {
+            await BoardDirector.create({
+              din: directorData[index].din,
+              BOSP004: directorData[index].name,
+              BODR005: directorData[index].gender,
+              dob: directorData[index].dob,
+              companyId: directorData[index].companyId,
+              cin: directorData[index].cin,
+              companyName: directorData[index].companyName,
+              joiningDate: directorData[index].joiningDate,
+              cessationDate: directorData[index].cessationDate,
+              memberType: directorData[index].memberType,
+              createdBy: body.user
+            })
+          }
         }
       }
     }
-  }
-  return res.status (200).json ({
-       message: 'Board Director created successfully',
-       status: '200'
-     }); 
+    return res.status(200).json({
+      message: 'Board Director created successfully',
+      status: '200'
+    });
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -92,7 +92,7 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
         //     });
         //   });
         // }
-        return res.status (200).json ({
+        return res.status(200).json({
           message: 'Board Director Retrieved successfully',
           status: '200',
           count: count,
@@ -270,7 +270,7 @@ export const uploadBoardDirector = async (req, res, next) => {
         directorInfo.push(companyObject);
       }
       if (directorInfo.length > 0) {
-        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate","memberType"]
+        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType"]
         if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
           let inputFileHeaders = Object.keys(sheetAsJson[0]);
           let missingHeaders = _.difference(directorHeaders, inputFileHeaders);
@@ -287,7 +287,7 @@ export const uploadBoardDirector = async (req, res, next) => {
           directorInfo[index].companyName = fetchId[0].companyName;
           directorInfo[index].companyId = fetchId[0]._id
           directorInfo[index].createdBy = user;
-          let checkDirectorDin = await BoardDirector.find({$and: [{din : directorInfo[index].din, companyId : mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
+          let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
           const isEmpty = Object.keys(checkDirectorDin).length === 0;
           if (isEmpty == true) {
             await BoardDirector.create(directorInfo[index]).then(result => {
@@ -306,15 +306,30 @@ export const uploadBoardDirector = async (req, res, next) => {
 export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { din } = req.params;
-    const { body } = req;
+    const { body, user } = req;
     let updateDirector;
+
+    // _id: very important.
     for (let i = 0; i < body?.length; i++) {
-      const findQuery = { din, companyId: body[i]?.companyId };
-      const directorsDetails = await BoardDirector.findOne(findQuery).lean();
-      const updateObject = getUpdateObject(body[i], directorsDetails);
-      updateDirector = await BoardDirector.updateMany(findQuery, {
+      const findQuery = { din, companyId: body[i]?.companyId, status: true };
+      // Getting the company details.
+      const directorsDetailsWithCompanyId = await BoardDirector.findOne(findQuery).lean();
+      const updateObject = getUpdateObject(body[i], directorsDetailsWithCompanyId, user);
+      updateDirector = await BoardDirector.findOneAndUpdate(findQuery, {
         $set: updateObject
-      });
+      },
+        {
+          upsert: true,
+          new: true
+        });
+      // updating Directors details.
+      const directorsDetails = await BoardDirector.find({ din }).lean();
+      directorsDetails.map(async director => {
+        const updateDirectorObject = getUpdateObjectForDirector(body[i], director, user)
+        await BoardDirector.updateMany({ din }, {
+          $set: updateDirectorObject
+        });
+      })
     }
 
     if (!updateDirector) {
