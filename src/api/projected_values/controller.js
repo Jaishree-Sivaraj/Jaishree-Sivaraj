@@ -81,7 +81,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   }
   let responseData = [];
   let mergedDetails = [];
-  mergedDetails = await StandaloneDatapoints.find({ 
+  let stdDetails = await StandaloneDatapoints.find({ 
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
   isActive: true,
@@ -90,7 +90,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
-  mergedDetails = await BoardMembersMatrixDataPoints.find({ 
+  let bodDetails = await BoardMembersMatrixDataPoints.find({ 
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
   year: body.year,
@@ -99,7 +99,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
-  mergedDetails = await KmpMatrixDataPoints.find({ 
+  let kmpDetails = await KmpMatrixDataPoints.find({ 
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
   year: body.year,
@@ -107,7 +107,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
-  mergedDetails = await DerivedDatapoints.find({ 
+  let derivedDetails = await DerivedDatapoints.find({ 
   companyId: { $in: nicCompaniesIds }, 
   datapointId: { $in: datapointIds },
   year: body.year,
@@ -115,6 +115,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
+  mergedDetails = _.concat(stdDetails,bodDetails,kmpDetails,derivedDetails )
   if (mergedDetails.length > 0) {
     for (let index = 0; index < percentileDatapoints.length; index++) {
       let sumOfResponse = 0;
