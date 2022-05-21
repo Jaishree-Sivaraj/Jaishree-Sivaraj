@@ -11,7 +11,7 @@ export default (apiRoot, routes) => {
   const app = express()
 
   /* istanbul ignore next */
-  if (env === 'production' || env === 'development' || env === 'test') {
+  if (env === 'production' || env === 'development' || env === 'test' || env === 'demo') {
     app.use(cors())
     app.use(compression())
     app.use(morgan('dev'))
