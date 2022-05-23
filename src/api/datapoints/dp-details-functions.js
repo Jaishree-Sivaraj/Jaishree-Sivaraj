@@ -118,7 +118,7 @@ export async function getSourceDetails(object) {
         if (object?.url != '') {
             matchQuery = {
                 companyId: object?.companyId ? object.companyId.id : null,
-                sourceUrl: object?.url ? object?.url : null, 
+                sourceUrl: object?.url ? object?.url : null,
                 fiscalYear: object?.year ? object?.year : null
             }
         }
@@ -254,89 +254,106 @@ export async function getS3RefScreenShot(errorDetailLength, screenshot) {
 }
 
 export function getDisplayFields(dpTypeValues, displayFields, currentDpType, currentYear, currentDatapointsObject, isEmpty, isRefDataExists) {
-    displayFields.map(display => {
-        if (!requiredFields.includes(display?.fieldName)) {
-            let optionValues = [], optionVal = '', currentValue;
-            switch (display.inputType) {
-                case SELECT:
-                    const options = display.inputValues.split(',');
-                    options.length > 0 ? options.map(option => {
-                        optionValues.push({
-                            value: option,
-                            label: option
-                        })
-                    }) : optionValues = [];
+    try {
+        let additionalField = [];
+        displayFields.map(display => {
+            if (!requiredFields.includes(display?.fieldName)) {
+                let optionValues = [], optionVal = '', currentValue;
+                switch (display.inputType) {
+                    case SELECT:
+                        const options = display.inputValues.split(',');
+                        options.length > 0 ? options.map(option => {
+                            optionValues.push({
+                                value: option,
+                                label: option
+                            })
+                        }) : optionValues = [];
 
-                    if (isEmpty) {
-                        if (display.fieldName == 'collectionYear') {
-                            currentValue = { value: null, label: null };
+                        if (isEmpty) {
+                            if (display.fieldName == 'collectionYear') {
+                                currentValue = { value: null, label: null };
+                            } else {
+                                currentValue = { value: '', label: '' };
+                            }
                         } else {
-                            currentValue = { value: '', label: '' };
-                        }
-                    } else {
-                        optionVal = display.inputValues;
-                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
-                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj.year == currentYear);
-                        if (standaloneDetail || currentDpType == 'history') {
-                            currentValue = {
-                                value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
-                                label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                            optionVal = display.inputValues;
+                            // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                            let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj.year == currentYear);
+                            if (standaloneDetail || currentDpType == 'history') {
+                                currentValue = {
+                                    value: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : '',
+                                    label: standaloneDetail.additionalDetails ? standaloneDetail.additionalDetails[display.fieldName] : ''
+                                }
                             }
                         }
-                    }
 
-                    break;
-                case STATIC:
-                    currentValue = dpTypeValues?.additionalDetails[display?.fieldName];
-                    break;
-                default:
-                    if (isEmpty) {
-                        currentValue = '';
-                    } else {
-                        optionVal = display?.inputValues;
-                        // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
-                        let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj?.year == currentYear);
-                        if (standaloneDetail || currentDpType == 'history') {
-                            currentValue = standaloneDetail?.additionalDetails ? standaloneDetail?.additionalDetails[display?.fieldName] : '';
+                        break;
+                    case STATIC:
+                        currentValue = dpTypeValues?.additionalDetails[display?.fieldName];
+                        break;
+                    default:
+                        if (isEmpty) {
+                            currentValue = '';
+                        } else {
+                            optionVal = display?.inputValues;
+                            // When it comes to history data the currentDpType will income as a string 'history' as the year will match.
+                            let standaloneDetail = Array.isArray(currentDpType) && currentDpType.find((obj) => obj?.year == currentYear);
+                            if (standaloneDetail || currentDpType == 'history') {
+                                currentValue = standaloneDetail?.additionalDetails ? standaloneDetail?.additionalDetails[display?.fieldName] : '';
+                            }
+                        }
+                        break;
+                }
+                display.fieldName == 'collectionYear' ?
+                    currentDatapointsObject.collectionYear = {
+                        fieldName: display.fieldName,
+                        name: display.name,
+                        value: currentValue ? currentValue : null,
+                        inputType: display.inputType,
+                        isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                        inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    } :
+                    currentDatapointsObject?.additionalDetails.push({
+                        fieldName: display.fieldName,
+                        name: display.name,
+                        value: currentValue ? currentValue : '',
+                        inputType: display.inputType,
+                        isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                        inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    });
+
+                if (!isEmpty && isRefDataExists && currentDatapointsObject?.error?.refData && currentDatapointsObject?.error?.refData['additionalDetails']) {
+                    for (const key in currentDatapointsObject?.error?.refData?.additionalDetails) {
+                        if (key == display.fieldName) {
+                            currentValue = currentDatapointsObject?.error?.refData?.additionalDetails[key];
                         }
                     }
-                    break;
-            }
-            display.fieldName == 'collectionYear' ?
-                currentDatapointsObject.collectionYear = {
-                    fieldName: display.fieldName,
-                    name: display.name,
-                    value: currentValue ? currentValue : null,
-                    inputType: display.inputType,
-                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                } :
-                currentDatapointsObject?.additionalDetails.push({
-                    fieldName: display.fieldName,
-                    name: display.name,
-                    value: currentValue ? currentValue : '',
-                    inputType: display.inputType,
-                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                });
+                    additionalField.push({
+                        fieldName: display.fieldName,
+                        name: display.name,
+                        value: currentValue ? currentValue : '',
+                        inputType: display.inputType,
+                        isMandatory: display?.isMandatory ? display?.isMandatory : false,
+                        inputValues: optionValues.length > 0 ? optionValues : optionVal
+                    });
 
-            if (!isEmpty && isRefDataExists && currentDatapointsObject?.error?.refData && currentDatapointsObject?.error?.refData['additionalDetails']) {
-                currentDatapointsObject?.error?.refData?.additionalDetails.push({
-                    fieldName: display.fieldName,
-                    name: display.name,
-                    value: currentValue ? currentValue : '',
-                    inputType: display.inputType,
-                    isMandatory: display?.isMandatory ? display?.isMandatory : false,
-                    inputValues: optionValues.length > 0 ? optionValues : optionVal
-                });
+                }
             }
+        });
+        if (Object.keys(currentDatapointsObject.error).length !== 0) {
+            currentDatapointsObject.error.refData.additionalDetails = [];
+            currentDatapointsObject?.error?.refData?.additionalDetails?.push(...additionalField);
+
         }
-    });
+        return currentDatapointsObject;
+    } catch (error) {
+        console.log(error?.message);
+    }
 
-    return currentDatapointsObject;
 
 
 }
+
 
 export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
     return {
@@ -452,7 +469,6 @@ export async function getChildDp(datapointId, year, taskId, companyId) {
         getChildDpDetails?.map(child => {
             childDp.push(child?.childFields);
         });
-        console.log(childDp);
         return childDp;
 
     } catch (error) {
@@ -495,7 +511,6 @@ export async function getHeaders(clientTaxonomyId, datapointId) {
                     const element = measureUoms[uomIndex];
                     uomValues.push({ value: element.uomName, label: element.uomName });
                 }
-                console.log(headers);
                 headers.push({
                     "id": clientTaxData?.childFields?.additionalFields?.length + clientTaxData?.childFields?.additionalFields?.length + 1,
                     "displayName": "Place Value",
