@@ -134,7 +134,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
     if (!boardDirector) {
       return res.status(200).json({
         status: 200,
-        message: `DIN number does not belong to any director`,
+        message: `Name does not belong to any director`,
       });
     }
 
