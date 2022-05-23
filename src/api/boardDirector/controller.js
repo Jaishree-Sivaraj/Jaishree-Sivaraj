@@ -128,8 +128,8 @@ export const getAllBoardDirectors = async (req, res, next) => {
 
 export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
-    const { din } = req.params;
-    const [boardDirector] = await BoardDirector.aggregate(getDirector(din));
+    const { BOSP004 } = req.params;
+    const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
     console.log(boardDirector)
     if (!boardDirector) {
       return res.status(200).json({
