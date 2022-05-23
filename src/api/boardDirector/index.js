@@ -113,7 +113,7 @@ router.get('/:id',
 * @apiError 404 Board director not found.
 * @apiError 401 master access only.
 */
-router.put('/:din',
+router.put('/:name',
   token({ required: true }),
   body(),
   updateAndDeleteDirector)  

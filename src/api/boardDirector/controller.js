@@ -305,31 +305,47 @@ export const uploadBoardDirector = async (req, res, next) => {
 
 export const updateAndDeleteDirector = async (req, res, next) => {
   try {
-    const { din } = req.params;
+    const { name } = req.params;
     const { body, user } = req;
     let updateDirector;
 
     // _id: very important.
     for (let i = 0; i < body?.length; i++) {
-      const findQuery = { din, companyId: body[i]?.companyId, status: true };
-      // Getting the company details.
-      const directorsDetailsWithCompanyId = await BoardDirector.findOne(findQuery).lean();
-      const updateObject = getUpdateObject(body[i], directorsDetailsWithCompanyId, user);
+      const updateObject = body[i];
+
+      const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
+      const checkingRedundantDIN = await BoardDirector.find({ status: true, BOSPOO4: { $ne: name }, din: updateObject?.din }).lean();
+
+      if (checkingRedundantDIN > 0) {
+        return res.status(409).json({
+          status: 409,
+          message: 'Updated DIN number or name  already exists, Please check and update'
+        });
+      }
+
+      const directorsDetailsWithCompany = await BoardDirector.findOne(findQuery).lean();
+
+      const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       updateDirector = await BoardDirector.findOneAndUpdate(findQuery, {
-        $set: updateObject
+        $set: data
       },
         {
           upsert: true,
           new: true
         });
+      console.log(updateDirector);
       // updating Directors details.
-      const directorsDetails = await BoardDirector.find({ din }).lean();
-      directorsDetails.map(async director => {
-        const updateDirectorObject = getUpdateObjectForDirector(body[i], director, user)
-        await BoardDirector.updateMany({ din }, {
+      const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
+      console.log(directorsDetails);
+      for (let i = 0; i < directorsDetails?.length; i++) {
+        const director = directorsDetails[i];
+        const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user)
+        console.log(updateDirectorObject);
+        const data = await BoardDirector.findOneAndUpdate({ BOSP004: name, _id: director._id }, {
           $set: updateDirectorObject
-        });
-      })
+        }, { new: true });
+      }
+
     }
 
     if (!updateDirector) {
@@ -351,4 +367,3 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     })
   }
 }
-

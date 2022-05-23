@@ -1,5 +1,12 @@
 'use strict';
 
+/*
+TODO: Note to be taken while understanding the query.
+!We are not deleting directors hence,
+!even the ones with status false is shown as 
+!status: false is for companies and not for directors
+ */
+
 export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
     try {
         const query = [];
@@ -52,9 +59,6 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                     }],
                     as: "companies"
                 }
-
-
-
             },
             {
                 $project:
@@ -82,14 +86,13 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
     }
 }
 
-export function getDirector(BOSP004) {
+export function getDirector(name) {
     try {
         const query = [
             //TODO: update using  din.
             {
                 $match: {
-                    BOSP004,
-                    status: true
+                    BOSP004: { $regex: new RegExp(name, 'gi') }
                 }
             },
             {
@@ -132,11 +135,8 @@ export function getDirector(BOSP004) {
                     'companies._id': 1
                 }
             }
-
         ];
-
         return query;
-
     } catch (error) {
         console.log(error?.message);
     }
@@ -144,15 +144,17 @@ export function getDirector(BOSP004) {
 
 export function getUpdateObject(body, directorsDetails, user) {
     let data = {
-        cessationDate: new Date(body?.cessationDate) ? new Date(body?.cessationDate) : directorsDetails?.cessationDate,
-        BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
-        BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
-        dob: body?.dob ? body?.dob : directorsDetails?.dob,
-        companyName: body?.companyName ? body?.companyName : directorsDetails?.companyName,
-        joiningDate: new Date(body?.joiningDate) ? new Date(body?.joiningDate) : directorsDetails?.joiningDate,
-        memberType: body?.memberType ? body?.memberType : directorsDetails?.memberType,
-        cin: body?.cin ? body?.cin : directorsDetails?.cin,
-        user: user,
+        cessationDate: body?.cessationDate,
+        BOSP004: body?.name,
+        BODR005: body?.gender,
+        dob: body?.dob,
+        companyName: body?.companyName,
+        companyId: body?.companyId,
+        joiningDate: body?.joiningDate,
+        memberType: body?.memberType,
+        cin: body?.cin,
+        din: body?.din,
+        createdBy: user,
         status: true
     }
 
@@ -170,6 +172,13 @@ export function getUpdateObject(body, directorsDetails, user) {
     return data;
 }
 
+/*
+TODO: Things to be noted
+* We are not supposed to update any field except for name , din , dob, gender.
+* Rest we do not update as this is update of director and not company
+* The above one is for company  
+ */
+
 export function getUpdateObjectForDirector(body, directorsDetails, user) {
     let data = {
         cessationDate: directorsDetails?.cessationDate,
@@ -177,10 +186,12 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
         BODR005: body?.gender ? body?.gender : directorsDetails?.BODR005,
         dob: body?.dob ? body?.dob : directorsDetails?.dob,
         companyName: directorsDetails?.companyName,
+        companyId: directorsDetails?.companyId,
         joiningDate: directorsDetails?.joiningDate,
         memberType: directorsDetails?.memberType,
         cin: directorsDetails?.cin,
-        user: user,
+        din: body?.din,
+        createdBy: user,
         status: true
 
     }
@@ -190,5 +201,5 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
             status: directorsDetails?.status
         }
     }
-    return
+    return data;
 }
