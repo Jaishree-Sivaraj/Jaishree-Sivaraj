@@ -340,7 +340,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 }
             }
         });
-        if (Object.keys(currentDatapointsObject.error).length !== 0) {
+        if (currentDatapointsObject?.error?.refData && Object.keys(currentDatapointsObject?.error).length !== 0) {
             currentDatapointsObject.error.refData.additionalDetails = [];
             currentDatapointsObject?.error?.refData?.additionalDetails?.push(...additionalField);
 
@@ -585,19 +585,32 @@ export function getMemberJoiningDate(date) {
 
 }
 
-
 export function getTaskStartDate(currentyear, month, date) {
-    // We will get the first year
     let [taskStartingYear] = currentyear.split('-');
-    const taskStartingDate =
-        new Date(taskStartingYear, month, 0).getDate() == date
-            ? 1
-            : Number(date) + 1;
-    const taskStartingMonth = new Date(taskStartingYear, month, 0).getMonth() == 11 ? 0 : Number(month);
-    // because month starts with 0 hence 3 is April and not march. Therefore, we are not increamenting the month.
-    if (month == 12) {
-        taskStartingYear = Number(taskStartingYear) + 1;
+    let taskStartingDate, taskStartingMonth;
+    const isItTheLastDateOfTheMonth = new Date(taskStartingYear, month, 0).getDate() == date;
+    const isItTheLastMonthOfTheYear = new Date(taskStartingYear, month, 0).getMonth() == 11;
+
+    if (isItTheLastDateOfTheMonth && isItTheLastMonthOfTheYear) {
+        taskStartingDate = 1;
+        taskStartingMonth = 0;
+        taskStartingYear = taskStartingYear + 1;
+    } else if (isItTheLastDateOfTheMonth) {
+        taskStartingDate = 1;
+        taskStartingMonth = month; // +1month
+    } else {
+        taskStartingDate = new Date(taskStartingYear, month, 0).getDate() + 1;
+        taskStartingMonth = Number(month) - 1; // no change in the month
     }
     const yearTimeStamp = Math.floor(new Date(taskStartingYear, taskStartingMonth, taskStartingDate).getTime() / 1000);
     return yearTimeStamp;
+}
+
+export function getCurrentYearForClient(currentYear) {
+    currentYear = getSortedYear(currentYear);
+    const latestYear = currentYear[0];
+    currentYear = [];
+    currentYear.push(latestYear);
+
+    return currentYear;
 }
