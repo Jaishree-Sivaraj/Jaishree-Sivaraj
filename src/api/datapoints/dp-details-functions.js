@@ -340,7 +340,7 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
                 }
             }
         });
-        if (Object.keys(currentDatapointsObject.error).length !== 0) {
+        if (currentDatapointsObject?.error?.refData && Object.keys(currentDatapointsObject?.error).length !== 0) {
             currentDatapointsObject.error.refData.additionalDetails = [];
             currentDatapointsObject?.error?.refData?.additionalDetails?.push(...additionalField);
 
