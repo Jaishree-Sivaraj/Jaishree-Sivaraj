@@ -78,7 +78,7 @@ router.get('/all-directors',
  * @apiError 404 Board director not found.
  * @apiError 401 master access only.
  */
-router.get('/:din',
+router.get('/:BOSP004',
   token({ required: true }),
   getDirectorByDINAndCompanyId)
 
