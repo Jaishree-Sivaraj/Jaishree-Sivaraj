@@ -157,7 +157,9 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               ); //here we need to update the errorCaughtbyRep screenshot
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -195,7 +197,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
 
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -232,7 +237,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -419,7 +427,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -457,7 +468,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -505,7 +519,10 @@ export const datapointDetails = async (req, res, next) => {
                   : []
               );
 
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              }
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -721,7 +738,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
 
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
 
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -759,7 +779,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -806,8 +829,11 @@ export const datapointDetails = async (req, res, next) => {
                     : []
                   : []
               );
-              
-              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
 
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
