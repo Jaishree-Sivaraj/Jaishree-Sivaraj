@@ -157,11 +157,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               ); //here we need to update the errorCaughtbyRep screenshot
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -198,11 +194,8 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -239,11 +232,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -430,11 +419,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -472,9 +457,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot =
-                s3DataRefErrorScreenshot;
-              currentDatapointsObject.error.refData['additionalDetails'] = [];
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -521,11 +504,8 @@ export const datapointDetails = async (req, res, next) => {
                     : []
                   : []
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -740,11 +720,9 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -781,11 +759,7 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -832,11 +806,9 @@ export const datapointDetails = async (req, res, next) => {
                     : []
                   : []
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData['additionalDetails'] = [];
-              }
+              
+              currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
