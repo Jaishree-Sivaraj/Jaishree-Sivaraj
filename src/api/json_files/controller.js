@@ -231,11 +231,11 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
       if (companyControversyYears.length > 0) {
         for (let yearIndex = 0; yearIndex < companyControversyYears.length; yearIndex++) {
           const year = companyControversyYears[yearIndex];
-          let yearwiseData = {
-            year: year,
-            companyName: companyDetails.companyName,
-            Data: []
-          };
+          // let yearwiseData = {
+          //   // year: year,
+          //   // companyName: companyDetails.companyName,
+          //   Data: []
+          // };
           let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true })
             .populate('createdBy')
             .populate('companyId')
@@ -300,10 +300,11 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
                   }
                 }
               }
-              yearwiseData.Data.push(dataObject);
+              // yearwiseData.Data.push(dataObject);
+              responseObject.data.push(dataObject);
             }
           }
-          responseObject.data.push(yearwiseData)
+          // responseObject.data.push(yearwiseData)
         }
       }
       await storeFileInS3(responseObject, 'controversy', body.companyId).then(async function (s3Data) {

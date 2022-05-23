@@ -614,9 +614,9 @@ export const exportReport = async (req, res, next) => {
           // rows.sort(function(a, b) {
           //   return collator.compare(a["Item Code"], b["Item Code"]) || collator.compare(a["name_of_company"], b["name_of_company"]) || collator.compare(a["year"], b["year"])
           // });
-          rows = _.orderBy(rows, ['year'], ['desc'])
-          rows = _.sortBy(rows, 'name_of_company')
           rows = _.sortBy(rows, 'Item Code')
+          rows = _.sortBy(rows, 'name_of_company')
+          // rows = _.orderBy(rows, ['year'], ['desc'])
           return res.status(200).json({
             status: "200",
             message: "Data exported successfully!",
@@ -867,7 +867,13 @@ export const exportQATasks = async (req, res, next) => {
           year: '$year',
           response: '$response',
           placeValue: '$placeValue',
-          uom: '$uomDetails.uomName',
+          measureUom: 1,"uom": {
+            "$cond": {  
+              "if": { $lte: ["$uomDetails", null] }, 
+              "then" : "",
+               "else" : "$uomDetails.uomName"
+              }
+          },
           didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
           typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
           companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
@@ -934,7 +940,14 @@ export const exportQATasks = async (req, res, next) => {
               year: '$year',
               response: '$childFields.response',
               placeValue: '$childFields.placeValue',
-              uom: '$childFields.uom',
+              // uom: '$childFields.uom',
+              measureUom: 1,"uom": {
+                "$cond": {  
+                  "if": { $lte: ["$childFields.uom", null] }, 
+                  "then" : "",
+                   "else" : "$childFields.uom"
+                  }
+              },
               didTheCompanyReport: "$childFields.didTheCompanyReport",
               typeOfValueActualDerivedProxy: "$childFields.typeOf",
               companyDataElementLabel: "$childFields.companyDataElementLabel",
