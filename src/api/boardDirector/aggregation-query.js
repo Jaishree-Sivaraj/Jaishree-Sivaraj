@@ -77,13 +77,13 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
     }
 }
 
-export function getDirector(din) {
+export function getDirector(BOSP004) {
     try {
         const query = [
             //TODO: update using  din.
             {
                 $match: {
-                    din,
+                    BOSP004,
                     status: true
                 }
             },
