@@ -341,29 +341,16 @@ async function getPrevAndNextYear(prevDatapointId, nextDatapointId, taskDetails,
                         ...errorQuery
                     })
                 ]);
-                console.log(prevYear)
-                console.log(nextYear)
                 break;
             default:
                 console.log('Dp type is incorrect');
                 break;
         }
-
-        // let prevyears = ''
-        // for (let yearIndex = 0; yearIndex < prevYear?.length; prevYear++) {
-        //     if (prevyears !== '') {
-        //         prevyears = prevyears + ' ,'
-
-        //     }
-        //     prevyears = prevyears + prevYear[yearIndex];
-
-        // }
-
+        
         let prevyears = ''
         prevYear?.map(year => {
             if (prevyears !== '') {
                 prevyears = prevyears + ', '
-                console.log(prevyears)
             }
             prevyears = prevyears + year;
         });
@@ -371,20 +358,10 @@ async function getPrevAndNextYear(prevDatapointId, nextDatapointId, taskDetails,
         let nextyears = ''
         nextYear?.map(year => {
             if (nextyears !== '') {
-                nextyears = nextyears + ', '
-                console.log(nextyears)
+                nextyears = nextyears + ', ';
             }
             nextyears = nextyears + year;
         });
-        // for (let yearIndex = 0; yearIndex < nextYear?.length; nextYear++) {
-        //     if (nextyears !== '') {
-        //         nextyears = nextyears + ' ,'
-        //         console.log(nextyears)
-        //     }
-        //     nextyears = nextyears + nextYear[yearIndex];
-        //     console.log(nextyears);
-        // }
-        console.log({ prevyears, nextyears })
         return { prevyears, nextyears };
 
 

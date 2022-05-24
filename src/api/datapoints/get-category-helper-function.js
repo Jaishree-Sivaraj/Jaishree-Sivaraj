@@ -810,10 +810,6 @@ export async function getFilteredErrorDatapointForStandalone(
         memberName: '',
       };
 
-      if (orderedDpCodes[errorDpIndex].datapointId.code == '444') {
-        console.log('Here');
-      }
-
       if (datapointList.dpCodesData.length > 0) {
         let yearfind = datapointList.dpCodesData.findIndex(
           (obj) => obj.dpCode == orderedDpCodes[errorDpIndex].datapointId.code
