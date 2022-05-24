@@ -13,19 +13,18 @@ export const create = async ({ user }, body, res, next) => {
     for (let index = 0; index < directorData.length; index++) {
       if (directorData[index].memberType == "Board Member" || directorData[index].memberType == "Board&KMP Matrix") {
         let checkDirectorDin = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+        let checkdin = await BoardDirector.find({ din: directorData[index].din });
+        if (checkdin.length > 0) {
+          return res.status(402).json({
+            message: 'DIN already exists for the same user',
+            status: 402
+          });
+        }
         if (checkDirectorDin.length > 0) {
-          let checkdin = await BoardDirector.find({ din: directorData[index].din });
-          if (checkdin.length > 0) {
-            return res.status(402).json({
-              message: 'DIN already exists for the same user',
-              status: 402
-            });
-          }else{
           return res.status(402).json({
             message: 'Name and companyId already exists',
             status: 402
           });
-        }
         } else {
           let checkdin = await BoardDirector.find({ din: directorData[index].din });
           if (checkdin.length > 0) {
