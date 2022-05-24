@@ -132,7 +132,6 @@ function getTotalCount(yearCount, data) {
     yearCount?.map(total => {
         let datapointLength = Array.isArray(data) ? data.length : data;
         counter += datapointLength * total;
-        console.log(counter);
     });
 
     return counter;
