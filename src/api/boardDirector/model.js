@@ -44,6 +44,10 @@ const boardDirectorSchema = new Schema({
   status: {
     type: Boolean,
     default: true
+  },
+  isPresent: {
+    type: Boolean,
+    default: true
   }
 
 }, {
