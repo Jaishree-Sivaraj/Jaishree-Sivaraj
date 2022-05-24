@@ -78,7 +78,6 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(count =>
       BoardDirector.find(query, select, cursor).then(boardDirectors => {
         let directorObjects = [];
-        console.log(boardDirectors)
         // if (boardDirectors.length > 0) {
         //   boardDirectors.forEach (obj => {
         //     directorObjects.push ({
@@ -130,7 +129,6 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { BOSP004 } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
-    console.log(boardDirector)
     if (!boardDirector) {
       return res.status(200).json({
         status: 200,
@@ -309,14 +307,41 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { body, user } = req;
     let updateDirector;
 
-    // _id: very important.
     for (let i = 0; i < body?.length; i++) {
       const updateObject = body[i];
+      let directorDataBeforeUpdate = {};
+      if (updateObject?.isPresent) {
+        directorDataBeforeUpdate = await BoardDirector.findOne({ _id: updateObject?._id, status: true });
+      }
 
+      // Here name is a unique field.
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
       const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
-        BoardDirector.find({ status: true, BOSP004: { $ne: name }, din: updateObject?.din }).lean(),
-        BoardDirector.find({ status: true, din: { $ne: updateObject?.din }, BOSP004: name }).lean()
+
+        //*Apart from this director any other DIN
+        BoardDirector.find({
+          status: true,
+          $and: [{
+            BOSP004: { $ne: name },
+          }, {
+            BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 }
+          }
+          ],
+          din: updateObject?.din
+        }).lean(),
+
+        //*Apart from this director any other company's director have the same name
+        BoardDirector.find({
+          status: true,
+
+          $and: [{
+            din: { $ne: updateObject?.din }
+          }, {
+            din: { $ne: directorDataBeforeUpdate?.din },
+          }
+          ],
+          BOSP004: name
+        }).lean()
       ]);
 
       let message = '';
@@ -333,45 +358,58 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         });
       }
 
-      const directorsDetailsWithCompany = await BoardDirector.findOne(findQuery).lean();
-
+      const directorsDetailsWithCompany = await BoardDirector.find(findQuery).lean();
       // If a new company is added and if there is the same company with cessation date then we cannot add the new company
-      if (!updateObject?.isPresent && directorsDetailsWithCompany && directorsDetailsWithCompany?.cessationDate == '') {
-        return res.status(409).json({
-          status: 409,
-          message: `${updateObject?.companyName} already exist and there no cessation date attached to the exisiting company.`
-        })
+      if (!updateObject?.isPresent) {
+        const isCessationDateEmpty = directorsDetailsWithCompany?.map((cessationData) => {
+          if (cessationData?.cessationDate == '') {
+            return true;
+          } else {
+            return false;
+          }
 
+        });
+        if (isCessationDateEmpty?.includes(true)) {
+          return res.status(409).json({
+            status: 409,
+            message: `${updateObject?.companyName} already exist and there no cessation date attached to the exisiting company.`
+          })
+        }
       }
 
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       // If the company already exists then update else create.
-      updateDirector = await BoardDirector.findOneAndUpdate({ ...findQuery, isPresent: updateObject?.isPresent }, {
-        $set: data
-      },
-        {
-          upsert: true,
-          new: true
-        });
+      if (updateObject?.isPresent) {
+        updateDirector = await BoardDirector.findOneAndUpdate({
+          ...findQuery,
+          isPresent: updateObject?.isPresent,
+          _id: updateObject?._id
+        }, {
+          $set: data
+        },
+          {
+            new: true
+          });
+      } else {
+        updateDirector = await BoardDirector.findOneAndUpdate({ ...findQuery, isPresent: updateObject?.isPresent }, {
+          $set: data
+        },
+          {
+            upsert: true,
+            new: true
+          });
+      }
 
       // updating Directors details.
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
       for (let i = 0; i < directorsDetails?.length; i++) {
         const director = directorsDetails[i];
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
-        const data = await BoardDirector.findOneAndUpdate({ BOSP004: name, _id: director._id }, {
+        await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
         }, { new: true });
       }
 
-    }
-
-    if (!updateDirector) {
-      return res.status(409).json({
-        status: 409,
-        message: `Failed to update director's details`
-
-      })
     }
 
     return res.status(200).json({
@@ -379,6 +417,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       message: `Director's details updated successfully `
     })
   } catch (error) {
+    console.log(error?.message);
     return res.status(409).json({
       status: 409,
       message: error?.message ? error?.message : `Failed to update director's details`
