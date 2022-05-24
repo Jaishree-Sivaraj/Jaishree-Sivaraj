@@ -12,10 +12,10 @@ export const create = async ({ user }, body, res, next) => {
   try {
     for (let index = 0; index < directorData.length; index++) {
       if (directorData[index].memberType == "Board Member" || directorData[index].memberType == "Board&KMP Matrix") {
-        let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorData[index].din, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+        let checkDirectorDin = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, din: directorData[index].din, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
         if (checkDirectorDin.length > 0) {
           return res.status(402).json({
-            message: 'DIN and companyId already exists',
+            message: 'Name and companyId already exists',
             status: 402
           });
         } else {
