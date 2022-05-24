@@ -155,7 +155,8 @@ export function getUpdateObject(body, directorsDetails, user) {
         cin: body?.cin,
         din: body?.din,
         createdBy: user,
-        status: true
+        status: true,
+        isPresent: true
     }
 
     if (body?.status == true || body?.status == false) {
