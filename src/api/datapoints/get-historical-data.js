@@ -127,7 +127,6 @@ export const getScreenShot = async (req, res, next) => {
     try {
 
         const { screenShot } = req.query;
-        console.log(screenShot);
         const screenShotData = await getS3ScreenShot(screenShot);
         if (!screenShotData) {
             res.status(409).json({
@@ -148,7 +147,6 @@ export const getScreenShot = async (req, res, next) => {
 }
 
 function getShot(screenShot) {
-    console.log(screenShot);
     let image = []
     if (screenShot?.length > 0) {
         for (let i = 0; i < screenShot?.length; i++) {
