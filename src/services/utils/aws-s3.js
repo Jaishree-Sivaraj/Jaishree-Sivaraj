@@ -30,7 +30,7 @@ async function fetchFileFromS3(bucketName, keyName) {
             var myBucket = bucketName
             var myKey = keyName;
             var signedUrlExpireSeconds = 60 * 10 // your expiry time in seconds.
-            console.log(myBucket, myKey)
+            ////console.log(myBucket, myKey)
             var headCode = await s3.headObject({ Bucket: myBucket, Key: myKey }).promise();
             var url = s3.getSignedUrl('getObject', {
                 Bucket: myBucket,
@@ -39,20 +39,20 @@ async function fetchFileFromS3(bucketName, keyName) {
             })
             resolve(url);
         } catch (headErr) {
-            console.log('headErr', headErr)
+            //console.log('headErr', headErr)
             var myBucket = bucketName;
             var signedUrlExpireSeconds = 60 * 10;
-            console.log('myBucket', myBucket, keyName);
+            //console.log('myBucket', myBucket, keyName);
             if (headErr.code === 'NotFound') {
                 var noImageurl = s3.getSignedUrl('getObject', {
                     Bucket: myBucket,
                     Key: "no-image.png",
                     Expires: signedUrlExpireSeconds
                 })
-                console.log('noImageurl', noImageurl);
+                //console.log('noImageurl', noImageurl);
                 resolve(noImageurl);
             } else {
-                console.log('in else catch')
+                //console.log('in else catch')
                 reject("error")
             }
         }
