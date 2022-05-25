@@ -19,52 +19,36 @@ export const create = async ({ user }, body, res, next) => {
             message: 'DIN already exists for the same user',
             status: 402
           });
-        }
-        if (checkDirectorDin.length > 0) {
-          return res.status(402).json({
-            message: 'Name and companyId already exists',
-            status: 402
-          });
-        } else {
-          let checkdin = await BoardDirector.find({ din: directorData[index].din });
-          if (checkdin.length > 0) {
-            for(let directorIndex = 0; directorIndex < checkDirectorDin.length; directorIndex++){
-              if(checkDirectorDin[directorIndex].cessationDate != ""){
-                if (directorData[index].din != '' && directorData[index].companyId != '') {
-                  await BoardDirector.create({
-                    din: directorData[index].din,
-                    BOSP004: directorData[index].name,
-                    BODR005: directorData[index].gender,
-                    dob: directorData[index].dob,
-                    companyId: directorData[index].companyId,
-                    cin: directorData[index].cin,
-                    companyName: directorData[index].companyName,
-                    joiningDate: directorData[index].joiningDate,
-                    cessationDate: directorData[index].cessationDate,
-                    memberType: directorData[index].memberType,
-                    createdBy: body.user
-                  })
-                }
+        } else if (checkDirectorDin.length > 0) {
+          for(let directorIndex = 0; directorIndex < checkDirectorDin.length; directorIndex++){
+            if(checkDirectorDin[directorIndex].cessationDate != ""){
+              if (directorData[index].din != '' && directorData[index].companyId != '') {
+                await BoardDirector.create({
+                  din: directorData[index].din,
+                  BOSP004: directorData[index].name,
+                  BODR005: directorData[index].gender,
+                  dob: directorData[index].dob,
+                  companyId: directorData[index].companyId,
+                  cin: directorData[index].cin,
+                  companyName: directorData[index].companyName,
+                  joiningDate: directorData[index].joiningDate,
+                  cessationDate: directorData[index].cessationDate,
+                  memberType: directorData[index].memberType,
+                  createdBy: body.user
+                })
               }
-            }
-          }else{
-            if (directorData[index].din != '' && directorData[index].companyId != '') {
-              await BoardDirector.create({
-                din: directorData[index].din,
-                BOSP004: directorData[index].name,
-                BODR005: directorData[index].gender,
-                dob: directorData[index].dob,
-                companyId: directorData[index].companyId,
-                cin: directorData[index].cin,
-                companyName: directorData[index].companyName,
-                joiningDate: directorData[index].joiningDate,
-                cessationDate: directorData[index].cessationDate,
-                memberType: directorData[index].memberType,
-                createdBy: body.user
-              })
+            }else{
+              return res.status(402).json({
+                message: 'Name and companyId already exists',
+                status: 402
+              });
             }
           }
-        }
+          return res.status(200).json({
+            message: 'Board Director created successfully',
+            status: '200'
+          });
+        } 
       } else if (directorData[index].memberType == "KMP Matrix") {
         let checkDirectorDin = await BoardDirector.find({ $and: [{ name: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
         if (checkDirectorDin.length > 0) {
