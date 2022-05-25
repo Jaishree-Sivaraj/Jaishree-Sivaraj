@@ -96,7 +96,7 @@ export async function getS3ScreenShot(screenShot) {
         if (screenShotFileName == undefined) {
             screenShotFileName = "";
         }
-        return { uid: 1, name: screenShot, url: screenShotFileName }
+        s3DataScreenshot.push({ uid: 1, name: screenShot, url: screenShotFileName })
 
     }
 
