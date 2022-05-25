@@ -325,6 +325,8 @@ export const updateAndDeleteDirector = async (req, res, next) => {
             BOSP004: { $ne: name },
           }, {
             BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 }
+          },{
+            BOSP004: { $ne: updateObject?.name }
           }
           ],
           din: updateObject?.din
