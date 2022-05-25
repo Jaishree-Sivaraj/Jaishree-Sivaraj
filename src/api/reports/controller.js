@@ -294,7 +294,7 @@ export const exportReport = async (req, res, next) => {
   
     let masterLevelMandatoryFieldNames = ["companyName", "companyCin", "nicIndustry", "themeName", "category", "year", "keyIssueName", "description", "unit", "response", "dataType", "keyIssueName", "textSnippet", "section_of_document", "pageNumber", "sourceName", "sourceTitle", "url", "screenShot", "publicationDate", "optionalAnalystComment"]
   
-    if (taxonomyDetails.taxonomyName == "Acuite") {
+    if (taxonomyDetails.taxonomyName == "ESGDS") {
       let rows = [];
       for (let stdIndex = 0; stdIndex < allStandaloneDetails.length; stdIndex++) {
         let data = allStandaloneDetails[stdIndex];

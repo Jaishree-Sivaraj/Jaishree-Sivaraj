@@ -204,9 +204,9 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
       { _id: taskDetails?.categoryId?.clientTaxonomyId },
       { isDerivedCalculationRequired: 1 }
     );
-    // This is to check whether the taxonomy is SFDR or not [i.e,SFDR have non-governance task contrary to non-SFDR or currently Acuite]
+    // This is to check whether the taxonomy is SFDR or not [i.e,SFDR have non-governance task contrary to non-SFDR or currently ESGDS]
     const isDerivedCalculationRequired = clientTaxonomyDetails?.isDerivedCalculationRequired;
-    // If true then Acuite, false then SFDR ['Non- SFDR have derived calculations]
+    // If true then ESGDS, false then SFDR ['Non- SFDR have derived calculations]
 
     const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
 
