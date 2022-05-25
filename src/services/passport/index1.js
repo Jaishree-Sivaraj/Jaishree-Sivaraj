@@ -58,16 +58,16 @@ export const otp = () => (req, res, next) =>
   })(req, res, next)  
 
 export const otpVerification = () => async(req, res, next) => {
-  console.log('req', req.user);
+  //console.log('req', req.user);
   passport.authenticate('otp', { session: false }, async(err, user, info) => {
-    console.log('user', user);
-    console.log('err', err);
+    //console.log('user', user);
+    //console.log('err', err);
     if (!user && req.body) {
       if (req.body.login) {
         let bodyData = Buffer.from(req.body.login, 'base64');
         let bodyDetails = bodyData.toString('ascii');
         let loginDetails = JSON.parse(bodyDetails);
-        console.log('loginDetails', loginDetails);
+        //console.log('loginDetails', loginDetails);
         let email = loginDetails.email, otp = loginDetails.otp;
         const userSchema = new Schema({ email: schema.tree.email, otp: schema.tree.otp });
         userSchema.validate({ email, otp }, (err) => {
@@ -135,8 +135,8 @@ passport.use('password', new BasicStrategy((email, password, done) => {
 }))
 
 passport.use('otp', new BearerStrategy((email, otp, done) => {
-  console.log('email', email);
-  console.log('otp', otp);
+  //console.log('email', email);
+  //console.log('otp', otp);
   const userSchema = new Schema({ email: schema.tree.email, otp: schema.tree.otp })
 
   userSchema.validate({ email, otp }, (err) => {
@@ -149,7 +149,7 @@ passport.use('otp', new BearerStrategy((email, otp, done) => {
       return null
     }
     done(null, user);
-    //console.log(user.authenticateOtp(email, otp));
+    ////console.log(user.authenticateOtp(email, otp));
     // return user.authenticateOtp(email, otp) ? done(null, user):done(null, null);
   })
 }))

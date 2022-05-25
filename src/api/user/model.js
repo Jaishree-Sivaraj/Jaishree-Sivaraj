@@ -151,7 +151,7 @@ userSchema.methods = {
 
   authenticateOtp(otp) {
     return new Promise(resolve => {
-      console.log("one");
+      //console.log("one");
       if (otp == this.otp) {
         resolve(true);
       } else {
