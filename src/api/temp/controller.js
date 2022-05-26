@@ -3,6 +3,7 @@ import { Companies } from '../companies';
 import { getSortedYear } from '../datapoints/dp-details-functions';
 import { StandaloneDatapoints } from '../standalone_datapoints';
 import { Datapoints } from '../datapoints';
+import { User } from '../user';
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -19,7 +20,7 @@ export const update = ({ body, params }, res, next) =>
 export const destroy = ({ params }, res, next) =>
   res.status(204).end()
 
-export const updateCorrectionPending = async(req, res, next) => {
+export const updateCorrectionPending = async (req, res, next) => {
   if (req.params.taskStatus && req.params.taskStatus != "" && req.params.taskStatus != " " && req.params.clientTaxonomyId && req.params.clientTaxonomyId != "") {
     let taxonomyCompanyIds = await Companies.find({ clientTaxonomyId: req.params.clientTaxonomyId, status: true }).distinct('_id');
     if (taxonomyCompanyIds.length > 0) {
@@ -27,7 +28,7 @@ export const updateCorrectionPending = async(req, res, next) => {
       if (tasksList.length > 0) {
         let taskListLength = tasksList.length;
         for (let index = 0; index < taskListLength; index++) {
-          let [ standAloneDetailsForThisTask, taskDatapoints ] = await Promise.all([
+          let [standAloneDetailsForThisTask, taskDatapoints] = await Promise.all([
             StandaloneDatapoints.find({ taskId: tasksList[index]?.id, status: true, isActive: true }).populate('datapointId'),
             Datapoints.find({ clientTaxonomyId: req.params.clientTaxonomyId, categoryId: tasksList[index].categoryId, dataCollection: 'Yes', status: true })
           ])
@@ -44,13 +45,13 @@ export const updateCorrectionPending = async(req, res, next) => {
                   let dpYearData = standAloneDetailsForThisTask.filter(obj => obj.year == yearData && obj.datapointId.id == dpData.id);
                   if (dpYearData.length == 0) {
                     //If data is missing
-                    if (req.params.clientTaxonomyId == "621ef39ce3170b2420a227d7"){
+                    if (req.params.clientTaxonomyId == "621ef39ce3170b2420a227d7") {
                       if ((yearData == qualitativeYear[0] && dpData.dataType !== "Number") || (dpData.dataType == "Number")) {
-                        let lastInactiveData = await StandaloneDatapoints.findOne({ 
-                          taskId: tasksList[index]?.id, 
-                          year: yearData, 
-                          datapointId: dpData.id, 
-                          "$or": [ { status: false, isActive: true }, { status: true, isActive: false }]
+                        let lastInactiveData = await StandaloneDatapoints.findOne({
+                          taskId: tasksList[index]?.id,
+                          year: yearData,
+                          datapointId: dpData.id,
+                          "$or": [{ status: false, isActive: true }, { status: true, isActive: false }]
                         }).sort({ updatedAt: -1 });
                         if (lastInactiveData) {
                           console.log('Case 2');
@@ -63,11 +64,11 @@ export const updateCorrectionPending = async(req, res, next) => {
                         }
                       }
                     } else {
-                      let lastInactiveData = await StandaloneDatapoints.findOne({ 
-                        taskId: tasksList[index]?.id, 
-                        year: yearData, 
-                        datapointId: dpData.id, 
-                        "$or": [ { status: false, isActive: true }, { status: true, isActive: false }]
+                      let lastInactiveData = await StandaloneDatapoints.findOne({
+                        taskId: tasksList[index]?.id,
+                        year: yearData,
+                        datapointId: dpData.id,
+                        "$or": [{ status: false, isActive: true }, { status: true, isActive: false }]
                       }).sort({ updatedAt: -1 });
                       if (lastInactiveData) {
                         await StandaloneDatapoints.updateOne({ _id: lastInactiveData._id }, {
@@ -87,15 +88,44 @@ export const updateCorrectionPending = async(req, res, next) => {
           } else {
             return res.json({ status: "400", message: "Invalid Task Years" });
           }
-          if (index == taskListLength-1) {
+          if (index == taskListLength - 1) {
             return res.json({ status: "200", message: "Values updated successfully!" })
           }
         }
       } else {
-        return res.json({ status: "400", message: "No Tasks available in "+ req.params.taskStatus + " status!" });
+        return res.json({ status: "400", message: "No Tasks available in " + req.params.taskStatus + " status!" });
       }
     } else {
       return res.json({ status: "400", message: "No Companies found the clientTaxonomyId!" });
-    } 
+    }
+  }
+}
+
+
+export const updateName = async (req, res, next) => {
+  try {
+    const userData = await User.find({ name: '' });
+
+    userData.map(async user => {
+      let name = user?.email?.split('@')[0];
+      if (name.includes('.')) {
+        const fullName = name.split('.');
+        name = fullName[0].toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, function (c) { return c.toUpperCase() }) + ' ' + fullName[1].toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, function (c) { return c.toUpperCase() });
+      }
+      const updateData = await User.findOneAndUpdate({ _id: user?._id },
+        {
+          name
+        }, {
+        new: true
+      })
+      console.log(updateData);
+    }
+
+    )
+    return res.json({ message: 'Done' });
+
+
+  } catch (error) {
+
   }
 }
