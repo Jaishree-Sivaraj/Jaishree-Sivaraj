@@ -557,7 +557,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
           status: true
         }).populate('companyId')
       }
-      console.log();
+
+
       if (companiesList?.id != taskObject?.companyId?.id) {
         return res.status(400).json({status: "400", message: "Uploading file is not part of the current task, please check company info in file and try again!"})
       }
@@ -599,15 +600,23 @@ export const uploadBoardMembersData = async (req, res, next) => {
           }
         }
       });
-
+      console.log();
       let distinctYears = [];
       distinctYears = taskObject.year.split(', ');
+      let allYearsData = _.concat(filteredBoardMemberMatrixDetails,filteredKmpMatrixDetails )
+      let data = _.uniqBy(allYearsData, function(e) {
+        return e['Fiscal Year'];
+      });
+      let kmpDataYears = _.uniqBy(filteredBoardMemberMatrixDetails, function(e) {
+        return e['Fiscal Year'];
+      });
+
+
       let boardMembersList = [];
       let errorDetails = [];
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
-      let dataYears = _.uniqBy(filteredBoardMemberMatrixDetails, 'FiscalYear');
       for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
