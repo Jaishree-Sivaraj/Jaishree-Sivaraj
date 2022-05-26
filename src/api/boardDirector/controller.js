@@ -322,14 +322,17 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         BoardDirector.find({
           status: true,
           $and: [{
-            BOSP004: { $ne: name },
+            BOSP004: { $ne: name.trim() },
           }, {
-            BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 }
-          },{
-            BOSP004: { $ne: updateObject?.name }
+            BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
+          }, {
+            BOSP004: { $ne: updateObject?.name.trim() }
           }
           ],
-          din: updateObject?.din
+          $or: [
+            { din: updateObject?.din.trim()   },
+            { din: directorDataBeforeUpdate?.din.trim() }
+          ]
         }).lean(),
 
         //*Apart from this director any other company's director have the same name
@@ -337,12 +340,17 @@ export const updateAndDeleteDirector = async (req, res, next) => {
           status: true,
 
           $and: [{
-            din: { $ne: updateObject?.din }
+            din: { $ne: updateObject?.din.trim() }
           }, {
-            din: { $ne: directorDataBeforeUpdate?.din },
+            din: { $ne: directorDataBeforeUpdate?.din.trim() },
           }
           ],
-          BOSP004: name
+          $or: [{
+            BOSP004: name.trim()
+          },
+          {
+            BOSP004: updateObject?.name.trim()
+          }]
         }).lean()
       ]);
 
