@@ -10,4 +10,3 @@ export const Correction = 'Correction';
 export const Error = 'Error';
 export const Incomplete = 'Incomplete';
 export const Collection = 'Collection';
-export const ControversyCollection = 'Controversy Collection';
