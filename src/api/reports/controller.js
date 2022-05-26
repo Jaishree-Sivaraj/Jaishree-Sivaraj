@@ -1079,16 +1079,8 @@ export const exportAdminTask = async (req, res, next) => {
         message: 'Successfully retrived Task Details ',
         count: taskDetails?.length,
         rows: collectedTaskDetails
-      })
-
+      });
     }
-
-
-
-
-
-
-
   } catch (error) {
     return res.status(409).json({
       status: 409,

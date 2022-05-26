@@ -1,9 +1,7 @@
 'use strict';
-import { Controversy } from "../controversy";
+import { Controversy } from '../controversy';
 
 export function getTaskDetails(task, user) {
-    const { password, ...userData } = user;
-    console.log(userData);
     return {
         analyst: task?.analystId?.name,
         analystId: task?.analystId?._id,
@@ -12,7 +10,7 @@ export function getTaskDetails(task, user) {
         batchId: task?.batchId?._id,
         company: task?.companyId?.companyName,
         companyId: task?.companyId?._id,
-        createdBy: user,
+        createdBy: getUserDetails(user),
         createdById: user?._id,
         fiscalYear: task?.fiscalYear,
         group: task?.groupId?.groupName,
@@ -35,10 +33,34 @@ export async function getControveryDetails(controversery, user) {
         analystId: controversery?.analystId?._id,
         company: controversery?.companyId?.companyName,
         companyId: controversery?.companyId?._id,
-        createdBy: user,
+        createdBy: getUserDetails(user),
         taskId: controversery?._id,
         taskNumber: controversery?.taskNumber,
         taskStatus: controversery?.taskStatus,
         totalNoOfControversy: numberoOfControversy?.length
+    }
+}
+
+function getUserDetails(user) {
+    return {
+        _id: user?._id,
+        otp: user?.otp,
+        role: user?.role,
+        status: user?.status,
+        keywords: user?.keywords,
+        picture: user?.picture,
+        name: user?.name,
+        email: user?.email,
+        createdAt: user?.createdAt,
+        updatedAt: user?.updatedAt,
+        roleDetails: user?.roleDetails,
+        userType: user?.userType,
+        isAssignedToGroup: user?.isAssignedToGroup,
+        isUserActive: user?.isUserActive,
+        isUserApproved: user?.isUserApproved,
+        isUserRejected: user?.isUserRejected,
+        isRoleAssigned: user?.isRoleAssigned,
+        phoneNumber: user?.phoneNumber
+
     }
 }
