@@ -1059,8 +1059,6 @@ export const exportAdminTask = async (req, res, next) => {
 
     } else {
       taskDetails = await TaskAssignment.find(findQuery)
-        .skip(0)
-        .limit(11)
         .populate('companyId')
         .populate('categoryId')
         .populate('groupId')
