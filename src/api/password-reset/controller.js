@@ -14,7 +14,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
           .then(async (reset) => {
             if (!reset) return res.status(400).json({ status: "400", message: 'Failed to send password reset mail!' })
             const { user, token } = reset
-            let link = `${process.env.FRONTEND_URL}/password-resets`;
+            let link = `${process.env.FRONTEND_URL}password-resets`;
             link = `${link.replace(/\/$/, '')}/${token}`
             const emailDetails = passwordResetEmail(user.name, link)
             // var transporter = nodemailer.createTransport({
