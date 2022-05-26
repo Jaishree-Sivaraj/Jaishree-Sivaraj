@@ -21,6 +21,7 @@ const { roleName, roleCode, status } = schema.tree
  * @apiError 401 master access only.
  */
 router.post('/',
+  token({ required: true }),
   body({ roleName, roleCode }),
   create)
 
@@ -37,7 +38,7 @@ router.post('/',
  * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: false }),
+  token({ required: true }),
   query(),
   index)
 
