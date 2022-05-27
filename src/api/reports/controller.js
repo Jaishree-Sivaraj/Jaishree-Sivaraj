@@ -16,6 +16,7 @@ import { ErrorDetails } from '../errorDetails'
 import { Completed, ControversyCollection, Pending, VerificationCompleted } from '../../constants/task-status';
 import { GroupAdmin } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
+import { Controversy } from "../controversy";
 import { getTaskDetails, getControveryDetails } from './helper-function';
 
 export const create = ({ body }, res, next) =>
@@ -1129,7 +1130,6 @@ export const exportAnalystTask = async (req, res, next) => {
   } else if (taskType == "Controversy Collection") {
     findQuery = {
       analystId: _id,
-      taskStatus: "Completed",
       status: true
     }
   }
@@ -1149,70 +1149,121 @@ export const exportAnalystTask = async (req, res, next) => {
       }
     }
   } 
-  
-  count = await TaskAssignment.count(findQuery);
-  await TaskAssignment.find(findQuery)
-    .sort({ createdAt: -1 })
-    .populate("createdBy")
-    .populate("companyId")
-    .populate("categoryId")
-    .populate("groupId")
-    .populate("batchId")
-    .populate("analystId")
-    .populate("qaId")
-    .then(async (taskAssignments) => {
-      for (let index = 0; index < taskAssignments.length; index++) {
-        let object = taskAssignments[index];
-        // let categoryValidationRules = [];
-        // if (role == "Analyst") {
-        //   categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
-        //     .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
-        // }
-  
-        let taskObject = {
-          taskId: object?.id,
-          taskNumber: object?.taskNumber,
-          pillar: object?.categoryId ? object?.categoryId.categoryName : null,
-          pillarId: object?.categoryId ? object?.categoryId.id : null,
-          group: object?.groupId ? object?.groupId.groupName : null,
-          groupId: object?.groupId ? object?.groupId.id : null,
-          batch: object?.batchId ? object?.batchId.batchName : null,
-          batchId: object?.batchId ? object?.batchId.id : null,
-          company: object?.companyId ? object?.companyId.companyName : null,
-          clientTaxonomyId: object?.companyId ? object?.companyId.clientTaxonomyId : null,
-          companyId: object?.companyId ? object?.companyId.id : null,
-          analyst: object?.analystId ? object?.analystId.name : null,
-          analystId: object?.analystId ? object?.analystId.id : null,
-          analystSLADate: object?.analystSLADate ? object?.analystSLADate : null,
-          qa: object?.qaId ? object?.qaId.name : null,
-          qaId: object?.qaId ? object?.qaId.id : null,
-          qaSLADate: object?.qaSLADate ? object?.qaSLADate : null,
-          fiscalYear: object?.year,
-          taskStatus: object?.taskStatus,
-          createdBy: object?.createdBy ? object?.createdBy.name : null,
-          createdById: object?.createdBy ? object?.createdBy.id : null
-        };
-        // if (role == "Analyst") {
-        //   if (categoryValidationRules.length > 0) {
-        //     taskObject.isValidationRequired = true;
-        //   } else {
-        //     taskObject.isValidationRequired = false;
-        //   }
-        // }
-        // if (taskType == "DataVerification") {
-        //   taskObject.isChecked = false;
-        // }
-
-        rows.push(taskObject);
-      }
-      return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
-    })
-    .catch((error) => {
-      return res.status(400).json({
-        status: "400",
-        message: error.message ? error.message : "Failed to retrieve tasks!"
-      });
+  if (taskType == "Controversy Collection") {
+    await ControversyTasks.count(findQuery)
+    .then(async (count) => {
+      await ControversyTasks.find(findQuery)
+        .populate('companyId')
+        .populate('analystId')
+        .populate('createdBy')
+        .then(async (controversyTasks) => {
+          let responseToReturn = {
+            status: "200",
+            message: "Tasks retrieved successfully!",
+            count: count,
+            rows: []
+          };
+          if (controversyTasks && controversyTasks.length > 0) {
+            for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+              let yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+             
+              const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
+                Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
+                Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
+                Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
+              ])
+              
+              let object = {};
+              object.taskNumber = controversyTasks[cIndex].taskNumber;
+              object.taskId = controversyTasks[cIndex].id;
+              object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+              object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+              object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+              object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+              object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+              object.status = controversyTasks[cIndex].status;
+              object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+              object.totalNoOfControversy = totalNoOfControversy;
+              if (controversyTasks[cIndex] && object) {
+                 responseToReturn.rows.push(object)
+              }
+            }
+          }
+           return res.json(responseToReturn);
+        })
+        .catch((error) => {
+          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy tasks!" })
+        })
     });
+  }else{
+    count = await TaskAssignment.count(findQuery);
+    await TaskAssignment.find(findQuery)
+      .sort({ createdAt: -1 })
+      .populate("createdBy")
+      .populate("companyId")
+      .populate("categoryId")
+      .populate("groupId")
+      .populate("batchId")
+      .populate("analystId")
+      .populate("qaId")
+      .then(async (taskAssignments) => {
+        for (let index = 0; index < taskAssignments.length; index++) {
+          let object = taskAssignments[index];
+          // let categoryValidationRules = [];
+          // if (role == "Analyst") {
+          //   categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+          //     .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+          // }
+    
+          let taskObject = {
+            taskId: object?.id,
+            taskNumber: object?.taskNumber,
+            pillar: object?.categoryId ? object?.categoryId.categoryName : null,
+            pillarId: object?.categoryId ? object?.categoryId.id : null,
+            group: object?.groupId ? object?.groupId.groupName : null,
+            groupId: object?.groupId ? object?.groupId.id : null,
+            batch: object?.batchId ? object?.batchId.batchName : null,
+            batchId: object?.batchId ? object?.batchId.id : null,
+            company: object?.companyId ? object?.companyId.companyName : null,
+            clientTaxonomyId: object?.companyId ? object?.companyId.clientTaxonomyId : null,
+            companyId: object?.companyId ? object?.companyId.id : null,
+            analyst: object?.analystId ? object?.analystId.name : null,
+            analystId: object?.analystId ? object?.analystId.id : null,
+            analystSLADate: object?.analystSLADate ? object?.analystSLADate : null,
+            qa: object?.qaId ? object?.qaId.name : null,
+            qaId: object?.qaId ? object?.qaId.id : null,
+            qaSLADate: object?.qaSLADate ? object?.qaSLADate : null,
+            fiscalYear: object?.year,
+            taskStatus: object?.taskStatus,
+            createdBy: object?.createdBy ? object?.createdBy.name : null,
+            createdById: object?.createdBy ? object?.createdBy.id : null
+          };
+          // if (role == "Analyst") {
+          //   if (categoryValidationRules.length > 0) {
+          //     taskObject.isValidationRequired = true;
+          //   } else {
+          //     taskObject.isValidationRequired = false;
+          //   }
+          // }
+          // if (taskType == "DataVerification") {
+          //   taskObject.isChecked = false;
+          // }
+  
+          rows.push(taskObject);
+        }
+        return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          status: "400",
+          message: error.message ? error.message : "Failed to retrieve tasks!"
+        });
+      });
+      }
+ 
 
 }
 // export const exportQATasks = async (req, res, next) => {
