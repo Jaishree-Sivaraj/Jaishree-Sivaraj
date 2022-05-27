@@ -2,7 +2,11 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
+<<<<<<< HEAD
 import { create, index, reportsFilter, exportReport, companySearch, exportQATasks,exportAdminTask, exportAnalystTask } from './controller'
+=======
+import { create, index, reportsFilter, exportReport, companySearch, exportQATasks, exportAdminTask } from './controller'
+>>>>>>> 33099cf0d8c90dd4840cb029d0039cfe1a9401f5
 
 const { role, clientTaxonomyId, searchQuery, page, limit, companyName } = '';
 const { selectedTasks, selectedCompanies, nicList, yearsList, pillarList, batchList, filteredCompanies } = [];
@@ -102,7 +106,7 @@ router.get('/',
   * @apiError {Object} 400 Some parameters may contain invalid values.
   * @apiError 401 user access only.
   */
-router.get('/admin-report/:taskType',
+router.get('/admin-report/:role/:taskType',
   token({ required: true }),
   query(),
   exportAdminTask)
