@@ -13,11 +13,12 @@ import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
 import { Role } from '../role'
 import { ErrorDetails } from '../errorDetails'
-import { Completed, Controversy, Pending, VerificationCompleted } from '../../constants/task-status';
+import { Completed, VerificationCompleted } from '../../constants/task-status';
 import { GroupAdmin } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
 import { Controversy } from "../controversy";
 import { getTaskDetails, getControveryDetails } from './helper-function';
+import { CompletedTask, ControversyTask, PendingTask } from '../../constants/task-type';
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -1025,21 +1026,21 @@ export const exportAdminTask = async (req, res, next) => {
     }
 
     switch (taskType) {
-      case Pending:
+      case PendingTask:
         findQuery = {
           taskStatus: { $nin: completedTaskStatus },
           status: true
         }
         findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
-      case Completed:
+      case CompletedTask:
         findQuery = {
           taskStatus: { $in: completedTaskStatus },
           status: true
         }
         findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
-      case Controversy:
+      case ControversyTask:
         findQuery = { status: true };
         break;
       default:
@@ -1048,7 +1049,7 @@ export const exportAdminTask = async (req, res, next) => {
     }
 
     let taskDetails;
-    if (taskType == Controversy) {
+    if (taskType == ControversyTask) {
       taskDetails = await ControversyTasks.find(findQuery)
         .populate('companyId')
         .populate('analystId');
