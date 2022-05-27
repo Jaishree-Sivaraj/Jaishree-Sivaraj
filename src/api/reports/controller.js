@@ -13,7 +13,7 @@ import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
 import { Role } from '../role'
 import { ErrorDetails } from '../errorDetails'
-import { Completed, ControversyCollection, Pending, VerificationCompleted } from '../../constants/task-status';
+import { Completed, Controversy, Pending, VerificationCompleted } from '../../constants/task-status';
 import { GroupAdmin } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
 import { getTaskDetails, getControveryDetails } from './helper-function';
@@ -1021,7 +1021,6 @@ export const exportAdminTask = async (req, res, next) => {
     let groupId;
     if (role == GroupAdmin) {
       groupId = await Group.findOne({ groupAdmin: req?.user?._id });
-
     }
 
     switch (taskType) {
@@ -1030,7 +1029,6 @@ export const exportAdminTask = async (req, res, next) => {
           taskStatus: { $nin: completedTaskStatus },
           status: true
         }
-
         findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
       case Completed:
@@ -1040,22 +1038,26 @@ export const exportAdminTask = async (req, res, next) => {
         }
         findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
-      case ControversyCollection:
+      case Controversy:
         findQuery = { status: true };
         break;
+      default:
+        console.log('Incorrect Task Type')
+        break
     }
 
     let taskDetails;
-    if (taskType == ControversyCollection) {
+    if (taskType == Controversy) {
       taskDetails = await ControversyTasks.find(findQuery)
         .populate('companyId')
         .populate('analystId');
 
       let controArray = [];
-      taskDetails?.map(async (controversy) => {
+      for (let i = 0; i < taskDetails?.length; i++) {
+        const controversy = taskDetails[i];
         const controveryDetails = await getControveryDetails(controversy, req?.user);
         controArray.push(controveryDetails);
-      });
+      }
 
       return res.status(200).json({
         status: 200,
@@ -1074,9 +1076,10 @@ export const exportAdminTask = async (req, res, next) => {
         .populate('batchId');
 
       let data = []
-      taskDetails?.map((task) => {
-        data.push(getTaskDetails(task, req?.user))
-      });
+      for (let i = 0; i < taskDetails?.length; i++) {
+        const task = taskDetails[i];
+        data.push(getTaskDetails(task, req?.user));
+      }
 
       return res.status(200).json({
         status: 200,

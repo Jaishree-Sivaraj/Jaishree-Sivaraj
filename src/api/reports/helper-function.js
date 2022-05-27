@@ -27,7 +27,7 @@ export function getTaskDetails(task, user) {
 }
 
 export async function getControveryDetails(controversery, user) {
-    let numberoOfControversy = await Controversy.count({ taskId: controversy.id, status: true, isActive: true });
+    let numberoOfControversy = await Controversy.count({ taskId: controversery.id, status: true, isActive: true });
     return {
         analyst: controversery?.analystId?.name,
         analystId: controversery?.analystId?._id,
