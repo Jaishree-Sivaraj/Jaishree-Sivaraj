@@ -1095,7 +1095,7 @@ export const exportAnalystTask = async (req, res, next) => {
   let findQuery = {}
   let rows = [], count = 0;
   if(role  == "Analyst"){
-  if(taskType == "DataCollection"){
+  if(taskType == "Data Collection"){
     findQuery = {
       analystId: _id,
       $or: [
@@ -1108,7 +1108,7 @@ export const exportAnalystTask = async (req, res, next) => {
       ],
       status: true,
     }
-  }else if (taskType == "DataCorrection") {
+  }else if (taskType == "Data Correction") {
     findQuery = {
       analystId: _id,
       $or: [
@@ -1121,7 +1121,7 @@ export const exportAnalystTask = async (req, res, next) => {
       ],
       status: true,
     }
-  } else if (taskType == "ControversyCollection") {
+  } else if (taskType == "Controversy Collection") {
     findQuery = {
       analystId: _id,
       taskStatus: "Completed",
@@ -1129,7 +1129,7 @@ export const exportAnalystTask = async (req, res, next) => {
     }
   }
   } else if (role == "QA"){
-    if (taskType == "DataVerification") {
+    if (taskType == "Data Verification") {
       findQuery = {
         qaId: _id,
         $or: [
@@ -1158,11 +1158,11 @@ export const exportAnalystTask = async (req, res, next) => {
     .then(async (taskAssignments) => {
       for (let index = 0; index < taskAssignments.length; index++) {
         let object = taskAssignments[index];
-        let categoryValidationRules = [];
-        if (role == "Analyst") {
-          categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
-            .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
-        }
+        // let categoryValidationRules = [];
+        // if (role == "Analyst") {
+        //   categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+        //     .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+        // }
   
         let taskObject = {
           taskId: object?.id,
@@ -1187,16 +1187,17 @@ export const exportAnalystTask = async (req, res, next) => {
           createdBy: object?.createdBy ? object?.createdBy.name : null,
           createdById: object?.createdBy ? object?.createdBy.id : null
         };
-        if (role == "Analyst") {
-          if (categoryValidationRules.length > 0) {
-            taskObject.isValidationRequired = true;
-          } else {
-            taskObject.isValidationRequired = false;
-          }
-        }
-        if (taskType == "DataVerification") {
-          taskObject.isChecked = false;
-        }
+        // if (role == "Analyst") {
+        //   if (categoryValidationRules.length > 0) {
+        //     taskObject.isValidationRequired = true;
+        //   } else {
+        //     taskObject.isValidationRequired = false;
+        //   }
+        // }
+        // if (taskType == "DataVerification") {
+        //   taskObject.isChecked = false;
+        // }
+
         rows.push(taskObject);
       }
       return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
