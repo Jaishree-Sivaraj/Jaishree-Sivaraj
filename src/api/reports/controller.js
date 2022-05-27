@@ -1013,10 +1013,15 @@ export const exportQATasks = async (req, res, next) => {
 
 export const exportAdminTask = async (req, res, next) => {
   try {
-    const { role } = req.user;
-    const { taskType } = req.params;
+    const { taskType, role } = req.params;
     let findQuery = {};
-    const completedTaskStatus = [Completed, VerificationCompleted]
+    const completedTaskStatus = [Completed, VerificationCompleted];
+
+    let groupId;
+    if (role == GroupAdmin) {
+      groupId = await Group.findOne({ groupAdmin: req?.user?._id });
+
+    }
 
     switch (taskType) {
       case Pending:
@@ -1024,37 +1029,38 @@ export const exportAdminTask = async (req, res, next) => {
           taskStatus: { $nin: completedTaskStatus },
           status: true
         }
-        findQuery = role == GroupAdmin ? { ...findQuery, groupAdmin: req?.user?._id } : findQuery;
+
+        findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
       case Completed:
         findQuery = {
           taskStatus: { $in: completedTaskStatus },
           status: true
         }
-        findQuery = role == GroupAdmin ? { ...findQuery, groupAdmin: req?.user?._id } : findQuery;
+        findQuery = role == GroupAdmin ? { ...findQuery, groupId } : findQuery;
         break;
       case ControversyCollection:
         findQuery = { status: true };
         break;
     }
+
     let taskDetails;
     if (taskType == ControversyCollection) {
       taskDetails = await ControversyTasks.find(findQuery)
         .populate('companyId')
         .populate('analystId');
 
-      const controDetails = taskDetails?.map(async (controversy) => {
-        let controArray = [];
-        const controveryDetails = await getControveryDetails(controversy);
-        controArray.push(controveryDetails, req?.user);
-        return controArray;
+      let controArray = [];
+      taskDetails?.map(async (controversy) => {
+        const controveryDetails = await getControveryDetails(controversy, req?.user);
+        controArray.push(controveryDetails);
       });
 
       return res.status(200).json({
         status: 200,
         message: 'Successfully retrived Controversy Task',
         count: taskDetails?.length,
-        rows: controDetails
+        rows: controArray
       });
 
     } else {
@@ -1066,17 +1072,16 @@ export const exportAdminTask = async (req, res, next) => {
         .populate('qaId')
         .populate('batchId');
 
-      const collectedTaskDetails = taskDetails?.map((task) => {
-        let data = []
+      let data = []
+      taskDetails?.map((task) => {
         data.push(getTaskDetails(task, req?.user))
-        return data;
       });
 
       return res.status(200).json({
         status: 200,
         message: 'Successfully retrived Task Details ',
         count: taskDetails?.length,
-        rows: collectedTaskDetails
+        rows: data
       });
     }
   } catch (error) {
