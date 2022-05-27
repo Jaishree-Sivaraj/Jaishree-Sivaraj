@@ -19,7 +19,7 @@ export function getTaskDetails(task, user) {
         pillarId: task?.categoryId?._id,
         qa: task?.qaId?.name,
         qaId: task?.qaId?._id,
-        qaSLA: task?.qaSLA,
+        qaSLA: task?.qaSLADate,
         taskId: task?._id,
         taskNumber: task?.taskNumber,
         taskStatus: task?.taskStatus
