@@ -8,6 +8,7 @@ import _ from 'lodash'
 import { Datapoints } from '../datapoints'
 import { ChildDp } from '../child-dp'
 import { CompanySources } from '../companySources'
+import { Validations } from '../validations'
 import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
 import { Role } from '../role'
@@ -1093,7 +1094,126 @@ export const exportAdminTask = async (req, res, next) => {
 
 }
 
+export const exportAnalystTask = async (req, res, next) => {
+  let { _id } = req.user;
+  let { role,taskType } = req.params;
+  let findQuery = {}
+  let rows = [], count = 0;
+  if(role  == "Analyst"){
+  if(taskType == "DataCollection"){
+    findQuery = {
+      analystId: _id,
+      $or: [
+        {
+          taskStatus: "Pending"
+        },
+        {
+          taskStatus: "In Progress"
+        }
+      ],
+      status: true,
+    }
+  }else if (taskType == "DataCorrection") {
+    findQuery = {
+      analystId: _id,
+      $or: [
+        {
+          taskStatus: "Verification Pending"
+        },
+        {
+          taskStatus: "Correction Pending"
+        }
+      ],
+      status: true,
+    }
+  } else if (taskType == "ControversyCollection") {
+    findQuery = {
+      analystId: _id,
+      taskStatus: "Completed",
+      status: true
+    }
+  }
+  } else if (role == "QA"){
+    if (taskType == "DataVerification") {
+      findQuery = {
+        qaId: _id,
+        $or: [
+          {
+            taskStatus: "Collection Completed"
+          },
+          {
+            taskStatus: "Correction Completed"
+          }
+        ],
+        status: true
+      }
+    }
+  } 
+  
+  count = await TaskAssignment.count(findQuery);
+  await TaskAssignment.find(findQuery)
+    .sort({ createdAt: -1 })
+    .populate("createdBy")
+    .populate("companyId")
+    .populate("categoryId")
+    .populate("groupId")
+    .populate("batchId")
+    .populate("analystId")
+    .populate("qaId")
+    .then(async (taskAssignments) => {
+      for (let index = 0; index < taskAssignments.length; index++) {
+        let object = taskAssignments[index];
+        let categoryValidationRules = [];
+        if (role == "Analyst") {
+          categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
+            .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
+        }
+  
+        let taskObject = {
+          taskId: object?.id,
+          taskNumber: object?.taskNumber,
+          pillar: object?.categoryId ? object?.categoryId.categoryName : null,
+          pillarId: object?.categoryId ? object?.categoryId.id : null,
+          group: object?.groupId ? object?.groupId.groupName : null,
+          groupId: object?.groupId ? object?.groupId.id : null,
+          batch: object?.batchId ? object?.batchId.batchName : null,
+          batchId: object?.batchId ? object?.batchId.id : null,
+          company: object?.companyId ? object?.companyId.companyName : null,
+          clientTaxonomyId: object?.companyId ? object?.companyId.clientTaxonomyId : null,
+          companyId: object?.companyId ? object?.companyId.id : null,
+          analyst: object?.analystId ? object?.analystId.name : null,
+          analystId: object?.analystId ? object?.analystId.id : null,
+          analystSLADate: object?.analystSLADate ? object?.analystSLADate : null,
+          qa: object?.qaId ? object?.qaId.name : null,
+          qaId: object?.qaId ? object?.qaId.id : null,
+          qaSLADate: object?.qaSLADate ? object?.qaSLADate : null,
+          fiscalYear: object?.year,
+          taskStatus: object?.taskStatus,
+          createdBy: object?.createdBy ? object?.createdBy.name : null,
+          createdById: object?.createdBy ? object?.createdBy.id : null
+        };
+        if (role == "Analyst") {
+          if (categoryValidationRules.length > 0) {
+            taskObject.isValidationRequired = true;
+          } else {
+            taskObject.isValidationRequired = false;
+          }
+        }
+        if (taskType == "DataVerification") {
+          taskObject.isChecked = false;
+        }
+        rows.push(taskObject);
+      }
+      return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
+    })
+    .catch((error) => {
+      return res.status(400).json({
+        status: "400",
+        message: error.message ? error.message : "Failed to retrieve tasks!"
+      });
+    });
 
+}
 // export const exportQATasks = async (req, res, next) => {
 //   const { selectedTasks, isSelectedAll, role } = req.body;
 //   let exportQuery = {};
