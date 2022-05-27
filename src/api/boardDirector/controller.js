@@ -310,8 +310,42 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     for (let i = 0; i < body?.length; i++) {
       const updateObject = body[i];
       let directorDataBeforeUpdate = {};
+      let nameQueryForRedundantDIN = [{
+        BOSP004: { $ne: name.trim() },
+      }, {
+        BOSP004: { $ne: updateObject?.name.trim() }
+      }];
+
+      let dinQueryForRedundantDIN = [
+        { din: updateObject?.din.trim() }
+      ];
+
+      let nameQueryForRedundantName = [{
+        din: { $ne: updateObject?.din.trim() }
+      }];
+
+      let dinQueryForRedundantName = [{
+        BOSP004: name.trim()
+      }]
+
+
       if (updateObject?.isPresent) {
         directorDataBeforeUpdate = await BoardDirector.findOne({ _id: updateObject?._id, status: true });
+
+        nameQueryForRedundantDIN.push({
+          BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
+        });
+
+        dinQueryForRedundantDIN.push(
+          { din: directorDataBeforeUpdate?.din.trim() });
+
+        nameQueryForRedundantName.push({
+          din: { $ne: directorDataBeforeUpdate?.din.trim() },
+        });
+
+        dinQueryForRedundantName.push({
+          BOSP004: updateObject?.name.trim()
+        })
       }
 
       // Here name is a unique field.
@@ -321,36 +355,15 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         //*Apart from this director any other DIN
         BoardDirector.find({
           status: true,
-          $and: [{
-            BOSP004: { $ne: name.trim() },
-          }, {
-            BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
-          }, {
-            BOSP004: { $ne: updateObject?.name.trim() }
-          }
-          ],
-          $or: [
-            { din: updateObject?.din.trim()   },
-            { din: directorDataBeforeUpdate?.din.trim() }
-          ]
+          $and: nameQueryForRedundantDIN,
+          $or: dinQueryForRedundantDIN
         }).lean(),
 
         //*Apart from this director any other company's director have the same name
         BoardDirector.find({
           status: true,
-
-          $and: [{
-            din: { $ne: updateObject?.din.trim() }
-          }, {
-            din: { $ne: directorDataBeforeUpdate?.din.trim() },
-          }
-          ],
-          $or: [{
-            BOSP004: name.trim()
-          },
-          {
-            BOSP004: updateObject?.name.trim()
-          }]
+          $and: nameQueryForRedundantName,
+          $or: dinQueryForRedundantName
         }).lean()
       ]);
 
@@ -419,9 +432,8 @@ export const updateAndDeleteDirector = async (req, res, next) => {
           $set: updateDirectorObject
         }, { new: true });
       }
-
     }
-
+    
     return res.status(200).json({
       status: 200,
       message: `Director's details updated successfully `
