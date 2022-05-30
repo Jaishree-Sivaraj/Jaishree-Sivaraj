@@ -1044,7 +1044,6 @@ export const exportAdminTask = async (req, res, next) => {
         findQuery = { status: true };
         break;
       default:
-        console.log('Incorrect Task Type')
         break
     }
 
