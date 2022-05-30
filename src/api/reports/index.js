@@ -118,7 +118,7 @@ router.get('/admin-report/:role/:taskType',
   * @apiError {Object} 400 Some parameters may contain invalid values.
   * @apiError 401 user access only.
   */
-router.get('/analyst-report/:role/:taskType',
+router.get('/:role/:taskType',
 token({ required: true }),
 query(),
 exportAnalystTask)
