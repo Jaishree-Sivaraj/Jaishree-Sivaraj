@@ -89,7 +89,6 @@ function numToAlpha(num) {
 }
 
 export const uploadBoardMembersData = async (req, res, next) => {
-  console.log("Upload Board Members Data Function called");
   try {
     let allFilesObject = [];
     let userDetail = req.user;
@@ -521,6 +520,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
         }
       }
       let allCompanyInfos = [];
+      let distinctYears = taskObject.year.split(', ');
       let allBoardMemberMatrixDetails = [];
       let allKmpMatrixDetails = [];
       for (let allFilesArrayIndex = 0; allFilesArrayIndex < allFilesObject.length; allFilesArrayIndex++) {
@@ -534,10 +534,22 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 allCompanyInfos.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]);
                 currentCompanyName = allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]['CIN'];
               }
-            } else {
+            } else if(distinctYears.length == 2) {
+              if (noOfRowsInASheet == 61) {
+                allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
+              } else if (noOfRowsInASheet == 21) {
+                allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
+              }
+            } else if(distinctYears.length == 3) {
               if (noOfRowsInASheet == 92) {
                 allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               } else if (noOfRowsInASheet == 32) {
+                allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
+              }
+            } else {
+              if (noOfRowsInASheet == 30) {
+                allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
+              } else if (noOfRowsInASheet == 10) {
                 allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               }
             }
@@ -600,17 +612,17 @@ export const uploadBoardMembersData = async (req, res, next) => {
           }
         }
       });
-      console.log();
-      let distinctYears = [];
-      distinctYears = taskObject.year.split(', ');
       let allYearsData = _.concat(filteredBoardMemberMatrixDetails,filteredKmpMatrixDetails )
-      let data = _.uniqBy(allYearsData, function(e) {
+      let excelData = _.uniqBy(allYearsData, function(e) {
         return e['Fiscal Year'];
       });
-      let kmpDataYears = _.uniqBy(filteredBoardMemberMatrixDetails, function(e) {
-        return e['Fiscal Year'];
-      });
-
+      let dataDsnctYears = excelData.map((obj) => {
+        return obj['Fiscal Year']
+      })
+      let years = dataDsnctYears.filter( function(n) { return !this.has(n) }, new Set(distinctYears) );
+      if (years.length > 0) {
+        return res.status(400).json({status: "400", message: `Excel is having ${years} data which is not part of the current task year, please check! `})
+      }
 
       let boardMembersList = [];
       let errorDetails = [];
@@ -1064,7 +1076,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       }
       for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
         for (let year = 0; year < distinctYears.length; year++) {
-          let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[companyIdIndex]._id));
+          let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[0]._id));
           if (missingDPs.length > 0 && distinctYears[year]) {
             let missingDPObject = {
               companyName: insertedCompanies[companyIdIndex].companyName,
