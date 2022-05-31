@@ -1187,6 +1187,8 @@ export const exportAnalystTask = async (req, res, next) => {
               object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
               object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
               object.status = controversyTasks[cIndex].status;
+              object.reassessmentDate = controversyTasks[cIndex].reassessmentDate;
+              object.reviewedByCommittee = controversyTasks[cIndex].reviewedByCommittee;
               object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
               object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
               object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
