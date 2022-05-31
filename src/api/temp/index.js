@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, updateCorrectionPending } from './controller'
+import { create, index, show, update, destroy, updateCorrectionPending, updateName } from './controller'
 
 const router = new Router()
 const { taskStatus } = '';
@@ -95,5 +95,19 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+/**
+ * @api {PUT} /temp Update temp
+ * @apiName update Name
+ * @apiGroup Temp
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess (Success 204) 204 No Content.
+ * @apiError 404 Temp not found.
+ * @apiError 401 user access only.
+ */
+router.put('/',
+  token({ required: true }),
+  updateName)
 
 export default router

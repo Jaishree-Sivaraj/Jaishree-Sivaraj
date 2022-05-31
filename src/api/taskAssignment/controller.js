@@ -492,7 +492,13 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
         groupId: { $in: groupIds },
         status: true
       };
-    } else {
+    } else if (params.taskStatus == "Pending") {
+      findQuery = {
+        taskStatus: { $nin: ["Completed", "Verification Completed"] },
+        groupId: { $in: groupIds },
+        status: true
+      };
+    }else {
       findQuery = {
         taskStatus: params.taskStatus ? params.taskStatus : '',
         groupId: { $in: groupIds },
@@ -955,7 +961,6 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       });
   }
   if (userRoles.includes("Client Representative")) {
-    console.log('in client');
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
       status: true
@@ -1249,8 +1254,6 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
-              }, {
-                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1374,6 +1377,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         }).populate('companiesList')
           .catch((err) => { return res.status(400).json({ status: "400", message: err.message ? err.message : "Invalid user Id" }) });
         if (clientRepDetail && clientRepDetail.companiesList) {
+          const taskIds = await TaskAssignment.distinct('_id', { companyId: { $in: clientRepDetail.companiesList }, status: true });
+
+
+
           if (params.type == "DataReview") {
             findQuery = {
               companyId: { $in: clientRepDetail.companiesList },
@@ -2146,7 +2153,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
         if (process.env.NODE_ENV === 'production') {
-          await sendEmail(e, subject, emailDetails)
+          await sendEmail(e, subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!') })
             .catch(err => console.log(err))
         }
@@ -2340,7 +2347,6 @@ export const reports = async ({ user, params }, res, next) => {
         }
         var companyTask = await CompaniesTasks.findOne({ companyId: allTasks[i].companyId.id }).populate('companyId');
       }
-      console.log('HEre is the error')
       if (allTasks[i].categoryId) {
         var categoryWithClientTaxonomy = await Categories.findById(allTasks[i].categoryId.id).populate('clientTaxonomyId');
       }

@@ -116,7 +116,7 @@ export const getHistoricalData = async (req, res, next) => {
         });
 
     } catch (error) {
-        return res.json(409).json({
+        return res.status(409).json({
             status: 409,
             message: error?.message ? error?.message : 'Failed to fetch all datas'
         });
@@ -127,7 +127,6 @@ export const getScreenShot = async (req, res, next) => {
     try {
 
         const { screenShot } = req.query;
-        console.log(screenShot);
         const screenShotData = await getS3ScreenShot(screenShot);
         if (!screenShotData) {
             res.status(409).json({
@@ -148,7 +147,6 @@ export const getScreenShot = async (req, res, next) => {
 }
 
 function getShot(screenShot) {
-    console.log(screenShot);
     let image = []
     if (screenShot?.length > 0) {
         for (let i = 0; i < screenShot?.length; i++) {

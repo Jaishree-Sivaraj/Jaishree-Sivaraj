@@ -7,17 +7,18 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const assignPillarToUsers = async(req, res, next) => {
+export const assignPillarToUsers = async (req, res, next) => {
   try {
     let body = req.body;
+    let userId = [];
     if (body && body.length > 0) {
       let pillarAssignmentList = [];
-      for (let index = 0; index < body.length; index++) {
+      for (let index = 0; index < body?.length; index++) {
         let secondaryPillarList = [];
         if (body[index].secondary.length > 0) {
-          for (let sIndex = 0; sIndex < body[index].secondary.length; sIndex++) {
+          for (let sIndex = 0; sIndex < body[index]?.secondary?.length; sIndex++) {
             if (body[index].secondary[sIndex].value) {
-              secondaryPillarList.push(body[index].secondary[sIndex].value);            
+              secondaryPillarList.push(body[index].secondary[sIndex].value);
             }
           }
         }
@@ -30,13 +31,20 @@ export const assignPillarToUsers = async(req, res, next) => {
           createdBy: req.user
         }
         pillarAssignmentList.push(objectToInsert);
+        userId.push(body[index]?.user);
+
       }
-      await UserPillarAssignments.insertMany(pillarAssignmentList)
-      .then((record) => {
-        return res.status(200).json({ status: "200", message: "Pillar assignment successful!" });
-      })
-      .catch((error) => {
-        return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to assign pillar!" });
+      await UserPillarAssignments.updateMany({ userId: { $in: userId } }, { $set: { status: false } })
+      const insertedData = await UserPillarAssignments.insertMany(pillarAssignmentList);
+      if (!insertedData) {
+        return res.status(409).json({
+          status: 409,
+          message: 'Failed to assign pillar'
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "Pillar assignment successful!"
       });
     }
   } catch (error) {
@@ -47,11 +55,11 @@ export const assignPillarToUsers = async(req, res, next) => {
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   UserPillarAssignments.count(query)
     .then(count => UserPillarAssignments.find(query, select, cursor)
-    .populate('clientTaxonomyId')
-    .populate('primaryPillar')
-    .populate('secondaryPillar')
-    .populate('userId')
-    .populate('createdBy')
+      .populate('clientTaxonomyId')
+      .populate('primaryPillar')
+      .populate('secondaryPillar')
+      .populate('userId')
+      .populate('createdBy')
       .then((userPillarAssignments) => ({
         count,
         rows: userPillarAssignments.map((userPillarAssignments) => userPillarAssignments.view())
@@ -62,11 +70,11 @@ export const index = ({ querymen: { query, select, cursor } }, res, next) =>
 
 export const show = ({ params }, res, next) =>
   UserPillarAssignments.findById(params.id)
-  .populate('clientTaxonomyId')
-  .populate('primaryPillar')
-  .populate('secondaryPillar')
-  .populate('userId')
-  .populate('createdBy')
+    .populate('clientTaxonomyId')
+    .populate('primaryPillar')
+    .populate('secondaryPillar')
+    .populate('userId')
+    .populate('createdBy')
     .then(notFound(res))
     .then((userPillarAssignments) => userPillarAssignments ? userPillarAssignments.view() : null)
     .then(success(res))
@@ -74,11 +82,11 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   UserPillarAssignments.findById(params.id)
-  .populate('clientTaxonomyId')
-  .populate('primaryPillar')
-  .populate('secondaryPillar')
-  .populate('userId')
-  .populate('createdBy')
+    .populate('clientTaxonomyId')
+    .populate('primaryPillar')
+    .populate('secondaryPillar')
+    .populate('userId')
+    .populate('createdBy')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'createdBy'))
     .then((userPillarAssignments) => userPillarAssignments ? Object.assign(userPillarAssignments, body).save() : null)

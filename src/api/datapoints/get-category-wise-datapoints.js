@@ -17,6 +17,7 @@ import {
   CompanyRepresentative,
   ClientRepresentative,
 } from '../../constants/roles';
+import { CLIENT_EMAIL } from '../../constants/client-email';
 import { ClientTaxonomy } from '../clientTaxonomy';
 import {
   getSearchQuery,
@@ -31,13 +32,13 @@ import {
   getConditionForQualitativeAndQuantitativeDatapoints
 } from './get-category-helper-function';
 import { getTaskStartDate } from './dp-details-functions';
-import { CLIENT_EMAIL } from '../../constants/client-email';
 import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 // When the code was coded only standalone dp Type have priority dp code and it belongs to all Social, Environment and Governance pillar.
 export const getCategorywiseDatapoints = async (req, res, next) => {
   try {
     const { taskId, dpType, keyIssueId, memberId, memberName, page, limit, searchValue, dataType } = req.body;
+    const { user } = req;
 
     // Error message
     if (!page || !limit) {
@@ -279,7 +280,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
             currentYear,
             currentAllStandaloneDetails,
             taskDetails,
-            true
+            true,
+            user
           );
           result = getResponse(result, response, count, true, repFinalSubmit);
           return res.status(200).json(result);
@@ -311,7 +313,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentYear,
                   currentAllStandaloneDetails,
                   taskDetails,
-                  false //8
+                  false, //8,
+                  user
                 );
                 result = getResponse(
                   result,
@@ -331,7 +334,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllBoardMemberMatrixDetails,
                   taskStartDate,//starting date.
                   currentYear,
-                  BOARD_MATRIX //9
+                  BOARD_MATRIX, //9
+                  user
                 );
                 result = getResponse(
                   result,
@@ -340,7 +344,19 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                return res.status(200).json(result);
+                let allMembersFullDetails = result.response.datapointList.memberList;
+                let memberDetail = allMembersFullDetails.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                if (memberName != '') {
+                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null && memberDetail?.endDate != '' && memberDetail?.endDate != null) {
+                    return res.status(200).json(result);
+                  } else {
+                    result.response.datapointList.dpCodesData = [];
+                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    return res.status(200).json(result)
+                  }
+                } else {
+                  return res.status(200).json(result);
+                }
               case KMP_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
                   memberList,
@@ -351,7 +367,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   currentAllKmpMatrixDetails,
                   taskStartDate,
                   currentYear,
-                  KMP_MATRIX //9
+                  KMP_MATRIX, //,
+                  user
                 );
                 result = getResponse(
                   result,
@@ -360,7 +377,20 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                return res.status(200).json(result);
+                let allMembersFullDetails1 = result.response.datapointList.memberList;
+                let memberDetail1 = allMembersFullDetails1.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                if (memberName != '') {
+                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null && memberDetail1?.endDate != '' && memberDetail1?.endDate != null) {
+                    return res.status(200).json(result);
+                  } else {
+                    result.response.datapointList.dpCodesData = [];
+                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    return res.status(200).json(result)
+                  }
+                } else {
+                  return res.status(200).json(result);
+                }
+                // return res.status(200).json(result);
               default:
                 return res.status(500).send({
                   status: '500',
@@ -385,7 +415,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
               currentYear,
               currentAllStandaloneDetails,
               taskDetails,
-              false //8
+              false, //8
+              user
             );
             result = getResponse(
               result,
@@ -437,7 +468,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   page,
                   limit,
                   dataType,
-                  currentYear//11
+                  currentYear
                 );
                 result = getResponse(
                   result,
