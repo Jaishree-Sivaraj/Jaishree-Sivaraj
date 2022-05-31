@@ -15,7 +15,7 @@ export function getTaskDetails(task, user) {
         fiscalYear: task?.fiscalYear,
         group: task?.groupId?.groupName,
         groupId: task?.groupId?._id,
-        pillar: task?.groupId?._id,
+        pillar: task?.categoryId?.categoryName,
         pillarId: task?.categoryId?._id,
         qa: task?.qaId?.name,
         qaId: task?.qaId?._id,
