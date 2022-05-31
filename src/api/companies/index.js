@@ -60,7 +60,7 @@ router.post('/',
  * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: false }),
+  token({ required: true }),
   query(),
   index)
 
