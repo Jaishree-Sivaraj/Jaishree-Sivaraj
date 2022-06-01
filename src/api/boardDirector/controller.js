@@ -5,7 +5,7 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector, checkIfRedundantDataHaveCessationDate } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
@@ -320,137 +320,42 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { name } = req.params;
     const { body, user } = req;
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(body);
-
-    if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0 ) {
+    if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
     }
-
-
-    let updateDirector;
     for (let i = 0; i < body?.length; i++) {
       const updateObject = body[i];
-      let directorDataBeforeUpdate = {};
-      let nameQueryForRedundantDIN = [{
-        BOSP004: { $ne: name.trim() },
-      }, {
-        BOSP004: { $ne: updateObject?.name.trim() }
-      }];
-
-      let dinQueryForRedundantDIN = [
-        { din: updateObject?.din.trim() }
-      ];
-
-      let nameQueryForRedundantName = [{
-        din: { $ne: updateObject?.din.trim() }
-      }];
-
-      let dinQueryForRedundantName = [{
-        BOSP004: name.trim()
-      }]
-
-
-      if (updateObject?.isPresent) {
-        directorDataBeforeUpdate = await BoardDirector.findOne({ _id: updateObject?._id, status: true });
-
-        nameQueryForRedundantDIN.push({
-          BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
-        });
-
-        dinQueryForRedundantDIN.push(
-          { din: directorDataBeforeUpdate?.din.trim() });
-
-        nameQueryForRedundantName.push({
-          din: { $ne: directorDataBeforeUpdate?.din.trim() },
-        });
-
-        dinQueryForRedundantName.push({
-          BOSP004: updateObject?.name.trim()
-        })
-      }
-
-      // Here name is a unique field.
+      const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName } = await getQueryData(name, updateObject);
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
+      const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName);
 
-        //*Apart from this director any other DIN
-        BoardDirector.find({
-          status: true,
-          $and: nameQueryForRedundantDIN,
-          $or: dinQueryForRedundantDIN
-        }).lean(),
-
-        //*Apart from this director any other company's director have the same name
-        BoardDirector.find({
-          status: true,
-          $and: nameQueryForRedundantName,
-          $or: dinQueryForRedundantName
-        }).lean()
-      ]);
-
-      let message = '';
-      if (checkingRedundantDIN?.length > 0) {
-        message = 'DIN';
-      } else if (checkingRedundantName?.length > 0) {
-        message = 'Name'
+      if (Object.keys(checkRedundantData).length !== 0) {
+        return res.status(409).json(checkRedundantData)
       }
-
-      if (checkingRedundantDIN?.length > 0 || checkingRedundantName?.length > 0) {
+      const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
+      const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
+      let updateCompanyDetails = await updateCompanyData(updateObject, findQuery, data);
+      if (!updateCompanyDetails) {
         return res.status(409).json({
           status: 409,
-          message: `${message} already exists`
+          message: 'Failed to update company data'
         });
       }
-
-      const directorsDetailsWithCompany = await BoardDirector.find(findQuery).lean();
-      // If a new company is added and if there is the same company with cessation date then we cannot add the new company
-      if (!updateObject?.isPresent) {
-        const isCessationDateEmpty = directorsDetailsWithCompany?.map((cessationData) => {
-          if (cessationData?.cessationDate == '') {
-            return true;
-          } else {
-            return false;
-          }
-
-        });
-        if (isCessationDateEmpty?.includes(true)) {
-          return res.status(409).json({
-            status: 409,
-            message: `${updateObject?.companyName} already exist and there no cessation date attached to the exisiting company.`
-          })
-        }
-      }
-
-      const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
-      // If the company already exists then update else create.
-      if (updateObject?.isPresent) {
-        updateDirector = await BoardDirector.findOneAndUpdate({
-          ...findQuery,
-          isPresent: updateObject?.isPresent,
-          _id: updateObject?._id
-        }, {
-          $set: data
-        },
-          {
-            new: true
-          });
-      } else {
-        updateDirector = await BoardDirector.findOneAndUpdate({ ...findQuery, isPresent: updateObject?.isPresent }, {
-          $set: data
-        },
-          {
-            upsert: true,
-            new: true
-          });
-      }
-
       // updating Directors details.
+      let updateDirector;
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
       for (let i = 0; i < directorsDetails?.length; i++) {
         const director = directorsDetails[i];
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
-        await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
+        updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
         }, { new: true });
+      }
+      if (!updateDirector) {
+        return res.status(409).json({
+          status: 409,
+          message: `Failed to update director's data`
+        });
       }
     }
 
