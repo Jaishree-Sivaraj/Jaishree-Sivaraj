@@ -207,22 +207,24 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
 
 export function checkIfRedundantDataHaveCessationDate(data) {
     try {
+        // sort the joining date
+        data.sort(compare);
         for (let i = 0; i < data?.length; i++) {
             for (let j = i + 1; j < data?.length; j++) {
-                if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.cin == true )) {
-                   if((data[i]?.joiningDate || data[i]?.joiningDate !=='') 
-                   && (data[j]?.joiningDate || data[j]?.joiningDate !=='') )
-                    { const earlierCompanyToHaveJoined =
-                        new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
-                            ? data[i] : data[j];
+                if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.cin == true)) {
+                    if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
+                        && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
+                        const earlierCompanyToHaveJoined =
+                            new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
+                                ? data[i] : data[j];
 
-                    if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
-                        return {
-                            status: 409,
-                            message: `${earlierCompanyToHaveJoined?.companyName} joined at"  ${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date.Please check`
+                        if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
+                            return {
+                                status: 409,
+                                message: `${earlierCompanyToHaveJoined?.companyName} joined at"  ${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date.Please check`
+                            }
                         }
                     }
-}
                 }
             }
         }
@@ -231,3 +233,15 @@ export function checkIfRedundantDataHaveCessationDate(data) {
         console.log(error?.message);
     }
 }
+
+
+function compare(a, b) {
+    if (new Date(a.joiningDate) < new Date(b.joiningDate)) {
+        return -1;
+    }
+    if (new Date(a.joiningDate) > new Date(b.joiningDate)) {
+        return 1;
+    }
+    return 0;
+}
+
