@@ -5,7 +5,7 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector, checkIfRedundantDataHaveCessationDate } from './aggregation-query';
 
 export const create = async ({ user }, body, res, next) => {
   var directorData = body.body;
@@ -319,8 +319,14 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { name } = req.params;
     const { body, user } = req;
-    let updateDirector;
+    const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(body);
 
+    if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0 ) {
+      return res.status(409).json(checkForRedundantCINWithNoCessationDate)
+    }
+
+
+    let updateDirector;
     for (let i = 0; i < body?.length; i++) {
       const updateObject = body[i];
       let directorDataBeforeUpdate = {};
@@ -447,7 +453,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         }, { new: true });
       }
     }
-    
+
     return res.status(200).json({
       status: 200,
       message: `Director's details updated successfully `

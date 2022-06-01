@@ -204,3 +204,27 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
     }
     return data;
 }
+
+export function checkIfRedundantDataHaveCessationDate(data) {
+    try {
+        for (let i = 0; i < data?.length; i++) {
+            for (let j = i + 1; j < data?.length; j++) {
+                if (data[i]?.cin == data[j]?.cin) {
+                    const earlierCompanyToHaveJoined =
+                        new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
+                            ? data[i] : data[j];
+
+                    if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
+                        return {
+                            status: 409,
+                            message: `${earlierCompanyToHaveJoined?.companyName} joined at ${earlierCompanyToHaveJoined?.joiningDate} does not have cessation Date.Please check`
+                        }
+                    }
+                }
+            }
+        }
+        return {};
+    } catch (error) {
+        console.log(error?.message);
+    }
+}
