@@ -1,5 +1,5 @@
 'use strict';
-
+import { format } from 'date-fns';
 /*
 TODO: Note to be taken while understanding the query.
 !We are not deleting directors hence,
@@ -209,17 +209,20 @@ export function checkIfRedundantDataHaveCessationDate(data) {
     try {
         for (let i = 0; i < data?.length; i++) {
             for (let j = i + 1; j < data?.length; j++) {
-                if (data[i]?.cin == data[j]?.cin) {
-                    const earlierCompanyToHaveJoined =
+                if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.cin == true )) {
+                   if((data[i]?.joiningDate || data[i]?.joiningDate !=='') 
+                   && (data[j]?.joiningDate || data[j]?.joiningDate !=='') )
+                    { const earlierCompanyToHaveJoined =
                         new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
                             ? data[i] : data[j];
 
                     if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
                         return {
                             status: 409,
-                            message: `${earlierCompanyToHaveJoined?.companyName} joined at ${earlierCompanyToHaveJoined?.joiningDate} does not have cessation Date.Please check`
+                            message: `${earlierCompanyToHaveJoined?.companyName} joined at"  ${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date.Please check`
                         }
                     }
+}
                 }
             }
         }
