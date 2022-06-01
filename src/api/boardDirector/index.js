@@ -99,7 +99,7 @@ router.get('/:id',
   show)
 
 /**
-* @api {put} /boardDirector/:din/:companyId Update board director
+* @api {put}  :din/:companyId Update board director
 * @apiName UpdateBoardDirector
 * @apiGroup BoardDirector
 * @apiPermission master
