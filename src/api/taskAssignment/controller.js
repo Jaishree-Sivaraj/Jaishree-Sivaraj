@@ -480,13 +480,13 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
   }
   userRoles = _.uniq(userRoles);
   let findQuery = {}, companyIds = [];
-  if (query.company) {
+  if (query && query?.company) {
     let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
     companyIds = companyDetail ? companyDetail : [];
   }
-  if (params.taskStatus && params.role == "GroupAdmin") {
+  if (params?.taskStatus && params?.role == "GroupAdmin") {
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-    if (params.taskStatus == "Completed") {
+    if (params?.taskStatus == "Completed") {
       findQuery = {
         taskStatus: { $in: ["Completed", "Verification Completed"] },
         groupId: { $in: groupIds },
@@ -494,29 +494,29 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
       };
     } else {
       findQuery = {
-        taskStatus: params.taskStatus ? params.taskStatus : '',
+        taskStatus: params?.taskStatus ? params?.taskStatus : '',
         groupId: { $in: groupIds },
         status: true
       };
     }
-    if (query.company) {
+    if (query && query?.company) {
       let groupAdminCompanyIds = await TaskAssignment.find({ groupId: { $in: groupIds }, status: true }).distinct('companyId');
       let commonCompanyIds = _.intersectionWith(groupAdminCompanyIds, companyIds, _.isEqual);
       findQuery['companyId'] = { $in: commonCompanyIds };
     }
-  } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
-    if (params.taskStatus == "Completed") {
+  } else if (params?.taskStatus && params?.role == "SuperAdmin" || params?.taskStatus && params?.role == "Admin") {
+    if (params?.taskStatus == "Completed") {
       findQuery = { taskStatus: { $in: ["Completed", "Verification Completed"] }, status: true };
     } else {
       findQuery = { taskStatus: { $nin: ["Completed", "Verification Completed"] }, status: true };
     }
-    if (query.company) {
+    if (query && query?.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else if (params.role !== "GroupAdmin") {
+  } else if (params?.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
-  if (userRoles.includes(params.role)) {
+  if (userRoles.includes(params?.role)) {
     await TaskAssignment.count(findQuery)
       .then(async (count) => {
         await TaskAssignment.find(findQuery, select, cursor)
