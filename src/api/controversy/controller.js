@@ -266,7 +266,7 @@ export const uploadControversies = async (req, res, next) => {
       }
       if (allFilesObject.length > 0) {
         let currentCompanyName;
-        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "Acuite" });
+        let clientTaxonomyId = await ClientTaxonomy.findOne({ taxonomyName: "ESGDS" });
         for (let index = 0; index < allFilesObject.length; index++) {
           if (allFilesObject[index].length == 1) {
             let companyObject = {

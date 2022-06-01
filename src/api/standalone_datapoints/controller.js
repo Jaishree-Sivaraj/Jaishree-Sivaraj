@@ -613,7 +613,7 @@ export const uploadCompanyESGFiles = async (req, res, next) => {
             }
           }
           let clientTaxonomyId = await ClientTaxonomy.findOne({
-            taxonomyName: "Acuite"
+            taxonomyName: "ESGDS"
           });
           const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
           for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
