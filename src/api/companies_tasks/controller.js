@@ -75,7 +75,7 @@ export const allocateTasksFromJson = async({ user, params }, res, next) => {
     fs.readFile(__dirname + '/task_allocation.json', async (err, data) => {
       if (err) throw err;
       let allTaskList = JSON.parse(data);
-      let clientTaxonomyDetail = await ClientTaxonomy.findOne({ taxonomyName: "Acuite", status: true });
+      let clientTaxonomyDetail = await ClientTaxonomy.findOne({ taxonomyName: "ESGDS", status: true });
       let allExistingCompanies =  await Companies.find({ clientTaxonomyId : clientTaxonomyDetail.id, status: true }).populate('companyId');
       let allExistingCategories =  await Categories.find({ clientTaxonomyId : clientTaxonomyDetail.id, status: true });
       let allExistingGroups =  await Group.find({ status: true });
