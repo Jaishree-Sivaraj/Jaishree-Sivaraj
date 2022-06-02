@@ -327,10 +327,6 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { name } = req.params;
     const { body, user } = req;
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(body);
-<<<<<<< HEAD
-=======
-
->>>>>>> 971350f90c386da51ab9ae859aadca5aaae61413
     if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
     }
