@@ -12,8 +12,14 @@ export const create = async ({ user }, body, res, next) => {
   try {
     let addObject = [];
     for (let index = 0; index < directorData.length; index++) {
-      let checkDirectorDin = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
-      if (checkDirectorDin.length > 0) {
+      let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
+      let checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+      if (checkDirectorName.length > 0) {
+        return res.status(400).json({
+          message: 'Name already exists',
+          status: 400
+        });
+      } else if (checkDirectorCompany > 0) {
         var checkingDuplicateValue = checkDirectorDin.some(function (e2) {
           return e2.cessationDate != "";
         });
@@ -34,7 +40,7 @@ export const create = async ({ user }, body, res, next) => {
             updatedAt: new Date()
           }
           addObject.push(data)
-        }else if(checkingDuplicateValue == false){
+        } else if (checkingDuplicateValue == false) {
           return res.status(400).json({
             message: 'Name or CompanyId already exists',
             status: 400
@@ -67,7 +73,7 @@ export const create = async ({ user }, body, res, next) => {
           });
           if (checkingDuplicateValue == true) {
             addObject.push(data)
-          }else if(checkingDuplicateValue == false){
+          } else if (checkingDuplicateValue == false) {
             return res.status(400).json({
               message: 'CompanyId already exists',
               status: 400
