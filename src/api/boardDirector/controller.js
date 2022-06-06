@@ -335,12 +335,6 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       let updateCompanyDetails = await updateCompanyData(updateObject, findQuery, data);
-      if (!updateCompanyDetails) {
-        return res.status(409).json({
-          status: 409,
-          message: 'Failed to update company data'
-        });
-      }
       // updating Directors details.
       let updateDirector;
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
@@ -350,12 +344,6 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
         }, { new: true });
-      }
-      if (!updateDirector) {
-        return res.status(409).json({
-          status: 409,
-          message: `Failed to update director's data`
-        });
       }
     }
 
