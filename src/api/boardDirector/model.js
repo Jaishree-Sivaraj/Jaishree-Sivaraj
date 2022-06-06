@@ -48,7 +48,16 @@ const boardDirectorSchema = new Schema({
   isPresent: {
     type: Boolean,
     default: true
-  }
+  },
+  qualification: {
+    type: String
+  },
+  profilePhoto: {
+    type: String
+  },
+  socialLinks:  [{
+    type: String
+}]
 
 }, {
   timestamps: true,
