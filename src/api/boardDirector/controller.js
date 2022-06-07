@@ -371,9 +371,11 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
       }
+
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       let updateCompanyDetails = await updateCompanyData(updateObject, findQuery, data);
+
       // updating Directors details.
       let updateDirector;
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
@@ -387,14 +389,19 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         const director = directorsDetails[i];
 
         const profilePhotoItem = profilePhoto;
-        const profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-        const profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+        let profilePhotoFileType = '';
+        let profilePhotoFileName = '';
 
-        if (director.profilePhoto !== profilePhotoFileName) {
+        if (profilePhotoItem !== '') {
+          profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
+          profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+        }
+
+        if (director.profilePhoto && director.profilePhoto !== '' && director.profilePhoto !== profilePhotoFileName) {
           await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
         }
 
-        director.profilePhoto = profilePhoto;
+        director.profilePhoto = profilePhotoFileType;
         director.socialLinks = socialLinks;
         director.qualification = qualification;
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
