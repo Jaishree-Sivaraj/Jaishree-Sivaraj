@@ -9,9 +9,9 @@ import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, get
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
-export const create = async ({ user }, body, res, next) => {
-  var directorData = body?.body?.companyList;
-  var details = body?.body?.details;
+export const create = async (req, res, next) => {
+  var directorData = req?.body?.companyList;
+  var details = req?.body?.details;
   try {
     let addObject = [], fileName;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
@@ -51,10 +51,10 @@ export const create = async ({ user }, body, res, next) => {
             joiningDate: directorData[index]?.joiningDate,
             cessationDate: directorData[index]?.cessationDate,
             memberType: directorData[index]?.memberType,
-            qualification: details?.qualification,
-            profilePhoto: fileName,
+            qualification: details?.qualification, 
+            profilePhoto: fileName, 
             socialLinks: details?.socialLinks,
-            createdBy: body?.user,
+            createdBy: req?.user,
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -78,14 +78,14 @@ export const create = async ({ user }, body, res, next) => {
           joiningDate: directorData[index]?.joiningDate,
           cessationDate: directorData[index]?.cessationDate,
           memberType: directorData[index]?.memberType,
-          qualification: details?.qualification,
-          profilePhoto: fileName,
+          qualification: details?.qualification, 
+          profilePhoto: fileName, 
           socialLinks: details?.socialLinks,
-          createdBy: body?.user,
+          createdBy: req?.user,
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log(data)
+
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;
         });
