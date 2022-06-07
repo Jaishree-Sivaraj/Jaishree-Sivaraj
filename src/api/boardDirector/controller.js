@@ -25,8 +25,11 @@ export const create = async ({ user }, body, res, next) => {
       fileName = profilePhotoFileName;
     }
     for (let index = 0; index < directorData.length; index++) {
+      let checkDirectorCompany =[];
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
-      let checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+      if(directorData[index]?.companyId != " "){
+        checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+      }
       if (checkDirectorName.length > 0) {
         return res.status(400).json({
           message: 'Name already exists',
@@ -62,7 +65,8 @@ export const create = async ({ user }, body, res, next) => {
             status: 400
           });
         }
-      } else {
+      }
+       else {
         var data = {
           din: directorData[index]?.din,
           BOSP004: directorData[index]?.name,
@@ -81,14 +85,15 @@ export const create = async ({ user }, body, res, next) => {
           createdAt: new Date(),
           updatedAt: new Date()
         }
+        console.log(data)
         var checkingDuplicate = addObject.some(function (el) {
-          return el.cin === directorData[index].cin;
+          return el?.cin === directorData[index]?.cin;
         });
         if (checkingDuplicate == false) {
           addObject.push(data)
         } else if (checkingDuplicate == true) {
           var checkingDuplicateValue = addObject.some(function (e2) {
-            return e2.cessationDate != "";
+            return e2?.cessationDate != "";
           });
           if (checkingDuplicateValue == true) {
             addObject.push(data)
