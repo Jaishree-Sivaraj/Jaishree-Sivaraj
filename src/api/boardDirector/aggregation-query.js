@@ -195,6 +195,9 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
         cin: directorsDetails?.cin,
         din: body?.din,
         createdBy: user,
+        profilePhoto: directorsDetails?.profilePhoto,
+        socialLinks: directorsDetails?.socialLinks,
+        qualification: directorsDetails?.qualification,
         status: true
 
     }
@@ -252,7 +255,7 @@ export async function getQueryData(name, updateObject) {
 
     try {
         let nameQueryForRedundantDIN = [
-                {
+            {
                 BOSP004: { $ne: name.trim() },
             },
             {
@@ -338,7 +341,7 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
 
 export async function updateCompanyData(updateObject, findQuery, data) {
     try {
-         // If the company already exists then update else create.
+        // If the company already exists then update else create.
         let updateDirector;
         if (updateObject?.isPresent) {
             updateDirector = await BoardDirector.findOneAndUpdate({
@@ -359,7 +362,7 @@ export async function updateCompanyData(updateObject, findQuery, data) {
                     upsert: true,
                     new: true
                 });
-        }console.log(updateDirector)
+        } console.log(updateDirector)
 
         return updateDirector;
     } catch (error) { console.log(error?.message) }
