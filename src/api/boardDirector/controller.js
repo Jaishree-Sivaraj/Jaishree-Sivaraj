@@ -25,9 +25,9 @@ export const create = async (req, res, next) => {
       fileName = profilePhotoFileName;
     }
     for (let index = 0; index < directorData.length; index++) {
-      let checkDirectorCompany =[];
+      let checkDirectorCompany = [];
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
-      if(directorData[index]?.companyId != " "){
+      if (directorData[index]?.companyId != " ") {
         checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
       }
       if (checkDirectorName.length > 0) {
@@ -51,8 +51,8 @@ export const create = async (req, res, next) => {
             joiningDate: directorData[index]?.joiningDate,
             cessationDate: directorData[index]?.cessationDate,
             memberType: directorData[index]?.memberType,
-            qualification: details?.qualification, 
-            profilePhoto: fileName, 
+            qualification: details?.qualification,
+            profilePhoto: fileName,
             socialLinks: details?.socialLinks,
             createdBy: req?.user,
             createdAt: new Date(),
@@ -66,7 +66,7 @@ export const create = async (req, res, next) => {
           });
         }
       }
-       else {
+      else {
         var data = {
           din: directorData[index]?.din,
           BOSP004: directorData[index]?.name,
@@ -78,8 +78,8 @@ export const create = async (req, res, next) => {
           joiningDate: directorData[index]?.joiningDate,
           cessationDate: directorData[index]?.cessationDate,
           memberType: directorData[index]?.memberType,
-          qualification: details?.qualification, 
-          profilePhoto: fileName, 
+          qualification: details?.qualification,
+          profilePhoto: fileName,
           socialLinks: details?.socialLinks,
           createdBy: req?.user,
           createdAt: new Date(),
@@ -371,24 +371,37 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
       }
+
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       let updateCompanyDetails = await updateCompanyData(updateObject, findQuery, data);
+
       // updating Directors details.
       let updateDirector;
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
+      if (directorsDetails?.length < 0) {
+        return res.status(409).json({
+          status: 409,
+          message: `Director with name ${BOSP004} does not exists`
+        })
+      }
       for (let i = 0; i < directorsDetails?.length; i++) {
         const director = directorsDetails[i];
 
         const profilePhotoItem = profilePhoto;
-        const profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-        const profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+        let profilePhotoFileType = '';
+        let profilePhotoFileName = '';
 
-        if (director.profilePhoto !== profilePhotoFileName) {
+        if (profilePhotoItem !== '') {
+          profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
+          profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+        }
+
+        if (director.profilePhoto && director.profilePhoto !== '' && director.profilePhoto !== profilePhotoFileName) {
           await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
         }
 
-        director.profilePhoto = profilePhoto;
+        director.profilePhoto = profilePhotoFileType;
         director.socialLinks = socialLinks;
         director.qualification = qualification;
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
