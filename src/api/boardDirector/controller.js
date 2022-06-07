@@ -10,20 +10,21 @@ import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
 export const create = async ({ user }, body, res, next) => {
-  var directorData = body.body;
+  var directorData = body.body.companyList;
+  var details = body.body.details;
   try {
     let addObject = [], fileName;
+    if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
+      let profilePhotoItem = details.profilePhoto;
+      let profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
+      let profilePhotoFileName = directorData[0].name  + new Date() + '.' + profilePhotoFileType;
+      let storeProfile = await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName,  profilePhotoItem)
+      .catch((error) => {
+        return res.status(400).json({ status: "400", message: "Failed to upload the Profile" })
+      });
+      fileName = profilePhotoFileName;
+   }
     for (let index = 0; index < directorData.length; index++) {
-      if (directorData[index].profilePhoto && directorData[index].profilePhoto.length > 0) {
-          let profilePhotoItem = directorData[index].profilePhoto;
-          let profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-          let profilePhotoFileName = directorData[index].name  + new Date() + '.' + profilePhotoFileType;
-          let storeProfile = await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName,  profilePhotoItem)
-          .catch((error) => {
-            return res.status(400).json({ status: "400", message: "Failed to upload the Profile" })
-          });
-          fileName = profilePhotoFileName;
-      }
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
       let checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
       if (checkDirectorName.length > 0) {
@@ -47,9 +48,9 @@ export const create = async ({ user }, body, res, next) => {
             joiningDate: directorData[index].joiningDate,
             cessationDate: directorData[index].cessationDate,
             memberType: directorData[index].memberType,
-            qualification: directorData[index].qualification, 
+            qualification: details.qualification, 
             profilePhoto: fileName, 
-            socialLinks: directorData[index].socialLinks,
+            socialLinks: details.socialLinks,
             createdBy: body.user,
             createdAt: new Date(),
             updatedAt: new Date()
@@ -73,9 +74,9 @@ export const create = async ({ user }, body, res, next) => {
           joiningDate: directorData[index].joiningDate,
           cessationDate: directorData[index].cessationDate,
           memberType: directorData[index].memberType,
-          qualification: directorData[index].qualification, 
+          qualification: details.qualification, 
           profilePhoto: fileName, 
-          socialLinks: directorData[index].socialLinks,
+          socialLinks: details.socialLinks,
           createdBy: body.user,
           createdAt: new Date(),
           updatedAt: new Date()
