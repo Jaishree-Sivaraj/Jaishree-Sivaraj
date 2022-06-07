@@ -1,8 +1,9 @@
 import { Router } from 'express'
+import multer from 'multer'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy } from './controller'
+import { create, index, show, update, destroy, uploadBoardMembersData } from './controller'
 import { schema } from './model'
 export BoardMembersMatrixDataPoints, { schema } from './model'
 
@@ -101,5 +102,41 @@ router.put('/:id',
 router.delete('/:id',
   token({ required: true }),
   destroy)
+
+  var storage = multer.diskStorage({ //multers disk storage settings
+    destination: function (req, file, cb) {
+      cb(null, __dirname.replace('routes', '') + '/uploads');
+    },
+    filename: function (req, file, cb) {
+      var datetimestamp = Date.now();
+      cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+    }
+  });
+  var uploadDatapoints = multer({ //multer settings
+    storage: storage,
+    fileFilter: function (req, file, callback) { //file filter
+      if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
+        return callback(new Error('Wrong extension type'));
+      }
+      callback(null, true);
+    }
+  });
+
+/**
+ * @api {post} /boardMembersMatrixDataPoints/upload/bod-data upload board members matrix data points data
+ * @apiName UploadBoardMembersMatrixDataPointsData
+ * @apiGroup BoardMembersMatrixDataPoints
+ * @apiPermission user
+ * @apiParam {String} access_token user access token.
+ * @apiSuccess (Success 204) 204 No Content.
+ * @apiError 404 Board members matrix data points not found.
+ * @apiError 401 user access only.
+ */
+router.post('/upload/bod-data',
+token({
+  required: true
+}),
+uploadDatapoints.single('file'),
+uploadBoardMembersData)
 
 export default router
