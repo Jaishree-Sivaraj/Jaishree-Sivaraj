@@ -211,7 +211,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                       try {
                         if (headers2['A']) {
                           if (data[row][headers2['A']]) {
-                            let currentColumnIndex = allColumnNames.indexOf(col);
+                            let currentColumnIndex = allColumnNames?.indexOf(col);
                             let previousColumnIndex = currentColumnIndex - 1;
                             let nextColumnIndex = currentColumnIndex + 1;
                             data[row][headers2[col]] = value;
@@ -224,8 +224,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
                               if (nextCellId) {
                                 let expectedNextCol = allColumnNames[nextColumnIndex];
                                 if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                  let indexOfActualNextCol = allColumnNames?.indexOf(nextCol);
+                                  let indexOfExpectedNextCol = allColumnNames?.indexOf(expectedNextCol);
                                   let difference = indexOfActualNextCol - indexOfExpectedNextCol;
                                   if (difference > 1) {
                                     for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
@@ -242,11 +242,12 @@ export const uploadBoardMembersData = async (req, res, next) => {
                           }
                         }
                       } catch (error) {
+                        console.log(error.message);
                         return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                       }
                     } else {
                       if (isNaN(value)) {
-                        data[row][headers2[col]] = value.replace(/[\s\r\n]/g, ' ');
+                        data[row][headers2[col]] = value?.replace(/[\s\r\n]/g, ' ');
                       } else {
                         data[row][headers2[col]] = value;
                       }
@@ -261,7 +262,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                       try {
                         if (headers['A']) {
                           if (data[row][headers['A']]) {
-                            let currentColumnIndex = allColumnNames.indexOf(col);
+                            let currentColumnIndex = allColumnNames?.indexOf(col);
                             let previousColumnIndex = currentColumnIndex - 1;
                             let nextColumnIndex = currentColumnIndex + 1;
                             data[row][headers[col]] = value;
@@ -274,8 +275,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
                               if (nextCellId) {
                                 let expectedNextCol = allColumnNames[nextColumnIndex];
                                 if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                  let indexOfActualNextCol = allColumnNames?.indexOf(nextCol);
+                                  let indexOfExpectedNextCol = allColumnNames?.indexOf(expectedNextCol);
                                   let difference = indexOfActualNextCol - indexOfExpectedNextCol;
                                   if (difference > 1) {
                                     for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
@@ -292,11 +293,12 @@ export const uploadBoardMembersData = async (req, res, next) => {
                           }
                         }
                       } catch (error) {
+                        console.log(error.message);
                         return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the headers" })
                       }
                     } else {
                       if (isNaN(value)) {
-                        data[row][headers[col]] = value.replace(/[\s\r\n]/g, ' ');
+                        data[row][headers[col]] = value?.replace(/[\s\r\n]/g, ' ');
                       } else {
                         data[row][headers[col]] = value;
                       }
@@ -306,20 +308,20 @@ export const uploadBoardMembersData = async (req, res, next) => {
                   if (row == 1) {
                     if (value != "Error types and definitions") {
                       if (isNaN(value)) {
-                        headers[col] = value.replace(/[\s\r\n]/g, ' ');
+                        headers[col] = value?.replace(/[\s\r\n]/g, ' ');
                       }
                     }
                     // storing the header names
                     continue;
-                  } else if (headerRowsNumber.includes(row) && row != 1 && row == 12) {
+                  } else if (headerRowsNumber?.includes(row) && row != 1 && row == 12) {
                     if (isNaN(value)) {
-                      headers1[col] = value.replace(/[\s\r\n]/g, ' ');
+                      headers1[col] = value?.replace(/[\s\r\n]/g, ' ');
                     }
                     // storing the header names
                     continue;
-                  } else if (headerRowsNumber.includes(row) && row != 1 && row == 23) {
+                  } else if (headerRowsNumber?.includes(row) && row != 1 && row == 23) {
                     if (isNaN(value)) {
-                      headers2[col] = value.replace(/[\s\r\n]/g, ' ');
+                      headers2[col] = value?.replace(/[\s\r\n]/g, ' ');
                     }
                     // storing the header names
                     continue;
@@ -332,7 +334,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                         if (headers1['A']) {
                           if (data[row][headers1['A']]) {
                             //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
+                            let currentColumnIndex = allColumnNames?.indexOf(col);
                             let previousColumnIndex = currentColumnIndex - 1;
                             let nextColumnIndex = currentColumnIndex + 1;
                             data[row][headers1[col]] = value;
@@ -345,8 +347,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
                               if (nextCellId) {
                                 let expectedNextCol = allColumnNames[nextColumnIndex];
                                 if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                  let indexOfActualNextCol = allColumnNames?.indexOf(nextCol);
+                                  let indexOfExpectedNextCol = allColumnNames?.indexOf(expectedNextCol);
                                   let difference = indexOfActualNextCol - indexOfExpectedNextCol;
                                   if (difference > 1) {
                                     for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
@@ -363,11 +365,12 @@ export const uploadBoardMembersData = async (req, res, next) => {
                           }
                         }
                       } catch (error) {
+                        console.log(error.message);
                         return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                       }
                     } else {
                       if (isNaN(value)) {
-                        data[row][headers1[col]] = value.replace(/[\s\r\n]/g, ' ');
+                        data[row][headers1[col]] = value?.replace(/[\s\r\n]/g, ' ');
                       } else {
                         data[row][headers1[col]] = value;
                       }
@@ -379,7 +382,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                         if (headers2['A']) {
                           if (data[row][headers2['A']]) {
                             //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
+                            let currentColumnIndex = allColumnNames?.indexOf(col);
                             let previousColumnIndex = currentColumnIndex - 1;
                             let nextColumnIndex = currentColumnIndex + 1;
                             data[row][headers2[col]] = value;
@@ -392,8 +395,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
                               if (nextCellId) {
                                 let expectedNextCol = allColumnNames[nextColumnIndex];
                                 if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                  let indexOfActualNextCol = allColumnNames?.indexOf(nextCol);
+                                  let indexOfExpectedNextCol = allColumnNames?.indexOf(expectedNextCol);
                                   let difference = indexOfActualNextCol - indexOfExpectedNextCol;
                                   if (difference > 1) {
                                     for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
@@ -410,11 +413,12 @@ export const uploadBoardMembersData = async (req, res, next) => {
                           }
                         }
                       } catch (error) {
+                        console.log(error.message);
                         return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                       }
                     } else {
                       if (isNaN(value)) {
-                        data[row][headers2[col]] = value.replace(/[\s\r\n]/g, ' ');
+                        data[row][headers2[col]] = value?.replace(/[\s\r\n]/g, ' ');
                       } else {
                         data[row][headers2[col]] = value;
                       }
@@ -430,7 +434,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                         if (headers['A']) {
                           if (data[row][headers['A']]) {
                             //take all column names in an array
-                            let currentColumnIndex = allColumnNames.indexOf(col);
+                            let currentColumnIndex = allColumnNames?.indexOf(col);
                             let previousColumnIndex = currentColumnIndex - 1;
                             let nextColumnIndex = currentColumnIndex + 1;
                             data[row][headers[col]] = value;
@@ -443,8 +447,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
                               if (nextCellId) {
                                 let expectedNextCol = allColumnNames[nextColumnIndex];
                                 if (nextCol != expectedNextCol) {
-                                  let indexOfActualNextCol = allColumnNames.indexOf(nextCol);
-                                  let indexOfExpectedNextCol = allColumnNames.indexOf(expectedNextCol);
+                                  let indexOfActualNextCol = allColumnNames?.indexOf(nextCol);
+                                  let indexOfExpectedNextCol = allColumnNames?.indexOf(expectedNextCol);
                                   let difference = indexOfActualNextCol - indexOfExpectedNextCol;
                                   if (difference > 1) {
                                     for (let inx = indexOfExpectedNextCol; inx < indexOfActualNextCol; inx++) {
@@ -457,18 +461,16 @@ export const uploadBoardMembersData = async (req, res, next) => {
                                   }
                                 }
                               }
-                              // if (!worksheet[nextCellId]) {
-                              //   worksheet[nextCellId] = { t: "", v: "", w: "" };                          
-                              // }
                             }
                           }
                         }
                       } catch (error) {
+                        console.log(error.message);
                         return res.status(500).json({ status: "500", message: error.message ? error.message : "Found data issues in the columns" })
                       }
                     } else {
                       if (isNaN(value)) {
-                        data[row][headers[col]] = value.replace(/[\s\r\n]/g, ' ');
+                        data[row][headers[col]] = value?.replace(/[\s\r\n]/g, ' ');
                       } else {
                         data[row][headers[col]] = value;
                       }
@@ -483,8 +485,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
             } else {
               for (const cellId in worksheet) {
                 if (cellId[0] === "!") continue;
-                var col = cellId.substring(0, 1);
-                var row = parseInt(cellId.substring(1));
+                var col = cellId?.substring(0, 1);
+                var row = parseInt(cellId?.substring(1));
                 var value = worksheet[cellId].v;
                 if (row == 1) {
                   headers[col] = value;
@@ -495,7 +497,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 if (col != 'A') {
                   if (headers['A']) {
                     if (data[row][headers['A']]) {
-                      let currentColumnIndex = allColumnNames.indexOf(col);
+                      let currentColumnIndex = allColumnNames?.indexOf(col);
                       let previousColumnIndex = currentColumnIndex - 1;
                       let nextColumnIndex = currentColumnIndex + 1;
                       data[row][headers[col]] = value;
@@ -520,11 +522,15 @@ export const uploadBoardMembersData = async (req, res, next) => {
         }
       }
       let allCompanyInfos = [];
-      let distinctYears = taskObject.year.split(', ');
+      let taskObject = await TaskAssignment.findOne({
+        _id: req.body.taskId,
+        status: true
+      }).populate('companyId')
+      let distinctYears = taskObject?.year?.split(', ');
       let allBoardMemberMatrixDetails = [];
       let allKmpMatrixDetails = [];
       for (let allFilesArrayIndex = 0; allFilesArrayIndex < allFilesObject.length; allFilesArrayIndex++) {
-        let noOfSheetsInAnFile = allFilesObject[allFilesArrayIndex].length;
+        let noOfSheetsInAnFile = allFilesObject[allFilesArrayIndex]?.length;
         let currentCompanyName = '';
         for (let singleFileIndex = 0; singleFileIndex < noOfSheetsInAnFile; singleFileIndex++) {
           let noOfRowsInASheet = allFilesObject[allFilesArrayIndex][singleFileIndex].length;
@@ -534,42 +540,28 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 allCompanyInfos.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]);
                 currentCompanyName = allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]['CIN'];
               }
-            } else if(distinctYears.length == 2) {
-              if (noOfRowsInASheet == 61) {
+            } else if(distinctYears.length == 2 || distinctYears.length == 3) {
+              if (noOfRowsInASheet == 61 || noOfRowsInASheet == 92) {
                 allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
-              } else if (noOfRowsInASheet == 21) {
-                allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
-              }
-            } else if(distinctYears.length == 3) {
-              if (noOfRowsInASheet == 92) {
-                allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
-              } else if (noOfRowsInASheet == 32) {
+              } else if (noOfRowsInASheet == 21 || noOfRowsInASheet == 32) {
                 allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               }
             } else {
-              if (noOfRowsInASheet == 30) {
+              if (noOfRowsInASheet == 30 || noOfRowsInASheet == 61 || noOfRowsInASheet == 92) {
                 allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
-              } else if (noOfRowsInASheet == 10) {
+              } else if (noOfRowsInASheet == 10 || noOfRowsInASheet == 21 || noOfRowsInASheet == 32) {
                 allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               }
             }
           }
         }
       }
-      let taskObject;
       // Add the vaidation whether the uploading company file and task Id are same or not
       const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
       const companiesList = await Companies.findOne({
         cin: companiesToBeAdded[0].CIN,
         status: true
       }).populate('createdBy');
-      for (let cinIndex = 0; cinIndex < companiesToBeAdded.length; cinIndex++) {
-        taskObject = await TaskAssignment.findOne({
-          _id: req.body.taskId,
-          status: true
-        }).populate('companyId')
-      }
-
 
       if (companiesList?.id != taskObject?.companyId?.id) {
         return res.status(400).json({status: "400", message: "Uploading file is not part of the current task, please check company info in file and try again!"})
@@ -584,8 +576,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
         status: true
       }).populate('companyId')
       let errorTypeDetails = await Errors.find({
-        taskId: req.body.taskId,
-        companyId: taskObject.companyId.id,
+        taskId: req?.body?.taskId,
+        companyId: taskObject?.companyId?.id,
         status: true
       });
       const datapointList = await Datapoints.find({
@@ -623,6 +615,10 @@ export const uploadBoardMembersData = async (req, res, next) => {
       if (years.length > 0) {
         return res.status(400).json({status: "400", message: `Excel is having ${years} data which is not part of the current task year, please check! `})
       }
+      let years1 = distinctYears.filter( function(n) { return !this.has(n) }, new Set(dataDsnctYears) );
+      if (years1.length > 0) {
+        return res.status(400).json({status: "400", message: `Excel is not having ${years1} year data which part of the current task year, please check! `})
+      }
 
       let boardMembersList = [];
       let errorDetails = [];
@@ -656,13 +652,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
             let errorTypeObject = errorTypeDetails.filter(obj => obj.errorType == item['Error Type'].replace(/[\s\r\n]/g, ''))
             hasError = true;
             let errorListObject = {
-              datapointId: datapointObject[0] ? datapointObject[0].id : null,
+              datapointId: datapointObject[0] ? datapointObject[0]?.id : null,
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               year: item['Fiscal Year'],
-              companyId: companiesList ? companiesList.id : null,
+              companyId: companiesList ? companiesList?.id : null,
               categoryId: taskObject?.categoryId ? taskObject?.categoryId : null,
               taskId: taskObject?.id ? taskObject?.id : null,
-              errorTypeId: errorTypeObject[0] ? errorTypeObject[0].id : null,
+              errorTypeId: errorTypeObject[0] ? errorTypeObject[0]?.id : null,
               raisedBy: "",
               comments: [],
               errorLoggedDate: Date.now(),
@@ -685,7 +681,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
               memberName: value,
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               response: item[value],
-              datapointId: datapointObject[0] ? datapointObject[0].id : null,
+              datapointId: datapointObject[0] ? datapointObject[0]?.id : null,
               companyId: taskObject?.companyId ? taskObject?.companyId?.id : null,
               year: item['Fiscal Year'],
               fiscalYearEndDate: item['Fiscal Year End Date'],
@@ -766,13 +762,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
         if (memberDetails && memberDetails.length > 0) {
           let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
-            let startDateData = boardMembersList.find(obj => obj.memberName == element && obj.dpCode == 'BOIR017')
-            let endDateData = boardMembersList.find(obj => obj.memberName == element && obj.dpCode == 'BOIR018')
+            let startDateData = boardMembersList.find(obj => obj?.memberName == element && obj?.dpCode == 'BOIR017')
+            let endDateData = boardMembersList.find(obj => obj?.memberName == element && obj?.dpCode == 'BOIR018')
             let endDateTimeStampValue = endDateData?.response ? endDateData?.response : "";
             
             try {
               console.log();
-              endDateData = endDateData?.response != '' ? getJsDateFromExcel(endDateData.response) : "";
+              endDateData = endDateData?.response != '' ? getJsDateFromExcel(endDateData?.response) : "";
               startDateData = getJsDateFromExcel(startDateData.response)
             } catch (error) {
               return res.status(400).json({status: "400", message: "Invalid date formats for BOIR017 and BOIR018 Dpcodes please check!"})
@@ -780,11 +776,11 @@ export const uploadBoardMembersData = async (req, res, next) => {
             let memberObject = {
               BOSP004: element,
               companyId: taskObject.companyId.id,
-              BODP001: memberDetails[0].BODP001,
-              BODR005: memberDetails[0].BODR005,
-              BOSP004: memberDetails[0].BOSP004,
-              BOSP005: memberDetails[0].BOSP005,
-              BOSP006: memberDetails[0].BOSP006,
+              BODP001: memberDetails[0]?.BODP001,
+              BODR005: memberDetails[0]?.BODR005,
+              BOSP004: memberDetails[0]?.BOSP004,
+              BOSP005: memberDetails[0]?.BOSP005,
+              BOSP006: memberDetails[0]?.BOSP006,
               clientTaxonomyId: clientTaxonomyId.id,
               dob: '',
               endDate: endDateData ? endDateData : "",
@@ -801,7 +797,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
           invalidBodMemberList.push(element);
         }
       }
-      //Needs to add the board members validation
+
       await BoardMembers.insertMany(bodMembersToInsert)
       .then((res) => {})
       .catch((error) => {
@@ -897,7 +893,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
             kmpMembersList.push(memberDetail);
           }
         } catch (error) {
-          // return next(error);
+          console.log(error.message);
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
         }
       }
