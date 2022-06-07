@@ -10,20 +10,20 @@ import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
 export const create = async ({ user }, body, res, next) => {
-  var directorData = body.body.companyList;
-  var details = body.body.details;
+  var directorData = body?.body?.companyList;
+  var details = body?.body?.details;
   try {
     let addObject = [], fileName;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
       let profilePhotoItem = details.profilePhoto;
       let profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-      let profilePhotoFileName = directorData[0].name  + new Date() + '.' + profilePhotoFileType;
-      let storeProfile = await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName,  profilePhotoItem)
-      .catch((error) => {
-        return res.status(400).json({ status: "400", message: "Failed to upload the Profile" })
-      });
+      let profilePhotoFileName = directorData[0].name + new Date() + '.' + profilePhotoFileType;
+      let storeProfile = await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
+        .catch((error) => {
+          return res.status(400).json({ status: "400", message: "Failed to upload the Profile" })
+        });
       fileName = profilePhotoFileName;
-   }
+    }
     for (let index = 0; index < directorData.length; index++) {
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
       let checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
@@ -38,20 +38,20 @@ export const create = async ({ user }, body, res, next) => {
         });
         if (checkingDuplicateValue == true) {
           var data = {
-            din: directorData[index].din,
-            BOSP004: directorData[index].name,
-            BODR005: directorData[index].gender,
-            dob: directorData[index].dob,
-            companyId: directorData[index].companyId,
-            cin: directorData[index].cin,
-            companyName: directorData[index].companyName,
-            joiningDate: directorData[index].joiningDate,
-            cessationDate: directorData[index].cessationDate,
-            memberType: directorData[index].memberType,
-            qualification: details.qualification, 
-            profilePhoto: fileName, 
-            socialLinks: details.socialLinks,
-            createdBy: body.user,
+            din: directorData[index]?.din,
+            BOSP004: directorData[index]?.name,
+            BODR005: directorData[index]?.gender,
+            dob: directorData[index]?.dob,
+            companyId: directorData[index]?.companyId,
+            cin: directorData[index]?.cin,
+            companyName: directorData[index]?.companyName,
+            joiningDate: directorData[index]?.joiningDate,
+            cessationDate: directorData[index]?.cessationDate,
+            memberType: directorData[index]?.memberType,
+            qualification: details?.qualification,
+            profilePhoto: fileName,
+            socialLinks: details?.socialLinks,
+            createdBy: body?.user,
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -64,20 +64,20 @@ export const create = async ({ user }, body, res, next) => {
         }
       } else {
         var data = {
-          din: directorData[index].din,
-          BOSP004: directorData[index].name,
-          BODR005: directorData[index].gender,
-          dob: directorData[index].dob,
-          companyId: directorData[index].companyId,
-          cin: directorData[index].cin,
-          companyName: directorData[index].companyName,
-          joiningDate: directorData[index].joiningDate,
-          cessationDate: directorData[index].cessationDate,
-          memberType: directorData[index].memberType,
-          qualification: details.qualification, 
-          profilePhoto: fileName, 
-          socialLinks: details.socialLinks,
-          createdBy: body.user,
+          din: directorData[index]?.din,
+          BOSP004: directorData[index]?.name,
+          BODR005: directorData[index]?.gender,
+          dob: directorData[index]?.dob,
+          companyId: directorData[index]?.companyId,
+          cin: directorData[index]?.cin,
+          companyName: directorData[index]?.companyName,
+          joiningDate: directorData[index]?.joiningDate,
+          cessationDate: directorData[index]?.cessationDate,
+          memberType: directorData[index]?.memberType,
+          qualification: details?.qualification,
+          profilePhoto: fileName,
+          socialLinks: details?.socialLinks,
+          createdBy: body?.user,
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -351,6 +351,8 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { name } = req.params;
     const { body, user } = req;
+    // const { companyList } = body;
+    // const { profilePhoto, socialLinks, qualification } = body?.details;
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(body);
     if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
@@ -372,6 +374,16 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
       for (let i = 0; i < directorsDetails?.length; i++) {
         const director = directorsDetails[i];
+
+        // const profilePhotoItem = profilePhoto;
+        // const profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
+        // const profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+
+        if (director.profilePhoto !== profilePhotoFileName) {
+          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
+        }
+
+
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
         updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
