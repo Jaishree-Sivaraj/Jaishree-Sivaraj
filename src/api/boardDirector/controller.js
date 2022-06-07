@@ -9,9 +9,9 @@ import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, get
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
-export const create = async ({ user }, body, res, next) => {
-  var directorData = body.body.companyList;
-  var details = body.body.details;
+export const create = async (req, res, next) => {
+  var directorData = req.body.companyList;
+  var details = req.body.details;
   try {
     let addObject = [], fileName;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
@@ -25,8 +25,11 @@ export const create = async ({ user }, body, res, next) => {
       fileName = profilePhotoFileName;
    }
     for (let index = 0; index < directorData.length; index++) {
+      let checkDirectorCompany =[];
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
-      let checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+      if(directorData[index]?.companyId != " "){
+        checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
+      }
       if (checkDirectorName.length > 0) {
         return res.status(400).json({
           message: 'Name already exists',
@@ -51,7 +54,7 @@ export const create = async ({ user }, body, res, next) => {
             qualification: details.qualification, 
             profilePhoto: fileName, 
             socialLinks: details.socialLinks,
-            createdBy: body.user,
+            createdBy: req.user,
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -62,33 +65,35 @@ export const create = async ({ user }, body, res, next) => {
             status: 400
           });
         }
-      } else {
+      }
+       else {
         var data = {
           din: directorData[index].din,
           BOSP004: directorData[index].name,
           BODR005: directorData[index].gender,
           dob: directorData[index].dob,
-          companyId: directorData[index].companyId,
-          cin: directorData[index].cin,
-          companyName: directorData[index].companyName,
-          joiningDate: directorData[index].joiningDate,
-          cessationDate: directorData[index].cessationDate,
+          companyId: directorData[index]?.companyId,
+          cin: directorData[index]?.cin,
+          companyName: directorData[index]?.companyName,
+          joiningDate: directorData[index]?.joiningDate,
+          cessationDate: directorData[index]?.cessationDate,
           memberType: directorData[index].memberType,
           qualification: details.qualification, 
           profilePhoto: fileName, 
           socialLinks: details.socialLinks,
-          createdBy: body.user,
+          createdBy: req.user,
           createdAt: new Date(),
           updatedAt: new Date()
         }
+        console.log(data)
         var checkingDuplicate = addObject.some(function (el) {
-          return el.cin === directorData[index].cin;
+          return el?.cin === directorData[index]?.cin;
         });
         if (checkingDuplicate == false) {
           addObject.push(data)
         } else if (checkingDuplicate == true) {
           var checkingDuplicateValue = addObject.some(function (e2) {
-            return e2.cessationDate != "";
+            return e2?.cessationDate != "";
           });
           if (checkingDuplicateValue == true) {
             addObject.push(data)
