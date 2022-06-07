@@ -23,7 +23,6 @@ const boardDirectorSchema = new Schema({
   companyId: {
     type: Schema.ObjectId,
     ref: 'Companies',
-    required: true
   },
   companyName: {
     type: String,
@@ -77,7 +76,7 @@ boardDirectorSchema.methods = {
       BOSP004: this.BOSP004,
       BODR005: this.BODR005,
       dob: this.dob,
-      companyId: this.companyId ? this.companyId.view(full) : null,
+      companyId: this.companyId,
       companyName: this.companyName,
       cin: this.cin,
       joiningDate: this.joiningDate,
