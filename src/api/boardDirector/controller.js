@@ -9,9 +9,9 @@ import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, get
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
-export const create = async ({ user }, body, res, next) => {
-  var directorData = body?.body?.companyList;
-  var details = body?.body?.details;
+export const create = async (req, res, next) => {
+  var directorData = req?.body?.companyList;
+  var details = req?.body?.details;
   try {
     let addObject = [], fileName;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
@@ -51,10 +51,10 @@ export const create = async ({ user }, body, res, next) => {
             joiningDate: directorData[index]?.joiningDate,
             cessationDate: directorData[index]?.cessationDate,
             memberType: directorData[index]?.memberType,
-            qualification: details?.qualification,
-            profilePhoto: fileName,
+            qualification: details?.qualification, 
+            profilePhoto: fileName, 
             socialLinks: details?.socialLinks,
-            createdBy: body?.user,
+            createdBy: req?.user,
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -78,14 +78,14 @@ export const create = async ({ user }, body, res, next) => {
           joiningDate: directorData[index]?.joiningDate,
           cessationDate: directorData[index]?.cessationDate,
           memberType: directorData[index]?.memberType,
-          qualification: details?.qualification,
-          profilePhoto: fileName,
+          qualification: details?.qualification, 
+          profilePhoto: fileName, 
           socialLinks: details?.socialLinks,
-          createdBy: body?.user,
+          createdBy: req?.user,
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log(data)
+
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;
         });
@@ -356,14 +356,14 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { name } = req.params;
     const { body, user } = req;
-    // const { companyList } = body;
-    // const { profilePhoto, socialLinks, qualification } = body?.details;
+    const { companyList } = body;
+    const { profilePhoto, socialLinks, qualification } = body?.details;
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(body);
     if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
     }
-    for (let i = 0; i < body?.length; i++) {
-      const updateObject = body[i];
+    for (let i = 0; i < companyList?.length; i++) {
+      const updateObject = companyList[i];
       const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName } = await getQueryData(name, updateObject);
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
       const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName);
@@ -380,15 +380,17 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       for (let i = 0; i < directorsDetails?.length; i++) {
         const director = directorsDetails[i];
 
-        // const profilePhotoItem = profilePhoto;
-        // const profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-        // const profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
+        const profilePhotoItem = profilePhoto;
+        const profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
+        const profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
 
         if (director.profilePhoto !== profilePhotoFileName) {
           await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
         }
 
-
+        director.profilePhoto = profilePhoto;
+        director.socialLinks = socialLinks;
+        director.qualification = qualification;
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
         updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
