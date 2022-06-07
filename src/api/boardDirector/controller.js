@@ -10,8 +10,8 @@ import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
 export const create = async (req, res, next) => {
-  var directorData = req.body.companyList;
-  var details = req.body.details;
+  var directorData = req?.body?.companyList;
+  var details = req?.body?.details;
   try {
     let addObject = [], fileName;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
@@ -41,20 +41,20 @@ export const create = async (req, res, next) => {
         });
         if (checkingDuplicateValue == true) {
           var data = {
-            din: directorData[index].din,
-            BOSP004: directorData[index].name,
-            BODR005: directorData[index].gender,
-            dob: directorData[index].dob,
-            companyId: directorData[index].companyId,
-            cin: directorData[index].cin,
-            companyName: directorData[index].companyName,
-            joiningDate: directorData[index].joiningDate,
-            cessationDate: directorData[index].cessationDate,
-            memberType: directorData[index].memberType,
-            qualification: details.qualification, 
+            din: directorData[index]?.din,
+            BOSP004: directorData[index]?.name,
+            BODR005: directorData[index]?.gender,
+            dob: directorData[index]?.dob,
+            companyId: directorData[index]?.companyId,
+            cin: directorData[index]?.cin,
+            companyName: directorData[index]?.companyName,
+            joiningDate: directorData[index]?.joiningDate,
+            cessationDate: directorData[index]?.cessationDate,
+            memberType: directorData[index]?.memberType,
+            qualification: details?.qualification, 
             profilePhoto: fileName, 
-            socialLinks: details.socialLinks,
-            createdBy: req.user,
+            socialLinks: details?.socialLinks,
+            createdBy: req?.user,
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -68,24 +68,24 @@ export const create = async (req, res, next) => {
       }
        else {
         var data = {
-          din: directorData[index].din,
-          BOSP004: directorData[index].name,
-          BODR005: directorData[index].gender,
-          dob: directorData[index].dob,
+          din: directorData[index]?.din,
+          BOSP004: directorData[index]?.name,
+          BODR005: directorData[index]?.gender,
+          dob: directorData[index]?.dob,
           companyId: directorData[index]?.companyId,
           cin: directorData[index]?.cin,
           companyName: directorData[index]?.companyName,
           joiningDate: directorData[index]?.joiningDate,
           cessationDate: directorData[index]?.cessationDate,
-          memberType: directorData[index].memberType,
-          qualification: details.qualification, 
+          memberType: directorData[index]?.memberType,
+          qualification: details?.qualification, 
           profilePhoto: fileName, 
-          socialLinks: details.socialLinks,
-          createdBy: req.user,
+          socialLinks: details?.socialLinks,
+          createdBy: req?.user,
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log(data)
+
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;
         });
