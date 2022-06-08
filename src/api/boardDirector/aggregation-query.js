@@ -212,6 +212,7 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
         profilePhoto: directorsDetails?.profilePhoto,
         socialLinks: directorsDetails?.socialLinks,
         qualification: directorsDetails?.qualification,
+        memberLevel: directorsDetails?. memberLevel,
         status: true
 
     }

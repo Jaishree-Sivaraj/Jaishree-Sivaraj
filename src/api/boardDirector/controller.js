@@ -180,7 +180,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { BOSP004 } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
-    
+
     if (boardDirector?.profilePhoto !== '') {
       const profile = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, boardDirector?.profilePhoto);
       boardDirector.profilePhoto = profile;
@@ -362,7 +362,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { name } = req.params;
     const { body, user } = req;
     const { companyList } = body;
-    const { profilePhoto, socialLinks, qualification } = body?.details;
+    const { profilePhoto, socialLinks, qualification, memberLevel } = body?.details;
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
     if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
@@ -409,6 +409,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         director.profilePhoto = profilePhotoFileType;
         director.socialLinks = socialLinks;
         director.qualification = qualification;
+        director?.memberLevel = memberLevel;
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
         updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
