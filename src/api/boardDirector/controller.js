@@ -409,7 +409,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         director.profilePhoto = profilePhotoFileType;
         director.socialLinks = socialLinks;
         director.qualification = qualification;
-        director?.memberLevel = memberLevel;
+        director.memberLevel = memberLevel;
         const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
         updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
           $set: updateDirectorObject
