@@ -5,7 +5,7 @@ import XLSX from 'xlsx';
 import moment from 'moment';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
-import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, getUpdateObjectForDirector, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
+import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, updateDirectorData, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
 
 
@@ -50,7 +50,7 @@ export const create = async (req, res, next) => {
         if (checkingDuplicateValue == true) {
           var data = {
             din: directorData[index]?.din,
-            BOSP004: directorData[index]?.name,
+            BOSP004: directorData[index]?.name.trim(),
             BODR005: directorData[index]?.gender,
             dob: directorData[index]?.dob,
             companyId: directorData[index]?.companyId,
@@ -78,7 +78,7 @@ export const create = async (req, res, next) => {
       else {
         var data = {
           din: directorData[index]?.din,
-          BOSP004: directorData[index]?.name,
+          BOSP004: directorData[index]?.name.trim(),
           BODR005: directorData[index]?.gender,
           dob: directorData[index]?.dob,
           companyId: directorData[index]?.companyId,
@@ -171,6 +171,13 @@ export const getAllBoardDirectors = async (req, res, next) => {
       BoardDirector.distinct('din', { ...searchQuery, status: true })
     ]);
 
+    for (let i = 0; i < allDirectors?.length; i++) {
+      if (allDirectors[i]?.profilePhoto && allDirectors[i]?.profilePhoto !== '') {
+        const profile = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, allDirectors[i]?.profilePhoto);
+        allDirectors[i].profilePhoto = profile;
+      }
+    }
+
     return res.status(200).json({
       status: 200,
       message: 'Successfully retrieved Dierctors',
@@ -190,7 +197,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { BOSP004 } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
-
+    console.log(boardDirector)
     if (boardDirector?.profilePhoto && boardDirector?.profilePhoto !== '') {
       const profile = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, boardDirector?.profilePhoto);
       boardDirector.profilePhoto = profile;
@@ -372,17 +379,19 @@ export const updateAndDeleteDirector = async (req, res, next) => {
   try {
     const { name } = req.params;
     const { body, user } = req;
-    const { companyList } = body;
-    const { profilePhoto, socialLinks, qualification, memberLevel } = body?.details;
+    const { companyList, details } = body;
+
     const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
     if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
       return res.status(409).json(checkForRedundantCINWithNoCessationDate)
     }
+
+    let updateDirector;
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-      const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName } = await getQueryData(name, updateObject);
+      const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName);
+      const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN);
 
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
@@ -390,40 +399,20 @@ export const updateAndDeleteDirector = async (req, res, next) => {
 
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
-      let updateCompanyDetails = await updateCompanyData(updateObject, findQuery, data);
+      await updateCompanyData(updateObject, findQuery, data);
 
       // updating Directors details.
-      let updateDirector;
-      const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
-      console.log(directorsDetails)
-      if (directorsDetails?.length < 0) {
-        return res.status(409).json({
-          status: 409,
-          message: `Director with name ${BOSP004} does not exists`
-        })
-      }
-      for (let i = 0; i < directorsDetails?.length; i++) {
-        const director = directorsDetails[i];
 
-        const profilePhotoItem = profilePhoto;
-        let profilePhotoFileType = '';
-        let profilePhotoFileName = '';
+      updateDirector = await updateDirectorData(name, details, user, updateObject)
+      console.log(updateDirector)
+    }
+    console.log(updateDirector)
 
-        if (profilePhotoItem && profilePhotoItem !== '' && director.profilePhoto !== profilePhotoItem) {
-          profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
-          profilePhotoFileName = director.BOSP004 + new Date().getTime() + '.' + profilePhotoFileType;
-          await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
-        }
-
-        director.profilePhoto = profilePhotoFileName;
-        director.socialLinks = socialLinks;
-        director.qualification = qualification;
-        director.memberLevel = memberLevel;
-        const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
-        updateDirector = await BoardDirector.findOneAndUpdate({ _id: director?._id, BOSP004: name }, {
-          $set: updateDirectorObject
-        }, { new: true });
-      }
+    if (!updateDirector) {
+      return res.status(409).json({
+        status: 409,
+        message: `Failed to update director's details`
+      })
     }
 
     return res.status(200).json({

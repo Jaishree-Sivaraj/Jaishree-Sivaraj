@@ -1,7 +1,8 @@
 'use strict';
 import { format } from 'date-fns';
-import { zip } from 'lodash';
 import { BoardDirector } from '.';
+import { storeFileInS3 } from "../../services/utils/aws-s3"
+
 /*
 TODO: Note to be taken while understanding the query.
 !We are not deleting directors hence,
@@ -29,7 +30,7 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
             {
                 $group: {
 
-                    _id: '$din',
+                    _id: '$BOSP004',
                     din: { '$first': '$din' },
                     BOSP004: { '$first': '$BOSP004' },
                     BODR005: { '$first': '$BODR005' },
@@ -55,8 +56,8 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
             {
                 $lookup: {
                     from: "boarddirectors",
-                    localField: "din",
-                    foreignField: "din",
+                    localField: "_id",
+                    foreignField: "BOSP004",
                     let: { status: "$status" },
                     pipeline: [{
                         $match: {
@@ -102,14 +103,18 @@ export function getDirector(name) {
         const query = [
             //TODO: update using  din.
             {
+                $addFields: {
+                    trimedDbName: { $trim: { input: '$BOSP004' } }
+                }
+            }, {
                 $match: {
-                    BOSP004: name
+                    trimedDbName: name.trim()
                 }
             },
             {
                 $group: {
 
-                    _id: '$din',
+                    _id: '$BOSP004',
                     din: { '$first': '$din' },
                     BOSP004: { '$first': '$BOSP004' },
                     BODR005: { '$first': '$BODR005' },
@@ -122,8 +127,8 @@ export function getDirector(name) {
             }, {
                 $lookup: {
                     from: "boarddirectors",
-                    localField: "din",
-                    foreignField: "din",
+                    localField: "BOSP004",
+                    foreignField: "BOSP004",
                     let: { status: "$status" },
                     pipeline: [{
                         $match: {
@@ -216,7 +221,7 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
         profilePhoto: directorsDetails?.profilePhoto,
         socialLinks: directorsDetails?.socialLinks,
         qualification: directorsDetails?.qualification,
-        memberLevel: directorsDetails?. memberLevel,
+        memberLevel: directorsDetails?.memberLevel,
         status: true
 
     }
@@ -284,13 +289,17 @@ export async function getQueryData(name, updateObject) {
         let dinQueryForRedundantDIN = [
             { din: updateObject?.din.trim() },
         ];
-        // { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }] }
+
+        const nullValidationForDIN = [
+            { din: { $ne: '' } },
+            { din: { $ne: undefined } },
+            { din: { $ne: null } },
+        ];
 
         let nameQueryForRedundantName = [{
             din: { $ne: updateObject?.din.trim() },
-        } ];
-        // { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }]
-   
+        }];
+
 
         let dinQueryForRedundantName = [{
             BOSP004: name?.trim()
@@ -301,7 +310,12 @@ export async function getQueryData(name, updateObject) {
 
 
         if (updateObject?.isPresent) {
-            const directorDataBeforeUpdate = await BoardDirector.findOne({ _id: updateObject?._id, status: true });
+
+            const query = updateCompanyData?.companyId == null ? {
+                BOSP004: updateObject?.name, status: true
+            } : { _id: updateObject?._id, status: true };
+
+            const directorDataBeforeUpdate = await BoardDirector.findOne(query);
 
             nameQueryForRedundantDIN.push({
                 BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
@@ -316,29 +330,44 @@ export async function getQueryData(name, updateObject) {
 
         }
 
-        return { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName };
+        return { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN };
     } catch (error) {
         console.log(error?.message);
     }
 }
 
-export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName) {
+export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN) {
     try {
         const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
 
             //*Apart from this director any other DIN
-            BoardDirector.find({
-                status: true,
-                $and: nameQueryForRedundantDIN,
-                $or: dinQueryForRedundantDIN
-            }).lean(),
+            BoardDirector.aggregate([
+                {
+                    $addFields: {
+                        BOSP004: { $trim: { input: '$BOSP004' } }
+                    }
+                }, {
+                    $match: {
+                        status: true,
+                        $and: [...nameQueryForRedundantDIN, ...nullValidationForDIN],
+                        $or: dinQueryForRedundantDIN
+                    }
+
+                }]),
 
             //*Apart from this director any other company's director have the same name
-            BoardDirector.find({
-                status: true,
-                $and: nameQueryForRedundantName,
-                $or: dinQueryForRedundantName
-            }).lean()
+            BoardDirector.aggregate([
+                {
+                    $addFields: {
+                        BOSP004: { $trim: { input: '$BOSP004' } }
+                    }
+                }, {
+                    $match: {
+                        status: true,
+                        $and: [...nameQueryForRedundantName, ...nullValidationForDIN],
+                        $or: dinQueryForRedundantName
+                    }
+                }])
         ]);
 
         let message = '';
@@ -384,8 +413,70 @@ export async function updateCompanyData(updateObject, findQuery, data) {
                     upsert: true,
                     new: true
                 });
-        } console.log(updateDirector)
+        }
 
         return updateDirector;
     } catch (error) { console.log(error?.message) }
+}
+
+export async function updateDirectorData(name, details, user, updateObject) {
+    try {
+        let updateDirector;
+        const { profilePhoto, socialLinks, qualification, memberLevel } = details;
+        const directorsDetails = await BoardDirector.aggregate([
+            {
+                $addFields: {
+                    name: { $trim: { input: '$BOSP004' } }
+                }
+            }, {
+                $match: {
+                    $or: [{
+                        name
+                    }
+                        , {
+                        name: updateObject?.name.trim()
+                    }]
+                }
+            }]
+        );
+
+        if (directorsDetails?.length < 0) {
+            return res.status(409).json({
+                status: 409,
+                message: `Director with name ${BOSP004} does not exists`
+            })
+        }
+        for (let i = 0; i < directorsDetails?.length; i++) {
+            const director = directorsDetails[i];
+
+            const profilePhotoItem = profilePhoto;
+            let profilePhotoFileType = '';
+            let profilePhotoFileName = '';
+
+            if (profilePhotoItem && profilePhotoItem !== '' && director.profilePhoto !== profilePhotoItem) {
+                profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
+                profilePhotoFileName = director.BOSP004 + new Date().getTime() + '.' + profilePhotoFileType;
+                await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
+            }
+
+            updateObject = updateObject ? updateObject : director;
+            director.profilePhoto = profilePhotoFileName;
+            director.socialLinks = socialLinks;
+            director.qualification = qualification;
+            director.memberLevel = memberLevel;
+            const updateDirectorObject = getUpdateObjectForDirector(updateObject, director, user);
+            // Makes sense to update with the updated name only
+            updateDirector = await BoardDirector.findOneAndUpdate({
+                _id: director?._id,
+                BOSP004: updateObject?.name
+
+            }, {
+                $set: updateDirectorObject
+            }, { new: true });
+        }
+
+        return updateDirector;
+    } catch (error) {
+        console.log(error?.message)
+    }
 }
