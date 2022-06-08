@@ -17,7 +17,7 @@ export const create = async (req, res, next) => {
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
       let profilePhotoItem = details.profilePhoto;
       let profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
-      let profilePhotoFileName = directorData[0].name + new Date() + '.' + profilePhotoFileType;
+      let profilePhotoFileName = directorData[0].name + new Date().getTime() + '.' + profilePhotoFileType;
       let storeProfile = await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
         .catch((error) => {
           return res.status(400).json({ status: "400", message: "Failed to upload the Profile" })
@@ -191,7 +191,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
     const { BOSP004 } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
 
-    if (boardDirector?.profilePhoto !== '') {
+    if (boardDirector?.profilePhoto && boardDirector?.profilePhoto !== '') {
       const profile = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, boardDirector?.profilePhoto);
       boardDirector.profilePhoto = profile;
     }
@@ -209,6 +209,7 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
     });
 
   } catch (error) {
+    console.log(error?.message);
     return res.status(409).json({
       status: 409,
       message: error?.message ? error?.message : `Failed to retrieve Director's data`
@@ -394,6 +395,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       // updating Directors details.
       let updateDirector;
       const directorsDetails = await BoardDirector.find({ BOSP004: name }).lean();
+      console.log(directorsDetails)
       if (directorsDetails?.length < 0) {
         return res.status(409).json({
           status: 409,
@@ -407,16 +409,13 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         let profilePhotoFileType = '';
         let profilePhotoFileName = '';
 
-        if (profilePhotoItem && profilePhotoItem !== '' && director.profilePhoto !== profilePhotoFileName) {
+        if (profilePhotoItem && profilePhotoItem !== '' && director.profilePhoto !== profilePhotoItem) {
           profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
-          profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
-        }
-
-        if (director.profilePhoto && director.profilePhoto !== '' && director.profilePhoto !== profilePhotoFileName) {
+          profilePhotoFileName = director.BOSP004 + new Date().getTime() + '.' + profilePhotoFileType;
           await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
         }
 
-        director.profilePhoto = profilePhotoFileType;
+        director.profilePhoto = profilePhotoFileName;
         director.socialLinks = socialLinks;
         director.qualification = qualification;
         director.memberLevel = memberLevel;

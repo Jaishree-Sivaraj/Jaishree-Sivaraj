@@ -283,13 +283,14 @@ export async function getQueryData(name, updateObject) {
 
         let dinQueryForRedundantDIN = [
             { din: updateObject?.din.trim() },
-            { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }] }
         ];
+        // { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }] }
 
         let nameQueryForRedundantName = [{
             din: { $ne: updateObject?.din.trim() },
-        },
-        { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }] }];
+        } ];
+        // { $or: [{ din: { $ne: null } }, { din: { $ne: '' } }]
+   
 
         let dinQueryForRedundantName = [{
             BOSP004: name?.trim()
