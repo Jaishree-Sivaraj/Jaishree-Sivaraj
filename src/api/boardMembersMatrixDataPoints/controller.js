@@ -92,8 +92,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
   try {
     let allFilesObject = [];
     let userDetail = req.user;
-    if (req.file.filename.length >= 0) {
-      if (req.file.filename) {
+    if (req.file && req.body.taskId) {
+      if (req.file) {
         const filePath = req.file.path;
         var workbook = XLSX.readFile(filePath, {
           sheetStubs: false,
