@@ -25,14 +25,22 @@ export const create = async (req, res, next) => {
       fileName = profilePhotoFileName;
     }
     for (let index = 0; index < directorData.length; index++) {
-      let checkDirectorCompany = [];
+      let checkDirectorCompany = [], checkDirectorDIN = [];
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
+      if (directorData[index]?.din != " ") {
+        checkDirectorDIN = await BoardDirector.find({ din: directorData[index].din });
+      }
       if (directorData[index]?.companyId != " ") {
         checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
       }
       if (checkDirectorName.length > 0) {
         return res.status(400).json({
           message: 'Name already exists',
+          status: 400
+        });
+      } else if (checkDirectorDIN.length > 0) {
+        return res.status(400).json({
+          message: 'DIN already exists',
           status: 400
         });
       } else if (checkDirectorCompany > 0) {
@@ -52,8 +60,8 @@ export const create = async (req, res, next) => {
             cessationDate: directorData[index]?.cessationDate,
             memberType: directorData[index]?.memberType,
             memberLevel: details?.memberLevel,
-            qualification: details?.qualification, 
-            profilePhoto: fileName, 
+            qualification: details?.qualification,
+            profilePhoto: fileName,
             socialLinks: details?.socialLinks,
             createdBy: req?.user,
             createdAt: new Date(),
@@ -80,8 +88,8 @@ export const create = async (req, res, next) => {
           cessationDate: directorData[index]?.cessationDate,
           memberType: directorData[index]?.memberType,
           memberLevel: details?.memberLevel,
-          qualification: details?.qualification, 
-          profilePhoto: fileName, 
+          qualification: details?.qualification,
+          profilePhoto: fileName,
           socialLinks: details?.socialLinks,
           createdBy: req?.user,
           createdAt: new Date(),
