@@ -540,7 +540,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 allCompanyInfos.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]);
                 currentCompanyName = allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]['CIN'];
               }
-            } else if(distinctYears.length == 2 || distinctYears.length == 3) {
+            } else if(distinctYears?.length == 2 || distinctYears?.length == 3) {
               if (noOfRowsInASheet == 61 || noOfRowsInASheet == 92 || noOfRowsInASheet > 32 ) {
                 allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               } else if (noOfRowsInASheet == 21 || noOfRowsInASheet == 32 || noOfRowsInASheet < 32) {
@@ -615,11 +615,11 @@ export const uploadBoardMembersData = async (req, res, next) => {
         return obj['Fiscal Year']
       })
       let years = dataDsnctYears.filter( function(n) { return !this.has(n) }, new Set(distinctYears) );
-      if (years.length > 0) {
+      if (years?.length > 0) {
         return res.status(400).json({status: "400", message: `Excel is having ${years} data which is not part of the current task year, please check! `})
       }
       let years1 = distinctYears.filter( function(n) { return !this.has(n) }, new Set(dataDsnctYears) );
-      if (years1.length > 0) {
+      if (years1?.length > 0) {
         return res.status(400).json({status: "400", message: `Excel is not having ${years1} year data which part of the current task year, please check! `})
       }
 
@@ -628,7 +628,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
-      for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails.length; filterIndex++) {
+      for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails?.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
           let datapointObject = datapointList.filter(obj => obj.code === item['DP Code']);
@@ -678,7 +678,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
             hasError = false
           }
           let promiseArr = [];
-          for (let boardMemIndex = 0; boardMemIndex < boardMembersNameList.length; boardMemIndex++) {
+          for (let boardMemIndex = 0; boardMemIndex < boardMembersNameList?.length; boardMemIndex++) {
             let value = boardMembersNameList[boardMemIndex];
             let memberDetail = {
               memberName: value,
@@ -747,8 +747,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
             return obj;
           }
         });
-        if (matchingMembers.length > 0) {
-          for (let idx = 0; idx < matchingMembers.length; idx++) {
+        if (matchingMembers?.length > 0) {
+          for (let idx = 0; idx < matchingMembers?.length; idx++) {
             let idxToUpdate = _.findIndex(boardMembersList, matchingMembers[idx]);
             if (indexToUpdate >= 0) {
               boardMembersList[idxToUpdate].memberStatus = false;
@@ -759,10 +759,10 @@ export const uploadBoardMembersData = async (req, res, next) => {
       
       let invalidBodMemberList = [];
       let bodMembersToInsert = [];
-      for (let index = 0; index < boardMembersNameList.length; index++) {
+      for (let index = 0; index < boardMembersNameList?.length; index++) {
         const element = boardMembersNameList[index];
         let memberDetails = allBoardMembers.filter(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()))
-        if (memberDetails && memberDetails.length > 0) {
+        if (memberDetails && memberDetails?.length > 0) {
           let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
             let startDateData = boardMembersList.find(obj => obj?.memberName == element && obj?.dpCode == 'BOIR017')
@@ -857,7 +857,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
           } else {
             hasError = false
           }
-          for (let kmpIndex = 0; kmpIndex < kmpMembersNameList.length; kmpIndex++) {
+          for (let kmpIndex = 0; kmpIndex < kmpMembersNameList?.length; kmpIndex++) {
             let value = kmpMembersNameList[kmpIndex];
             let memberDetail = {
               memberName: value,
@@ -902,10 +902,10 @@ export const uploadBoardMembersData = async (req, res, next) => {
 
       let invalidKmpMemberList = [];
       let kmpMembersToInsert = [];
-      for (let index = 0; index < kmpMembersNameList.length; index++) {
+      for (let index = 0; index < kmpMembersNameList?.length; index++) {
         const element = kmpMembersNameList[index];
         let memberDetails = allKmpMembers.filter(obj => obj?.MASP003.toLowerCase().includes(element.toLowerCase()))
-        if (memberDetails && memberDetails.length > 0) {
+        if (memberDetails && memberDetails?.length > 0) {
           let cmpMemberDetails = allKmpMembers.find(obj => obj?.MASP003.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
             let memberObject = {
@@ -934,10 +934,10 @@ export const uploadBoardMembersData = async (req, res, next) => {
         return res.status(500).json({status: "500", message: error?.message ? error?.message : "Failed to insert the kmp members"})
       })
 
-      if(invalidKmpMemberList.length > 0 || invalidBodMemberList.length > 0){
+      if(invalidKmpMemberList?.length > 0 || invalidBodMemberList?.length > 0){
         let responseObject = {
-          BoardMembers: invalidBodMemberList.length > 0 ? invalidBodMemberList : [],
-          KMPMembers: invalidKmpMemberList.length > 0 ? invalidKmpMemberList : []
+          BoardMembers: invalidBodMemberList?.length > 0 ? invalidBodMemberList : [],
+          KMPMembers: invalidKmpMemberList?.length > 0 ? invalidKmpMemberList : []
         }
         return res.status(400).json({
           status: "400",
@@ -1001,21 +1001,21 @@ export const uploadBoardMembersData = async (req, res, next) => {
       insertedCompanyIds.push(taskObject.companyId.id);
       insertedCompanies.push(taskObject.companyId);
       if (dpToFind) {
-        for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
+        for (let yearIndex = 0; yearIndex < distinctYears?.length; yearIndex++) {
           try {
             const year = distinctYears[yearIndex];
-            for (let companyIndex = 0; companyIndex < insertedCompanyIds.length; companyIndex++) {
+            for (let companyIndex = 0; companyIndex < insertedCompanyIds?.length; companyIndex++) {
               const companyId = insertedCompanyIds[companyIndex];
               let executiveMembersList = _.filter(boardMembersList, function (object) {
                 if (object.datapointId == dpToFind.id && object.companyId == companyId && object.year == year && object.response == 'Yes') {
                   return object;
                 }
               });
-              if (executiveMembersList.length > 0) {
-                for (let executiveMemberIndex = 0; executiveMemberIndex < executiveMembersList.length; executiveMemberIndex++) {
+              if (executiveMembersList?.length > 0) {
+                for (let executiveMemberIndex = 0; executiveMemberIndex < executiveMembersList?.length; executiveMemberIndex++) {
                   const executiveMemberObject = executiveMembersList[executiveMemberIndex];
 
-                  for (let findIndex = 0; findIndex < bmmDpsToFind.length; findIndex++) {
+                  for (let findIndex = 0; findIndex < bmmDpsToFind?.length; findIndex++) {
                     const bmmDpObject = bmmDpsToFind[findIndex];
                     let kmpDatapointCode = dpMapping.find((obj) => obj[bmmDpObject.code]);
                     let matchingKmpObject = kmpDpsToUpdate.find((obj) => obj.code == kmpDatapointCode[bmmDpObject.code]);
@@ -1069,13 +1069,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
         status: true,
         dpType: { $in: ["Board Matrix", "KMP Matrix"] }
       })
-      for (let expectedDPIndex = 0; expectedDPIndex < standaloneDatapointsList.length; expectedDPIndex++) {
+      for (let expectedDPIndex = 0; expectedDPIndex < standaloneDatapointsList?.length; expectedDPIndex++) {
         expectedDPList.push(standaloneDatapointsList[expectedDPIndex].code)
       }
-      for (let companyIdIndex = 0; companyIdIndex < insertedCompanies.length; companyIdIndex++) {
-        for (let year = 0; year < distinctYears.length; year++) {
+      for (let companyIdIndex = 0; companyIdIndex < insertedCompanies?.length; companyIdIndex++) {
+        for (let year = 0; year < distinctYears?.length; year++) {
           let missingDPs = _.filter(expectedDPList, (expectedCode) => !_.some(actualDPList, (obj) => expectedCode === obj.dpCode && obj.year == distinctYears[year] && obj.companyId == insertedCompanies[0]._id));
-          if (missingDPs.length > 0 && distinctYears[year]) {
+          if (missingDPs?.length > 0 && distinctYears[year]) {
             let missingDPObject = {
               companyName: insertedCompanies[companyIdIndex].companyName,
               year: distinctYears[year],
@@ -1086,7 +1086,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
         }
       }
       missingDPList = _.concat(missingDPList, missingDatapointsDetails)
-      if (missingDPList.length == 0) {
+      if (missingDPList?.length == 0) {
         let companySourceDetails = await CompanySources.find({
           "companyId": {
             $in: insertedCompanyIds
@@ -1096,8 +1096,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
           },
           status: true
         }).populate('companyId');
-        for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
-          for (let boardMemListIndex = 0; boardMemListIndex < boardMembersList.length; boardMemListIndex++) {
+        for (let prvRespIndex = 0; prvRespIndex < companySourceDetails?.length; prvRespIndex++) {
+          for (let boardMemListIndex = 0; boardMemListIndex < boardMembersList?.length; boardMemListIndex++) {
             let boardDetail = boardMembersList[boardMemListIndex];
             let isDataExist = companySourceDetails.findIndex((ele) => ele.sourceUrl == boardDetail.url && boardDetail.companyId == ele.companyId.id && boardDetail.year == ele.fiscalYear);
             if (isDataExist != -1) {
@@ -1135,8 +1135,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
               console.log('error', err);
             }
           });
-        for (let prvRespIndex = 0; prvRespIndex < companySourceDetails.length; prvRespIndex++) {
-          for (let kmpListIndex = 0; kmpListIndex < kmpMembersList.length; kmpListIndex++) {
+        for (let prvRespIndex = 0; prvRespIndex < companySourceDetails?.length; prvRespIndex++) {
+          for (let kmpListIndex = 0; kmpListIndex < kmpMembersList?.length; kmpListIndex++) {
             let kmpDetail = kmpMembersList[kmpListIndex];
             let isDataExist = companySourceDetails.findIndex((ele) => ele.sourceUrl == kmpDetail.url && kmpDetail.companyId == ele.companyId.id && kmpDetail.year == ele.fiscalYear);
             if (isDataExist != -1) {
