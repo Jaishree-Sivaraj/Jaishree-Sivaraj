@@ -10,7 +10,7 @@ export BoardDirector, { schema } from './model'
 
 
 const router = new Router()
-const { companyId, companyName, qualification, profilePhoto, socialLinks, din, cin, BOSP004, BODR005, dob, joiningDate, cessationDate, memberType } = schema.tree
+const { companyId, companyName, qualification, profilePhoto, socialLinks,memberLevel, din, cin, BOSP004, BODR005, dob, joiningDate, cessationDate, memberType } = schema.tree
 let name = "", gender = "", company = [], searchValue = [];;
 
 
@@ -31,7 +31,7 @@ let name = "", gender = "", company = [], searchValue = [];;
  */
 router.post('/',
   token({ required: true }),
-  body({ companyId, companyName,qualification, profilePhoto, socialLinks, cin, din, name, gender, dob, joiningDate, cessationDate, memberType }),
+  body({ companyId, companyName,qualification, profilePhoto, socialLinks,memberLevel, cin, din, name, gender, dob, joiningDate, cessationDate, memberType }),
   create)
 
 /**

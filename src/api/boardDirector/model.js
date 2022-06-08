@@ -6,6 +6,9 @@ const boardDirectorSchema = new Schema({
     ref: 'User',
     required: true
   },
+  memberLevel: {
+    type: String,
+  },
   din: {
     type: String,
     default: ''

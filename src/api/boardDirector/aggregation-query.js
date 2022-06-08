@@ -34,6 +34,9 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                     BOSP004: { '$first': '$BOSP004' },
                     BODR005: { '$first': '$BODR005' },
                     dob: { '$first': '$dob' },
+                    profilePhoto: { '$first': '$profilePhoto' },
+                    socialLinks: { '$first': '$socialLinks' },
+                    qualification: { '$first': '$qualification' },
                     createdAt: { '$first': '$createdAt' }
                 }
             },
@@ -70,6 +73,9 @@ export function getAggregationQueryToGetAllDirectors(page, limit, searchValue) {
                     name: '$BOSP004',
                     gender: '$BODR005',
                     dob: 1,
+                    profilePhoto: 1,
+                    socialLinks: 1,
+                    qualification: 1,
                     'companies.companyId': 1,
                     'companies.cin': 1,
                     'companies.companyName': 1,
@@ -94,7 +100,7 @@ export function getDirector(name) {
             //TODO: update using  din.
             {
                 $match: {
-                    BOSP004: { $regex: new RegExp(name, 'gi') }
+                    BOSP004: name
                 }
             },
             {
@@ -104,7 +110,10 @@ export function getDirector(name) {
                     din: { '$first': '$din' },
                     BOSP004: { '$first': '$BOSP004' },
                     BODR005: { '$first': '$BODR005' },
-                    dob: { '$first': '$dob' }
+                    dob: { '$first': '$dob' },
+                    profilePhoto: { '$first': '$profilePhoto' },
+                    socialLinks: { '$first': '$socialLinks' },
+                    qualification: { '$first': '$qualification' }
                 }
             }, {
                 $lookup: {
@@ -128,6 +137,9 @@ export function getDirector(name) {
                     name: '$BOSP004',
                     gender: '$BODR005',
                     dob: 1,
+                    profilePhoto: 1,
+                    socialLinks: 1,
+                    qualification: 1,
                     'companies.companyId': 1,
                     'companies.cin': 1,
                     'companies.companyName': 1,
