@@ -392,7 +392,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         let profilePhotoFileType = '';
         let profilePhotoFileName = '';
 
-        if (profilePhotoItem !== '') {
+        if (profilePhotoItem && profilePhotoItem !== '' && director.profilePhoto !== profilePhotoFileName) {
           profilePhotoFileType = profilePhotoItem?.split(';')[0]?.split('/')[1];
           profilePhotoFileName = director.name + new Date() + '.' + profilePhotoFileType;
         }
