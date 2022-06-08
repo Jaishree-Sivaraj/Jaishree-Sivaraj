@@ -27,10 +27,10 @@ export const create = async (req, res, next) => {
     for (let index = 0; index < directorData.length; index++) {
       let checkDirectorCompany = [], checkDirectorDIN = [];
       let checkDirectorName = await BoardDirector.find({ BOSP004: directorData[index].name });
-      if (directorData[index]?.din != " ") {
+      if (directorData[index]?.din != "") {
         checkDirectorDIN = await BoardDirector.find({ din: directorData[index].din });
       }
-      if (directorData[index]?.companyId != " ") {
+      if (directorData[index]?.companyId != "") {
         checkDirectorCompany = await BoardDirector.find({ $and: [{ BOSP004: directorData[index].name, companyId: mongoose.Types.ObjectId(directorData[index].companyId) }] });
       }
       if (checkDirectorName.length > 0) {
