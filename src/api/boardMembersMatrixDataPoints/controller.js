@@ -541,9 +541,9 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 currentCompanyName = allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex]['CIN'];
               }
             } else if(distinctYears.length == 2 || distinctYears.length == 3) {
-              if (noOfRowsInASheet == 61 || noOfRowsInASheet == 92) {
+              if (noOfRowsInASheet == 61 || noOfRowsInASheet == 92 || noOfRowsInASheet > 32 ) {
                 allBoardMemberMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
-              } else if (noOfRowsInASheet == 21 || noOfRowsInASheet == 32) {
+              } else if (noOfRowsInASheet == 21 || noOfRowsInASheet == 32 || noOfRowsInASheet < 32) {
                 allKmpMatrixDetails.push(allFilesObject[allFilesArrayIndex][singleFileIndex][rowIndex])
               }
             } else {
@@ -562,7 +562,10 @@ export const uploadBoardMembersData = async (req, res, next) => {
         cin: companiesToBeAdded[0].CIN,
         status: true
       }).populate('createdBy');
-
+      if ( allCompanyInfos[0]?.CIN == '' || allCompanyInfos[0]['Company Name'] == '' || companiesList == null || companiesList == undefined) {
+        return res.status(400).json({ status: "400", message: "CIN or Company Name columns are missing in Company info sheet"})
+      }
+      
       if (companiesList?.id != taskObject?.companyId?.id) {
         return res.status(400).json({status: "400", message: "Uploading file is not part of the current task, please check company info in file and try again!"})
       }
@@ -767,7 +770,6 @@ export const uploadBoardMembersData = async (req, res, next) => {
             let endDateTimeStampValue = endDateData?.response ? endDateData?.response : "";
             
             try {
-              console.log();
               endDateData = endDateData?.response != '' ? getJsDateFromExcel(endDateData?.response) : "";
               startDateData = getJsDateFromExcel(startDateData.response)
             } catch (error) {
