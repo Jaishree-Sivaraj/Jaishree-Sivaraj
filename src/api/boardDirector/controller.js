@@ -336,12 +336,15 @@ export const uploadBoardDirector = async (req, res, next) => {
           cin: rowObject['CIN'],
           joiningDate: rowObject['JoiningDate'],
           cessationDate: rowObject['cessationDate'],
-          memberType: rowObject['memberType']
+          memberType: rowObject['memberType'],
+          memberLevel: rowObject['memberLevel'],
+          qualification: rowObject['qualification'],
+          socialLinks: rowObject['socialLinks'] 
         }
         directorInfo.push(companyObject);
       }
       if (directorInfo.length > 0) {
-        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType"]
+        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType", "memberLevel", "qualification", "socialLinks"]
         if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
           let inputFileHeaders = Object.keys(sheetAsJson[0]);
           let missingHeaders = _.difference(directorHeaders, inputFileHeaders);
