@@ -121,26 +121,21 @@ export const getAverageByNic = async ({body},res,next)=> {
       let sumOfResponse = 0;
       let allResponses = [];
       var responseValue = 0;
-      for (let cIndex = 0; cIndex < nicCompaniesIds.length; cIndex++) {
+      let allResponseValues = mergedDetails.filter(obj => obj['datapointId']['id'] == datapointIds[index])
+      for (let cIndex = 0; cIndex < allResponseValues.length; cIndex++) {
         let foundResponse = {};
-        // allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : 
-        foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+        // foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+        foundResponse = allResponseValues[cIndex];
         if (foundResponse && foundResponse.response) {
           responseValue = foundResponse.response; 
         }
-        // allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
-        // allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
-        // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
-        let currentCompanyResponse = responseValue;
-        if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
-            currentCompanyResponse = 0;        
+        let currentCompanyResponse;
+        if (currentCompanyResponse != ' ' || currentCompanyResponse != '' || currentCompanyResponse != 'NA' ) {
+          currentCompanyResponse = responseValue;
+          sumOfResponse += Number(currentCompanyResponse);
+          allResponses.push(Number(currentCompanyResponse));
+
         }
-        sumOfResponse += Number(currentCompanyResponse);
-        allResponses.push(Number(currentCompanyResponse));
       }
       let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
       // avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
