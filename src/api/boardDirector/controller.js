@@ -375,8 +375,8 @@ export const uploadBoardDirector = async (req, res, next) => {
           }
           let checkDirectorName = await BoardDirector.find({ BOSP004: directorInfo[index].BOSP004 });
           if (checkDirectorName.length > 0) {
-             message = {
-              message: directorInfo[index].BOSP004 + " " +'Already exists',
+            message = {
+              message: directorInfo[index].BOSP004 + " " + 'Already exists',
               status: '400'
             }
           }
@@ -414,9 +414,18 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     let updateDirector;
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-      const { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
+
+      const { dinConditionToCheckRedundantDIN,
+        nameConditionToCheckRedundantName,
+        nullValidationForDIN } = await getQueryData(name, updateObject);
+
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const checkRedundantData = await checkRedundantNameOrDIN(name, dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN);
+
+      const checkRedundantData = await checkRedundantNameOrDIN(
+        name,
+        dinConditionToCheckRedundantDIN,
+        nameConditionToCheckRedundantName,
+        nullValidationForDIN);
 
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
@@ -424,6 +433,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
 
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
+      // updating companyData
       await updateCompanyData(updateObject, findQuery, data);
       // updating Directors details.
       updateDirector = await updateDirectorData(name, details, user, updateObject)
