@@ -243,7 +243,10 @@ export function checkIfRedundantDataHaveCessationDate(data) {
                 if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.status == true)) {
                     if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
                         && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
+
+                        // Change the conditiion Date, month ,year
                         const earlierCompanyToHaveJoined =
+
                             new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
                                 ? data[i] : data[j];
 
@@ -278,17 +281,6 @@ function compare(a, b) {
 export async function getQueryData(name, updateObject) {
 
     try {
-        let nameQueryForRedundantDIN = [
-            {
-                BOSP004: { $ne: name.trim() },
-            },
-            {
-                BOSP004: { $ne: updateObject?.name.trim() }
-            }];
-
-        let dinQueryForRedundantDIN = [
-            { din: updateObject?.din.trim() },
-        ];
 
         const nullValidationForDIN = [
             { din: { $ne: '' } },
@@ -296,51 +288,55 @@ export async function getQueryData(name, updateObject) {
             { din: { $ne: null } },
         ];
 
-        let nameQueryForRedundantName = [{
-            din: { $ne: updateObject?.din.trim() },
-        }];
 
 
-        let dinQueryForRedundantName = [{
+        let dinConditionToCheckRedundantDIN = [
+            { din: updateObject?.din.trim() },
+        ];
+
+        let nameConditionToCheckRedundantName = [{
             BOSP004: name?.trim()
         },
         {
             BOSP004: updateObject?.name.trim()
         }]
 
-
+        let directorDataBeforeUpdate;
         if (updateObject?.isPresent) {
 
+            // This condition is when there is no company data.
             const query = updateCompanyData?.companyId == null ? {
                 BOSP004: updateObject?.name, status: true
             } : { _id: updateObject?._id, status: true };
 
-            const directorDataBeforeUpdate = await BoardDirector.findOne(query);
+            directorDataBeforeUpdate = await BoardDirector.findOne(query);
 
-            nameQueryForRedundantDIN.push({
-                BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
-            });
-
-            dinQueryForRedundantDIN.push(
+            dinConditionToCheckRedundantDIN.push(
                 { din: directorDataBeforeUpdate?.din.trim() });
 
-            nameQueryForRedundantName.push({
-                din: { $ne: directorDataBeforeUpdate?.din.trim() },
-            });
 
         }
 
-        return { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN };
+        return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate };
     } catch (error) {
         console.log(error?.message);
     }
 }
 
-export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN) {
+export async function checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate) {
     try {
         const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
 
-            //*Apart from this director any other DIN
+            /*
+            *Pointers while coding:
+              *DIN is unique, So record with different name can have same DIN,
+            * Logic:
+              * There is no redundancy in DIN when it is null, 
+              * so DIN must not be null, undefined or '' (hence in AND condition)
+              * updated DIN or old din must not be a part of any other record except itself.
+              * Above case is incase the updated record is same as before or not.
+              * Since record is not yet updated, not searching the original document using non-updated data.
+            */
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -349,13 +345,22 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
                 }, {
                     $match: {
                         status: true,
-                        $and: [...nameQueryForRedundantDIN, ...nullValidationForDIN],
-                        $or: dinQueryForRedundantDIN
+                        BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 },
+                        $or: [...dinConditionToCheckRedundantDIN],
+                        $and: nullValidationForDIN
                     }
 
                 }]),
 
-            //*Apart from this director any other company's director have the same name
+            /* 
+            * Pointers while coding
+                * The updated name must not belong to any record except itself
+                * In this case update have not occured so, comparion should be done with non-updated-data.
+            *Understanding the logic:
+                *Any record having this updated and non-updated name except original.
+                *If there is any record as such, then there is redundancy and hence, the error.
+            */
+
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -364,19 +369,19 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
                 }, {
                     $match: {
                         status: true,
-                        $and: [...nameQueryForRedundantName, ...nullValidationForDIN],
-                        $or: dinQueryForRedundantName
+                        BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 },
+                        $or: nameConditionToCheckRedundantName
                     }
                 }])
         ]);
 
         let message = '';
-        if (checkingRedundantDIN?.length > 0) {
-            message = 'DIN';
+        if (checkingRedundantDIN?.length > 0 && checkingRedundantName?.length > 0) {
+            message = 'DIN and name'
         } else if (checkingRedundantName?.length > 0) {
             message = 'Name'
-        } else {
-            message = 'DIN and name'
+        } else if (checkingRedundantDIN?.length > 0) {
+            message = 'DIN';
         }
 
         if (checkingRedundantDIN?.length > 0 || checkingRedundantName?.length > 0) {

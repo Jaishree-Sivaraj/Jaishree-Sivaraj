@@ -180,7 +180,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
 
     return res.status(200).json({
       status: 200,
-      message: 'Successfully retrieved Dierctors',
+      message: 'Successfully retrieved Directors',
       allDirectors,
       count: totalDirectors?.length
     });
@@ -388,9 +388,9 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     let updateDirector;
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-      const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
+      const { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate } = await getQueryData(name, updateObject);
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN);
+      const checkRedundantData = await checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate);
 
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
@@ -403,7 +403,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       // updating Directors details.
 
       updateDirector = await updateDirectorData(name, details, user, updateObject)
-      
+
     }
 
     if (!updateDirector) {
