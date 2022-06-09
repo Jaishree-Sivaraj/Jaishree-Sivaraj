@@ -569,6 +569,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
       const companiesList = await Companies.findOne({
         cin: companiesToBeAdded[0].CIN,
+        clientTaxonomyId: "60c76f299def09f5ef0dca5c",
         status: true
       }).populate('createdBy');
       if ( allCompanyInfos[0]?.CIN == '' || allCompanyInfos[0]['Company Name'] == '' || companiesList == null || companiesList == undefined) {
