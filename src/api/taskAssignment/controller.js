@@ -624,8 +624,8 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
   userRoles = _.uniq(userRoles);
   if (userRoles.includes(params.role)) {
     let findQuery = {}, companyIds = [];
-    if (query.company) {
-      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+    if (query?.company) {
+      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query?.company, "i") } }).distinct('_id');
       companyIds = companyDetail ? companyDetail : [];
     }
     if (params.role == "Client Representative") {
@@ -1226,8 +1226,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
     }
     userRoles = _.uniq(userRoles);
     let rows = [], count = 0, findQuery = {}, companyIds = [];
-    if (query.company) {
-      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+    if (query?.company) {
+      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query?.company, "i") } }).distinct('_id');
       companyIds = companyDetail ? companyDetail : [];
     }
     if (params.role == "Analyst") {
