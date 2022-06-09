@@ -168,7 +168,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
     const [allDirectors, totalDirectors] = await Promise.all([
       BoardDirector.aggregate(query),
       // Changed to name as Name is unique.
-      BoardDirector.distinct('name', { ...searchQuery, status: true })
+      BoardDirector.distinct('BOSP004', { ...searchQuery, status: true })
     ]);
 
     for (let i = 0; i < allDirectors?.length; i++) {
