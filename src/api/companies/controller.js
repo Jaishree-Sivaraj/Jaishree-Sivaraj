@@ -21,15 +21,15 @@ export const createCompanyMembers = ({ user, bodymen: { body } }, res, next) => 
 }
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) => {
-  Companies.count(query)
-    .then(count => Companies.find(query)
+  Companies.count({status: true})
+    .then(count => Companies.find({status: true})
       .sort({ createdAt: -1 })
       .populate('createdBy')
       .populate('clientTaxonomyId')
       .then((companies) => {
         let companiesList = [];
         for (let cmpIndex = 0; cmpIndex < companies.length; cmpIndex++) {
-          companies[cmpIndex]['companyName'] = companies[cmpIndex]['companyName'] + ' - ' + companies[cmpIndex]['clientTaxonomyId']['taxonomyName'];
+          companies[cmpIndex]['companyName'] = companies[cmpIndex]?.['companyName'] + ' - ' + companies[cmpIndex]?.['clientTaxonomyId']?.['taxonomyName'];
           companiesList.push(companies[cmpIndex])
         }
         return res.status(200).json({ status: "200", message: "Retrieved companies successfully!", rows: companiesList });

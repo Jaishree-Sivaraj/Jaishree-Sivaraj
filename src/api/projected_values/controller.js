@@ -121,41 +121,47 @@ export const getAverageByNic = async ({body},res,next)=> {
       let sumOfResponse = 0;
       let allResponses = [];
       var responseValue = 0;
-      for (let cIndex = 0; cIndex < nicCompaniesIds.length; cIndex++) {
+      let allResponseValues = mergedDetails.filter(obj => obj['datapointId']['id'] == datapointIds[index])
+      for (let cIndex = 0; cIndex < allResponseValues.length; cIndex++) {
         let foundResponse = {};
-        // allStandaloneDetails = await StandaloneDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allStandaloneDetails && Object.keys(allStandaloneDetails).length > 0) ? allStandaloneDetails.response : 
-        foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+        // foundResponse = mergedDetails.find(object => object['companyId']['id'] == nicCompaniesIds[cIndex] && object['datapointId']['id'] == datapointIds[index]);
+        foundResponse = allResponseValues[cIndex];
         if (foundResponse && foundResponse.response) {
           responseValue = foundResponse.response; 
         }
-        // allBoardMemberMatrixDetails = await BoardMembersMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allBoardMemberMatrixDetails && Object.keys(allBoardMemberMatrixDetails).length > 0) ? allBoardMemberMatrixDetails.response : responseValue;
-        // allKmpMatrixDetails = await KmpMatrixDataPoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allKmpMatrixDetails && Object.keys(allKmpMatrixDetails).length > 0) ? allKmpMatrixDetails.response : responseValue;
-        // allDerivedDetails = await DerivedDatapoints.findOne({ 'companyId': nicCompaniesIds[cIndex], 'datapointId': percentileDatapoints[index].id, 'year': body.year, 'status': true })
-        // responseValue = (allDerivedDetails && Object.keys(allDerivedDetails).length > 0) ? allDerivedDetails.response : responseValue;
-        let currentCompanyResponse = responseValue;
-        if (currentCompanyResponse == ' ' || currentCompanyResponse == '' || currentCompanyResponse == 'NA' ) {
-            currentCompanyResponse = 0;        
+        let currentCompanyResponse;
+        if (responseValue != ' ' && responseValue != '' && responseValue != 'NA' ) {
+          currentCompanyResponse = responseValue;
+          sumOfResponse += Number(currentCompanyResponse);
+          allResponses.push(Number(currentCompanyResponse));
         }
-        sumOfResponse += Number(currentCompanyResponse);
-        allResponses.push(Number(currentCompanyResponse));
       }
-      let avgResponseValue = String(sumOfResponse/nicCompaniesIds.length); 
-      // avgResponse = Math.round(avgResponseValue, 2).toFixed(2);
-      let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));    
-      // stdDeviation = Math.round(stdDeviationValue, 2).toFixed(2);
-      let avgResponseObject = {
-        clientTaxonomyId: body.clientTaxonomyId,
-        datapointId: percentileDatapoints[index].id,
-        nic: body.nic,
-        year: body.year,
-        categoryId: percentileDatapoints[index].categoryId,
-        actualAverage: avgResponseValue,
-        actualStdDeviation: stdDeviationValue
+      console.log(allResponses);
+      if (allResponses.length > 0) {
+        let avgResponseValue = String(sumOfResponse/allResponses.length); 
+        let stdDeviationValue = Math.sqrt(allResponses.map(x => Math.pow(x - Number(avgResponseValue), 2)).reduce((a, b) => a + b) / (allResponses.length - 1));
+        let avgResponseObject = {
+          clientTaxonomyId: body.clientTaxonomyId,
+          datapointId: percentileDatapoints[index].id,
+          nic: body.nic,
+          year: body.year,
+          categoryId: percentileDatapoints[index].categoryId,
+          actualAverage: avgResponseValue,
+          actualStdDeviation: String(stdDeviationValue) == "NaN" ? "NA" : stdDeviationValue 
+        }
+        responseData.push(avgResponseObject);
+      } else {
+        let avgResponseObject = {
+          clientTaxonomyId: body.clientTaxonomyId,
+          datapointId: percentileDatapoints[index].id,
+          nic: body.nic,
+          year: body.year,
+          categoryId: percentileDatapoints[index].categoryId,
+          actualAverage: "NA",
+          actualStdDeviation: "NA" 
+        }
+        responseData.push(avgResponseObject);
       }
-      responseData.push(avgResponseObject);
     }
     if (responseData.length > 0) {
       for (let index = 0; index < responseData.length; index++) {
@@ -272,8 +278,8 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           if (dpResponse) {
             let actualAverageValue = Math.round( dpResponse.projectedAverage * 100 + Number.EPSILON ) / 100;
             let actualStdDeviationValue = Math.round( dpResponse.projectedStdDeviation * 100 + Number.EPSILON ) / 100;
-            yearObj[avgYearNumber] = actualAverageValue;
-            yearObj[sdYearNumber] = actualStdDeviationValue;
+            yearObj[avgYearNumber] = String(actualAverageValue) == "NaN" ? "NA" : actualAverageValue;
+            yearObj[sdYearNumber] = String(actualStdDeviationValue) == "NaN" ? "NA" : actualStdDeviationValue ;
           } else {
             yearObj[avgYearNumber] = '';
             yearObj[sdYearNumber] = '';
@@ -286,8 +292,8 @@ export const getPercentileByPillar = async ({body}, res, next) => {
           nic: body.nic
         }).catch((error) => { return res.status(500).json({ status: "500", message: error.message ? error.message : 'Current year value not found for '+ percentileDatapoints[index].code + ' code!' }) })
         if (currentYearValues) {
-          yearObj[ 'projectedAvg'] = Number(currentYearValues.projectedAverage).toFixed(2);
-          yearObj[ 'projectedSd'] = Number(currentYearValues.projectedStdDeviation).toFixed(2);
+          yearObj[ 'projectedAvg'] = String(currentYearValues?.projectedAverage) == "NaN" ? "NA" : Number(currentYearValues.projectedAverage).toFixed(2);
+          yearObj[ 'projectedSd'] = String(currentYearValues.projectedStdDeviation) == "NaN" ? "NA" : Number(currentYearValues.projectedStdDeviation).toFixed(2);
         } else{
           yearObj[ 'projectedAvg'] = '';
           yearObj[ 'projectedSd'] = '';
