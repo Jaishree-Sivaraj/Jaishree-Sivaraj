@@ -234,61 +234,8 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
     return data;
 }
 
-export function checkIfRedundantDataHaveCessationDate(data) {
-    try {
-        // sort the joining date
-        data.sort(compare);
-        for (let i = 0; i < data?.length; i++) {
-            for (let j = i + 1; j < data?.length; j++) {
-                if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.status == true)) {
-                    if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
-                        && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
-                        const earlierCompanyToHaveJoined =
-                            new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
-                                ? data[i] : data[j];
-
-                        if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
-                            return {
-                                status: 409,
-                                message: `${earlierCompanyToHaveJoined?.companyName} joined at "${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date. Please check!!`
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return {};
-    } catch (error) {
-        console.log(error?.message);
-    }
-}
-
-
-function compare(a, b) {
-    if (new Date(a.joiningDate) < new Date(b.joiningDate)) {
-        return -1;
-    }
-    if (new Date(a.joiningDate) > new Date(b.joiningDate)) {
-        return 1;
-    }
-    return 0;
-}
-
-
 export async function getQueryData(name, updateObject) {
-
     try {
-        let nameQueryForRedundantDIN = [
-            {
-                BOSP004: { $ne: name.trim() },
-            },
-            {
-                BOSP004: { $ne: updateObject?.name.trim() }
-            }];
-
-        let dinQueryForRedundantDIN = [
-            { din: updateObject?.din.trim() },
-        ];
 
         const nullValidationForDIN = [
             { din: { $ne: '' } },
@@ -296,51 +243,23 @@ export async function getQueryData(name, updateObject) {
             { din: { $ne: null } },
         ];
 
-        let nameQueryForRedundantName = [{
-            din: { $ne: updateObject?.din.trim() },
+        let dinConditionToCheckRedundantDIN = [
+            { din: updateObject?.din.trim() },
+        ];
+
+        let nameConditionToCheckRedundantName = [{
+            BOSP004: updateObject?.name.trim()
         }];
 
-
-        let dinQueryForRedundantName = [{
-            BOSP004: name?.trim()
-        },
-        {
-            BOSP004: updateObject?.name.trim()
-        }]
-
-
-        if (updateObject?.isPresent) {
-
-            const query = updateCompanyData?.companyId == null ? {
-                BOSP004: updateObject?.name, status: true
-            } : { _id: updateObject?._id, status: true };
-
-            const directorDataBeforeUpdate = await BoardDirector.findOne(query);
-
-            nameQueryForRedundantDIN.push({
-                BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004.trim() }
-            });
-
-            dinQueryForRedundantDIN.push(
-                { din: directorDataBeforeUpdate?.din.trim() });
-
-            nameQueryForRedundantName.push({
-                din: { $ne: directorDataBeforeUpdate?.din.trim() },
-            });
-
-        }
-
-        return { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN };
+        return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN };
     } catch (error) {
         console.log(error?.message);
     }
 }
 
-export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN) {
+export async function checkRedundantNameOrDIN(name, dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN) {
     try {
         const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
-
-            //*Apart from this director any other DIN
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -349,13 +268,12 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
                 }, {
                     $match: {
                         status: true,
-                        $and: [...nameQueryForRedundantDIN, ...nullValidationForDIN],
-                        $or: dinQueryForRedundantDIN
+                        BOSP004: { $ne: name },
+                        $or: [...dinConditionToCheckRedundantDIN],
+                        $and: nullValidationForDIN
                     }
 
                 }]),
-
-            //*Apart from this director any other company's director have the same name
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -364,19 +282,19 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
                 }, {
                     $match: {
                         status: true,
-                        $and: [...nameQueryForRedundantName, ...nullValidationForDIN],
-                        $or: dinQueryForRedundantName
+                        BOSP004: { $ne: name },
+                        $or: nameConditionToCheckRedundantName
                     }
                 }])
         ]);
 
         let message = '';
-        if (checkingRedundantDIN?.length > 0) {
-            message = 'DIN';
+        if (checkingRedundantDIN?.length > 0 && checkingRedundantName?.length > 0) {
+            message = 'DIN and name'
         } else if (checkingRedundantName?.length > 0) {
             message = 'Name'
-        } else {
-            message = 'DIN and name'
+        } else if (checkingRedundantDIN?.length > 0) {
+            message = 'DIN';
         }
 
         if (checkingRedundantDIN?.length > 0 || checkingRedundantName?.length > 0) {
@@ -384,7 +302,6 @@ export async function checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQuery
                 status: 409,
                 message: `${message} already exists`
             }
-
         }
         return {};
     } catch (error) { console.log(error?.message); }
@@ -481,3 +398,46 @@ export async function updateDirectorData(name, details, user, updateObject) {
         console.log(error?.message)
     }
 }
+
+// This is handled in F.E
+// export function checkIfRedundantDataHaveCessationDate(data) {
+//     try {
+//         // sort the joining date
+//         data.sort(compare);
+//         for (let i = 0; i < data?.length; i++) {
+//             for (let j = i + 1; j < data?.length; j++) {
+//                 if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.status == true)) {
+//                     if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
+//                         && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
+
+//                         // Change the conditiion Date, month ,year
+//                         const earlierCompanyToHaveJoined =
+
+//                             new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
+//                                 ? data[i] : data[j];
+
+//                         if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
+//                             return {
+//                                 status: 409,
+//                                 message: `${earlierCompanyToHaveJoined?.companyName} joined at "${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date. Please check!!`
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return {};
+//     } catch (error) {
+//         console.log(error?.message);
+//     }
+// }
+
+// function compare(a, b) {
+//     if (new Date(a.joiningDate) < new Date(b.joiningDate)) {
+//         return -1;
+//     }
+//     if (new Date(a.joiningDate) > new Date(b.joiningDate)) {
+//         return 1;
+//     }
+//     return 0;
+// }

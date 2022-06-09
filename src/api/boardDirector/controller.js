@@ -2,7 +2,6 @@ import { success, notFound } from '../../services/response/';
 import { BoardDirector } from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
-import moment from 'moment';
 import { format } from 'date-fns';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
@@ -169,7 +168,8 @@ export const getAllBoardDirectors = async (req, res, next) => {
     const { query, searchQuery } = getAggregationQueryToGetAllDirectors(page, limit, searchValue);
     const [allDirectors, totalDirectors] = await Promise.all([
       BoardDirector.aggregate(query),
-      BoardDirector.distinct('din', { ...searchQuery, status: true })
+      // Changed to name as Name is unique.
+      BoardDirector.distinct('name', { ...searchQuery, status: true })
     ]);
 
     for (let i = 0; i < allDirectors?.length; i++) {
@@ -181,7 +181,7 @@ export const getAllBoardDirectors = async (req, res, next) => {
 
     return res.status(200).json({
       status: 200,
-      message: 'Successfully retrieved Dierctors',
+      message: 'Successfully retrieved Directors',
       allDirectors,
       count: totalDirectors?.length
     });
@@ -405,17 +405,18 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { body, user } = req;
     const { companyList, details } = body;
 
-    const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
-    if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
-      return res.status(409).json(checkForRedundantCINWithNoCessationDate)
-    }
+    // This is handled in F.E. Logic needs to be changed incase somethings are there
+    // const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
+    // if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
+    //   return res.status(409).json(checkForRedundantCINWithNoCessationDate)
+    // }
 
     let updateDirector;
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-      const { nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
+      const { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const checkRedundantData = await checkRedundantNameOrDIN(nameQueryForRedundantDIN, dinQueryForRedundantDIN, nameQueryForRedundantName, dinQueryForRedundantName, nullValidationForDIN);
+      const checkRedundantData = await checkRedundantNameOrDIN(name, dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN);
 
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
@@ -424,9 +425,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       await updateCompanyData(updateObject, findQuery, data);
-
       // updating Directors details.
-
       updateDirector = await updateDirectorData(name, details, user, updateObject)
 
     }
