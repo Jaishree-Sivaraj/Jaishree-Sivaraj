@@ -234,52 +234,7 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
     return data;
 }
 
-export function checkIfRedundantDataHaveCessationDate(data) {
-    try {
-        // sort the joining date
-        data.sort(compare);
-        for (let i = 0; i < data?.length; i++) {
-            for (let j = i + 1; j < data?.length; j++) {
-                if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.status == true)) {
-                    if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
-                        && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
-
-                        // Change the conditiion Date, month ,year
-                        const earlierCompanyToHaveJoined =
-
-                            new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
-                                ? data[i] : data[j];
-
-                        if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
-                            return {
-                                status: 409,
-                                message: `${earlierCompanyToHaveJoined?.companyName} joined at "${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date. Please check!!`
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return {};
-    } catch (error) {
-        console.log(error?.message);
-    }
-}
-
-
-function compare(a, b) {
-    if (new Date(a.joiningDate) < new Date(b.joiningDate)) {
-        return -1;
-    }
-    if (new Date(a.joiningDate) > new Date(b.joiningDate)) {
-        return 1;
-    }
-    return 0;
-}
-
-
 export async function getQueryData(name, updateObject) {
-
     try {
 
         const nullValidationForDIN = [
@@ -288,55 +243,23 @@ export async function getQueryData(name, updateObject) {
             { din: { $ne: null } },
         ];
 
-
-
         let dinConditionToCheckRedundantDIN = [
             { din: updateObject?.din.trim() },
         ];
 
         let nameConditionToCheckRedundantName = [{
-            BOSP004: name?.trim()
-        },
-        {
             BOSP004: updateObject?.name.trim()
-        }]
+        }];
 
-        let directorDataBeforeUpdate;
-        if (updateObject?.isPresent) {
-
-            // This condition is when there is no company data.
-            const query = updateCompanyData?.companyId == null ? {
-                BOSP004: updateObject?.name, status: true
-            } : { _id: updateObject?._id, status: true };
-
-            directorDataBeforeUpdate = await BoardDirector.findOne(query);
-
-            dinConditionToCheckRedundantDIN.push(
-                { din: directorDataBeforeUpdate?.din.trim() });
-
-
-        }
-
-        return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate };
+        return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN };
     } catch (error) {
         console.log(error?.message);
     }
 }
 
-export async function checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN, directorDataBeforeUpdate) {
+export async function checkRedundantNameOrDIN(name, dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN) {
     try {
         const [checkingRedundantDIN, checkingRedundantName] = await Promise.all([
-
-            /*
-            *Pointers while coding:
-              *DIN is unique, So record with different name can have same DIN,
-            * Logic:
-              * There is no redundancy in DIN when it is null, 
-              * so DIN must not be null, undefined or '' (hence in AND condition)
-              * updated DIN or old din must not be a part of any other record except itself.
-              * Above case is incase the updated record is same as before or not.
-              * Since record is not yet updated, not searching the original document using non-updated data.
-            */
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -345,22 +268,12 @@ export async function checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, n
                 }, {
                     $match: {
                         status: true,
-                        BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 },
+                        BOSP004: { $ne: name },
                         $or: [...dinConditionToCheckRedundantDIN],
                         $and: nullValidationForDIN
                     }
 
                 }]),
-
-            /* 
-            * Pointers while coding
-                * The updated name must not belong to any record except itself
-                * In this case update have not occured so, comparion should be done with non-updated-data.
-            *Understanding the logic:
-                *Any record having this updated and non-updated name except original.
-                *If there is any record as such, then there is redundancy and hence, the error.
-            */
-
             BoardDirector.aggregate([
                 {
                     $addFields: {
@@ -369,7 +282,7 @@ export async function checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, n
                 }, {
                     $match: {
                         status: true,
-                        BOSP004: { $ne: directorDataBeforeUpdate?.BOSP004 },
+                        BOSP004: { $ne: name },
                         $or: nameConditionToCheckRedundantName
                     }
                 }])
@@ -389,7 +302,6 @@ export async function checkRedundantNameOrDIN(dinConditionToCheckRedundantDIN, n
                 status: 409,
                 message: `${message} already exists`
             }
-
         }
         return {};
     } catch (error) { console.log(error?.message); }
@@ -486,3 +398,46 @@ export async function updateDirectorData(name, details, user, updateObject) {
         console.log(error?.message)
     }
 }
+
+// This is handled in F.E
+// export function checkIfRedundantDataHaveCessationDate(data) {
+//     try {
+//         // sort the joining date
+//         data.sort(compare);
+//         for (let i = 0; i < data?.length; i++) {
+//             for (let j = i + 1; j < data?.length; j++) {
+//                 if ((data[i]?.cin == data[j]?.cin) && (data[i]?.status == true && data[j]?.status == true)) {
+//                     if ((data[i]?.joiningDate || data[i]?.joiningDate !== '')
+//                         && (data[j]?.joiningDate || data[j]?.joiningDate !== '')) {
+
+//                         // Change the conditiion Date, month ,year
+//                         const earlierCompanyToHaveJoined =
+
+//                             new Date(data[i]?.joiningDate).getTime() < new Date(data[j]?.joiningDate).getTime()
+//                                 ? data[i] : data[j];
+
+//                         if (!earlierCompanyToHaveJoined?.cessationDate || earlierCompanyToHaveJoined?.cessationDate == '') {
+//                             return {
+//                                 status: 409,
+//                                 message: `${earlierCompanyToHaveJoined?.companyName} joined at "${format(new Date(earlierCompanyToHaveJoined?.joiningDate), 'dd-MM-yyyy')}" does not have cessation Date. Please check!!`
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return {};
+//     } catch (error) {
+//         console.log(error?.message);
+//     }
+// }
+
+// function compare(a, b) {
+//     if (new Date(a.joiningDate) < new Date(b.joiningDate)) {
+//         return -1;
+//     }
+//     if (new Date(a.joiningDate) > new Date(b.joiningDate)) {
+//         return 1;
+//     }
+//     return 0;
+// }
