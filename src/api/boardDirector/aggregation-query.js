@@ -468,7 +468,8 @@ export async function updateDirectorData(name, details, user, updateObject) {
             // Makes sense to update with the updated name only
             updateDirector = await BoardDirector.findOneAndUpdate({
                 _id: director?._id,
-                BOSP004: updateObject?.name
+                $or: [{ BOSP004: updateObject?.name },
+                { BOSP004: name }]
 
             }, {
                 $set: updateDirectorObject
