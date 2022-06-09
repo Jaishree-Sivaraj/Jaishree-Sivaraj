@@ -197,7 +197,6 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
   try {
     const { BOSP004 } = req.params;
     const [boardDirector] = await BoardDirector.aggregate(getDirector(BOSP004));
-    console.log(boardDirector)
     if (boardDirector?.profilePhoto && boardDirector?.profilePhoto !== '') {
       const profile = await fetchFileFromS3(process.env.SCREENSHOT_BUCKET_NAME, boardDirector?.profilePhoto);
       boardDirector.profilePhoto = profile;
@@ -404,9 +403,8 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       // updating Directors details.
 
       updateDirector = await updateDirectorData(name, details, user, updateObject)
-      console.log(updateDirector)
+      
     }
-    console.log(updateDirector)
 
     if (!updateDirector) {
       return res.status(409).json({
