@@ -2,6 +2,7 @@ import { success, notFound } from '../../services/response/';
 import { BoardDirector } from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
+import { format } from 'date-fns';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
 import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, updateDirectorData, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
@@ -336,12 +337,15 @@ export const uploadBoardDirector = async (req, res, next) => {
           cin: rowObject['CIN'],
           joiningDate: rowObject['JoiningDate'],
           cessationDate: rowObject['cessationDate'],
-          memberType: rowObject['memberType']
+          memberType: rowObject['memberType'],
+          memberLevel: rowObject['memberLevel'],
+          qualification: rowObject['qualification'],
+          socialLinks: rowObject['socialLinks']
         }
         directorInfo.push(companyObject);
       }
       if (directorInfo.length > 0) {
-        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType"]
+        let directorHeaders = ["DIN", "Name", "Gender", "DOB", "CIN", "JoiningDate", "cessationDate", "memberType", "memberLevel", "qualification", "socialLinks"]
         if (directorHeaders && directorHeaders.length > 0 && Object.keys(directorInfo[0]).length > 0) {
           let inputFileHeaders = Object.keys(sheetAsJson[0]);
           let missingHeaders = _.difference(directorHeaders, inputFileHeaders);
@@ -358,7 +362,28 @@ export const uploadBoardDirector = async (req, res, next) => {
           directorInfo[index].companyName = fetchId[0].companyName;
           directorInfo[index].companyId = fetchId[0]._id
           directorInfo[index].createdBy = user;
-          let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
+          if (directorInfo[index].joiningDate != null) {
+            let joiningDate = (new Date(Math.round((directorInfo[index].joiningDate - 25569) * 86400 * 1000)));
+            directorInfo[index].joiningDate = (format(joiningDate, 'dd-MM-yyyy'));
+          }
+          if (directorInfo[index].cessationDate != null) {
+            let cessationDate = (new Date(Math.round((directorInfo[index].cessationDate - 25569) * 86400 * 1000)));
+            directorInfo[index].cessationDate = (format(cessationDate, 'dd-MM-yyyy'));
+          } if (directorInfo[index].dob != null) {
+            let dob = (new Date(Math.round((directorInfo[index].dob - 25569) * 86400 * 1000)));
+            directorInfo[index].dob = (format(dob, 'dd-MM-yyyy'));
+          }
+          let checkDirectorName = await BoardDirector.find({ BOSP004: directorInfo[index].BOSP004 });
+          if (checkDirectorName.length > 0) {
+            message = {
+              message: directorInfo[index].BOSP004 + " " + 'Already exists',
+              status: '400'
+            }
+          }
+          let checkDirectorDin = [];
+          if (directorInfo[index]?.cin != "") {
+            checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
+          }
           const isEmpty = Object.keys(checkDirectorDin).length === 0;
           if (isEmpty == true) {
             await BoardDirector.create(directorInfo[index]).then(result => {
@@ -389,9 +414,18 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     let updateDirector;
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-      const { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN } = await getQueryData(name, updateObject);
+
+      const { dinConditionToCheckRedundantDIN,
+        nameConditionToCheckRedundantName,
+        nullValidationForDIN } = await getQueryData(name, updateObject);
+
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
-      const checkRedundantData = await checkRedundantNameOrDIN(name, dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN);
+
+      const checkRedundantData = await checkRedundantNameOrDIN(
+        name,
+        dinConditionToCheckRedundantDIN,
+        nameConditionToCheckRedundantName,
+        nullValidationForDIN);
 
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
@@ -399,6 +433,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
 
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
+      // updating companyData
       await updateCompanyData(updateObject, findQuery, data);
       // updating Directors details.
       updateDirector = await updateDirectorData(name, details, user, updateObject)
