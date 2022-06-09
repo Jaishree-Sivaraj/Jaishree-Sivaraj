@@ -99,7 +99,14 @@ export const uploadBoardMembersData = async (req, res, next) => {
           sheetStubs: false,
           defval: ''
         });
+        let allSheetNames = ['Company Info','Matrix-Directors','Matrix-KMP'];
         var sheet_name_list = workbook.SheetNames;
+        
+        let sheets = allSheetNames.filter( function(n) { return !this.has(n) }, new Set(sheet_name_list) );
+        if (sheets?.length > 0) {
+          return res.status(400).json({status: "400", message: `Uploading Excel is not having '${sheets}' sheet, please check and upload again! `})
+        }
+
         for (let index = 0; index < sheet_name_list.length; index++) {
           let currentSheetName = sheet_name_list[index];
           let parsedSheetObject = [];
@@ -483,39 +490,41 @@ export const uploadBoardMembersData = async (req, res, next) => {
               parsedSheetObject.push(data);
 
             } else {
-              for (const cellId in worksheet) {
-                if (cellId[0] === "!") continue;
-                var col = cellId?.substring(0, 1);
-                var row = parseInt(cellId?.substring(1));
-                var value = worksheet[cellId].v;
-                if (row == 1) {
-                  headers[col] = value;
-                  continue;
-                }
-
-                if (!data[row] && value) data[row] = {};
-                if (col != 'A') {
-                  if (headers['A']) {
-                    if (data[row][headers['A']]) {
-                      let currentColumnIndex = allColumnNames?.indexOf(col);
-                      let previousColumnIndex = currentColumnIndex - 1;
-                      let nextColumnIndex = currentColumnIndex + 1;
-                      data[row][headers[col]] = value;
-                      if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
-                        data[row][headers[allColumnNames[previousColumnIndex]]] = '';
-                      }
-                      if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
-                        data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+              if (currentSheetName.toLowerCase() == 'company info') {
+                for (const cellId in worksheet) {
+                  if (cellId[0] === "!") continue;
+                  var col = cellId?.substring(0, 1);
+                  var row = parseInt(cellId?.substring(1));
+                  var value = worksheet[cellId].v;
+                  if (row == 1) {
+                    headers[col] = value;
+                    continue;
+                  }
+  
+                  if (!data[row] && value) data[row] = {};
+                  if (col != 'A') {
+                    if (headers['A']) {
+                      if (data[row][headers['A']]) {
+                        let currentColumnIndex = allColumnNames?.indexOf(col);
+                        let previousColumnIndex = currentColumnIndex - 1;
+                        let nextColumnIndex = currentColumnIndex + 1;
+                        data[row][headers[col]] = value;
+                        if (!data[row][headers[allColumnNames[previousColumnIndex]]] && data[row][headers[allColumnNames[previousColumnIndex]]] != 0 && previousColumnIndex != 0) {
+                          data[row][headers[allColumnNames[previousColumnIndex]]] = '';
+                        }
+                        if (!data[row][headers[allColumnNames[nextColumnIndex]]]) {
+                          data[row][headers[allColumnNames[nextColumnIndex]]] = '';
+                        }
                       }
                     }
+                  } else {
+                    data[row][headers[col]] = value;
                   }
-                } else {
-                  data[row][headers[col]] = value;
                 }
+                data.shift();
+                data.shift();
+                parsedSheetObject.push(data);  
               }
-              data.shift();
-              data.shift();
-              parsedSheetObject.push(data);
             }
           }
           allFilesObject.push(parsedSheetObject)
@@ -616,11 +625,11 @@ export const uploadBoardMembersData = async (req, res, next) => {
       })
       let years = dataDsnctYears.filter( function(n) { return !this.has(n) }, new Set(distinctYears) );
       if (years?.length > 0) {
-        return res.status(400).json({status: "400", message: `Excel is having ${years} data which is not part of the current task year, please check! `})
+        return res.status(400).json({status: "400", message: `Incomplete data / Fiscal year '${years}' task not created `})
       }
       let years1 = distinctYears.filter( function(n) { return !this.has(n) }, new Set(dataDsnctYears) );
       if (years1?.length > 0) {
-        return res.status(400).json({status: "400", message: `Excel is not having ${years1} year data which part of the current task year, please check! `})
+        return res.status(400).json({status: "400", message: `Incomplete data / Fiscal year '${years1}' data is missing`})
       }
 
       let boardMembersList = [];
@@ -941,7 +950,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
         }
         return res.status(400).json({
           status: "400",
-          message: "Invalid Members please check!",
+          message: `Below Director Names are not found in the master records, Please add in master and upload`,
           Data: responseObject
         })
       }
