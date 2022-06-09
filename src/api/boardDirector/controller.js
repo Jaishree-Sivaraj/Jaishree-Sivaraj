@@ -3,6 +3,7 @@ import { BoardDirector } from '.';
 import _ from 'lodash'
 import XLSX from 'xlsx';
 import moment from 'moment';
+import { format } from 'date-fns';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
 import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, updateDirectorData, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
@@ -339,7 +340,7 @@ export const uploadBoardDirector = async (req, res, next) => {
           memberType: rowObject['memberType'],
           memberLevel: rowObject['memberLevel'],
           qualification: rowObject['qualification'],
-          socialLinks: rowObject['socialLinks'] 
+          socialLinks: rowObject['socialLinks']
         }
         directorInfo.push(companyObject);
       }
@@ -361,7 +362,28 @@ export const uploadBoardDirector = async (req, res, next) => {
           directorInfo[index].companyName = fetchId[0].companyName;
           directorInfo[index].companyId = fetchId[0]._id
           directorInfo[index].createdBy = user;
-          let checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
+          if (directorInfo[index].joiningDate != null) {
+            let joiningDate = (new Date(Math.round((directorInfo[index].joiningDate - 25569) * 86400 * 1000)));
+            directorInfo[index].joiningDate = (format(joiningDate, 'dd-MM-yyyy'));
+          }
+          if (directorInfo[index].cessationDate != null) {
+            let cessationDate = (new Date(Math.round((directorInfo[index].cessationDate - 25569) * 86400 * 1000)));
+            directorInfo[index].cessationDate = (format(cessationDate, 'dd-MM-yyyy'));
+          } if (directorInfo[index].dob != null) {
+            let dob = (new Date(Math.round((directorInfo[index].dob - 25569) * 86400 * 1000)));
+            directorInfo[index].dob = (format(dob, 'dd-MM-yyyy'));
+          }
+          let checkDirectorName = await BoardDirector.find({ BOSP004: directorInfo[index].BOSP004 });
+          if (checkDirectorName.length > 0) {
+             message = {
+              message: directorInfo[index].BOSP004 + " " +'Already exists',
+              status: '400'
+            }
+          }
+          let checkDirectorDin = [];
+          if (directorInfo[index]?.cin != "") {
+            checkDirectorDin = await BoardDirector.find({ $and: [{ din: directorInfo[index].din, companyId: mongoose.Types.ObjectId(directorInfo[index].companyId) }] });
+          }
           const isEmpty = Object.keys(checkDirectorDin).length === 0;
           if (isEmpty == true) {
             await BoardDirector.create(directorInfo[index]).then(result => {
@@ -406,7 +428,7 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       // updating Directors details.
 
       updateDirector = await updateDirectorData(name, details, user, updateObject)
-      
+
     }
 
     if (!updateDirector) {
