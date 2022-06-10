@@ -115,7 +115,7 @@ export const getAverageByNic = async ({body},res,next)=> {
   })
   .populate('companyId')
   .populate('datapointId');
-  mergedDetails = _.concat(stdDetails,bodDetails,kmpDetails,derivedDetails )
+  mergedDetails = _.concat(stdDetails, bodDetails, kmpDetails, derivedDetails);
   if (mergedDetails.length > 0) {
     for (let index = 0; index < percentileDatapoints.length; index++) {
       let sumOfResponse = 0;

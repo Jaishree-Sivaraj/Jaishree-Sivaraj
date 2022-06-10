@@ -14,7 +14,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
           .then(async (reset) => {
             if (!reset) return res.status(400).json({ status: "400", message: 'Failed to send password reset mail!' })
             const { user, token } = reset
-            let link = `${process.env.FRONTEND_URL}/password-resets`;
+            let link = `${process.env.FRONTEND_URL}password-resets`;
             link = `${link.replace(/\/$/, '')}/${token}`
             const emailDetails = passwordResetEmail(user.name, link)
             // var transporter = nodemailer.createTransport({
@@ -32,7 +32,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
             //   html: content.toString()
             // });
             if (process.env.NODE_ENV === 'production') {
-              await sendEmail(email, emailDetails.subject, emailDetails.message)
+              await sendEmail(email, emailDetails?.subject, emailDetails?.message)
                 .then((resp) => { console.log('Mail sent!'); });
               return res.status(200).json({ status: "200", message: "Email sent successfully!" })
             }
