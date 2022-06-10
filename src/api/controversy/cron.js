@@ -55,7 +55,7 @@ async function notifyControJsonUpdates() {
         //for testing developer can remove the below condition
         const mailContent = notifyControJsonUpdated(customArray[k].companies);
         if (process.env.NODE_ENV === 'production') {
-          await sendEmail(toMailAddress, mailContent.subject, mailContent.message)
+          await sendEmail(toMailAddress, mailContent?.subject, mailContent?.message)
           .then((resp) => { console.log('Mail sent!'); });  
         }
         await Notifications.create({

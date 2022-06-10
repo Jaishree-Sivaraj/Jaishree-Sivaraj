@@ -1073,7 +1073,7 @@ export const sendMultipleOnBoardingLinks = async ({ bodymen: { body }, user }, r
             //nodemail code will come here to send OTP
             const emailDetails = EmailContent(url, LINK_TO_ONBOARD_USER);
             if (process.env.NODE_ENV === 'production') {
-              await sendEmail(rowObject['email'], emailDetails.subject, emailDetails?.message)
+              await sendEmail(rowObject['email'], emailDetails?.subject, emailDetails?.message)
                 .then((resp) => { console.log('Mail sent!'); });
             }
             let email = `${rowObject['email']}`;

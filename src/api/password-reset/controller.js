@@ -32,7 +32,7 @@ export const create = async ({ bodymen: { body: { email } } }, res, next) => {
             //   html: content.toString()
             // });
             if (process.env.NODE_ENV === 'production') {
-              await sendEmail(email, emailDetails.subject, emailDetails.message)
+              await sendEmail(email, emailDetails?.subject, emailDetails?.message)
                 .then((resp) => { console.log('Mail sent!'); });
               return res.status(200).json({ status: "200", message: "Email sent successfully!" })
             }

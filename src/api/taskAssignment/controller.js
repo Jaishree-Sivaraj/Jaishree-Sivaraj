@@ -624,8 +624,8 @@ export const retrieveFilteredControversyTasks = async ({ user, params, querymen:
   userRoles = _.uniq(userRoles);
   if (userRoles.includes(params.role)) {
     let findQuery = {}, companyIds = [];
-    if (query.company) {
-      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+    if (query?.company) {
+      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query?.company, "i") } }).distinct('_id');
       companyIds = companyDetail ? companyDetail : [];
     }
     if (params.role == "Client Representative") {
@@ -1226,8 +1226,8 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
     }
     userRoles = _.uniq(userRoles);
     let rows = [], count = 0, findQuery = {}, companyIds = [];
-    if (query.company) {
-      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
+    if (query?.company) {
+      let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query?.company, "i") } }).distinct('_id');
       companyIds = companyDetail ? companyDetail : [];
     }
     if (params.role == "Analyst") {
@@ -2234,7 +2234,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
         if (process.env.NODE_ENV === 'production') {
-          await sendEmail(e, subject, emailDetails)
+          await sendEmail(e, subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!') })
             .catch(err => console.log(err))
         }
