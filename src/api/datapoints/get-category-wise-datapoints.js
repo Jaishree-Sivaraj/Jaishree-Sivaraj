@@ -351,7 +351,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
-                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    result.message = "StartDate is not updated, Please check!";
                     return res.status(200).json(result)
                   }
                 } else {
@@ -384,7 +384,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
-                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    result.message = "StartDate is not updated, Please check!";
                     return res.status(200).json(result)
                   }
                 } else {
