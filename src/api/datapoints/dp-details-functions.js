@@ -119,7 +119,8 @@ export async function getSourceDetails(object) {
             matchQuery = {
                 companyId: object?.companyId ? object.companyId.id : null,
                 sourceUrl: object?.url ? object?.url : null,
-                fiscalYear: object?.year ? object?.year : null
+                fiscalYear: object?.year ? object?.year : null,
+                status: true
             }
         }
         findQuery = companySourceId ? { _id: companySourceId } : matchQuery;
@@ -354,7 +355,6 @@ export function getDisplayFields(dpTypeValues, displayFields, currentDpType, cur
 
 }
 
-
 export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sourceTypeDetails, sourceDetails, year, uomValues, placeValues) {
     return {
         status: Completed,
@@ -388,7 +388,6 @@ export function getHistoryDataObject(dpTypeValues, object, s3DataScreenshot, sou
         additionalDetails: []
     }
 }
-
 
 export function getHistoryDataObjectYearWise(dpTypeValues, object, sourceTypeDetails, sourceDetails, year, subDataType, screenShot) {
     return {
