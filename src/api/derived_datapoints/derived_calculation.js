@@ -713,6 +713,7 @@ export const ratioCalculation = async function (taskId, companyId, mergedDetails
   mergedDetails = _.concat(mergedDetails, allDerivedDatapoints, derivedDatapointsList);
   if (ratioRules.length > 0) {
     for (let i = 0; i < ratioRules.length; i++) {
+      await Companies.count({});
       let parameters = ratioRules[i].parameter.split(",");
       let numerator = parameters[0] ? parameters[0] : '';
       let denominator = parameters[1] ? parameters[1] : '';

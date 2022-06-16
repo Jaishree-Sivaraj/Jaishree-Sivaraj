@@ -1,4 +1,5 @@
 'use strict';
+import _ from 'lodash';
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
@@ -6,11 +7,11 @@ import { NUMBER } from '../../constants/dp-datatype';
 import { StandaloneDatapoints } from '../standalone_datapoints'
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
-import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
-import { Companies } from "../companies";
-import { QA, Analyst } from "../../constants/roles";
-import { ClientRepresentatives } from '../client-representatives';
 import { CompanyRepresentatives } from '../company-representatives';
+import { ClientRepresentatives } from '../client-representatives';
+import { BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
+import { Companies } from "../companies";
+import { QA, Analyst, ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import {
     VerificationCompleted,
     CorrectionPending,
@@ -23,8 +24,9 @@ import {
     Error,
     Collection
 } from '../../constants/task-status';
+import { getMemberJoiningDate, getTaskStartDate } from '../datapoints/dp-details-functions';
 
-export async function getTotalExpectedYear(memberName, distinctYears, dpType) {
+export async function getTotalExpectedYear(memberName, distinctYears, dpType, fiscalYearEndMonth, fiscalYearEndDate) {
     try {
         let totalCollectionYearForMembers = []
         if (memberName?.length > 0) {
@@ -43,10 +45,14 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType) {
 
             for (let memberIndex = 0; memberIndex < memberDetails?.length; memberIndex++) {
                 let totalCollectedYears = 0;
-                let memberStartYear = new Date(memberDetails[memberIndex]?.startDate).getFullYear();
+                const memberJoiningDate = getMemberJoiningDate(memberDetails[memberIndex]?.startDate);
                 for (let yearIndex = 0; yearIndex < distinctYears.length; yearIndex++) {
                     const splityear = distinctYears[yearIndex].split('-');
-                    if (memberStartYear < splityear[1]) {
+                    const firstHalfDate = getTaskStartDate(distinctYears[yearIndex], fiscalYearEndMonth, fiscalYearEndDate);
+                    const secondHalfDate = (new Date(splityear[1], fiscalYearEndMonth - 1, fiscalYearEndDate).getTime()) / 1000
+                    const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
+                        && (memberDetails[memberIndex].endDateTimeStamp == 0 || memberDetails[memberIndex].endDateTimeStamp == null || memberDetails[memberIndex].endDateTimeStamp > firstHalfDate);
+                    if (logicForDecidingWhetherToConsiderYear) {
                         totalCollectedYears += 1;
                     }
                 }
@@ -59,19 +65,18 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType) {
     }
 }
 
-export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctYears, isSFDR) {
+export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate) {
     try {
         let totalExpectedBoardMatrixCount = 0, totalExpectedKmpMatrixCount = 0;
-        const totalBoardMemberYearsCount = await getTotalExpectedYear(allBoardMemberMatrixDetails, distinctYears, BOARD_MATRIX);
-        const totalKmpMemberYearsCount = await getTotalExpectedYear(allKmpMatrixDetails, distinctYears, KMP_MATRIX);
+        const totalBoardMemberYearsCount = await getTotalExpectedYear(allBoardMemberMatrixDetails, distinctYears, BOARD_MATRIX, fiscalYearEndMonth, fiscalYearEndDate);
+        const totalKmpMemberYearsCount = await getTotalExpectedYear(allKmpMatrixDetails, distinctYears, KMP_MATRIX, fiscalYearEndMonth, fiscalYearEndDate);
 
+        let multipliedValue = 0;
         if (totalBoardMemberYearsCount && totalKmpMemberYearsCount) {
-            let multipliedValue;
             if (!isSFDR) {
                 totalExpectedBoardMatrixCount = getTotalCount(totalBoardMemberYearsCount, boardMatrixDatapoints);
                 totalExpectedKmpMatrixCount = getTotalCount(totalKmpMemberYearsCount, kmpMatrixDatapoints);
-
-                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints?.length * distinctYears?.length
+                multipliedValue = totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount + standaloneDatapoints?.length * distinctYears?.length;
             } else {
                 const totalStandaloneDatapoints = getQualitativeAndQuantitativeCount(standaloneDatapoints);
                 const standaloneQualitative = totalStandaloneDatapoints[0], standaloneQuantitative = totalStandaloneDatapoints[1];
@@ -91,11 +96,21 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
 
             return multipliedValue;
         }
+
     } catch (error) {
         console.log(error?.message)
 
     }
 }
+
+export function checkIfAllDpCodeAreFilled(datapoint, collectedData, dpType) {
+    let errorMessage = {}
+    if (datapoint?.length > 0 && collectedData?.length <= 0) {
+        errorMessage = { status: 409, message: `Task Status not updated. Check ${dpType} DPcodes` }
+    }
+    return errorMessage;
+}
+
 
 function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can be standalone or board-matrix or kmp-matrix.
     let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
@@ -114,10 +129,9 @@ function getQualitativeAndQuantitativeCount(datapoints) { // here datpoints can 
 
 function getTotalCount(yearCount, data) {
     let counter = 0;
-    yearCount.map(total => {
+    yearCount?.map(total => {
         let datapointLength = Array.isArray(data) ? data.length : data;
         counter += datapointLength * total;
-        console.log(counter);
     });
 
     return counter;
@@ -127,7 +141,18 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
     try {
         let taskStatusValue;
         if (hasError && condition) {
-            taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
+
+            taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending;
+            const hasRepRaisedAnError = body.role == ClientRepresentative || body?.role == CompanyRepresentative
+                ? true
+                : false;
+                
+            await TaskAssignment.updateOne({ _id: body.taskId }, {
+                $set: {
+                    hasRepRaisedAnError
+                }
+            });
+
 
             const [query, update, query1, update1] = [
                 { taskId: body.taskId, isActive: true, status: true, hasError: true },
@@ -164,6 +189,14 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
             ]);
             return { message: '', taskStatusValue };
         } else if (!hasError && !hasCorrection && condition) {
+            if (body.role !== ClientRepresentative || body?.role !== CompanyRepresentative) {
+                await TaskAssignment.updateOne({ _id: body.taskId }, {
+                    $set: {
+                        hasRepRaisedAnError: false
+                    }
+                });
+            }
+            
             taskStatusValue = body.role == QA ? VerificationCompleted : Completed
             taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
             const [query, update,] = [

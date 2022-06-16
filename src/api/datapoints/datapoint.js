@@ -1,14 +1,13 @@
-import _ from "lodash";
-import { StandaloneDatapoints } from "../standalone_datapoints";
-import { BoardMembersMatrixDataPoints } from "../boardMembersMatrixDataPoints";
-import { KmpMatrixDataPoints } from "../kmpMatrixDataPoints";
-import { BoardMembers } from "../boardMembers";
-import { Kmp } from "../kmp";
-import { ClientTaxonomy } from '../clientTaxonomy';
-import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from "../../constants/dp-type";
+import _ from 'lodash';
+import { StandaloneDatapoints } from '../standalone_datapoints';
+import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
+import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
+import { BoardMembers } from '../boardMembers';
+import { Kmp } from '../kmp';
+import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import {
   YetToStart,
-} from "../../constants/task-status";
+} from '../../constants/task-status';
 import {
   getError,
   getS3ScreenShot,
@@ -18,7 +17,7 @@ import {
   getS3RefScreenShot,
   getDisplayFields,
   getChildDp,
-} from "./dp-details-functions";
+} from './dp-details-functions';
 import {
   getVariablesValues,
   getTaskDetailsFunctionIdPlaceValuesAndMeasureType,
@@ -32,7 +31,7 @@ import {
   getClientTaxonomyAndDpTypeDetails
 }
   from './datapoint-helper-function';
-import { SELECT } from "../../constants/dp-datatype";
+import { SELECT } from '../../constants/dp-datatype';
 
 export const datapointDetails = async (req, res, next) => {
   try {
@@ -48,10 +47,10 @@ export const datapointDetails = async (req, res, next) => {
       keyIssueId,
       dataType
     } = req.body;
-    console.log(dataType);
     const { taskDetails, functionId, measureTypes, allPlaceValues } = await getTaskDetailsFunctionIdPlaceValuesAndMeasureType(taskId);
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     const { dpTypeValues, clienttaxonomyFields } = await getClientTaxonomyAndDpTypeDetails(functionId, taskDetails, datapointId);
-    console.log(dpTypeValues);
     let { currentYear, displayFields } = getSortedCurrentYearAndDisplayFields(year, clienttaxonomyFields?.fields, taskDetails, dpTypeValues);
     const { errorDataDetails, companySourceDetails, chilDpHeaders } = await getErrorDetailsCompanySourceDetailsChildHeaders(taskDetails, datapointId, currentYear)
     const sourceTypeDetails = getCompanySourceDetails(companySourceDetails);
@@ -81,10 +80,10 @@ export const datapointDetails = async (req, res, next) => {
         const [currentAllStandaloneDetails, historyAllStandaloneDetails] =
           await Promise.all([
             StandaloneDatapoints.find(currentQuery)
-              .populate("datapointId")
-              .populate("companyId")
-              .populate("taskId")
-              .populate("uom"),
+              .populate('datapointId')
+              .populate('companyId')
+              .populate('taskId')
+              .populate('uom'),
             ,
             StandaloneDatapoints.find(historyQuery),
           ]);
@@ -93,7 +92,7 @@ export const datapointDetails = async (req, res, next) => {
           timeDetails,
           currentHistoryAllStandaloneDetailsStartTime,
           Date.now(),
-          "Current and History All standalone Details"
+          'Current and History All standalone Details'
         );
 
         historyAllStandaloneDetails?.map((historyYearData) => {
@@ -104,7 +103,7 @@ export const datapointDetails = async (req, res, next) => {
 
         datapointsObject = {
           ...datapointsObject,
-          status: "",
+          status: '',
         };
 
         let CurrentYearLoopStartTime = Date.now();
@@ -127,14 +126,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+
             const condition =
               object.datapointId._id == datapointId &&
               object.year == currentYear[currentYearIndex];
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -157,10 +157,8 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               ); //here we need to update the errorCaughtbyRep screenshot
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -172,6 +170,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -194,10 +196,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -209,6 +211,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -231,10 +237,9 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -306,9 +311,9 @@ export const datapointDetails = async (req, res, next) => {
         if (chilDpHeaders && chilDpHeaders.length > 2) {
           chilDpHeaders.push({
             id: chilDpHeaders.length + 2,
-            displayName: "Source",
-            fieldName: "source",
-            dataType: "Select",
+            displayName: 'Source',
+            fieldName: 'source',
+            dataType: 'Select',
             options: sourceTypeDetails,
             isRequired: true,
             orderNumber: chilDpHeaders.length + 2,
@@ -317,7 +322,7 @@ export const datapointDetails = async (req, res, next) => {
         datapointsObject = { ...datapointsObject, isSFDR };
         return res.status(200).send({
           status: 200,
-          message: "Data collection dp codes retrieved successfully!",
+          message: 'Data collection dp codes retrieved successfully!',
           response: {
             prevDatapoint,
             nextDatapoint,
@@ -337,15 +342,15 @@ export const datapointDetails = async (req, res, next) => {
         ] = await Promise.all([
           BoardMembersMatrixDataPoints.find({
             ...currentQuery,
-            memberName: { $regex: memberName, $options: "i" },
+            memberName: { $regex: memberName, $options: 'i' },
           })
-            .populate("datapointId")
-            .populate("companyId")
-            .populate("taskId")
-            .populate("uom"),
+            .populate('datapointId')
+            .populate('companyId')
+            .populate('taskId')
+            .populate('uom'),
           BoardMembersMatrixDataPoints.find({
             ...historyQuery,
-            memberName: { $regex: memberName, $options: "i" },
+            memberName: { $regex: memberName, $options: 'i' },
           }),
           BoardMembers.findOne({
             BOSP004: memberName,
@@ -353,7 +358,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, memberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         historyAllBoardMemberMatrixDetails?.map((historyYearData) => {
           let historyYearObject = {};
@@ -365,17 +370,13 @@ export const datapointDetails = async (req, res, next) => {
 
         datapointsObject = {
           ...datapointsObject,
-          status: "",
+          status: '',
         };
         let currentYearLoopBoardMemberStartTime = Date.now();
-        for (
-          let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
-          currentYearIndex++
-        ) {
+        for (let currentYearIndex = 0; currentYearIndex < memberCollectionYears?.length; currentYearIndex++) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
-            if (object.year == memberCollectionYears[currentYearIndex] && object.memberName == memberName) {
+            if (object.year == memberCollectionYears[currentYearIndex]) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
             }
@@ -384,7 +385,7 @@ export const datapointDetails = async (req, res, next) => {
           let currentYearLoopBoardMemberStartTime = Date.now();
           for (
             let currentIndex = 0;
-            currentIndex < currentAllBoardMemberMatrixDetails.length;
+            currentIndex < currentAllBoardMemberMatrixDetails?.length;
             currentIndex++
           ) {
             const object = currentAllBoardMemberMatrixDetails[currentIndex];
@@ -394,15 +395,16 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
 
             if (condition && object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -425,10 +427,9 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -440,6 +441,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -463,9 +468,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep.screenShot
               );
-              currentDatapointsObject.error.refData.screenShot =
-                s3DataRefErrorScreenshot;
-              currentDatapointsObject.error.refData["additionalDetails"] = [];
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
+              }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -480,6 +486,10 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
             } else if (condition && !object.hasCorrection && !object.hasError) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -508,11 +518,11 @@ export const datapointDetails = async (req, res, next) => {
                     : []
                   : []
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               }
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -523,7 +533,7 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             }
-            datapointsObject.status = "Completed";
+            datapointsObject.status = 'Completed';
           }
           trackTime(
             timeDetails,
@@ -551,7 +561,7 @@ export const datapointDetails = async (req, res, next) => {
               dpTypeValues,
               displayFields,
               currentAllBoardMemberMatrixDetails,
-              "",
+              '',
               currentDatapointsObject,
               true,
               false
@@ -600,9 +610,9 @@ export const datapointDetails = async (req, res, next) => {
         if (chilDpHeaders && chilDpHeaders.length > 2) {
           chilDpHeaders.push({
             id: chilDpHeaders.length + 2,
-            displayName: "Source",
-            fieldName: "source",
-            dataType: "Select",
+            displayName: 'Source',
+            fieldName: 'source',
+            dataType: 'Select',
             options: sourceTypeDetails,
             isRequired: true,
             orderNumber: chilDpHeaders.length + 2,
@@ -610,8 +620,8 @@ export const datapointDetails = async (req, res, next) => {
         }
         datapointsObject = { ...datapointsObject, isSFDR };
         return res.status(200).send({
-          status: "200",
-          message: "Data collection dp codes retrieved successfully!",
+          status: 200,
+          message: 'Data collection dp codes retrieved successfully!',
           response: {
             prevDatapoint,
             nextDatapoint,
@@ -632,15 +642,15 @@ export const datapointDetails = async (req, res, next) => {
         ] = await Promise.all([
           KmpMatrixDataPoints.find({
             ...currentQuery,
-            memberName: { $regex: memberName, $options: "i" },
+            memberName: { $regex: memberName, $options: 'i' },
           })
-            .populate("datapointId")
-            .populate("companyId")
-            .populate("taskId")
-            .populate("uom"),
+            .populate('datapointId')
+            .populate('companyId')
+            .populate('taskId')
+            .populate('uom'),
           KmpMatrixDataPoints.find({
             ...historyQuery,
-            memberName: { $regex: memberName, $options: "i" },
+            memberName: { $regex: memberName, $options: 'i' },
           }),
           Kmp.findOne({
             MASP003: memberName,
@@ -648,7 +658,7 @@ export const datapointDetails = async (req, res, next) => {
           }),
         ]);
 
-        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails)
+        memberCollectionYears = getTotalYearsForDataCollection(currentYear, kmpMemberDetails, fiscalYearEndMonth, fiscalYearEndDate);
 
         trackTime(
           timeDetails,
@@ -671,14 +681,13 @@ export const datapointDetails = async (req, res, next) => {
         const startKmpLoop = Date.now();
         for (
           let currentYearIndex = 0;
-          currentYearIndex < memberCollectionYears.length;
+          currentYearIndex < memberCollectionYears?.length;
           currentYearIndex++
         ) {
           let currentDatapointsObject = {};
           _.filter(errorDataDetails, function (object) {
             if (
-              object.year == memberCollectionYears[currentYearIndex] &&
-              object.memberName == memberName
+              object.year == memberCollectionYears[currentYearIndex]
             ) {
               datapointsObject.comments.push(object.comments);
               datapointsObject.comments.push(object.rejectComment);
@@ -697,14 +706,15 @@ export const datapointDetails = async (req, res, next) => {
               taskId,
               datapointId
             );
-            [s3DataScreenshot, sourceDetails] = await Promise.all([
-              getS3ScreenShot(object?.screenShot),
-              getSourceDetails(object, sourceDetails),
-            ]);
+
             const condition =
               object.datapointId._id == datapointId &&
               object.year == memberCollectionYears[currentYearIndex];
             if (condition && object.hasError == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -727,11 +737,12 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               }
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -742,6 +753,10 @@ export const datapointDetails = async (req, res, next) => {
                 true
               );
             } else if (condition && object.hasCorrection == true) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -764,10 +779,9 @@ export const datapointDetails = async (req, res, next) => {
                 errorDetailsObject.length,
                 errorDetailsObject[0]?.errorCaughtByRep?.screenShot
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
               }
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
@@ -783,6 +797,10 @@ export const datapointDetails = async (req, res, next) => {
               object.hasCorrection == false &&
               object.hasError == false
             ) {
+              [s3DataScreenshot, sourceDetails] = await Promise.all([
+                getS3ScreenShot(object?.screenShot),
+                getSourceDetails(object),
+              ]);
               currentDatapointsObject = getCurrentDatapointObject(
                 s3DataScreenshot,
                 dpTypeValues,
@@ -811,11 +829,12 @@ export const datapointDetails = async (req, res, next) => {
                     : []
                   : []
               );
-              if (currentDatapointsObject?.error?.refData?.screenShot) {
-                currentDatapointsObject.error.refData.screenShot =
-                  s3DataRefErrorScreenshot;
-                currentDatapointsObject.error.refData["additionalDetails"] = [];
+
+              if (currentDatapointsObject?.error?.refData) {
+                currentDatapointsObject.error.refData.screenShot = s3DataRefErrorScreenshot;
+
               }
+
               currentDatapointsObject = getDisplayFields(
                 dpTypeValues,
                 displayFields,
@@ -853,7 +872,7 @@ export const datapointDetails = async (req, res, next) => {
               dpTypeValues,
               displayFields,
               currentAllKmpMatrixDetails,
-              "",
+              '',
               currentDatapointsObject,
               true,
               false
@@ -881,9 +900,9 @@ export const datapointDetails = async (req, res, next) => {
         if (chilDpHeaders && chilDpHeaders.length > 2) {
           chilDpHeaders.push({
             id: chilDpHeaders.length + 2,
-            displayName: "Source",
-            fieldName: "source",
-            dataType: "Select",
+            displayName: 'Source',
+            fieldName: 'source',
+            dataType: 'Select',
             options: sourceTypeDetails,
             isRequired: true,
             orderNumber: chilDpHeaders.length + 2,
@@ -892,8 +911,8 @@ export const datapointDetails = async (req, res, next) => {
 
         datapointsObject = { ...datapointsObject, isSFDR };
         return res.status(200).send({
-          status: "200",
-          message: "Data collection dp codes retrieved successfully!",
+          status: 200,
+          message: 'Data collection dp codes retrieved successfully!',
           response: {
             prevDatapoint,
             nextDatapoint,
@@ -907,7 +926,7 @@ export const datapointDetails = async (req, res, next) => {
         });
       default:
         return res.status(409).json({
-          message: "Invalid Member Type.",
+          message: 'Invalid Member Type.',
         });
         break;
     }

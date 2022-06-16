@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
+import { token, master } from '../../services/passport'
 import { create, index, show, update, destroy, getDocumentsByCompanyId, uploadCompanySource } from './controller'
 import { schema } from './model'
 export CompanySources, { schema } from './model'
@@ -21,6 +22,7 @@ const { sourceTypeId, url, sourceUrl, sourceFile, publicationDate, companyId, is
  * @apiError 404 Company sources not found.
  */
 router.post('/',
+  token({ required: true }),
   body({ sourceTypeId, url, sourceFile, publicationDate, companyId }),
   create)
 
@@ -45,6 +47,7 @@ router.post('/',
  * @apiError 404 Company sources not found.
  */
 router.post('/uploadCompanySource',
+  token({ required: true }),
   body({ companyId, sourceTypeId, publicationDate, isMultiYear, isMultiSource, url, sourceSubTypeId, fiscalYear, newSourceTypeName, newSubSourceTypeName, sourcePDF, name, sourceTitle, fileName }),
   uploadCompanySource)
 
@@ -58,6 +61,7 @@ router.post('/uploadCompanySource',
  * @apiError 404 Company sources not found.
  */
 router.get('/companyDocuments/:companyId',
+  token({ required: true }),
   getDocumentsByCompanyId)
 
 /**
@@ -70,6 +74,7 @@ router.get('/companyDocuments/:companyId',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  */
 router.get('/',
+  token({ required: true }),
   query(),
   index)
 
@@ -82,6 +87,7 @@ router.get('/',
  * @apiError 404 Company sources not found.
  */
 router.get('/:id',
+  token({ required: true }),
   show)
 
 /**
@@ -97,6 +103,7 @@ router.get('/:id',
  * @apiError 404 Company sources not found.
  */
 router.put('/:id',
+  token({ required: true }),
   body({ sourceTypeId, sourceUrl, sourceFile, publicationDate, sourceTitle }),
   update)
 
@@ -108,6 +115,7 @@ router.put('/:id',
  * @apiError 404 Company sources not found.
  */
 router.delete('/:id',
+  token({ required: true }),
   destroy)
 
 export default router

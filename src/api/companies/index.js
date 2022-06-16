@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, getAllNic, getAllUnAssignedCompanies, addCompanyMember, updateCompanyMember, uploadCompaniesFile } from './controller'
+import { create, index, show, update, destroy, getAllNic, getAllUnAssignedCompanies, addCompanyMember, updateCompanyMember, uploadCompaniesFile, getCompanyInfo } from './controller'
 import { schema } from './model'
 export Companies, { schema } from './model'
 
@@ -60,7 +60,7 @@ router.post('/',
  * @apiError 401 user access only.
  */
 router.get('/',
-  token({ required: false }),
+  token({ required: true }),
   query(),
   index)
 
@@ -194,4 +194,19 @@ router.delete('/:id',
   token({ required: true }),
   destroy)
 
+   /**
+ * @api {get} /companies/retrieve/company-info Retrieve companies
+ * @apiName RetrieveCompanies
+ * @apiGroup Companies
+ * @apiUse listParams
+ * @apiSuccess {Number} count Total amount of companies.
+ * @apiSuccess {Object[]} rows List of companies.
+ * @apiError {Object} 400 Some parameters may contain invalid values.
+ * @apiError 401 user access only.
+ */
+router.get('/retrieve/company-info',
+token({ required: false }),
+query(),
+getCompanyInfo)
+  
 export default router

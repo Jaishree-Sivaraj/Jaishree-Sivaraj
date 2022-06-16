@@ -12,7 +12,7 @@ import { otpEmail } from '../../constants/email-content'
 export const login = async ({ user }, res, next) => {
   sign(user.id)
     .then(async (response) => {
-      console.log('user ' + user)
+      //console.log('user ' + user)
       if (user) {
         let superAdminRoleDetails = await Role.findOne({ roleName: "SuperAdmin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
         let adminRoleDetails = await Role.findOne({ roleName: "Admin" }).catch(() => { return res.status(500).json({ status: "500", message: error.message }) });
@@ -54,7 +54,7 @@ export const login = async ({ user }, res, next) => {
           {
             $set: updateObject
           }, function (err, updatedUser) {
-            console.log('updatedUser', updatedUser);
+            //console.log('updatedUser', updatedUser);
           }
         );
 
@@ -62,7 +62,8 @@ export const login = async ({ user }, res, next) => {
         if (process.env.NODE_ENV === 'production') {
           const emailDetails = otpEmail(user?.name, otpNumber);
           await sendEmail(user?.email, emailDetails.subject, emailDetails.message)
-            .then((resp) => { console.log('Mail sent!'); });
+            .then((resp) => { console.log('Mail sent!');
+             });
         }
         return res.send({ status: "200", message: "Otp sent to registered email" });
       }

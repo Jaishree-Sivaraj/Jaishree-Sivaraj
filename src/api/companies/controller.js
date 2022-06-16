@@ -66,15 +66,15 @@ export const getAllNic = ({ querymen: { query, select, cursor } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const show = ({ params }, res, next) =>
+export const show = ({ params }, res, next) =>{
   Companies.findById(params.id)
     .populate('createdBy')
     .populate('clientTaxonomyId')
     .then(notFound(res))
     .then((companies) => companies ? companies.view() : null)
     .then(success(res))
-    .catch(next)
-
+    .catch(next)   
+}
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Companies.findById(params.id)
     .populate('createdBy')
@@ -241,3 +241,21 @@ export const uploadCompaniesFile = async (req, res, next) => {
     }
   }
 }
+
+export const getCompanyInfo = ({ querymen: { query, select, cursor } }, res, next) => {
+  Companies.count(query)
+    .then(count => Companies.find(query)
+      .sort({ createdAt: -1 })
+      .populate('createdBy')
+      .then((companies) => {
+        let companiesList = [];
+        for (let cmpIndex = 0; cmpIndex < companies.length; cmpIndex++) {
+          companiesList.push({"_id": companies[cmpIndex]['_id'], "companyName": companies[cmpIndex]['companyName'], "cin": companies[cmpIndex]['cin']  })
+         }
+        return res.status(200).json({ status: "200", message: "Retrieved companies successfully!", rows: companiesList });
+      })
+    )
+    .catch((error) => {
+      return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve companies!" });
+    })
+  }
