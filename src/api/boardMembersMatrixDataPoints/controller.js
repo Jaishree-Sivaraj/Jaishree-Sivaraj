@@ -638,6 +638,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
+      let allBoardMembersNamesList = [];
       for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails?.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
@@ -742,11 +743,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 }
               }
             }
+            allBoardMembersNamesList.push(boardMembersNameList[boardMemIndex]);
           }
         } catch (error) {
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
         }
       };
+      allBoardMembersNamesList = _.uniq(allBoardMembersNamesList);
       _.forEach(inactiveBoardMembersList, function (object) {
         let indexToUpdate = _.findIndex(boardMembersList, object);
         if (indexToUpdate >= 0) {
@@ -769,8 +772,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
       
       let invalidBodMemberList = [];
       let bodMembersToInsert = [];
-      for (let index = 0; index < boardMembersNameList?.length; index++) {
-        const element = boardMembersNameList[index];
+      for (let index = 0; index < allBoardMembersNamesList?.length; index++) {
+        const element = allBoardMembersNamesList[index];
         let memberDetails = allBoardMembers.filter(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()))
         if (memberDetails && memberDetails?.length > 0) {
           let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
