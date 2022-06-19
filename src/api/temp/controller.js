@@ -4,6 +4,9 @@ import { getSortedYear } from '../datapoints/dp-details-functions';
 import { StandaloneDatapoints } from '../standalone_datapoints';
 import { Datapoints } from '../datapoints';
 import { User } from '../user';
+import XLSX from 'xlsx';
+import * as fs from 'fs';
+import { Completed, VerificationCompleted } from '../../constants/task-status';
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -101,7 +104,6 @@ export const updateCorrectionPending = async (req, res, next) => {
   }
 }
 
-
 export const updateName = async (req, res, next) => {
   try {
     const userData = await User.find({ name: '' });
@@ -126,6 +128,41 @@ export const updateName = async (req, res, next) => {
 
 
   } catch (error) {
+    console.log(error?.message);
+  }
+}
 
+export const updateTaskStatusToVerificationCompletedForCompletedTask = async (req, res, next) => {
+  try {
+    // const workbook = XLSX.readFile('/home/pema/Desktop/ESGAPI/esgapi/src/api/temp/verificationstatus.xlsx', { cellDates: true });
+    // // for a format instead of cellDates{dateNF:'mm/dd/yyyy} also with 
+    // // XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1'],
+    // //  ? {raw:false}); // Important
+    // const sheet = XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']);
+    // fs.writeFileSync('/home/pema/Desktop/ESGAPI/esgapi/src/api/temp/verification-sheet.json', JSON.stringify(sheet));
+    // // return res.json(sheet);
+
+    const sheetData = fs.readFileSync('/home/pema/Desktop/ESGAPI/esgapi/src/api/temp/verification-sheet.json', 'utf8');
+    const parsedData = JSON.parse(sheetData);
+    const taskNumbers = parsedData.map((data) => {
+      return data?.TaskNumber
+    });
+
+    const updateCompletedTaskStatus = await TaskAssignment.updateMany({
+      taskNumber: {
+        $in: taskNumbers
+      },
+      taskStatus: Completed,
+      status: true
+    }, {
+      $set: {
+        taskStatus: VerificationCompleted
+      }
+    }, { new: true });
+
+
+    return res.json(updateCompletedTaskStatus);
+  } catch (error) {
+    return res.json({ message: error?.message });
   }
 }
