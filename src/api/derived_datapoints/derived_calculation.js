@@ -8,6 +8,7 @@ import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints'
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 // import { companiesAndAnalyst } from "../controversy_tasks/controller";
 import { BoardMembers } from "../boardMembers";
+import { BoardDirectors } from '../boardDirector';
 
 export const multiplyCalculation = async function (taskId, companyId, distinctYears, allDatapointsList,categoryId, userDetail) {
     //let multiplyT1 = performance.now();
@@ -286,12 +287,12 @@ export const minusCalculation = async function (taskId, companyId, mergedDetails
   
     for (let i = 0; i < minusRules.length; i++) {
       let derivedResponse;
-      let boardMemberEq = await BoardMembers.find({companyId: companyId, endDateTimeStamp: 0, status: true});
+      let boardMemberEq = await BoardDirectors.find({companyId: companyId, status: true});
       for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
         let yearSplit = distinctYears[currentYearIndex].split('-');
         let endDateString = yearSplit[1]+"-12-31";
         let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-        let boardMemberGt = await BoardMembers.find({companyId: companyId, endDateTimeStamp: {$gt: yearTimeStamp}, status: true});
+        let boardMemberGt = await BoardDirectors.find({companyId: companyId, status: true});
         console.log(1614709800 ,  yearTimeStamp);        
         let companyDetailObject = await Companies.findOne({
           _id: companyId
