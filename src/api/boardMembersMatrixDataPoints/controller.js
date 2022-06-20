@@ -569,6 +569,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       const companiesToBeAdded = _.uniqBy(allCompanyInfos, 'CIN');
       const companiesList = await Companies.findOne({
         cin: companiesToBeAdded[0].CIN,
+        clientTaxonomyId: "60c76f299def09f5ef0dca5c",
         status: true
       }).populate('createdBy');
       if ( allCompanyInfos[0]?.CIN == '' || allCompanyInfos[0]['Company Name'] == '' || companiesList == null || companiesList == undefined) {
@@ -637,6 +638,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
+      let allBoardMembersNamesList = [];
       for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails?.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
@@ -741,11 +743,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 }
               }
             }
+            allBoardMembersNamesList.push(boardMembersNameList[boardMemIndex]);
           }
         } catch (error) {
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
         }
       };
+      allBoardMembersNamesList = _.uniq(allBoardMembersNamesList);
       _.forEach(inactiveBoardMembersList, function (object) {
         let indexToUpdate = _.findIndex(boardMembersList, object);
         if (indexToUpdate >= 0) {
@@ -768,14 +772,14 @@ export const uploadBoardMembersData = async (req, res, next) => {
       
       let invalidBodMemberList = [];
       let bodMembersToInsert = [];
-      for (let index = 0; index < boardMembersNameList?.length; index++) {
-        const element = boardMembersNameList[index];
-        let memberDetails = allBoardMembers.filter(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()))
+      for (let index = 0; index < allBoardMembersNamesList?.length; index++) {
+        const element = allBoardMembersNamesList[index];
+        let memberDetails = allBoardMembers.filter(obj => obj.BOSP004.toLowerCase() == element.toLowerCase())
         if (memberDetails && memberDetails?.length > 0) {
-          let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
+          let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase() == element.toLowerCase() && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
-            let startDateData = boardMembersList.find(obj => obj?.memberName == element && obj?.dpCode == 'BOIR017')
-            let endDateData = boardMembersList.find(obj => obj?.memberName == element && obj?.dpCode == 'BOIR018')
+            let startDateData = boardMembersList.find(obj => obj?.memberName.toLowerCase() == element.toLowerCase() && obj?.dpCode == 'BOIR017')
+            let endDateData = boardMembersList.find(obj => obj?.memberName.toLowerCase() == element.toLowerCase() && obj?.dpCode == 'BOIR018')
             let endDateTimeStampValue = endDateData?.response ? endDateData?.response : "";
             
             try {
@@ -913,9 +917,9 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let kmpMembersToInsert = [];
       for (let index = 0; index < kmpMembersNameList?.length; index++) {
         const element = kmpMembersNameList[index];
-        let memberDetails = allKmpMembers.filter(obj => obj?.MASP003.toLowerCase().includes(element.toLowerCase()))
+        let memberDetails = allKmpMembers.filter(obj => obj?.MASP003.toLowerCase() == element.toLowerCase())
         if (memberDetails && memberDetails?.length > 0) {
-          let cmpMemberDetails = allKmpMembers.find(obj => obj?.MASP003.toLowerCase().includes(element.toLowerCase()) && obj.companyId.id == taskObject.companyId.id)
+          let cmpMemberDetails = allKmpMembers.find(obj => obj?.MASP003.toLowerCase() == element.toLowerCase() && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
             let memberObject = {
               MASP003: element,
