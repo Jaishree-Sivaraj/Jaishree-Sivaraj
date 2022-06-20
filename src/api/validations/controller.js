@@ -11,6 +11,7 @@ import { TaskAssignment } from '../taskAssignment'
 import { ProjectedValues } from "../projected_values";
 import * as fs from 'fs'
 import { BoardMembers } from '../boardMembers'
+import { BoardDirectors } from '../boardDirector';
 import { Kmp } from '../kmp'
 import { Ztables } from "../ztables";
 import { ValidationResults } from '../validation_results'
@@ -409,12 +410,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
               }
               keyIssuesList.push(keyIssues);
             }   
-            let boardMemberEq = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0, status: true});
+            let boardMemberEq = await BoardDirectors.find({companyId: taskDetailsObject.companyId.id, status: true});
             for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
               let yearSplit = distinctYears[currentYearIndex].split('-');
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-              let boardMemberGt = await BoardMembers.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: {$gt: yearTimeStamp}, status: true});
+              let boardMemberGt = await BoardDirectors.find({companyId: taskDetailsObject.companyId.id, status: true});
               console.log(1614709800 ,  yearTimeStamp)
               let mergeBoardMemberList = _.concat(boardMemberEq,boardMemberGt);
     
@@ -437,12 +438,12 @@ export const getAllValidation =async ({ user, params }, res, next) => {
                 }
               }
             }  
-            let kmpMemberEq = await Kmp.find({companyId: taskDetailsObject.companyId.id, endDateTimeStamp: 0, status: true});
+            let kmpMemberEq = await BoardDirectors.find({companyId: taskDetailsObject.companyId.id, status: true});
             for (let currentYearIndex = 0; currentYearIndex < distinctYears.length; currentYearIndex++) {
               let yearSplit = distinctYears[currentYearIndex].split('-');
               let endDateString = yearSplit[1]+"-12-31";
               let yearTimeStamp = Math.floor(new Date(endDateString).getTime()/1000);
-              let kmpMemberGt = await Kmp.find({companyId: taskDetailsObject.companyId.id,endDateTimeStamp:{$gt:yearTimeStamp}, status: true});
+              let kmpMemberGt = await BoardDirectors.find({companyId: taskDetailsObject.companyId.id, status: true});
               console.log(1614709800 ,  yearTimeStamp)
               let mergeKmpMemberList = _.concat(kmpMemberEq,kmpMemberGt);
       

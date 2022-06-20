@@ -6,7 +6,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BoardMembers } from '../boardMembers';
-import { BoardDirector } from '../boardDirector'
+import { BoardDirectors } from '../boardDirector';
 import { Kmp } from '../kmp';
 import {
   YetToStart,
@@ -364,10 +364,10 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     switch (dpType) {
       case BOARD_MATRIX:
         // memberDetails = await BoardDirector.find(activeMemberQuery);
-        memberDetails = await BoardMembers.find(activeMemberQuery);
+        memberDetails = await BoardDirectors.find(activeMemberQuery);
         break;
       case KMP_MATRIX:
-        memberDetails = await Kmp.find(activeMemberQuery);
+        memberDetails = await BoardDirectors.find(activeMemberQuery);
         break;
       default:
         break;
@@ -685,7 +685,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
             : {
               $or: [{ _id: memberId }, { BOSP004: memberName, status: true }],
             };
-        memberData = await BoardMembers.findOne(searchQuery);
+        memberData = await BoardDirectors.findOne(searchQuery);
         break;
       case KMP_MATRIX:
         searchQuery =
@@ -694,7 +694,7 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
             : {
               $or: [{ _id: memberId }, { MASP003: memberName, status: true }],
             };
-        memberData = await Kmp.findOne(searchQuery);
+        memberData = await BoardDirectors.findOne(searchQuery);
       default:
         console.log('Wrong dp Type');
         break;
