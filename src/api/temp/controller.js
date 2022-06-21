@@ -1,5 +1,6 @@
 import { TaskAssignment } from '../taskAssignment';
 import { Companies } from '../companies';
+import multer from 'multer';
 import { getSortedYear } from '../datapoints/dp-details-functions';
 import { StandaloneDatapoints } from '../standalone_datapoints';
 import { Datapoints } from '../datapoints';
@@ -164,5 +165,75 @@ export const updateTaskStatusToVerificationCompletedForCompletedTask = async (re
     return res.json(updateCompletedTaskStatus);
   } catch (error) {
     return res.json({ message: error?.message });
+  }
+}
+
+
+let uploadSheetStorage = multer.diskStorage({ //multers disk shop photos storage settings
+  destination: function (req, file, cb) {
+    cb(null, __dirname + '/uploads');
+  },
+  filename: function (req, file, cb) {
+    let datetimestamp = Date.now();
+    cb(null, file.fieldname + '-' + datetimestamp + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1])
+  }
+});
+
+let uploadSheet = multer({ //multer settings
+  storage: uploadSheetStorage,
+  fileFilter: function (req, file, callback) { //file filter
+    if (['xls', 'xlsx', 'xlsm'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
+      return callback(new Error('Wrong extension type'));
+    }
+    callback(null, true);
+  }
+}).fields([{
+  name: 'file',
+  maxCount: 198
+}]);
+
+export const newUpload = async (req, res, next) => {
+  try {
+    uploadSheet(req, res, async function (err) {
+      if (err) {
+        return res.status(400).json({
+          status: 400,
+          message: err?.message ? error?.message : 'Something went wrong with upload'
+        });
+      }
+      const filePath = req?.files?.file[0]?.path;
+      let workbook = XLSX.readFile(filePath, {
+        sheetStubs: false,
+        defval: ''
+      });
+      let sheet_name = workbook.SheetNames;
+      const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name]);
+
+      const taskNumbers = sheet.map((data) => {
+        return data?.TaskNumber
+      });
+
+      const updateCompletedTaskStatus = await TaskAssignment.updateMany({
+        taskNumber: {
+          $in: taskNumbers
+        },
+        taskStatus: Completed,
+        status: true
+      }, {
+        $set: {
+          taskStatus: VerificationCompleted
+        }
+      }, { new: true });
+
+    });
+    return res.status(200).json({
+      status: 200,
+      message: 'Task Status updated successfully'
+    })
+  } catch (error) {
+    return res.status(409).json({
+      status: 409,
+      message: error?.message ? error?.message : 'Failed to upload Sheet'
+    })
   }
 }

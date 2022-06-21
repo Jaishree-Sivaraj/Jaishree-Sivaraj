@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, updateCorrectionPending, updateName, updateTaskStatusToVerificationCompletedForCompletedTask } from './controller';
+import { create, index, show, update, destroy, updateCorrectionPending, updateName, updateTaskStatusToVerificationCompletedForCompletedTask, newUpload} from './controller';
 
 
 const router = new Router();
@@ -37,6 +37,25 @@ router.put('/updateTaskStatus',
 router.post('/',
   token({ required: true }),
   create)
+
+/**
+* @api {post} /standalone_datapoints/upload-company-esg Upload Company ESG files
+* @apiName UploadCompanyESGFiles
+* @apiGroup StandaloneDatapoints
+* @apiPermission user
+* @apiParam {String} access_token user access token.
+* @apiSuccess {Object} upload company esg files StandaloneDatapoints's data.
+* @apiError {Object} 400 Some parameters may contain invalid values.
+* @apiError 404 StandaloneDatapoints not found.
+* @apiError 401 user access only.
+*/
+router.post('/update/taskStatus',
+  token({
+    required: false
+  }),
+  query(),
+  newUpload)
+
 
 /**
  * @api {get} /temp Retrieve temps
