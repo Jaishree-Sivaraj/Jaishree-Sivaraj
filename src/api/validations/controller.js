@@ -358,12 +358,14 @@ export const getAllValidation =async ({ user, params }, res, next) => {
         populate: {
           path: "keyIssueId"
         }});
+
         if(validationRules?.length ==0){
           return res.status(200).json({
             status:200,
             message:`No Validation Rules attached to this task's pillar`
           });
         }
+        
         let mergedYear  = previousYear != '' ? _.concat(distinctYears,previousYear) : distinctYears;
         mergedYear = mergedYear.sort();
         const [derivedDatapoints, kmpDatapoints, boardMembersMatrixDataPoints, standalone_datapoints, projectedValues ] = await Promise.all([

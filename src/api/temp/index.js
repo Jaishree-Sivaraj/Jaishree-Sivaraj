@@ -1,27 +1,10 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { token } from '../../services/passport'
-import { create, index, show, update, destroy, updateCorrectionPending, updateName, updateTaskStatusToVerificationCompletedForCompletedTask } from './controller';
-
+import { create, index, show, update, destroy, updateCorrectionPending, updateName} from './controller';
 
 const router = new Router();
 const { taskStatus } = '';
-
-/**
-* @api {put} /temp/updateTaskStatus Update temp
-* @apiName UpdateTemp
-* @apiGroup Temp
-* @apiPermission user
-* @apiParam {String} access_token user access token.
-* @apiSuccess {Object} temp Temp's data.
-* @apiError {Object} 400 Some parameters may contain invalid values.
-* @apiError 404 Temp not found.
-* @apiError 401 user access only.
-*/
-router.put('/updateTaskStatus',
-  token({ required: true }),
-  updateTaskStatusToVerificationCompletedForCompletedTask)
-
 
 /**
  * @api {post} /temp Create temp
@@ -38,7 +21,7 @@ router.post('/',
   token({ required: true }),
   create)
 
-/**
+  /**
  * @api {get} /temp Retrieve temps
  * @apiName RetrieveTemps
  * @apiGroup Temp
