@@ -5,7 +5,7 @@ import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints'
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import { SELECT, STATIC } from '../../constants/dp-datatype';
 import { Completed } from '../../constants/task-status';
-import { BoardDirectors } from '../boardDirector';
+import { BoardDirector } from '../boardDirector';
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp';
 import {
@@ -252,7 +252,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    BoardDirectors.findOne({
+                    BoardDirector.findOne({
                         BOSP004: memberName,
                         status: true
                     })
@@ -382,7 +382,7 @@ export const repDatapointDetails = async (req, res, next) => {
                         .populate('companyId')
                         .populate('taskId')
                         .populate('uom'),
-                    BoardDirectors.findOne({
+                    BoardDirector.findOne({
                         BOSP004: memberName,
                         status: true
                     })

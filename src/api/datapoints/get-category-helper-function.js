@@ -6,7 +6,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BoardMembers } from '../boardMembers';
-import { BoardDirectors } from '../boardDirector';
+import { BoardDirector } from '../boardDirector';
 import { Kmp } from '../kmp';
 import {
   YetToStart,
@@ -361,22 +361,22 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     let memberDetails, terminatedDate, memberValue;
 
     // Getting all the active members
+
     switch (dpType) {
       case BOARD_MATRIX:
         // memberDetails = await BoardDirector.find(activeMemberQuery);
-        memberDetails = await BoardDirectors.find(activeMemberQuery);
+        memberDetails = await BoardDirector.find(activeMemberQuery);
         break;
       case KMP_MATRIX:
-        memberDetails = await BoardDirectors.find(activeMemberQuery);
+        memberDetails = await BoardDirector.find(activeMemberQuery);
         break;
       default:
         break;
     }
-
     memberDetails?.length > 0 && memberDetails?.map((member) => {
-      terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
-      terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
-      const memberJoiningDate = getMemberJoiningDate(member?.startDate);
+      // terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
+      // terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
+      const memberJoiningDate = getMemberJoiningDate(member?.joiningDate);
       let yearsForDataCollection = '';
       //  2018-2019,2019-2020,2020-2021
       for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
@@ -389,7 +389,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
         // secondHalf= 31st March 2019*/
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp == null || member.endDateTimeStamp > firstHalfDate);
+          && (member?.endDateTimeStamp == 0 || member?.endDateTimeStamp == null || member?.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
           if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
@@ -400,17 +400,17 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       }
 
       const memberName =
-        dpType == BOARD_MATRIX ? member.BOSP004 : member.MASP003;
+        dpType == BOARD_MATRIX ? member.BOSP004 : member.BOSP004;
       let label1 = memberName;
-      //! If they have a termination date then.
-      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
-        label1 = `${memberName}, last working date ${terminatedDate}`
-      }
+      // //! If they have a termination date then.
+      // if (member?.endDateTimeStamp > taskStartDate && member?.endDateTimeStamp !== 0 && member?.endDateTimeStamp !== null) {
+      //   label1 = `${memberName}, last working date ${terminatedDate}`
+      // }
 
-      //! If the member is terminated then.
-      if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
-        label1 = `${memberName}, is terminated on ${terminatedDate}`
-      }
+      // //! If the member is terminated then.
+      // if (member?.endDateTimeStamp < taskStartDate && member?.endDateTimeStamp !== 0 && member?.endDateTimeStamp !== null) {
+      //   label1 = `${memberName}, is terminated on ${terminatedDate}`
+      // }
 
       let label = memberName;
       memberValue = {
@@ -418,7 +418,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         label1,
         value: member.id,
         year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : '',
-        startDate: member.startDate,
+        startDate: member.joiningDate,
         endDate: member.endDateTimeStamp,
       };
 
@@ -685,16 +685,16 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
             : {
               $or: [{ _id: memberId }, { BOSP004: memberName, status: true }],
             };
-        memberData = await BoardDirectors.findOne(searchQuery);
+        memberData = await BoardDirector.findOne(searchQuery);
         break;
       case KMP_MATRIX:
         searchQuery =
           memberId == ''
-            ? { MASP003: memberName, status: true }
+            ? { BOSP004: memberName, status: true }
             : {
-              $or: [{ _id: memberId }, { MASP003: memberName, status: true }],
+              $or: [{ _id: memberId }, { BOSP004: memberName, status: true }],
             };
-        memberData = await BoardDirectors.findOne(searchQuery);
+        memberData = await BoardDirector.findOne(searchQuery);
       default:
         console.log('Wrong dp Type');
         break;
@@ -706,10 +706,10 @@ export async function getErrorMessageIfMemberIsNoLongerPartOfTheTask(
           ? memberData.BODR005 == 'M'
             ? 'he'
             : 'she'
-          : memberData.MASR008 == 'M'
+          : memberData.BODR005 == 'M'
             ? 'he'
             : 'she';
-      if (memberData?.startDate == '') {
+      if (memberData?.joiningDate == '') {
         return {
           status: 200,
           message: `Member's start date is empty kindly update`,
