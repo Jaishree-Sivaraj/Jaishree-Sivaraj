@@ -374,6 +374,13 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         break;
     }
     memberDetails?.length > 0 && memberDetails?.map((member) => {
+      let endTimeStamp;
+      if(member?.cessationDate != ""){
+      terminatedDate = new Date(member?.cessationDate).getTime()
+      console.log(new Date().getTime())
+      terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
+      endTimeStamp = new Date(member?.cessationDate).getTime()
+      }
       // terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       // terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const memberJoiningDate = getMemberJoiningDate(member?.joiningDate);
@@ -389,7 +396,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
         // secondHalf= 31st March 2019*/
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-          && (member?.endDateTimeStamp == 0 || member?.endDateTimeStamp == null || member?.endDateTimeStamp > firstHalfDate);
+        && (member.cessation == '' || endTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
           if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
@@ -402,15 +409,15 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       const memberName =
         dpType == BOARD_MATRIX ? member.BOSP004 : member.BOSP004;
       let label1 = memberName;
-      // //! If they have a termination date then.
-      // if (member?.endDateTimeStamp > taskStartDate && member?.endDateTimeStamp !== 0 && member?.endDateTimeStamp !== null) {
-      //   label1 = `${memberName}, last working date ${terminatedDate}`
-      // }
+      //! If they have a termination date then.
+      if (endTimeStamp > taskStartDate && endTimeStamp !== 0 && endTimeStamp !== null) {
+        label1 = `${memberName}, last working date ${terminatedDate}`
+      }
 
-      // //! If the member is terminated then.
-      // if (member?.endDateTimeStamp < taskStartDate && member?.endDateTimeStamp !== 0 && member?.endDateTimeStamp !== null) {
-      //   label1 = `${memberName}, is terminated on ${terminatedDate}`
-      // }
+      //! If the member is terminated then.
+      if (endTimeStamp < taskStartDate && endTimeStamp !== 0 && endTimeStamp !== null) {
+        label1 = `${memberName}, is terminated on ${terminatedDate}`
+      }
 
       let label = memberName;
       memberValue = {

@@ -209,7 +209,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     const isDerivedCalculationRequired = clientTaxonomyDetails?.isDerivedCalculationRequired;
     // If true then ESGDS, false then SFDR ['Non- SFDR have derived calculations]
 
-    const activeMemberQuery = { companyId: taskDetails.companyId.id, status: true };
+    const activeMemberQuery = { companyId: taskDetails.companyId.id, $or:[{memberType:dpType},{memberType:'KmpAndBoardMatrix'}], status: true };
 
     let response = {
       status: 200,
@@ -347,7 +347,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails = result?.response?.datapointList?.memberList;
                 let memberDetail = allMembersFullDetails?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail?.joiningDate != '' && memberDetail?.joiningDate != null && memberDetail?.cessationDate != '' && memberDetail?.cessationDate != null) {
+                  if (memberDetail?.joiningDate != '' && memberDetail?.joiningDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
@@ -382,7 +382,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails1 = result?.response?.datapointList?.memberList;
                 let memberDetail1 = allMembersFullDetails1?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail1?.joiningDate != '' && memberDetail1?.joiningDate != null && memberDetail1?.cessationDate != '' && memberDetail1?.cessationDate != null) {
+                  if (memberDetail1?.joiningDate != '' && memberDetail1?.joiningDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
