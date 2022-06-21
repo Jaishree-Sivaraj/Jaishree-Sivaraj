@@ -2,6 +2,7 @@
 import _ from 'lodash';
 import { TaskAssignment } from ".";
 import { BoardMembers } from '../boardMembers'
+import { BoardDirector } from '../boardDirector';
 import { Kmp } from '../kmp';
 import { NUMBER } from '../../constants/dp-datatype';
 import { StandaloneDatapoints } from '../standalone_datapoints'
@@ -32,13 +33,13 @@ export async function getTotalExpectedYear(memberName, distinctYears, dpType, fi
         if (memberName?.length > 0) {
             let memberDetails = []
             if (dpType == BOARD_MATRIX) {
-                memberDetails = await BoardMembers.find({
+                memberDetails = await BoardDirector.find({
                     BOSP004: { $in: memberName },
                     status: true
                 });
             } else if (dpType == KMP_MATRIX) {
-                memberDetails = await Kmp.find({
-                    MASP003: { $in: memberName },
+                memberDetails = await BoardDirector.find({
+                    BOSP004: { $in: memberName },
                     status: true
                 })
             }

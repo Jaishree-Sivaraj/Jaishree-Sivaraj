@@ -3,6 +3,7 @@ import { StandaloneDatapoints } from '../standalone_datapoints';
 import { BoardMembersMatrixDataPoints } from '../boardMembersMatrixDataPoints';
 import { KmpMatrixDataPoints } from '../kmpMatrixDataPoints';
 import { BoardMembers } from '../boardMembers';
+import { BoardDirector } from '../boardDirector';
 import { Kmp } from '../kmp';
 import { STANDALONE, BOARD_MATRIX, KMP_MATRIX } from '../../constants/dp-type';
 import {
@@ -352,7 +353,7 @@ export const datapointDetails = async (req, res, next) => {
             ...historyQuery,
             memberName: { $regex: memberName, $options: 'i' },
           }),
-          BoardMembers.findOne({
+          BoardDirector.findOne({
             BOSP004: memberName,
             status: true,
           }),
@@ -652,8 +653,8 @@ export const datapointDetails = async (req, res, next) => {
             ...historyQuery,
             memberName: { $regex: memberName, $options: 'i' },
           }),
-          Kmp.findOne({
-            MASP003: memberName,
+          BoardDirector.findOne({
+            BOSP004: memberName,
             status: true,
           }),
         ]);
