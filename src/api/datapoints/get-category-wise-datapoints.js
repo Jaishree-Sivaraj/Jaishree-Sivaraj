@@ -347,7 +347,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails = result?.response?.datapointList?.memberList;
                 let memberDetail = allMembersFullDetails?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail?.joiningDate != '' && memberDetail?.joiningDate != null) {
+                  if (memberDetail?.joiningDate != "" || memberDetail?.joiningDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
@@ -382,7 +382,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails1 = result?.response?.datapointList?.memberList;
                 let memberDetail1 = allMembersFullDetails1?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail1?.joiningDate != '' && memberDetail1?.joiningDate != null) {
+                  if (memberDetail1?.joiningDate != '' || memberDetail1?.joiningDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
