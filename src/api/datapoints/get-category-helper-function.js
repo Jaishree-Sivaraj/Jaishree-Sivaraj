@@ -375,11 +375,10 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
     }
     memberDetails?.length > 0 && memberDetails?.map((member) => {
       let endTimeStamp;
+      console.log(member?.cessationDate != "", member?.cessationDate)
       if(member?.cessationDate != ""){
-      terminatedDate = new Date(member?.cessationDate).getTime()
-      console.log(new Date().getTime())
-      terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
-      endTimeStamp = new Date(member?.cessationDate).getTime()
+      terminatedDate = new Date(member?.cessationDate)
+      endTimeStamp = new Date(member?.cessationDate)
       }
       // terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
       // terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
