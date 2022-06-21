@@ -220,6 +220,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     // Checking for pirority Dp codes is only done when task Status is pending as during data collection only we need to be careful and aware.
     let result;
     let memberList
+   
     // member List is only needed when dpType is Kmp or board-matrix.
     if (dpType == BOARD_MATRIX || dpType == KMP_MATRIX) {
       memberList = await getMembers(
@@ -230,7 +231,6 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
         fiscalYearEndMonth,
         fiscalYearEndDate
       );
-
       datapointList.memberList = memberList;
     }
 
@@ -344,10 +344,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                let allMembersFullDetails = result.response.datapointList.memberList;
-                let memberDetail = allMembersFullDetails.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                let allMembersFullDetails = result?.response?.datapointList?.memberList;
+                let memberDetail = allMembersFullDetails?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null && memberDetail?.endDate != '' && memberDetail?.endDate != null) {
+                  if (memberDetail?.joiningDate != '' && memberDetail?.joiningDate != null && memberDetail?.cessationDate != '' && memberDetail?.cessationDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
@@ -357,6 +357,8 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 } else {
                   return res.status(200).json(result);
                 }
+              
+
               case KMP_MATRIX:
                 result = await getFilteredDatapointsForBMAndKM(
                   memberList,
@@ -377,10 +379,10 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                   false,
                   repFinalSubmit
                 );
-                let allMembersFullDetails1 = result.response.datapointList.memberList;
-                let memberDetail1 = allMembersFullDetails1.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
+                let allMembersFullDetails1 = result?.response?.datapointList?.memberList;
+                let memberDetail1 = allMembersFullDetails1?.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null && memberDetail1?.endDate != '' && memberDetail1?.endDate != null) {
+                  if (memberDetail1?.joiningDate != '' && memberDetail1?.joiningDate != null && memberDetail1?.cessationDate != '' && memberDetail1?.cessationDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
