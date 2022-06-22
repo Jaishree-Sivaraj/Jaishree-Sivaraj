@@ -1,0 +1,1 @@
+export const TAXONOMY_NAME = ['Acuite', 'SFDR', 'SFDR_V1']
