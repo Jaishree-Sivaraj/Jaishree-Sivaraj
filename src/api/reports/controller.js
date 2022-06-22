@@ -13,12 +13,13 @@ import { TaskAssignment } from '../taskAssignment'
 import { Batches } from '../batches'
 import { Role } from '../role'
 import { ErrorDetails } from '../errorDetails'
-import { Completed, VerificationCompleted } from '../../constants/task-status';
-import { GroupAdmin } from '../../constants/roles';
+import { Completed, VerificationCompleted, CollectionCompleted, CorrectionCompleted } from '../../constants/task-status';
+import { GroupAdmin, SuperAdmin, Admin, QA } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
 import { Controversy } from "../controversy";
 import { getTaskDetails, getControveryDetails } from './helper-function';
 import { CompletedTask, ControversyTask, PendingTask } from '../../constants/task-type';
+import { TAXONOMY_NAME } from '../../constants/taxonomy-name-for-export';
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -754,43 +755,47 @@ export const companySearch = async (req, res, next) => {
 export const exportQATasks = async (req, res, next) => {
   const { selectedTasks, isSelectedAll, role } = req.body;
   let exportQuery = {}, taxonomyBatchIds = [];
-  let taxonomyDetail = await ClientTaxonomy.findOne({
-    $or: [{ taxonomyName: "SFDR" }, {
-      taxonomyName: "SFDR_V1"
-    }], status: true
+  let taxonomyDetailIds = await ClientTaxonomy.distinct('_id', {
+    // $or: [{ taxonomyName: "SFDR" }, {
+    //   taxonomyName: "SFDR_V1"
+    // }], 
+    taxonomyName: { $in: TAXONOMY_NAME },
+    status: true
   });
-  if (taxonomyDetail) {
-    taxonomyBatchIds = await Batches.find({ clientTaxonomy: taxonomyDetail.id }).distinct('_id');
+  if (taxonomyDetailIds?.length > 0) {
+    taxonomyBatchIds = await Batches.find({ clientTaxonomy: { $in: taxonomyDetailIds } }).distinct('_id');
   } else {
-    return res.status(400).json({ status: "400", message: "SFDR taxonomy not found!" });
+    return res.status(400).json({ status: "400", message: " Task's taxonomy not available for export" });
   }
   if (selectedTasks && selectedTasks.length > 0 && !isSelectedAll) {
-    let sfdrTaskIds = await TaskAssignment.find({
+    // Getting all  the selected task belonging to said TaxonomyName
+    let taskIds = await TaskAssignment.find({
       batchId: { $in: taxonomyBatchIds },
-      _id: { $in: selectedTasks },
-      taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
+      _id: { $in: selectedTasks }, // very rare for duplicate task to come in.
+      taskStatus: { $in: [CollectionCompleted, CorrectionCompleted] },
       status: true
     }).distinct('_id');
-    if (sfdrTaskIds.length > 0) {
+
+    if (taskIds.length > 0) {
       exportQuery = {
-        taskId: { $in: sfdrTaskIds },
+        taskId: { $in: taskIds },
         status: true,
         isActive: true
       }
     } else {
-      return res.status(400).json({ status: "400", message: "Can export only SFDR task data!", data: [] });
+      return res.status(400).json({ status: "400", message: "Selected Task's Taxonomy Unavailable For Export", data: [] });
     }
   } else if ((!selectedTasks || selectedTasks.length <= 0) && isSelectedAll) {
-    if (role == "GroupAdmin") {
+    if (role == GroupAdmin) {
       let adminGroupIds = await Group.find({ groupAdmin: req.user.id }).distinct('_id');
-      console.log('adminGroupIds', adminGroupIds);
       if (adminGroupIds.length > 0) {
         let groupTaskIds = await TaskAssignment.find({
           batchId: { $in: taxonomyBatchIds },
           groupId: { $in: adminGroupIds },
-          taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
+          taskStatus: { $in: [CollectionCompleted, CorrectionCompleted] },
           status: true
         }).distinct('_id');
+
         if (groupTaskIds.length > 0) {
           exportQuery = {
             taskId: { $in: groupTaskIds },
@@ -801,14 +806,15 @@ export const exportQATasks = async (req, res, next) => {
           return res.status(400).json({ status: "400", message: "No data available to export!", data: [] });
         }
       } else {
-        return res.status(400).json({ status: "400", message: "You're not an admin for any group!", data: [] });
+        return res.status(400).json({ status: 400, message: "You're not an admin for any group!", data: [] });
       }
-    } else if (role == "Admin" || role == "SuperAdmin") {
+    } else if (role == Admin || role == SuperAdmin) {
       let batchTaskIds = await TaskAssignment.find({
         batchId: { $in: taxonomyBatchIds },
-        taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
+        taskStatus: { $in: [CollectionCompleted, CorrectionCompleted] },
         status: true
       }).distinct('_id');
+
       if (batchTaskIds.length > 0) {
         exportQuery = {
           taskId: { $in: batchTaskIds },
@@ -821,13 +827,14 @@ export const exportQATasks = async (req, res, next) => {
           isActive: true
         }
       }
-    } else if (role == "QA") {
+    } else if (role == QA) {
       let qaTaskIds = await TaskAssignment.find({
         batchId: { $in: taxonomyBatchIds },
         qaId: req.user.id,
-        taskStatus: { $in: ["Collection Completed", "Correction Completed"] },
+        taskStatus: { $in: [CollectionCompleted, CorrectionCompleted] },
         status: true
       }).distinct('_id');
+
       if (qaTaskIds.length > 0) {
         exportQuery = {
           taskId: { $in: qaTaskIds },
@@ -843,13 +850,18 @@ export const exportQATasks = async (req, res, next) => {
   } else {
     return res.status(400).json({ status: "400", message: "No tasks selected to export data!", data: [] });
   }
+
   let distinctTaskIds = await StandaloneDatapoints.find(exportQuery).distinct('taskId');
   let selectedCompanyIds = await TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('companyId');
   const [allErrorDetails, selectedTaskData, allSourceDetails] = await Promise.all([
-    ErrorDetails.find({ taskId: { $in: distinctTaskIds }, status: true }).populate('errorTypeId').populate('datapointId').populate('companyId'),
+    ErrorDetails.find({ taskId: { $in: distinctTaskIds }, status: true })
+      .populate('errorTypeId')
+      .populate('datapointId')
+      .populate('companyId'),
     TaskAssignment.find({ _id: { $in: distinctTaskIds } }).distinct('_id'),
     CompanySources.find({ status: true, companyId: { $in: selectedCompanyIds } })
   ]);
+
   if (selectedTaskData.length > 0) {
     StandaloneDatapoints.aggregate([
       {
@@ -869,6 +881,8 @@ export const exportQATasks = async (req, res, next) => {
       { '$unwind': '$categoryDetails' },
       { '$lookup': { from: 'measureuoms', localField: 'uom', foreignField: '_id', as: 'uomDetails' } },
       { '$unwind': { path: '$uomDetails', preserveNullAndEmptyArrays: true } },
+      { '$lookup': { from: 'clienttaxonomies', localField: 'categoryDetails.clientTaxonomyId', foreignField: '_id', as: 'clientTaxonomy' } },
+      { '$unwind': { path: '$clientTaxonomy' } },
       {
         '$project': {
           taskNumber: '$taskDetails.taskNumber',
@@ -887,124 +901,156 @@ export const exportQATasks = async (req, res, next) => {
               "else": "$uomDetails.uomName"
             }
           },
-          didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
-          typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
-          companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
-          companyDataElementSubLabel: "$additionalDetails.companyDataElementSubLabel",
-          totalOrSubLineItemForNumbers: "$additionalDetails.totalOrSubLineItemForNumbers",
-          formatOfDataProvidedByCompanyChartTableText: "$additionalDetails.formatOfDataProvidedByCompanyChartTableText",
-          textSnippet: '$textSnippet',
-          sectionOfDocument: "$additionalDetails.sectionOfDocument",
-          pageNumber: '$pageNumber',
-          sourceName: "$sourceName",
-          keywordUsed: "$additionalDetails.keywordUsed",
-          commentG: "$additionalDetails.commentG",
-          hasError: '',
-          errorType: '',
-          errorComments: '',
-          additionalSourceUsed: '$additionalDetails.additionalSourceUsed?',
           _id: '$_id',
           taskId: '$taskDetails._id',
           companyId: '$companyId',
           pillarId: '$categoryDetails._id',
-          dpCodeId: '$datapointDetails._id'
+          dpCodeId: '$datapointDetails._id',
+          clientTaxonomy: 1,
+          additionalDetails: 1,
+          // didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
+          // typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
+          // companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
+          // companyDataElementSubLabel: "$additionalDetails.companyDataElementSubLabel",
+          // totalOrSubLineItemForNumbers: "$additionalDetails.totalOrSubLineItemForNumbers",
+          // formatOfDataProvidedByCompanyChartTableText: "$additionalDetails.formatOfDataProvidedByCompanyChartTableText",
+          // textSnippet: '$textSnippet',
+          // sectionOfDocument: "$additionalDetails.sectionOfDocument",
+          pageNumber: '$pageNumber',
+          sourceName: "$sourceName",
+          // keywordUsed: "$additionalDetails.keywordUsed",
+          // commentG: "$additionalDetails.commentG",
+          hasError: 1,
+          errorType: 1,
+          errorComments: 1,
+          // additionalSourceUsed: '$additionalDetails.additionalSourceUsed?',
+
         }
       }
     ])
       .then((standaloneData) => {
+        let additionalFieldAfterComparison = {}, additionalFieldArrayKey = [];
         for (let index = 0; index < standaloneData.length; index++) {
+
+          // Anyways it is iterating.
           const element = standaloneData[index];
+          // getting AdditionalData
+          Object.keys(element?.additionalDetails).forEach((key) => {
+            additionalFieldArrayKey.push(key);
+          });
+
+          for (let i = 0; i < element?.clientTaxonomy?.outputFields?.additionalFields?.length; i++) {
+            const fieldName = element?.clientTaxonomy?.outputFields?.additionalFields[i].fieldName;
+            if (additionalFieldArrayKey.includes(fieldName)) {
+              additionalFieldAfterComparison[fieldName] = element?.additionalDetails[fieldName];
+            }
+            else {
+              additionalFieldAfterComparison[fieldName] = ''
+            }
+          }
+
+          element.additionalDetails = additionalFieldAfterComparison;
+
+
           let errorDpDetails = allErrorDetails.filter((obj) =>
-            obj?.datapointId?.code == element?.dpCode && obj?.companyId?.companyName == element?.company && obj?.year == element?.year
+            obj?.datapointId?.code == element?.dpCode
+            && obj?.companyId?.companyName == element?.company
+            && obj?.year == element?.year
           )
+
           if (errorDpDetails.length > 0) {
-            standaloneData[index].hasError = true;
-            standaloneData[index].errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
-            standaloneData[index].errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
+            element.hasError = true;
+            element.errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
+            element.errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
           }
-        }
+        
+
         const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
-        ChildDp.aggregate([
-          {
-            $match: {
-              taskId: { $in: distinctTaskIdList },
-              status: true,
-              isActive: true
-            }
-          },
-          {
-            $addFields: {
-              convertedTaskId: { $toObjectId: "$taskId" },
-              convertedDatapointId: { $toObjectId: "$parentDpId" }
-            }
-          },
-          { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
-          { '$unwind': '$taskDetails' },
-          { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
-          { '$unwind': '$companyDetails' },
-          { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
-          { '$unwind': '$categoryDetails' },
-          {
-            '$project': {
-              taskNumber: '$taskDetails.taskNumber',
-              company: '$companyDetails.companyName',
-              pillar: '$categoryDetails.categoryName',
-              dpCode: '$childFields.dpCode',
-              year: '$year',
-              response: '$childFields.response',
-              placeValue: '$childFields.placeValue',
-              // uom: '$childFields.uom',
-              measureUom: 1, "uom": {
-                "$cond": {
-                  "if": { $lte: ["$childFields.uom", null] },
-                  "then": "",
-                  "else": "$childFields.uom"
-                }
-              },
-              didTheCompanyReport: "$childFields.didTheCompanyReport",
-              typeOfValueActualDerivedProxy: "$childFields.typeOf",
-              companyDataElementLabel: "$childFields.companyDataElementLabel",
-              companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
-              formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
-              textSnippet: '$childFields.textSnippet',
-              sectionOfDocument: "$childFields.sectionOfDocument",
-              pageNumber: '$childFields.pageNumber',
-              keywordUsed: "$childFields.keywordUsed",
-              commentG: "$childFields.commentG",
-              sourceName: "$childFields.source",
-              hasError: '',
-              errorType: '',
-              errorComments: '',
-              _id: '$_id',
-              taskId: '$taskId',
-              companyId: '$companyId',
-              pillarId: '$categoryDetails._id',
-              dpCodeId: '$parentDpId',
-            }
-          }
-        ])
-          .then((childData) => {
-            for (let index = 0; index < childData.length; index++) {
-              const element = childData[index];
-              if (element.sourceName != '' || element.sourceName != ' ') {
-                let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
-                childData[index].sourceName = sourceDet.name;
+        let responseData = standaloneData;
+          ChildDp.aggregate([
+            {
+              $match: {
+                taskId: { $in: distinctTaskIdList },
+                status: true,
+                isActive: true
+              }
+            },
+            {
+              $addFields: {
+                convertedTaskId: { $toObjectId: "$taskId" },
+                convertedDatapointId: { $toObjectId: "$parentDpId" }
+              }
+            },
+            { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
+            { '$unwind': '$taskDetails' },
+            { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
+            { '$unwind': '$companyDetails' },
+            { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
+            { '$unwind': '$categoryDetails' },
+            {
+              '$project': {
+                taskNumber: '$taskDetails.taskNumber',
+                company: '$companyDetails.companyName',
+                pillar: '$categoryDetails.categoryName',
+                dpCode: '$childFields.dpCode',
+                year: '$year',
+                response: '$childFields.response',
+                placeValue: '$childFields.placeValue',
+                // uom: '$childFields.uom',
+                measureUom: 1, "uom": {
+                  "$cond": {
+                    "if": { $lte: ["$childFields.uom", null] },
+                    "then": "",
+                    "else": "$childFields.uom"
+                  }
+                },
+                didTheCompanyReport: "$childFields.didTheCompanyReport",
+                typeOfValueActualDerivedProxy: "$childFields.typeOf",
+                companyDataElementLabel: "$childFields.companyDataElementLabel",
+                companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
+                formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
+                textSnippet: '$childFields.textSnippet',
+                sectionOfDocument: "$childFields.sectionOfDocument",
+                pageNumber: '$childFields.pageNumber',
+                keywordUsed: "$childFields.keywordUsed",
+                commentG: "$childFields.commentG",
+                sourceName: "$childFields.source",
+                hasError: '',
+                errorType: '',
+                errorComments: '',
+                _id: '$_id',
+                taskId: '$taskId',
+                companyId: '$companyId',
+                pillarId: '$categoryDetails._id',
+                dpCodeId: '$parentDpId',
               }
             }
-            let responseData = _.concat(standaloneData, childData);
-            responseData = _.orderBy(responseData, ['year'], ['desc'])
-            responseData = _.sortBy(responseData, 'dpCode')
-            responseData = _.sortBy(responseData, 'company')
-            // var collator = new Intl.Collator(undefined, {
-            //   numeric: true,
-            //   sensitivity: 'base'
-            // });
-            // responseData.sort(function(a, b) {
-            //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
-            // });
+          ])
+            .then((childData) => {
+              for (let index = 0; index < childData.length; index++) {
+                const element = childData[index];
+                if (element.sourceName != '' || element.sourceName != ' ') {
+                  let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
+                  childData[index].sourceName = sourceDet.name;
+                }
+              }
+              responseData = _.concat(responseData, childData);
+              responseData = _.orderBy(responseData, ['year'], ['desc'])
+              responseData = _.sortBy(responseData, 'dpCode')
+              responseData = _.sortBy(responseData, 'company')
+              // var collator = new Intl.Collator(undefined, {
+              //   numeric: true,
+              //   sensitivity: 'base'
+              // });
+              // responseData.sort(function(a, b) {
+              //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
+              // });
 
-            return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
-          })
+            });
+        }
+        return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
+
+
       })
       .catch((error) => {
         return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
@@ -1100,43 +1146,43 @@ export const exportAdminTask = async (req, res, next) => {
 
 export const exportAnalystTask = async (req, res, next) => {
   let { _id } = req.user;
-  let { role,taskType } = req.params;
+  let { role, taskType } = req.params;
   let findQuery = {}
   let rows = [], count = 0;
-  if(role  == "Analyst"){
-  if(taskType == "Data Collection"){
-    findQuery = {
-      analystId: _id,
-      $or: [
-        {
-          taskStatus: "Pending"
-        },
-        {
-          taskStatus: "In Progress"
-        }
-      ],
-      status: true,
+  if (role == "Analyst") {
+    if (taskType == "Data Collection") {
+      findQuery = {
+        analystId: _id,
+        $or: [
+          {
+            taskStatus: "Pending"
+          },
+          {
+            taskStatus: "In Progress"
+          }
+        ],
+        status: true,
+      }
+    } else if (taskType == "Data Correction") {
+      findQuery = {
+        analystId: _id,
+        $or: [
+          {
+            taskStatus: "Verification Pending"
+          },
+          {
+            taskStatus: "Correction Pending"
+          }
+        ],
+        status: true,
+      }
+    } else if (taskType == "Controversy Collection") {
+      findQuery = {
+        analystId: _id,
+        status: true
+      }
     }
-  }else if (taskType == "Data Correction") {
-    findQuery = {
-      analystId: _id,
-      $or: [
-        {
-          taskStatus: "Verification Pending"
-        },
-        {
-          taskStatus: "Correction Pending"
-        }
-      ],
-      status: true,
-    }
-  } else if (taskType == "Controversy Collection") {
-    findQuery = {
-      analystId: _id,
-      status: true
-    }
-  }
-  } else if (role == "QA"){
+  } else if (role == "QA") {
     if (taskType == "Data Verification") {
       findQuery = {
         qaId: _id,
@@ -1151,59 +1197,59 @@ export const exportAnalystTask = async (req, res, next) => {
         status: true
       }
     }
-  } 
+  }
   if (taskType == "Controversy Collection") {
     await ControversyTasks.count(findQuery)
-    .then(async (count) => {
-      await ControversyTasks.find(findQuery)
-        .populate('companyId')
-        .populate('analystId')
-        .populate('createdBy')
-        .then(async (controversyTasks) => {
-          let responseToReturn = {
-            status: "200",
-            message: "Tasks retrieved successfully!",
-            count: count,
-            rows: []
-          };
-          if (controversyTasks && controversyTasks.length > 0) {
-            for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
-              let yesterday = new Date();
-              yesterday.setDate(yesterday.getDate() - 1);
-             
-              const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
-                Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
-                Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
-              ])
-              
-              let object = {};
-              object.taskNumber = controversyTasks[cIndex].taskNumber;
-              object.taskId = controversyTasks[cIndex].id;
-              object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
-              object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
-              object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
-              object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
-              object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
-              object.status = controversyTasks[cIndex].status;
-              object.reassessmentDate = controversyTasks[cIndex].reassessmentDate;
-              object.reviewedByCommittee = controversyTasks[cIndex].reviewedByCommittee;
-              object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
-              object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-              object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
-              object.totalNoOfControversy = totalNoOfControversy;
-              if (controversyTasks[cIndex] && object) {
-                 responseToReturn.rows.push(object)
+      .then(async (count) => {
+        await ControversyTasks.find(findQuery)
+          .populate('companyId')
+          .populate('analystId')
+          .populate('createdBy')
+          .then(async (controversyTasks) => {
+            let responseToReturn = {
+              status: "200",
+              message: "Tasks retrieved successfully!",
+              count: count,
+              rows: []
+            };
+            if (controversyTasks && controversyTasks.length > 0) {
+              for (let cIndex = 0; cIndex < controversyTasks.length; cIndex++) {
+                let yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
+                  Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true }).limit(1).sort({ updatedAt: -1 }),
+                  Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
+                  Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
+                ])
+
+                let object = {};
+                object.taskNumber = controversyTasks[cIndex].taskNumber;
+                object.taskId = controversyTasks[cIndex].id;
+                object.companyId = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.id : '';
+                object.company = controversyTasks[cIndex].companyId ? controversyTasks[cIndex].companyId.companyName : '';
+                object.analystId = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.id : '';
+                object.analyst = controversyTasks[cIndex].analystId ? controversyTasks[cIndex].analystId.name : '';
+                object.taskStatus = controversyTasks[cIndex].taskStatus ? controversyTasks[cIndex].taskStatus : '';
+                object.status = controversyTasks[cIndex].status;
+                object.reassessmentDate = controversyTasks[cIndex].reassessmentDate;
+                object.reviewedByCommittee = controversyTasks[cIndex].reviewedByCommittee;
+                object.createdBy = controversyTasks[cIndex].createdBy ? controversyTasks[cIndex].createdBy : null;
+                object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
+                object.totalNoOfControversy = totalNoOfControversy;
+                if (controversyTasks[cIndex] && object) {
+                  responseToReturn.rows.push(object)
+                }
               }
             }
-          }
-           return res.json(responseToReturn);
-        })
-        .catch((error) => {
-          return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy tasks!" })
-        })
-    });
-  }else{
+            return res.json(responseToReturn);
+          })
+          .catch((error) => {
+            return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to retrieve controversy tasks!" })
+          })
+      });
+  } else {
     count = await TaskAssignment.count(findQuery);
     await TaskAssignment.find(findQuery)
       .sort({ createdAt: -1 })
@@ -1222,7 +1268,7 @@ export const exportAnalystTask = async (req, res, next) => {
           //   categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
           //     .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
           // }
-    
+
           let taskObject = {
             taskId: object?.id,
             taskNumber: object?.taskNumber,
@@ -1256,7 +1302,7 @@ export const exportAnalystTask = async (req, res, next) => {
           // if (taskType == "DataVerification") {
           //   taskObject.isChecked = false;
           // }
-  
+
           rows.push(taskObject);
         }
         return res.status(200).json({ status: "200", rows: rows, count: count, message: "Task retrieved succesfully!" });
@@ -1267,8 +1313,8 @@ export const exportAnalystTask = async (req, res, next) => {
           message: error.message ? error.message : "Failed to retrieve tasks!"
         });
       });
-      }
- 
+  }
+
 
 }
 // export const exportQATasks = async (req, res, next) => {
