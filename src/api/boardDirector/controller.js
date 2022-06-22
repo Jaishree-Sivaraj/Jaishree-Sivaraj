@@ -14,6 +14,7 @@ export const create = async (req, res, next) => {
   var details = req?.body?.details;
   try {
     let addObject = [], fileName;
+    let yearTimeStamp = 0;
     if (details?.profilePhoto && details?.profilePhoto?.length > 0) {
       let profilePhotoItem = details.profilePhoto;
       let profilePhotoFileType = profilePhotoItem.split(';')[0].split('/')[1];
@@ -48,6 +49,9 @@ export const create = async (req, res, next) => {
           return e2.cessationDate != "";
         });
         if (checkingDuplicateValue == true) {
+          if (directorData[index]?.cessationDate != "") {
+            yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
+          }
           var data = {
             din: directorData[index]?.din,
             BOSP004: directorData[index]?.name.trim(),
@@ -55,6 +59,7 @@ export const create = async (req, res, next) => {
             dob: directorData[index]?.dob,
             companyId: directorData[index]?.companyId,
             cin: directorData[index]?.cin,
+            endDateTimeStamp: yearTimeStamp,
             companyName: directorData[index]?.companyName,
             joiningDate: directorData[index]?.joiningDate,
             cessationDate: directorData[index]?.cessationDate,
@@ -67,6 +72,7 @@ export const create = async (req, res, next) => {
             createdAt: new Date(),
             updatedAt: new Date()
           }
+          console.log(data)
           addObject.push(data)
         } else if (checkingDuplicateValue == false) {
           return res.status(400).json({
@@ -76,6 +82,9 @@ export const create = async (req, res, next) => {
         }
       }
       else {
+        if (directorData[index]?.cessationDate != "") {
+          yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
+        }
         var data = {
           din: directorData[index]?.din,
           BOSP004: directorData[index]?.name.trim(),
@@ -83,6 +92,7 @@ export const create = async (req, res, next) => {
           dob: directorData[index]?.dob,
           companyId: directorData[index]?.companyId,
           cin: directorData[index]?.cin,
+          endDateTimeStamp: yearTimeStamp,
           companyName: directorData[index]?.companyName,
           joiningDate: directorData[index]?.joiningDate,
           cessationDate: directorData[index]?.cessationDate,
@@ -95,6 +105,8 @@ export const create = async (req, res, next) => {
           createdAt: new Date(),
           updatedAt: new Date()
         }
+        console.log(data)
+
 
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;

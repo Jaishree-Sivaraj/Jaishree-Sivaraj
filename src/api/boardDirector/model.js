@@ -54,6 +54,10 @@ const boardDirectorSchema = new Schema({
   qualification: {
     type: String
   },
+  endDateTimeStamp: {
+    type: Number,
+    default:0
+  },
   profilePhoto: {
     type: String
   },
@@ -82,6 +86,7 @@ boardDirectorSchema.methods = {
       companyId: this.companyId,
       companyName: this.companyName,
       cin: this.cin,
+      endDateTimeStamp: this.endDateTimeStamp,
       joiningDate: this.joiningDate,
       cessationDate: this.cessationDate,
       memberType: this.memberType,
