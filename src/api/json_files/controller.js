@@ -103,7 +103,7 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       }
     }
   } else if (params.type == 'controversy') {
-    var controversyTasks = await ControversyTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true }).populate({
+    var controversyTasks = await ControversyTasks.find({ canGenerateJson: true, isJsonGenerated: false, status: true, reviewedByCommittee : "Yes" }).populate({
       path: 'companyId',
       populate: {
         path: 'clientTaxonomyId'
@@ -220,13 +220,15 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
   } else if (body.type && body.type === 'controversy') {
     let companyDetails = await Companies.findOne({ _id: body.companyId, status: true }).populate('clientTaxonomyId');
     if (companyDetails) {
-      let controversyJsonDatapoints = await Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id');
-      let companyControversyYears = await Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year');
+      const [controversyJsonDatapoints, controversyJsonDatapointsDetails, companyControversyYears ] = await Promise.all([
+        Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }).distinct('_id'),
+        Datapoints.find({ clientTaxonomyId: companyDetails.clientTaxonomyId.id, functionId: { $eq: "609bcceb1d64cd01eeda092c" }, isRequiredForJson: true, status: true }),
+        Controversy.find({ companyId: body.companyId, isActive: true, status: true }).distinct('year')
+      ]);
       let responseObject = {
         companyName: companyDetails.companyName,
         CIN: companyDetails.cin,
         data: [],
-        status: 200
       };
       if (companyControversyYears.length > 0) {
         for (let yearIndex = 0; yearIndex < companyControversyYears.length; yearIndex++) {
@@ -240,67 +242,83 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
             .populate('createdBy')
             .populate('companyId')
             .populate('datapointId');
-          if (companyControversiesYearwise.length > 0) {
-            let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
-            for (let index = 0; index < uniqDatapoints.length; index++) {
-              let element = uniqDatapoints[index];
-              let singleControversyDetail = companyControversiesYearwise.find((obj) => obj.datapointId.id == element.datapointId.id)
-              let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
-              let dataObject = {
-                Dpcode: singleControversyDetail.datapointId.code,
-                Year: singleControversyDetail.year,
-                ResponseUnit: singleControversyDetail.response,
-                controversy: []
-              }
-              let currentResponseValue;
-              if (singleControversyDetail.response == 'Very High') {
-                currentResponseValue = 4;
-              } else if (singleControversyDetail.response == 'High') {
-                currentResponseValue = 3;
-              } else if (singleControversyDetail.response == 'Medium') {
-                currentResponseValue = 2;
-              } else if (singleControversyDetail.response == 'Low') {
-                currentResponseValue = 1;
-              } else {
-                currentResponseValue = 0;
-              }
-              if (datapointControversies.length > 0) {
-                for (let dpControIndex = 0; dpControIndex < datapointControversies.length; dpControIndex++) {
-                  if (singleControversyDetail.response != '' && singleControversyDetail.response != ' ') {
-                    let dpObj = datapointControversies[dpControIndex];
-                    let responseValue;
-                    dataObject.controversy.push({
-                      sourceName: dpObj.sourceName,
-                      sourceURL: dpObj.sourceURL,
-                      Textsnippet: dpObj.textSnippet,
-                      sourcePublicationDate: dpObj.sourcePublicationDate
-                    })
-                    if (dpObj.response == 'Very High') {
-                      responseValue = 4;
-                    } else if (dpObj.response == 'High') {
-                      responseValue = 3;
-                    } else if (dpObj.response == 'Medium') {
-                      responseValue = 2;
-                    } else if (dpObj.response == 'Low') {
-                      responseValue = 1;
-                    } else {
-                      responseValue = 0;
-                    }
-                    if (responseValue > currentResponseValue) {
-                      if (responseValue == 4) {
-                        dataObject.ResponseUnit = 'Very High';
-                      } else if (responseValue == 3) {
-                        dataObject.ResponseUnit = 'High';
-                      } else if (responseValue == 2) {
-                        dataObject.ResponseUnit = 'Medium';
-                      } else if (responseValue == 1) {
-                        dataObject.ResponseUnit = 'Low';
+          let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
+          for (let dpIndex = 0; dpIndex < controversyJsonDatapointsDetails.length; dpIndex++) {
+            let object = controversyJsonDatapointsDetails[dpIndex];
+            let dataObject = {
+              Dpcode: object.code,
+              Year: year,
+              ResponseUnit: "",
+              controversy: []
+            }
+            if (companyControversiesYearwise.length > 0) {
+              for (let index = 0; index < uniqDatapoints.length; index++) {
+                let element = uniqDatapoints[index];
+                if (object?.id == element?.datapointId?.id && year == element?.year) {
+                  let singleControversyDetail = companyControversiesYearwise.find((obj) => obj.datapointId.id == element.datapointId.id)
+                  let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
+                  // let dataObject = {
+                  //   Dpcode: singleControversyDetail.datapointId.code,
+                  //   Year: singleControversyDetail.year,
+                  //   controversy: []
+                  // }
+                  dataObject.ResponseUnit = singleControversyDetail.response;
+                  let currentResponseValue;
+                  if (singleControversyDetail.response == 'Very High') {
+                    currentResponseValue = 4;
+                  } else if (singleControversyDetail.response == 'High') {
+                    currentResponseValue = 3;
+                  } else if (singleControversyDetail.response == 'Medium') {
+                    currentResponseValue = 2;
+                  } else if (singleControversyDetail.response == 'Low') {
+                    currentResponseValue = 1;
+                  } else {
+                    currentResponseValue = 0;
+                  }
+                  if (datapointControversies.length > 0) {
+                    for (let dpControIndex = 0; dpControIndex < datapointControversies.length; dpControIndex++) {
+                      if (singleControversyDetail.response != '' && singleControversyDetail.response != ' ') {
+                        let dpObj = datapointControversies[dpControIndex];
+                        let responseValue;
+                        dataObject.controversy.push({
+                          sourceName: dpObj?.sourceName ? dpObj?.sourceName : "",
+                          sourceURL: dpObj.sourceURL ? dpObj?.sourceURL : "",
+                          Textsnippet: dpObj.textSnippet ? dpObj?.textSnippet : "",
+                          sourcePublicationDate: dpObj.sourcePublicationDate ? dpObj?.sourcePublicationDate : ""
+                        })
+                        if (dpObj.response == 'Very High') {
+                          responseValue = 4;
+                        } else if (dpObj.response == 'High') {
+                          responseValue = 3;
+                        } else if (dpObj.response == 'Medium') {
+                          responseValue = 2;
+                        } else if (dpObj.response == 'Low') {
+                          responseValue = 1;
+                        } else {
+                          responseValue = 0;
+                        }
+                        if (responseValue > currentResponseValue) {
+                          if (responseValue == 4) {
+                            dataObject.ResponseUnit = 'Very High';
+                          } else if (responseValue == 3) {
+                            dataObject.ResponseUnit = 'High';
+                          } else if (responseValue == 2) {
+                            dataObject.ResponseUnit = 'Medium';
+                          } else if (responseValue == 1) {
+                            dataObject.ResponseUnit = 'Low';
+                          }
+                        }
                       }
                     }
                   }
+                  // yearwiseData.Data.push(dataObject);
+                  responseObject.data.push(dataObject);
+                  
+                } else {
+                  responseObject.data.push(dataObject);
                 }
               }
-              // yearwiseData.Data.push(dataObject);
+            } else {
               responseObject.data.push(dataObject);
             }
           }
