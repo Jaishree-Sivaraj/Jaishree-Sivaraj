@@ -72,6 +72,7 @@ export const create = async (req, res, next) => {
             createdAt: new Date(),
             updatedAt: new Date()
           }
+          console.log(data)
           addObject.push(data)
         } else if (checkingDuplicateValue == false) {
           return res.status(400).json({
@@ -104,6 +105,8 @@ export const create = async (req, res, next) => {
           createdAt: new Date(),
           updatedAt: new Date()
         }
+        console.log(data)
+
 
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;

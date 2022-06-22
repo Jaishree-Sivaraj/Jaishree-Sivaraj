@@ -374,14 +374,14 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         break;
     }
     memberDetails?.length > 0 && memberDetails?.map((member) => {
-      let endTimeStamp;
-      console.log(member?.cessationDate != "", member?.cessationDate)
-      if(member?.cessationDate != ""){
-      terminatedDate = new Date(member?.cessationDate)
-      endTimeStamp = new Date(member?.cessationDate)
-      }
-      // terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
-      // terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
+      // let endTimeStamp;
+      // console.log(member?.cessationDate != "", member?.cessationDate)
+      // if(member?.cessationDate != ""){
+      // terminatedDate = new Date(member?.cessationDate)
+      // endTimeStamp = new Date(member?.cessationDate)
+      // }
+      terminatedDate = new Date(member?.endDateTimeStamp * 1000);// while adding endDateTimeStamp we are saving it /1000.
+      terminatedDate = format(terminatedDate, 'dd-MM-yyyy');
       const memberJoiningDate = getMemberJoiningDate(member?.joiningDate);
       let yearsForDataCollection = '';
       //  2018-2019,2019-2020,2020-2021
@@ -395,7 +395,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         //  firstHalf = 1st April 2018, Any member who has joined before 1st of April and not been terminated 
         // secondHalf= 31st March 2019*/
         const logicForDecidingWhetherToConsiderYear = (memberJoiningDate <= firstHalfDate || memberJoiningDate <= secondHalfDate)
-        && (member.cessation == '' || endTimeStamp > firstHalfDate);
+          && (member.endDateTimeStamp == 0 || member.endDateTimeStamp == null || member.endDateTimeStamp > firstHalfDate);
         if (logicForDecidingWhetherToConsiderYear) {
           if (yearsForDataCollection?.length !== 0) {
             yearsForDataCollection = yearsForDataCollection + ', ';
@@ -409,12 +409,13 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         dpType == BOARD_MATRIX ? member.BOSP004 : member.BOSP004;
       let label1 = memberName;
       //! If they have a termination date then.
-      if (endTimeStamp > taskStartDate && endTimeStamp !== 0 && endTimeStamp !== null) {
+      //! If they have a termination date then.
+      if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, last working date ${terminatedDate}`
       }
 
       //! If the member is terminated then.
-      if (endTimeStamp < taskStartDate && endTimeStamp !== 0 && endTimeStamp !== null) {
+      if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, is terminated on ${terminatedDate}`
       }
 
@@ -424,7 +425,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         label1,
         value: member.id,
         year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : '',
-        startDate: member.joiningDate,
+        startDate: member.startDate,
         endDate: member.endDateTimeStamp,
       };
 
