@@ -431,7 +431,7 @@ export function getTotalYearsForDataCollection(currentYear, memberDetails, fisca
         //     }
         // }
 
-        const memberJoiningDate = getMemberJoiningDate(memberDetails?.startDate);
+        const memberJoiningDate = getMemberJoiningDate(memberDetails?.joiningDate);
         let memberCollectionYears = [];
         for (let yearIndex = 0; yearIndex < currentYear?.length; yearIndex++) {
             const splityear = currentYear[yearIndex].split('-');
