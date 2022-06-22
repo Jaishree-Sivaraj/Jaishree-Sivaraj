@@ -641,7 +641,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
-      let allBoardMembersNamesList = [];
+      let allBoardMembersNameList = [];
       for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails?.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
@@ -747,13 +747,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 }
               }
             }
-            allBoardMembersNamesList.push(boardMembersNameList[boardMemIndex]);
+            allBoardMembersNameList.push(boardMembersNameList[boardMemIndex]);
           }
         } catch (error) {
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
         }
       };
-      allBoardMembersNamesList = _.uniq(allBoardMembersNamesList);
+      allBoardMembersNameList = _.uniq(allBoardMembersNameList);
       _.forEach(inactiveBoardMembersList, function (object) {
         let indexToUpdate = _.findIndex(boardMembersList, object);
         if (indexToUpdate >= 0) {
