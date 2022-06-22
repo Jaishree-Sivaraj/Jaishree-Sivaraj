@@ -935,11 +935,11 @@ export const exportQATasks = async (req, res, next) => {
           // Anyways it is iterating.
           const element = standaloneData[index];
           // getting AdditionalData
-          if(element?.additionalDetails){
+          if (element?.additionalDetails) {
             Object.keys(element?.additionalDetails).forEach((key) => {
               additionalFieldArrayKey.push(key);
             });
-  
+
             for (let i = 0; i < element?.clientTaxonomy?.outputFields?.additionalFields?.length; i++) {
               const fieldName = element?.clientTaxonomy?.outputFields?.additionalFields[i].fieldName;
               if (additionalFieldArrayKey.includes(fieldName)) {
@@ -949,12 +949,11 @@ export const exportQATasks = async (req, res, next) => {
                 additionalFieldAfterComparison[fieldName] = ''
               }
             }
-  
             element.additionalDetails = additionalFieldAfterComparison;
           }
-          
+
           delete element.clientTaxonomy;
-         
+
           let errorDpDetails = allErrorDetails.filter((obj) =>
             obj?.datapointId?.code == element?.dpCode
             && obj?.companyId?.companyName == element?.company
@@ -966,10 +965,10 @@ export const exportQATasks = async (req, res, next) => {
             element.errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
             element.errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
           }
-        
 
-        const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
-        let responseData = standaloneData;
+
+          const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
+          let responseData = standaloneData;
           ChildDp.aggregate([
             {
               $match: {
@@ -1032,7 +1031,7 @@ export const exportQATasks = async (req, res, next) => {
             .then((childData) => {
               for (let index = 0; index < childData.length; index++) {
                 const element = childData[index];
-                if (element.sourceName != '' || element.sourceName != ' ') {
+                if (element?.sourceName && (element.sourceName != '' || element.sourceName != ' ')) {
                   let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
                   childData[index].sourceName = sourceDet.name;
                 }
@@ -1051,7 +1050,7 @@ export const exportQATasks = async (req, res, next) => {
 
             });
 
-        return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
+          return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
 
 
         }
