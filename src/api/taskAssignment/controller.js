@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { success, notFound, authorOrAdmin } from "../../services/response/";
 import { TaskAssignment } from ".";
 import { User } from "../user";
@@ -20,24 +21,23 @@ import { TaskHistories } from '../task_histories'
 import { Validations } from '../validations'
 import { ValidationResults } from '../validation_results'
 import { Functions } from '../functions'
-import _ from 'lodash'
 import { QA, Analyst, adminRoles } from '../../constants/roles';
 import { ClientRepresentative, CompanyRepresentative } from "../../constants/roles";
 import { CompanyRepresentatives } from '../company-representatives';
 import { ClientRepresentatives } from '../client-representatives';
+import { checkIfAllDpCodeAreFilled, getCompanyDetails, getTotalMultipliedValues, conditionalResult } from './helper-function-update-company-status';
 import {
   VerificationCompleted,
-  CorrectionPending,
   ReassignmentPending,
-  CorrectionCompleted,
   Completed,
-  CollectionCompleted,
-  Correction,
   Incomplete
 } from '../../constants/task-status';
 import { RepEmail, getEmailForJsonGeneration } from '../../constants/email-content';
 import { sendEmail } from '../../services/utils/mailing';
 import { BOARD_MATRIX, KMP_MATRIX, STANDALONE } from "../../constants/dp-type";
+import { CLIENT_EMAIL } from '../../constants/client-email';
+import { LATEST_YEARS } from '../../constants/latest-year';
+import { getLatestCurrentYear } from '../../services/utils/get-latest-year';
 
 export const create = async ({ user, bodymen: { body } }, res, next) => {
   await TaskAssignment.findOne({ status: true })
@@ -480,43 +480,49 @@ export const retrieveFilteredDataTasks = async ({ user, params, querymen: { quer
   }
   userRoles = _.uniq(userRoles);
   let findQuery = {}, companyIds = [];
-  if (query.company) {
+  if (query && query?.company) {
     let companyDetail = await Companies.find({ companyName: { $regex: new RegExp(query.company, "i") } }).distinct('_id');
     companyIds = companyDetail ? companyDetail : [];
   }
-  if (params.taskStatus && params.role == "GroupAdmin") {
+  if (params?.taskStatus && params?.role == "GroupAdmin") {
     let groupIds = await Group.find({ groupAdmin: user.id, status: true }).distinct('_id');
-    if (params.taskStatus == "Completed") {
+    if (params?.taskStatus == "Completed") {
       findQuery = {
         taskStatus: { $in: ["Completed", "Verification Completed"] },
         groupId: { $in: groupIds },
         status: true
       };
-    } else {
+    } else if (params.taskStatus == "Pending") {
       findQuery = {
-        taskStatus: params.taskStatus ? params.taskStatus : '',
+        taskStatus: { $nin: ["Completed", "Verification Completed"] },
+        groupId: { $in: groupIds },
+        status: true
+      };
+    }else {
+      findQuery = {
+        taskStatus: params?.taskStatus ? params?.taskStatus : '',
         groupId: { $in: groupIds },
         status: true
       };
     }
-    if (query.company) {
+    if (query && query?.company) {
       let groupAdminCompanyIds = await TaskAssignment.find({ groupId: { $in: groupIds }, status: true }).distinct('companyId');
       let commonCompanyIds = _.intersectionWith(groupAdminCompanyIds, companyIds, _.isEqual);
       findQuery['companyId'] = { $in: commonCompanyIds };
     }
-  } else if (params.taskStatus && params.role == "SuperAdmin" || params.taskStatus && params.role == "Admin") {
-    if (params.taskStatus == "Completed") {
+  } else if (params?.taskStatus && params?.role == "SuperAdmin" || params?.taskStatus && params?.role == "Admin") {
+    if (params?.taskStatus == "Completed") {
       findQuery = { taskStatus: { $in: ["Completed", "Verification Completed"] }, status: true };
     } else {
       findQuery = { taskStatus: { $nin: ["Completed", "Verification Completed"] }, status: true };
     }
-    if (query.company) {
+    if (query && query?.company) {
       findQuery['companyId'] = { $in: companyIds };
     }
-  } else if (params.role !== "GroupAdmin") {
+  } else if (params?.role !== "GroupAdmin") {
     findQuery = { taskStatus: '', status: true };
   }
-  if (userRoles.includes(params.role)) {
+  if (userRoles.includes(params?.role)) {
     await TaskAssignment.count(findQuery)
       .then(async (count) => {
         await TaskAssignment.find(findQuery, select, cursor)
@@ -955,7 +961,6 @@ export const getMyTasks = async ({ user, querymen: { query, select, cursor } }, 
       });
   }
   if (userRoles.includes("Client Representative")) {
-    console.log('in client');
     let clientRepDetail = await ClientRepresentatives.findOne({
       userId: completeUserDetail.id,
       status: true
@@ -1249,8 +1254,6 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               },
               {
                 taskStatus: "Correction Pending"
-              }, {
-                taskStatus: "Reassignment Pending"
               }
             ],
             status: true,
@@ -1332,7 +1335,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 }
               ],
               status: true
-            }          
+            }
           }
         } else {
           return res.status(400).json({ status: "400", rows: [], count: 0, message: "Invalid type to fetch the records!" });
@@ -1374,6 +1377,10 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         }).populate('companiesList')
           .catch((err) => { return res.status(400).json({ status: "400", message: err.message ? err.message : "Invalid user Id" }) });
         if (clientRepDetail && clientRepDetail.companiesList) {
+          const taskIds = await TaskAssignment.distinct('_id', { companyId: { $in: clientRepDetail.companiesList }, status: true });
+
+
+
           if (params.type == "DataReview") {
             findQuery = {
               companyId: { $in: clientRepDetail.companiesList },
@@ -1448,12 +1455,13 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
                 let yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const [lastModifiedDate, reviewDate, totalNoOfControversy] = await Promise.all([
-                  Controversy.find({ taskId: controversyTasks[cIndex].id, status: true, isActive: true, response: { $nin: ["", " "]} }).limit(1).sort({ updatedAt: -1 }),
+                  ControversyTasks.find({ _id: controversyTasks[cIndex].id, status: true }),
                   Controversy.find({ taskId: controversyTasks[cIndex].id, reviewDate: { $gt: yesterday }, status: true, isActive: true }).limit(1).sort({ reviewDate: 1 }),
                   Controversy.count({ taskId: controversyTasks[cIndex].id, response: { $nin: ["", " "] }, status: true, isActive: true })
                 ]);
-                object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
-                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                // object.lastModifiedDate = lastModifiedDate[0] ? lastModifiedDate[0].updatedAt : "";
+                object.reassessmentDate = lastModifiedDate[0] ? lastModifiedDate[0]?.reassessmentDate : "";
+                object.reviewedByCommittee = lastModifiedDate[0] ? lastModifiedDate[0]?.reviewedByCommittee : "";
                 object.reviewDate = reviewDate[0] ? reviewDate[0].reviewDate : '';
                 object.totalNoOfControversy = totalNoOfControversy;
               }
@@ -1480,6 +1488,19 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
           });
         });
     } else if (params.type == "DataCollection" || params.type == "DataCorrection" || params.type == "DataVerification" || params.type == "DataReview") {
+      // ! Changes ECS-1152
+      if (params.role == ClientRepresentative && completeUserDetail?.email.split('@')[1] == CLIENT_EMAIL) {
+        let latestYear = '';
+        // Adding query to get only the task that involves these years.
+        LATEST_YEARS.map((latest) => {
+          if (latestYear !== '') {
+            latestYear = latestYear + ', ';
+          }
+          latestYear = latestYear + latest; //'2020-2021, 2021-2022'
+        })
+        findQuery = { ...findQuery, year: { $regex: new RegExp(latestYear, 'gi') } }
+      }
+
       count = await TaskAssignment.count(findQuery);
       await TaskAssignment.find(findQuery, select, cursor)
         .sort({ createdAt: -1 })
@@ -1492,34 +1513,41 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
         .populate("qaId")
         .then(async (taskAssignments) => {
           for (let index = 0; index < taskAssignments.length; index++) {
-            const object = taskAssignments[index];
+            let object = taskAssignments[index];
             let categoryValidationRules = [];
             if (params.role == "Analyst") {
               categoryValidationRules = await Validations.find({ categoryId: object.categoryId.id })
                 .populate({ path: "datapointId", populate: { path: "keyIssueId" } });
             }
+            // ! Changes ECS-1152
+            if (params.role == ClientRepresentative && completeUserDetail?.email.split('@')[1] == CLIENT_EMAIL) {
+              // Even after getting the task for the latest year I have to make sure that only years 
+              //  with respect to latest years is shown.
+              object.year = getLatestCurrentYear(object.year);
+            }
+
             let taskObject = {
-              taskId: object.id,
-              taskNumber: object.taskNumber,
-              pillar: object.categoryId ? object.categoryId.categoryName : null,
-              pillarId: object.categoryId ? object.categoryId.id : null,
-              group: object.groupId ? object.groupId.groupName : null,
-              groupId: object.groupId ? object.groupId.id : null,
-              batch: object.batchId ? object.batchId.batchName : null,
-              batchId: object.batchId ? object.batchId.id : null,
-              company: object.companyId ? object.companyId.companyName : null,
-              clientTaxonomyId: object.companyId ? object.companyId.clientTaxonomyId : null,
-              companyId: object.companyId ? object.companyId.id : null,
-              analyst: object.analystId ? object.analystId.name : null,
-              analystId: object.analystId ? object.analystId.id : null,
-              analystSLADate: object.analystSLADate ? object.analystSLADate : null,
-              qa: object.qaId ? object.qaId.name : null,
-              qaId: object.qaId ? object.qaId.id : null,
-              qaSLADate: object.qaSLADate ? object.qaSLADate : null,
-              fiscalYear: object.year,
-              taskStatus: object.taskStatus,
-              createdBy: object.createdBy ? object.createdBy.name : null,
-              createdById: object.createdBy ? object.createdBy.id : null
+              taskId: object?.id,
+              taskNumber: object?.taskNumber,
+              pillar: object?.categoryId ? object?.categoryId.categoryName : null,
+              pillarId: object?.categoryId ? object?.categoryId.id : null,
+              group: object?.groupId ? object?.groupId.groupName : null,
+              groupId: object?.groupId ? object?.groupId.id : null,
+              batch: object?.batchId ? object?.batchId.batchName : null,
+              batchId: object?.batchId ? object?.batchId.id : null,
+              company: object?.companyId ? object?.companyId.companyName : null,
+              clientTaxonomyId: object?.companyId ? object?.companyId.clientTaxonomyId : null,
+              companyId: object?.companyId ? object?.companyId.id : null,
+              analyst: object?.analystId ? object?.analystId.name : null,
+              analystId: object?.analystId ? object?.analystId.id : null,
+              analystSLADate: object?.analystSLADate ? object?.analystSLADate : null,
+              qa: object?.qaId ? object?.qaId.name : null,
+              qaId: object?.qaId ? object?.qaId.id : null,
+              qaSLADate: object?.qaSLADate ? object?.qaSLADate : null,
+              fiscalYear: object?.year,
+              taskStatus: object?.taskStatus,
+              createdBy: object?.createdBy ? object?.createdBy.name : null,
+              createdById: object?.createdBy ? object?.createdBy.id : null
             };
             if (params.role == "Analyst") {
               if (categoryValidationRules.length > 0) {
@@ -1529,7 +1557,7 @@ export const getMyTasksPageData = async ({ user, querymen: { query, select, curs
               }
             }
             if (params.type == "DataVerification") {
-              taskObject.isChecked = false;    
+              taskObject.isChecked = false;
             }
             rows.push(taskObject);
           }
@@ -1974,7 +2002,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.role == Analyst && !body.skipValidation) {
       let failedCount = await ValidationResults.countDocuments({ taskId: body.taskId, isValidResponse: false, status: true });
       if (failedCount > 0) {
-        return res.status(400).json({ status: "400", message: "Few validations are still failed, Please check before submitting or skip the validation!" })
+        return res.status(400).json({ status: 400, message: "Few validations are still failed, Please check before submitting or skip the validation!" })
       }
     }
     // get all task details.
@@ -1987,12 +2015,29 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       }
     })
       .populate('groupId')
-      .populate('categoryId')
+      .populate('categoryId');
+
     // Get distinct years
-    let distinctYears = taskDetails.year.split(', ');
-    let datapointsCount = 0;
-    let reqDpCodes = await Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true })
-    const negativeNews = await Functions.findOne({ functionType: "Negative News", status: true });
+
+    let distinctYears = [];
+    // ! Changes ECS-1152
+    if (user?.userType == ClientRepresentative && user?.email.split('@')[1] == CLIENT_EMAIL) {
+      let newYear = getLatestCurrentYear(taskDetails.year);
+      if (newYear.includes(',')) {
+        distinctYears = newYear.split(', ')
+      } else {
+        distinctYears.push(newYear)
+      }
+    } else {
+      distinctYears = taskDetails.year.split(', ')
+    }
+    const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
+    const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
+    let [reqDpCodes, negativeNews] = await Promise.all([
+      Datapoints.find({ categoryId: taskDetails.categoryId, isRequiredForReps: true }),
+      Functions.findOne({ functionType: "Negative News", status: true })
+    ]);
+
     const query = {
       taskId: body.taskId,
       companyId: taskDetails.companyId.id,
@@ -2006,111 +2051,76 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     if (body.skipValidation) {
       query.datapointId = { $in: reqDpCodes }
     }
-    // StandAlone, BoardMatrix and KMP are DpTypes.
-    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails] = await Promise.all([
-      StandaloneDatapoints.find(query)
-        .populate('createdBy')
-        .populate('datapointId')
-        .populate('companyId'),
-      BoardMembersMatrixDataPoints.find(query),
-      KmpMatrixDataPoints.find(query)
-    ])
-    const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
 
-    // It does not need to be distinct, it just need to be the ones which has Status as true and isActive as true.
-    datapointsCount = datapointsCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
+    // StandAlone, BoardMatrix and KMP are DpTypes.
+    const [allStandaloneDetails, allBoardMemberMatrixDetails, allKmpMatrixDetails, distinctBMMembers, distinctKmpMembers] = await Promise.all([
+      StandaloneDatapoints.find(query),
+      BoardMembersMatrixDataPoints.find(query),
+      KmpMatrixDataPoints.find(query),
+      BoardMembersMatrixDataPoints.distinct('memberName', query),
+      KmpMatrixDataPoints.distinct('memberName', query)
+    ]);
+
+    let totalDatapointsCollectedCount = 0;
+    // Getting all the collected Datas.
+    const mergedDetails = _.concat(allKmpMatrixDetails, allBoardMemberMatrixDetails, allStandaloneDetails);
+    // total collected data.
+    totalDatapointsCollectedCount = totalDatapointsCollectedCount + allStandaloneDetails.length + allBoardMemberMatrixDetails.length + allKmpMatrixDetails.length;
 
     let datapointQuery = {
       clientTaxonomyId: body.clientTaxonomyId,
       categoryId: taskDetails.categoryId._id,
       dataCollection: "Yes",
-      functionId: { "$ne": negativeNews.id }
+      functionId: { "$ne": negativeNews.id },
+      status: true
     }
-    console.log(datapointQuery)
 
     if (body.skipValidation) {
       datapointQuery.isRequiredForReps = true
     }
 
+    // Getting all datapoint belonging to a particular category
+    let [standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints] = await Promise.all([
+      Datapoints.find({ ...datapointQuery, dpType: STANDALONE }),
+      Datapoints.find({ ...datapointQuery, dpType: BOARD_MATRIX }),
+      Datapoints.find({ ...datapointQuery, dpType: KMP_MATRIX }),
+    ]);
 
-    let datapoints = await Datapoints.find({ ...datapointQuery });
+    const isSFDR = taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired ? false : true;
 
-    // mergedDetails is the Dp codes of all Dp Types.
-    let [hasError, hasCorrection, isCorrectionStatusIncomplete, multipliedValue] = [
-      mergedDetails.find(object => object.hasError == true),
-      mergedDetails.find(object => object.hasCorrection == true),
-      mergedDetails.find(object => object.correctionStatus == Incomplete),
-      datapoints.length * distinctYears.length];
+    // Comment the purpose.
+    if (body.role !== ClientRepresentative && body.role !== CompanyRepresentative) {
+      const errorMessageForBM = checkIfAllDpCodeAreFilled(boardMatrixDatapoints, allBoardMemberMatrixDetails, BOARD_MATRIX);
+      const errorMessageForKM = checkIfAllDpCodeAreFilled(kmpMatrixDatapoints, allKmpMatrixDetails, KMP_MATRIX);
 
-    if (!taskDetails.companyId.clientTaxonomyId?.isDerivedCalculationRequired) {
-      const allDpForTask = await Datapoints.find({ categoryId: taskDetails?.categoryId, dpType: { $in: [STANDALONE, BOARD_MATRIX, KMP_MATRIX] } });
-      let totalQualitativeDatapoints = 0, totalQuantativeDatapoints = 0;
-      allDpForTask.map((task) => {
-        if (task?.dataType !== "Number") {
-          totalQualitativeDatapoints += 1
-        } else {
-          totalQuantativeDatapoints += 1
+      if (Object.keys(errorMessageForBM)?.length !== 0) {
+        return res.status(409).json(errorMessageForBM);
+      }
 
-        }
-      });
-      multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints * distinctYears.length;
+      if (Object.keys(errorMessageForKM)?.length !== 0) {
+        return res.status(409).json(errorMessageForKM);
+      }
     }
 
+    // mergedDetails is the Dp codes of all Dp Types.
+    let [hasError, hasCorrection, isCorrectionStatusIncomplete] = [
+      mergedDetails.find(object => object.hasError == true),
+      mergedDetails.find(object => object.hasCorrection == true),
+      mergedDetails.find(object => object.correctionStatus == Incomplete)];
+
+    // Compare the totalDatapoint * collected year == totalDatapointsCollectedCount
+    const expectedDataCount = await getTotalMultipliedValues(standaloneDatapoints, boardMatrixDatapoints, kmpMatrixDatapoints, distinctBMMembers, distinctKmpMembers, distinctYears, isSFDR, fiscalYearEndMonth, fiscalYearEndDate);
+
     const condition = body.role == ClientRepresentative || body.role == CompanyRepresentative
-      ? datapointsCount >= multipliedValue : datapointsCount >= multipliedValue && !isCorrectionStatusIncomplete
+      ? totalDatapointsCollectedCount >= expectedDataCount :
+      totalDatapointsCollectedCount >= expectedDataCount && !isCorrectionStatusIncomplete
 
-    let taskStatusValue = "";
-    if (hasError && condition) {
-      taskStatusValue = body.role == QA ? CorrectionPending : ReassignmentPending
+    const { message, taskStatusValue } = await conditionalResult(body, hasError, hasCorrection, condition);
 
-      const [query, update, query1, update1] = [
-        { taskId: body.taskId, isActive: true, status: true, hasError: true },
-        { $set: { dpStatus: 'Error', correctionStatus: 'Incomplete' } },
-        { taskId: body.taskId, isActive: true, status: true, hasError: false },
-        { $set: { dpStatus: 'Collection', correctionStatus: 'Completed' } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        KmpMatrixDataPoints.updateMany(query1, update1),
-        BoardMembersMatrixDataPoints.updateMany(query1, update1),
-        StandaloneDatapoints.updateMany(query1, update1),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })])
-    } else if (hasCorrection && condition) {
-      if (body.role == QA) {
-        taskStatusValue = VerificationCompleted;
-      } else if (body.role == Analyst) {
-        taskStatusValue = CorrectionCompleted;
-      } else {
-        taskStatusValue = Completed;
-      }
-      const [query, update,] = [
-        { taskId: body.taskId, isActive: true, status: true, hasCorrection: true },
-        { $set: { dpStatus: 'Correction', correctionStatus: 'Incomplete' } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
-      ])
-    } else if (!hasError && !hasCorrection && condition) {
-      taskStatusValue = body.role == QA ? VerificationCompleted : Completed
-      taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
-      const [query, update,] = [
-        { taskId: body.taskId, isActive: true, status: true },
-        { $set: { dpStatus: Correction, correctionStatus: Incomplete } }
-      ]
-      await Promise.all([
-        KmpMatrixDataPoints.updateMany(query, update),
-        BoardMembersMatrixDataPoints.updateMany(query, update),
-        StandaloneDatapoints.updateMany(query, update),
-        TaskAssignment.updateOne({ _id: body.taskId }, { $set: { taskStatus: taskStatusValue } })
-      ])
-    } else {
-      return res.status(402).json({
-        message: "Task Status not updated. Check all DPcodes",
+    if (message !== '') {
+      return res.status(409).json({
+        status: 409,
+        message
       });
     }
 
@@ -2142,9 +2152,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = RepEmail(companyDetails?.companyName, taskDetails?.categoryId.categoryName, taskDetails?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `Error Updated for task ${taskDetails.taskNumber}`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails?.message)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
     }
     // * taskStatusValue = 'Reassignment Pending' Testing Purpose.
@@ -2190,17 +2202,19 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       }
     }
 
-    const categoriesLength = await Categories.count({
-      clientTaxonomyId: body.clientTaxonomyId,
-      status: true,
-    });
+    const [categoriesLength, taskDetailsObject] = await Promise.all([
+      Categories.count({
+        clientTaxonomyId: body.clientTaxonomyId,
+        status: true,
+      }),
+      TaskAssignment.count({
+        companyId: body.companyId,
+        year: body.year,
+        taskStatus: { $in: [VerificationCompleted, Completed] }
+      })
+    ]);
 
-    const taskDetailsObject = await TaskAssignment.count({
-      companyId: body.companyId,
-      year: body.year,
-      taskStatus: { $in: [VerificationCompleted, Completed] }
-    });
-
+    // All the task for a particular category is completed.
     if (categoriesLength == taskDetailsObject) {
       await CompaniesTasks.updateMany(
         {
@@ -2219,9 +2233,11 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       const emailDetails = getEmailForJsonGeneration(companyDetails?.companyName, body?.year);
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
-        await sendEmail(e, subject, emailDetails)
-          .then((resp) => { console.log('Mail sent!') })
-          .catch(err => console.log(err))
+        if (process.env.NODE_ENV === 'production') {
+          await sendEmail(e, subject, emailDetails?.message)
+            .then((resp) => { console.log('Mail sent!') })
+            .catch(err => console.log(err))
+        }
       })
 
     }
@@ -2236,29 +2252,6 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
     });
   }
 };
-
-// function for updateCompanyStatus.
-async function getCompanyDetails(companyId) {
-  const cmpDetail = await Companies.findOne({ _id: companyId })
-  const [clientRep, companyRep] = await Promise.all([
-    ClientRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId'),
-    CompanyRepresentatives.find({ companiesList: { $in: [companyId] } }).populate('userId')
-  ])
-  let companyRepEmail = [], clientRepEmail = []
-
-  clientRep.map(async (client) => {
-    clientRepEmail.push(client?.userId?.email)
-  })
-
-  companyRep.map(async (company) => {
-    companyRepEmail.push(company?.userId?.email)
-  })
-
-  let email = _.concat(companyRepEmail, clientRepEmail);
-  email = email.filter(e => e !== undefined);
-  return { email, companyName: cmpDetail?.companyName }
-}
-
 
 export const reports = async ({ user, params }, res, next) => {
   try {
