@@ -935,23 +935,26 @@ export const exportQATasks = async (req, res, next) => {
           // Anyways it is iterating.
           const element = standaloneData[index];
           // getting AdditionalData
-          Object.keys(element?.additionalDetails).forEach((key) => {
-            additionalFieldArrayKey.push(key);
-          });
-
-          for (let i = 0; i < element?.clientTaxonomy?.outputFields?.additionalFields?.length; i++) {
-            const fieldName = element?.clientTaxonomy?.outputFields?.additionalFields[i].fieldName;
-            if (additionalFieldArrayKey.includes(fieldName)) {
-              additionalFieldAfterComparison[fieldName] = element?.additionalDetails[fieldName];
+          if(element?.additionalDetails){
+            Object.keys(element?.additionalDetails).forEach((key) => {
+              additionalFieldArrayKey.push(key);
+            });
+  
+            for (let i = 0; i < element?.clientTaxonomy?.outputFields?.additionalFields?.length; i++) {
+              const fieldName = element?.clientTaxonomy?.outputFields?.additionalFields[i].fieldName;
+              if (additionalFieldArrayKey.includes(fieldName)) {
+                additionalFieldAfterComparison[fieldName] = element?.additionalDetails[fieldName];
+              }
+              else {
+                additionalFieldAfterComparison[fieldName] = ''
+              }
             }
-            else {
-              additionalFieldAfterComparison[fieldName] = ''
-            }
+  
+            element.additionalDetails = additionalFieldAfterComparison;
           }
-
-          element.additionalDetails = additionalFieldAfterComparison;
-
-
+          
+          delete element.clientTaxonomy;
+         
           let errorDpDetails = allErrorDetails.filter((obj) =>
             obj?.datapointId?.code == element?.dpCode
             && obj?.companyId?.companyName == element?.company
@@ -1047,10 +1050,11 @@ export const exportQATasks = async (req, res, next) => {
               // });
 
             });
-        }
+
         return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
 
 
+        }
       })
       .catch((error) => {
         return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
