@@ -72,21 +72,21 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
     const fiscalYearEndMonth = taskDetails.companyId.fiscalYearEndMonth;
     const fiscalYearEndDate = taskDetails.companyId.fiscalYearEndDate;
     let currentYear = taskDetails?.year.split(', ');
-    
+
     if (req?.user?.userType == ClientRepresentative && req?.user?.email.split('@')[1] == CLIENT_EMAIL) {
       // We have to get only those years with respect to latest year 
       // As we are are getting latest-year-based-task.(filtering done while getting task.)
       let latestCurrentYear = getLatestCurrentYear(taskDetails?.year);
       taskDetails.year = latestCurrentYear;
       currentYear = [];
-      
+
       if (latestCurrentYear.includes(', ')) {
-        latestCurrentYear = latestCurrentYear.split(', ' );
+        latestCurrentYear = latestCurrentYear.split(', ');
         currentYear.push(...latestCurrentYear);
       } else {
         currentYear.push(latestCurrentYear);
       }
-      
+
     }
 
     //  Starting date of the task.
@@ -347,7 +347,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails = result.response.datapointList.memberList;
                 let memberDetail = allMembersFullDetails.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null && memberDetail?.endDate != '' && memberDetail?.endDate != null) {
+                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
@@ -380,7 +380,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails1 = result.response.datapointList.memberList;
                 let memberDetail1 = allMembersFullDetails1.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null && memberDetail1?.endDate != '' && memberDetail1?.endDate != null) {
+                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
@@ -390,7 +390,7 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 } else {
                   return res.status(200).json(result);
                 }
-                // return res.status(200).json(result);
+              // return res.status(200).json(result);
               default:
                 return res.status(500).send({
                   status: '500',
