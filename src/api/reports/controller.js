@@ -17,9 +17,9 @@ import { Completed, VerificationCompleted, CollectionCompleted, CorrectionComple
 import { GroupAdmin, SuperAdmin, Admin, QA } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
 import { Controversy } from "../controversy";
-import { getTaskDetails, getControveryDetails } from './helper-function';
+import { getTaskDetails, getControveryDetails, getSFDRExportOutputFields, getAcuiteOutputFields } from './helper-function';
 import { CompletedTask, ControversyTask, PendingTask } from '../../constants/task-type';
-import { TAXONOMY_NAME } from '../../constants/taxonomy-name-for-export';
+import { ACUITE, SFDR, SFDR_V1, TAXONOMY_NAME } from '../../constants/taxonomy-name-for-export';
 
 export const create = ({ body }, res, next) =>
   res.status(201).json(body)
@@ -883,8 +883,18 @@ export const exportQATasks = async (req, res, next) => {
       { '$unwind': { path: '$uomDetails', preserveNullAndEmptyArrays: true } },
       { '$lookup': { from: 'clienttaxonomies', localField: 'categoryDetails.clientTaxonomyId', foreignField: '_id', as: 'clientTaxonomy' } },
       { '$unwind': { path: '$clientTaxonomy' } },
+      { '$lookup': { from: 'batches', localField: 'clientTaxonomy._id', foreignField: 'clientTaxonomy', as: 'batches' } },
+      { '$unwind': { path: '$batches' } },
+      { '$lookup': { from: 'users', localField: 'taskDetails.analystId', foreignField: '_id', as: 'analystDetails' } },
+      { '$unwind': { path: '$analystDetails' } },
+      { '$lookup': { from: 'users', localField: 'taskDetails.qaId', foreignField: '_id', as: 'qaDetails' } },
+      { '$unwind': { path: '$qaDetails' } },
       {
         '$project': {
+          companyDetails: 1,
+          batches: 1,
+          analystDetails: 1,
+          qaDetails: 1,
           taskNumber: '$taskDetails.taskNumber',
           company: '$companyDetails.companyName',
           pillar: '$categoryDetails.categoryName',
@@ -908,152 +918,124 @@ export const exportQATasks = async (req, res, next) => {
           dpCodeId: '$datapointDetails._id',
           clientTaxonomy: 1,
           additionalDetails: 1,
-          // didTheCompanyReport: "$additionalDetails.didTheCompanyReport",
-          // typeOfValueActualDerivedProxy: "$additionalDetails.typeOfValueActualDerivedProxy",
-          // companyDataElementLabel: "$additionalDetails.companyDataElementLabel",
-          // companyDataElementSubLabel: "$additionalDetails.companyDataElementSubLabel",
-          // totalOrSubLineItemForNumbers: "$additionalDetails.totalOrSubLineItemForNumbers",
-          // formatOfDataProvidedByCompanyChartTableText: "$additionalDetails.formatOfDataProvidedByCompanyChartTableText",
-          // textSnippet: '$textSnippet',
-          // sectionOfDocument: "$additionalDetails.sectionOfDocument",
           pageNumber: '$pageNumber',
           sourceName: "$sourceName",
-          // keywordUsed: "$additionalDetails.keywordUsed",
-          // commentG: "$additionalDetails.commentG",
           hasError: 1,
           errorType: 1,
           errorComments: 1,
-          // additionalSourceUsed: '$additionalDetails.additionalSourceUsed?',
 
         }
       }
     ])
       .then((standaloneData) => {
-        let additionalFieldAfterComparison = {}, additionalFieldArrayKey = [];
+        let newModifiedArray = [];
         for (let index = 0; index < standaloneData.length; index++) {
-
           // Anyways it is iterating.
           const element = standaloneData[index];
           // getting AdditionalData
-          if (element?.additionalDetails) {
-            Object.keys(element?.additionalDetails).forEach((key) => {
-              additionalFieldArrayKey.push(key);
-            });
+          let data;
+          switch (element?.clientTaxonomy?.taxonomyName) {
+            case ACUITE:
+              data = getAcuiteOutputFields(element)
+              break;
+            case SFDR:
+            case SFDR_V1:
+              data = getSFDRExportOutputFields(element)
+              break;
+            default:
+              console.log('Incorrect taxonomy');
+              break;
 
-            for (let i = 0; i < element?.clientTaxonomy?.outputFields?.additionalFields?.length; i++) {
-              const fieldName = element?.clientTaxonomy?.outputFields?.additionalFields[i].fieldName;
-              if (additionalFieldArrayKey.includes(fieldName)) {
-                additionalFieldAfterComparison[fieldName] = element?.additionalDetails[fieldName];
-              }
-              else {
-                additionalFieldAfterComparison[fieldName] = ''
-              }
-            }
-            element.additionalDetails = additionalFieldAfterComparison;
           }
-
-          delete element.clientTaxonomy;
-
           let errorDpDetails = allErrorDetails.filter((obj) =>
-            obj?.datapointId?.code == element?.dpCode
-            && obj?.companyId?.companyName == element?.company
-            && obj?.year == element?.year
+            obj?.datapointId?.code == data?.dpCode
+            && obj?.companyId?.companyName == data?.company
+            && obj?.year == data?.year
           )
 
           if (errorDpDetails.length > 0) {
-            element.hasError = true;
-            element.errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
-            element.errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
+            data.hasError = true;
+            data.errorType = errorDpDetails[0]?.errorTypeId ? errorDpDetails[0]?.errorTypeId?.errorType : "";
+            data.errorComments = errorDpDetails[0]?.comments ? errorDpDetails[0]?.comments?.content : "";
           }
-
-
-          const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
-          let responseData = standaloneData;
-          ChildDp.aggregate([
-            {
-              $match: {
-                taskId: { $in: distinctTaskIdList },
-                status: true,
-                isActive: true
-              }
-            },
-            {
-              $addFields: {
-                convertedTaskId: { $toObjectId: "$taskId" },
-                convertedDatapointId: { $toObjectId: "$parentDpId" }
-              }
-            },
-            { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
-            { '$unwind': '$taskDetails' },
-            { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
-            { '$unwind': '$companyDetails' },
-            { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
-            { '$unwind': '$categoryDetails' },
-            {
-              '$project': {
-                taskNumber: '$taskDetails.taskNumber',
-                company: '$companyDetails.companyName',
-                pillar: '$categoryDetails.categoryName',
-                dpCode: '$childFields.dpCode',
-                year: '$year',
-                response: '$childFields.response',
-                placeValue: '$childFields.placeValue',
-                // uom: '$childFields.uom',
-                measureUom: 1, "uom": {
-                  "$cond": {
-                    "if": { $lte: ["$childFields.uom", null] },
-                    "then": "",
-                    "else": "$childFields.uom"
-                  }
-                },
-                didTheCompanyReport: "$childFields.didTheCompanyReport",
-                typeOfValueActualDerivedProxy: "$childFields.typeOf",
-                companyDataElementLabel: "$childFields.companyDataElementLabel",
-                companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
-                formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
-                textSnippet: '$childFields.textSnippet',
-                sectionOfDocument: "$childFields.sectionOfDocument",
-                pageNumber: '$childFields.pageNumber',
-                keywordUsed: "$childFields.keywordUsed",
-                commentG: "$childFields.commentG",
-                sourceName: "$childFields.source",
-                hasError: '',
-                errorType: '',
-                errorComments: '',
-                _id: '$_id',
-                taskId: '$taskId',
-                companyId: '$companyId',
-                pillarId: '$categoryDetails._id',
-                dpCodeId: '$parentDpId',
+          newModifiedArray.push(data);
+        }
+        const distinctTaskIdList = distinctTaskIds.map(x => x.toString());
+        let responseData = newModifiedArray;
+        ChildDp.aggregate([
+          {
+            $match: {
+              taskId: { $in: distinctTaskIdList },
+              status: true,
+              isActive: true
+            }
+          },
+          {
+            $addFields: {
+              convertedTaskId: { $toObjectId: "$taskId" },
+              convertedDatapointId: { $toObjectId: "$parentDpId" }
+            }
+          },
+          { '$lookup': { from: 'taskassignments', localField: 'convertedTaskId', foreignField: '_id', as: 'taskDetails' } },
+          { '$unwind': '$taskDetails' },
+          { '$lookup': { from: 'companies', localField: 'taskDetails.companyId', foreignField: '_id', as: 'companyDetails' } },
+          { '$unwind': '$companyDetails' },
+          { '$lookup': { from: 'categories', localField: 'taskDetails.categoryId', foreignField: '_id', as: 'categoryDetails' } },
+          { '$unwind': '$categoryDetails' },
+          {
+            '$project': {
+              taskNumber: '$taskDetails.taskNumber',
+              company: '$companyDetails.companyName',
+              pillar: '$categoryDetails.categoryName',
+              dpCode: '$childFields.dpCode',
+              year: '$year',
+              response: '$childFields.response',
+              placeValue: '$childFields.placeValue',
+              // uom: '$childFields.uom',
+              measureUom: 1, "uom": {
+                "$cond": {
+                  "if": { $lte: ["$childFields.uom", null] },
+                  "then": "",
+                  "else": "$childFields.uom"
+                }
+              },
+              didTheCompanyReport: "$childFields.didTheCompanyReport",
+              typeOfValueActualDerivedProxy: "$childFields.typeOf",
+              companyDataElementLabel: "$childFields.companyDataElementLabel",
+              companyDataElementSubLabel: "$childFields.companyDataElementSubLabel",
+              formatOfDataProvidedByCompanyChartTableText: "$childFields.formatOfDataProvidedByCompanyChartTableText",
+              textSnippet: '$childFields.textSnippet',
+              sectionOfDocument: "$childFields.sectionOfDocument",
+              pageNumber: '$childFields.pageNumber',
+              keywordUsed: "$childFields.keywordUsed",
+              commentG: "$childFields.commentG",
+              sourceName: "$childFields.source",
+              hasError: '',
+              errorType: '',
+              errorComments: '',
+              _id: '$_id',
+              taskId: '$taskId',
+              companyId: '$companyId',
+              pillarId: '$categoryDetails._id',
+              dpCodeId: '$parentDpId',
+            }
+          }
+        ])
+          .then((childData) => {
+            for (let index = 0; index < childData.length; index++) {
+              const element = childData[index];
+              if (element?.sourceName && (element.sourceName != '' || element.sourceName != ' ')) {
+                let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
+                childData[index].sourceName = sourceDet.name;
               }
             }
-          ])
-            .then((childData) => {
-              for (let index = 0; index < childData.length; index++) {
-                const element = childData[index];
-                if (element?.sourceName && (element.sourceName != '' || element.sourceName != ' ')) {
-                  let sourceDet = allSourceDetails.find(obj => obj.id == element.sourceName)
-                  childData[index].sourceName = sourceDet.name;
-                }
-              }
-              responseData = _.concat(responseData, childData);
-              responseData = _.orderBy(responseData, ['year'], ['desc'])
-              responseData = _.sortBy(responseData, 'dpCode')
-              responseData = _.sortBy(responseData, 'company')
-              // var collator = new Intl.Collator(undefined, {
-              //   numeric: true,
-              //   sensitivity: 'base'
-              // });
-              // responseData.sort(function(a, b) {
-              //   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
-              // });
+            responseData = _.concat(responseData, childData);
+            responseData = _.orderBy(responseData, ['year'], ['desc'])
+            responseData = _.sortBy(responseData, 'dpCode')
+            responseData = _.sortBy(responseData, 'company')
+          });
 
-            });
-
-          return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
-
-
-        }
+        return res.status(200).json({ status: "200", message: "Data exported successfully!", data: responseData });
       })
       .catch((error) => {
         return res.status(400).json({ status: "400", message: error.message ? error.message : "Failed to export!", data: [] });
@@ -1062,6 +1044,42 @@ export const exportQATasks = async (req, res, next) => {
     return res.status(400).json({ status: "400", message: "No records found!", data: [] });
   }
 }
+
+// removed comment above line 1037
+// var collator = new Intl.Collator(undefined, {
+//   numeric: true,
+//   sensitivity: 'base'
+// });
+// responseData.sort(function(a, b) {
+//   return collator.compare(a["dpCode"], b["dpCode"]) && collator.compare(a["company"], b["company"])
+// });
+
+
+// if (element?.additionalDetails) {
+//   Object.keys(element?.additionalDetails).forEach((key) => {
+//     additionalFieldArrayKey.push(key);
+//   });
+
+//   for (let i = 0; i < element?.clientTaxonomy?.fields?.length; i++) {
+//     const fieldName = element?.clientTaxonomy?.fields[i]?.fieldName;
+//     if (element?.clientTaxonomy?.fields[i]?.toDisplay) {
+//       if (additionalFieldArrayKey.includes(fieldName)) {
+//         additionalFieldAfterComparison[fieldName] = element?.additionalDetails[fieldName];
+//       }
+//       else {
+//         additionalFieldAfterComparison[fieldName] = ''
+//       }
+//     }
+//   }
+//   element.additionalDetails = additionalFieldAfterComparison;
+
+//   element = { ...element, ...element.additionalDetails };
+//   delete element.additionalDetails
+// }
+
+// delete element.clientTaxonomy;
+
+
 
 export const exportAdminTask = async (req, res, next) => {
   try {

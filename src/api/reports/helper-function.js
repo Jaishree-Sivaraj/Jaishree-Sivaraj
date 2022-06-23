@@ -66,3 +66,79 @@ function getUserDetails(user) {
 
     }
 }
+
+export function getSFDRExportOutputFields(details) {
+    console.log(details)
+    const additionalSource = 'additionalSourceUsed?';
+    return {
+        taskNumber: details?.taskNumber,
+        company: details?.company,
+        pillar: details?.company,
+        dpCode: details?.dpCode,
+        description: details?.description,
+        collectionYear: details?.collectionYear,
+        year: details?.year,
+        response: details?.response,
+        placeValue: details?.placeValue,
+        measureUom: details?.measureUom,
+        uom: details?.uom,
+        _id: details?._id,
+        taskId: details?.taskId,
+        companyId: details?.companyId,
+        pillarId: details?.pillarId,
+        dpCodeId: details?.dpCodeId,
+        pageNumber: details?.pageNumber,
+        sourceName: details?.sourceName,
+        hasError: details?.hasError,
+        errorType: details?.hasError,
+        errorComments: details?.errorComments,
+
+        didTheCompanyReport: details?.additionalDetails.didTheCompanyReport,
+        typeOfValueActualDerivedProxy: details?.additionalDetails.typeOfValueActualDerivedProxy,
+        companyDataElementLabel: details?.additionalDetails.companyDataElementLabel,
+        companyDataElementSubLabel: details?.additionalDetails.companyDataElementSubLabel,
+        totalOrSubLineItemForNumbers: details?.additionalDetails.totalOrSubLineItemForNumbers,
+        formatOfDataProvidedByCompanyChartTableText: details?.additionalDetails.formatOfDataProvidedByCompanyChartTableText,
+        textSnippet: details?.textSnippet,
+        sectionOfDocument: details?.additionalDetails.sectionOfDocument,
+        keywordUsed: details?.additionalDetails.keywordUsed,
+        commentG: details?.additionalDetails.commentG,
+        additionalSourceUsed: details?.additionalDetails[additionalSource]
+    }
+}
+
+export function getAcuiteOutputFields(details) {
+    return {
+        taskNumber: details?.taskNumber,
+        company: details?.company,
+        pillar: details?.company,
+        dpCode: details?.dpCode,
+        description: details?.description,
+        collectionYear: details?.collectionYear,
+        year: details?.year,
+        response: details?.response,
+        placeValue: details?.placeValue,
+        measureUom: details?.measureUom,
+        uom: details?.uom,
+        _id: details?._id,
+        taskId: details?.taskId,
+        companyId: details?.companyId,
+        pillarId: details?.pillarId,
+        dpCodeId: details?.dpCodeId,
+        pageNumber: details?.pageNumber,
+        sourceName: details?.sourceName,
+        cin: details?.companyDetails?.cin,
+        cmieProwessCode: details?.companyDetails?.cmieProwessCode,
+        nicCode: details?.companyDetails?.nicCode,
+        isinCode: details?.companyDetails?.isinCode,
+        nicIndustry: details?.companyDetails?.nicIndustry,
+        analystName: details?.analystDetails?.name,
+        qaName: details?.qaDetails?.name,
+        hasError: details?.hasError,
+        errorType: details?.hasError,
+        errorComments: details?.errorComments,
+
+
+
+    }
+}
