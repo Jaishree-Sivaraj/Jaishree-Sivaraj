@@ -411,7 +411,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       //! If they have a termination date then.
       console.log(member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null)
       if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
-        label1 = `${memberName}, last working date ${member?.cessationDate}`
+        label1 = `${memberName}, is terminated on ${member?.cessationDate}`
       }
       //! If the member is terminated then.
       if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
