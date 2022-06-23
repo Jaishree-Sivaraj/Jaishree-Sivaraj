@@ -417,7 +417,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       // if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
       //   label1 = `${memberName}, is terminated on ${member?.cessationDate}`
       // }
-      if (member.cessationDate !== null) {
+      if (member.cessationDate !== "") {
         label1 = `${memberName}, is terminated on ${member?.cessationDate}`
       }
 
