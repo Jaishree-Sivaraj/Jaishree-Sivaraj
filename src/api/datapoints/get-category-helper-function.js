@@ -408,12 +408,13 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
       const memberName =
         dpType == BOARD_MATRIX ? member.BOSP004 : member.BOSP004;
       let label1 = memberName;
+      console.log(taskStartDate)
       //! If they have a termination date then.
-      //! If they have a termination date then.
+      console.log(member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null)
       if (member.endDateTimeStamp > taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, last working date ${terminatedDate}`
       }
-
+console.log(member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null)
       //! If the member is terminated then.
       if (member.endDateTimeStamp < taskStartDate && member.endDateTimeStamp !== 0 && member.endDateTimeStamp !== null) {
         label1 = `${memberName}, is terminated on ${terminatedDate}`

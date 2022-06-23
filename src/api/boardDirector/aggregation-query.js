@@ -168,11 +168,13 @@ export function getDirector(name) {
 }
 
 export function getUpdateObject(body, directorsDetails, user) {
+    let yearTimeStamp = Math.floor(new Date(body?.cessationDate).getTime() / 1000);
     let data = {
         cessationDate: body?.cessationDate,
         BOSP004: body?.name,
         BODR005: body?.gender,
         dob: body?.dob,
+        endDateTimeStamp: yearTimeStamp,
         companyName: body?.companyName,
         companyId: body?.companyId,
         joiningDate: body?.joiningDate,
@@ -206,6 +208,8 @@ TODO: Things to be noted
  */
 
 export function getUpdateObjectForDirector(body, directorsDetails, user) {
+    let yearTimeStamp = Math.floor(new Date(directorsDetails?.cessationDate).getTime() / 1000);
+
     let data = {
         cessationDate: directorsDetails?.cessationDate,
         BOSP004: body?.name ? body?.name : directorsDetails?.BOSP004,
@@ -215,6 +219,7 @@ export function getUpdateObjectForDirector(body, directorsDetails, user) {
         companyId: directorsDetails?.companyId,
         joiningDate: directorsDetails?.joiningDate,
         memberType: directorsDetails?.memberType,
+        endDateTimeStamp: yearTimeStamp,
         cin: directorsDetails?.cin,
         din: body?.din,
         createdBy: user,

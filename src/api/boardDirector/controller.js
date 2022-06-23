@@ -333,7 +333,7 @@ export const uploadBoardDirector = async (req, res, next) => {
     sheetStubs: false,
     defval: '',
   });
-
+  let yearTimeStamp = 0;
   var sheet_name_list = workbook.SheetNames;
   sheet_name_list.forEach(async function (currentSheetName) {
     var worksheet = workbook.Sheets[currentSheetName];
@@ -374,6 +374,7 @@ export const uploadBoardDirector = async (req, res, next) => {
           directorInfo[index].companyName = fetchId[0].companyName;
           directorInfo[index].companyId = fetchId[0]._id
           directorInfo[index].createdBy = user;
+          directorInfo[index].endDateTimeStamp = yearTimeStamp;
           if (directorInfo[index].joiningDate != null) {
             let joiningDate = (new Date(Math.round((directorInfo[index].joiningDate - 25569) * 86400 * 1000)));
             directorInfo[index].joiningDate = (format(joiningDate, 'dd-MM-yyyy'));
