@@ -814,7 +814,6 @@ export const uploadQAVerificationData = async (req, res, next) => {
               errorTypeDetail = errorTypeDetail?.id;
               if (errorTypeDetail && errorTypeDetail != null && errorTypeDetail != undefined) {
                 let splitDpCodeWithDot = rowObject['dpCode'].split('.');
-                //! Why 2, need clarification.
                 if (splitDpCodeWithDot.length >= 2) {
                   return res.status(400).json({ status: "400", message: `Cannot raise error for child dp data ${rowObject['dpCode']}` });
                 } else {

@@ -68,7 +68,6 @@ function getUserDetails(user) {
 }
 
 export function getSFDRExportOutputFields(details) {
-    console.log(details)
     const additionalSource = 'additionalSourceUsed?';
     return {
         taskNumber: details?.taskNumber,
@@ -82,17 +81,11 @@ export function getSFDRExportOutputFields(details) {
         placeValue: details?.placeValue,
         measureUom: details?.measureUom,
         uom: details?.uom,
-        _id: details?._id,
-        taskId: details?.taskId,
-        companyId: details?.companyId,
-        pillarId: details?.pillarId,
-        dpCodeId: details?.dpCodeId,
         pageNumber: details?.pageNumber,
         sourceName: details?.sourceName,
         hasError: details?.hasError,
         errorType: details?.hasError,
         errorComments: details?.errorComments,
-
         didTheCompanyReport: details?.additionalDetails.didTheCompanyReport,
         typeOfValueActualDerivedProxy: details?.additionalDetails.typeOfValueActualDerivedProxy,
         companyDataElementLabel: details?.additionalDetails.companyDataElementLabel,
@@ -103,7 +96,12 @@ export function getSFDRExportOutputFields(details) {
         sectionOfDocument: details?.additionalDetails.sectionOfDocument,
         keywordUsed: details?.additionalDetails.keywordUsed,
         commentG: details?.additionalDetails.commentG,
-        additionalSourceUsed: details?.additionalDetails[additionalSource]
+        additionalSourceUsed: details?.additionalDetails[additionalSource],
+        _id: details?._id,
+        taskId: details?.taskId,
+        companyId: details?.companyId,
+        pillarId: details?.pillarId,
+        dpCodeId: details?.dpCodeId,
     }
 }
 
@@ -120,11 +118,6 @@ export function getAcuiteOutputFields(details) {
         placeValue: details?.placeValue,
         measureUom: details?.measureUom,
         uom: details?.uom,
-        _id: details?._id,
-        taskId: details?.taskId,
-        companyId: details?.companyId,
-        pillarId: details?.pillarId,
-        dpCodeId: details?.dpCodeId,
         pageNumber: details?.pageNumber,
         sourceName: details?.sourceName,
         cin: details?.companyDetails?.cin,
@@ -137,6 +130,11 @@ export function getAcuiteOutputFields(details) {
         hasError: details?.hasError,
         errorType: details?.hasError,
         errorComments: details?.errorComments,
+        _id: details?._id,
+        taskId: details?.taskId,
+        companyId: details?.companyId,
+        pillarId: details?.pillarId,
+        dpCodeId: details?.dpCodeId,
 
 
 
