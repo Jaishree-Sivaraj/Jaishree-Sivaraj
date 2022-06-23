@@ -2234,7 +2234,7 @@ export const updateCompanyStatus = async ({ user, bodymen: { body } }, res, next
       companyDetails?.email.map(async (e) => {
         const subject = `${companyDetails?.companyName},  data uploaded on ESGDS InfinData Platform`
         if (process.env.NODE_ENV === 'production') {
-          await sendEmail(e, subject, emailDetails)
+          await sendEmail(e, subject, emailDetails?.message)
             .then((resp) => { console.log('Mail sent!') })
             .catch(err => console.log(err))
         }
