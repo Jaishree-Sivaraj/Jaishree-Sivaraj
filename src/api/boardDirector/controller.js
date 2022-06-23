@@ -50,7 +50,7 @@ export const create = async (req, res, next) => {
         });
         if (checkingDuplicateValue == true) {
           if (directorData[index]?.cessationDate != "") {
-            yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
+            yearTimeStamp = Math.floor(new Date(parseInt(directorData[index]?.cessationDate)).getTime() / 1000);
           }
           var data = {
             din: directorData[index]?.din,
@@ -82,8 +82,9 @@ export const create = async (req, res, next) => {
         }
       }
       else {
+
         if (directorData[index]?.cessationDate != "") {
-          yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
+          yearTimeStamp = Math.floor(new Date(parseInt(directorData[index]?.cessationDate)).getTime() / 1000);
         }
         var data = {
           din: directorData[index]?.din,
