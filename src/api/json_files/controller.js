@@ -238,11 +238,6 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
           //   // companyName: companyDetails.companyName,
           //   Data: []
           // };
-          let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, datapointId: { $in: controversyJsonDatapoints }, isActive: true, status: true })
-            .populate('createdBy')
-            .populate('companyId')
-            .populate('datapointId');
-          let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
           for (let dpIndex = 0; dpIndex < controversyJsonDatapointsDetails.length; dpIndex++) {
             let object = controversyJsonDatapointsDetails[dpIndex];
             let dataObject = {
@@ -251,12 +246,18 @@ export const generateJson = async ({ bodymen: { body } }, res, next) => {
               ResponseUnit: "",
               controversy: []
             }
+            let companyControversiesYearwise = await Controversy.find({ companyId: body.companyId, year: year, datapointId: object.id, isActive: true, status: true, response: { $nin: [""," "] } })
+            .populate('createdBy')
+            .populate('companyId')
+            .populate('datapointId');
+            let uniqDatapoints = _.uniqBy(companyControversiesYearwise, 'datapointId');
             if (companyControversiesYearwise.length > 0) {
               for (let index = 0; index < uniqDatapoints.length; index++) {
-                let element = uniqDatapoints[index];
+                let element = companyControversiesYearwise[index];
                 if (object?.id == element?.datapointId?.id && year == element?.year) {
                   let singleControversyDetail = companyControversiesYearwise.find((obj) => obj.datapointId.id == element.datapointId.id)
-                  let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
+                  // let datapointControversies = _.filter(companyControversiesYearwise, { datapointId: element.datapointId });
+                  let datapointControversies = companyControversiesYearwise
                   // let dataObject = {
                   //   Dpcode: singleControversyDetail.datapointId.code,
                   //   Year: singleControversyDetail.year,
