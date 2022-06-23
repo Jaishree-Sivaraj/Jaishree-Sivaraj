@@ -163,7 +163,7 @@ const standaloneDatapointsSchema = new Schema({
   },
   isCounted: {
     type: Boolean,
-    default: false
+    default: true
   },
   isDownloaded: {
     type: Boolean,
