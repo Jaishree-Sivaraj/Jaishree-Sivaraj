@@ -14,6 +14,7 @@ import { ErrorDetails } from '../errorDetails'
 import { CompanySources } from '../companySources'
 import { BoardMembers } from '../boardMembers'
 import { Kmp } from '../kmp'
+import {BoardDirector} from '../boardDirector'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { BoardMembersMatrixDataPoints } from '.'
 
@@ -582,10 +583,12 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let clientTaxonomyId = await ClientTaxonomy.findOne({
         taxonomyName: "Acuite"
       });
-      let allBoardMembers = await BoardMembers.find({
+      let allBoardMembers = await BoardDirector.find({
+        memberLevel : "Board Matrix",
         status: true
       }).populate('companyId')
-      let allKmpMembers = await Kmp.find({
+      let allKmpMembers = await BoardDirector.find({
+        memberLevel : "KMP Matrix",
         status: true
       }).populate('companyId')
       let errorTypeDetails = await Errors.find({
@@ -638,7 +641,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let inactiveBoardMembersList = [];
       let kmpMembersList = [];
       let boardMembersNameList = [];
-      let allBoardMembersNamesList = [];
+      let allBoardMembersNameList = [];
       for (let filterIndex = 0; filterIndex < filteredBoardMemberMatrixDetails?.length; filterIndex++) {
         try {
           let item = filteredBoardMemberMatrixDetails[filterIndex];
@@ -691,8 +694,9 @@ export const uploadBoardMembersData = async (req, res, next) => {
           let promiseArr = [];
           for (let boardMemIndex = 0; boardMemIndex < boardMembersNameList?.length; boardMemIndex++) {
             let value = boardMembersNameList[boardMemIndex];
+            let memberName = boardMembersNameList[boardMemIndex].split("-");
             let memberDetail = {
-              memberName: value,
+              memberName: memberName,
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               response: item[value],
               datapointId: datapointObject[0] ? datapointObject[0]?.id : null,
@@ -743,13 +747,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
                 }
               }
             }
-            allBoardMembersNamesList.push(boardMembersNameList[boardMemIndex]);
+            allBoardMembersNameList.push(boardMembersNameList[boardMemIndex]);
           }
         } catch (error) {
           return res.status(500).json({ status: "500", message: error.message ? error.message : "Failed to upload the input files" })
         }
       };
-      allBoardMembersNamesList = _.uniq(allBoardMembersNamesList);
+      allBoardMembersNameList = _.uniq(allBoardMembersNameList);
       _.forEach(inactiveBoardMembersList, function (object) {
         let indexToUpdate = _.findIndex(boardMembersList, object);
         if (indexToUpdate >= 0) {
@@ -772,14 +776,14 @@ export const uploadBoardMembersData = async (req, res, next) => {
       
       let invalidBodMemberList = [];
       let bodMembersToInsert = [];
-      for (let index = 0; index < allBoardMembersNamesList?.length; index++) {
-        const element = allBoardMembersNamesList[index];
-        let memberDetails = allBoardMembers.filter(obj => obj.BOSP004.toLowerCase() == element.toLowerCase())
+      for (let index = 0; index < allBoardMembersNameList?.length; index++) {
+        const element = allBoardMembersNameList[index]?.split("-");
+        let memberDetails = allBoardMembers.filter(obj => obj.din == element[1] && obj.BOSP004 == element[0] )
         if (memberDetails && memberDetails?.length > 0) {
-          let cmpMemberDetails = memberDetails.find(obj => obj.BOSP004.toLowerCase() == element.toLowerCase() && obj.companyId.id == taskObject.companyId.id)
+          let cmpMemberDetails = memberDetails.find(obj => obj => obj.din == element[1] && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
-            let startDateData = boardMembersList.find(obj => obj?.memberName.toLowerCase() == element.toLowerCase() && obj?.dpCode == 'BOIR017')
-            let endDateData = boardMembersList.find(obj => obj?.memberName.toLowerCase() == element.toLowerCase() && obj?.dpCode == 'BOIR018')
+            let startDateData = boardMembersList.find(obj => obj?.memberName == cmpMemberDetails?.BOSP004 && obj?.dpCode == 'BOIR017')
+            let endDateData = boardMembersList.find(obj => obj?.memberName == cmpMemberDetails?.BOSP004 && obj?.dpCode == 'BOIR018')
             let endDateTimeStampValue = endDateData?.response ? endDateData?.response : "";
             
             try {
@@ -789,19 +793,22 @@ export const uploadBoardMembersData = async (req, res, next) => {
               return res.status(400).json({status: "400", message: "Invalid date formats for BOIR017 and BOIR018 Dpcodes please check!"})
             }
             let memberObject = {
-              BOSP004: element,
+              BOSP004: cmpMemberDetails?.BOSP004,
+              din: element[1],
               companyId: taskObject.companyId.id,
-              BODP001: memberDetails[0]?.BODP001,
+              companyName: taskObject.companyId.companyName,
+              cin: taskObject.companyId.id,
+              isPresent: true,
+              socialLinks: [],
               BODR005: memberDetails[0]?.BODR005,
-              BOSP004: memberDetails[0]?.BOSP004,
-              BOSP005: memberDetails[0]?.BOSP005,
-              BOSP006: memberDetails[0]?.BOSP006,
-              clientTaxonomyId: clientTaxonomyId.id,
               dob: '',
-              endDate: endDateData ? endDateData : "",
+              memberType : "Board Member",
+              memberLevel : "Board Member",
+              cessationDate: endDateData ? endDateData : "",
+              qualification : "",
+              profilePhoto : "",
               endDateTimeStamp: endDateTimeStampValue ? endDateTimeStampValue : 0,
-              memberStatus: true,
-              startDate: startDateData ? startDateData : "",
+              joiningDate: startDateData ? startDateData : "",
               createdBy: userDetail,
               createdAt: new Date(),
               updatedAt: new Date()
@@ -809,11 +816,11 @@ export const uploadBoardMembersData = async (req, res, next) => {
             bodMembersToInsert.push(memberObject);
           }
         } else {
-          invalidBodMemberList.push(element);
+          invalidBodMemberList.push(allBoardMembersNameList[index]);
         }
       }
 
-      await BoardMembers.insertMany(bodMembersToInsert)
+      await BoardDirector.insertMany(bodMembersToInsert)
       .then((res) => {})
       .catch((error) => {
         return res.status(500).json({status: "500", message: error?.message ? error?.message : "Failed to insert the board members"})
@@ -871,9 +878,9 @@ export const uploadBoardMembersData = async (req, res, next) => {
             hasError = false
           }
           for (let kmpIndex = 0; kmpIndex < kmpMembersNameList?.length; kmpIndex++) {
-            let value = kmpMembersNameList[kmpIndex];
+            let value = kmpMembersNameList[kmpIndex].split("-");
             let memberDetail = {
-              memberName: value,
+              memberName: value[0],
               response: item[value],
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               memberStatus: true,
@@ -916,32 +923,40 @@ export const uploadBoardMembersData = async (req, res, next) => {
       let invalidKmpMemberList = [];
       let kmpMembersToInsert = [];
       for (let index = 0; index < kmpMembersNameList?.length; index++) {
-        const element = kmpMembersNameList[index];
-        let memberDetails = allKmpMembers.filter(obj => obj?.MASP003.toLowerCase() == element.toLowerCase())
+        const element = kmpMembersNameList[index]?.split("-");
+        let memberDetails = allKmpMembers.filter(obj => obj?.BOSP004.toLowerCase() == element[0].toLowerCase())
         if (memberDetails && memberDetails?.length > 0) {
-          let cmpMemberDetails = allKmpMembers.find(obj => obj?.MASP003.toLowerCase() == element.toLowerCase() && obj.companyId.id == taskObject.companyId.id)
+          let cmpMemberDetails = allKmpMembers.find(obj => obj?.BOSP004.toLowerCase() == element[0].toLowerCase() && obj.companyId.id == taskObject.companyId.id)
           if (!cmpMemberDetails) {
             let memberObject = {
-              MASP003: element,
+              BOSP004: element?.length > 0 ? element[0] : element,
+              din: element.length > 0 ? element[1] : "",
               companyId: taskObject?.companyId?.id ? taskObject?.companyId?.id : "",
-              MASR008: memberDetails?.MAASR008 ? memberDetails?.MAASR008 : "",
-              clientTaxonomyId: clientTaxonomyId.id,
+              companyName: taskObject?.companyId?.companyName ? taskObject?.companyId?.companyName : "",
+              cin: taskObject?.companyId?.cin ? taskObject?.companyId?.cin : "",
+              isPresent: true,
+              BODR005: memberDetails?.BODR005 ? memberDetails?.BODR005 : "",
+              socialLinks: [],
               dob: '',
-              endDate: "",
-              endDateTimeStamp: 0,
-              memberStatus: true,
-              startDate: "",
-              createdBy: userDetail
+              cessationDate: "",
+              memberType : "",
+              memberLevel : "KMP Matrix",
+              qualification : "",
+              profilePhoto : "",
+              joiningDate: "",
+              createdBy: userDetail,
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
             kmpMembersToInsert.push(memberObject);
           }
         } else {
-          invalidKmpMemberList.push(element);
+          invalidKmpMemberList.push(element.length > 0 ? element[0] : element);
         }
         
       }
       // Needs to add the KMP member validation
-      await Kmp.insertMany(kmpMembersToInsert)
+      await BoardDirector.insertMany(kmpMembersToInsert)
       .then((res) => {})
       .catch((error) => {
         return res.status(500).json({status: "500", message: error?.message ? error?.message : "Failed to insert the kmp members"})
