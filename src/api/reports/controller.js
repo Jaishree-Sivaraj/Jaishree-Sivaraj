@@ -895,6 +895,7 @@ export const exportQATasks = async (req, res, next) => {
           url: 1,
           filePathway: 1,
           companyDetails: 1,
+          textSnippet:1,
           // batches: 1,
           analystDetails: 1,
           qaDetails: 1,
