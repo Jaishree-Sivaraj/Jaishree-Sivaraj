@@ -4,15 +4,14 @@ import { CompaniesTasks } from "../companies_tasks";
 import { StandaloneDatapoints } from "../standalone_datapoints";
 import { Group } from "../group";
 import { ClientTaxonomy } from "../clientTaxonomy";
-import _ from 'lodash'
-import { Datapoints } from '../datapoints'
-import { ChildDp } from '../child-dp'
-import { CompanySources } from '../companySources'
-import { Validations } from '../validations'
-import { TaskAssignment } from '../taskAssignment'
-import { Batches } from '../batches'
-import { Role } from '../role'
-import { ErrorDetails } from '../errorDetails'
+import _ from 'lodash';
+import { Datapoints } from '../datapoints';
+import { ChildDp } from '../child-dp';
+import { CompanySources } from '../companySources';
+import { TaskAssignment } from '../taskAssignment';
+import { Batches } from '../batches';
+import { Role } from '../role';
+import { ErrorDetails } from '../errorDetails';
 import { Completed, VerificationCompleted, CollectionCompleted, CorrectionCompleted } from '../../constants/task-status';
 import { GroupAdmin, SuperAdmin, Admin, QA } from '../../constants/roles';
 import { ControversyTasks } from "../controversy_tasks";
@@ -891,10 +890,15 @@ export const exportQATasks = async (req, res, next) => {
       { '$unwind': { path: '$qaDetails' } },
       {
         '$project': {
+          optionalAnalystComment: 1,
+          publicationDate: 1,
+          url: 1,
+          filePathway: 1,
           companyDetails: 1,
           batches: 1,
           analystDetails: 1,
           qaDetails: 1,
+          categoryDetails: 1,
           taskNumber: '$taskDetails.taskNumber',
           company: '$companyDetails.companyName',
           pillar: '$categoryDetails.categoryName',
@@ -1045,7 +1049,7 @@ export const exportQATasks = async (req, res, next) => {
   }
 }
 
-// removed comment above line 1037
+// removed comment above line 10(al37
 // var collator = new Intl.Collator(undefined, {
 //   numeric: true,
 //   sensitivity: 'base'
@@ -1078,8 +1082,6 @@ export const exportQATasks = async (req, res, next) => {
 // }
 
 // delete element.clientTaxonomy;
-
-
 
 export const exportAdminTask = async (req, res, next) => {
   try {
@@ -1338,6 +1340,7 @@ export const exportAnalystTask = async (req, res, next) => {
 
 
 }
+
 // export const exportQATasks = async (req, res, next) => {
 //   const { selectedTasks, isSelectedAll, role } = req.body;
 //   let exportQuery = {};
