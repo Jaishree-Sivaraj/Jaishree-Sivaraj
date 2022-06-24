@@ -347,11 +347,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails = result.response.datapointList.memberList;
                 let memberDetail = allMembersFullDetails.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null && memberDetail?.endDate != '' && memberDetail?.endDate != null) {
+                  if (memberDetail?.startDate != '' && memberDetail?.startDate != null) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
-                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    result.message = "StartDate is not updated, Please check!";
                     return res.status(200).json(result)
                   }
                 } else {
@@ -380,11 +380,11 @@ export const getCategorywiseDatapoints = async (req, res, next) => {
                 let allMembersFullDetails1 = result.response.datapointList.memberList;
                 let memberDetail1 = allMembersFullDetails1.find((obj) => obj?.label?.toLowerCase() == memberName?.toLowerCase())
                 if (memberName != '') {
-                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null && memberDetail1?.endDate != '' && memberDetail1?.endDate != null) {
+                  if (memberDetail1?.startDate != '' && memberDetail1?.startDate != null ) {
                     return res.status(200).json(result);
                   } else {
                     result.response.datapointList.dpCodesData = [];
-                    result.message = "StartDate and EndDate is not updated, Please check!";
+                    result.message = "StartDate is not updated, Please check!";
                     return res.status(200).json(result)
                   }
                 } else {
