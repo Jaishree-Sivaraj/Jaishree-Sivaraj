@@ -427,7 +427,7 @@ export async function getMembers(activeMemberQuery, dpType, taskStartDate, curre
         label1,
         value: member.id,
         year: yearsForDataCollection?.length > 0 ? yearsForDataCollection : '',
-        startDate: member.startDate,
+        startDate: member.joiningDate,
         endDate: member.endDateTimeStamp,
       };
 
