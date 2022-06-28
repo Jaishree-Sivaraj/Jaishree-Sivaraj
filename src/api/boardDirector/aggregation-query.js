@@ -269,12 +269,12 @@ export async function getQueryData(name, updateObject) {
         ];
 
         let dinConditionToCheckRedundantDIN = {
-            name: { $ne: name.trim() },
+            BOSP004: { $ne: name.trim() },
             din: updateObject?.din.trim()
         };
 
         let nameConditionToCheckRedundantName = {
-            name: { $ne: name.trim() },
+            BOSP004: { $ne: name.trim() },
             $or: [
                 { BOSP004: name.trim() },
                 { BOSP004: updateObject?.name.trim() }
