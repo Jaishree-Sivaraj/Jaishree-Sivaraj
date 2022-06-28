@@ -419,8 +419,9 @@ export const updateAndDeleteDirector = async (req, res, next) => {
 
     for (let i = 0; i < companyList?.length; i++) {
       const incomingUpdateObject = companyList[i];
-
-      const { dinConditionToCheckRedundantDIN,
+      // Director's details is updated 1st and only the firsttime as all common details is updated at once.
+      if (i == 0) {
+        const { dinConditionToCheckRedundantDIN,
         nameConditionToCheckRedundantName,
         nullValidationForDIN } = await getQueryData(name, incomingUpdateObject);
 
@@ -432,9 +433,6 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       if (Object.keys(checkRedundantData).length !== 0) {
         return res.status(409).json(checkRedundantData)
       }
-
-      // Director's details is updated 1st and only the firsttime as all common details is updated at once.
-      if (i == 0) {
         directorDetails = await updateDirectorData(name, details, incomingUpdateObject, user);
       }
 
