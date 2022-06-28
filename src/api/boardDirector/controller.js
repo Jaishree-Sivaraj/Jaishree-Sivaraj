@@ -7,6 +7,7 @@ import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
 import { getAggregationQueryToGetAllDirectors, getDirector, getUpdateObject, updateDirectorData, checkIfRedundantDataHaveCessationDate, getQueryData, checkRedundantNameOrDIN, updateCompanyData } from './aggregation-query';
 import { storeFileInS3, fetchFileFromS3 } from "../../services/utils/aws-s3"
+import { id } from 'date-fns/locale';
 
 
 export const create = async (req, res, next) => {
@@ -72,7 +73,6 @@ export const create = async (req, res, next) => {
             createdAt: new Date(),
             updatedAt: new Date()
           }
-          console.log(data)
           addObject.push(data)
         } else if (checkingDuplicateValue == false) {
           return res.status(400).json({
@@ -106,8 +106,6 @@ export const create = async (req, res, next) => {
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        console.log(data)
-
 
         var checkingDuplicate = addObject.some(function (el) {
           return el?.cin === directorData[index]?.cin;
@@ -229,7 +227,6 @@ export const getDirectorByDINAndCompanyId = async (req, res, next) => {
     });
 
   } catch (error) {
-    console.log(error?.message);
     return res.status(409).json({
       status: 409,
       message: error?.message ? error?.message : `Failed to retrieve Director's data`
@@ -426,17 +423,15 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     // }
 
     let updateDirector;
+    let directorName = '';
     for (let i = 0; i < companyList?.length; i++) {
       const updateObject = companyList[i];
-
       const { dinConditionToCheckRedundantDIN,
         nameConditionToCheckRedundantName,
         nullValidationForDIN } = await getQueryData(name, updateObject);
-
       const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
 
       const checkRedundantData = await checkRedundantNameOrDIN(
-        name,
         dinConditionToCheckRedundantDIN,
         nameConditionToCheckRedundantName,
         nullValidationForDIN);
@@ -448,25 +443,16 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
       const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
       // updating companyData
-      await updateCompanyData(updateObject, findQuery, data);
-      // updating Directors details.
-      updateDirector = await updateDirectorData(name, details, user, updateObject)
-
+      directorName = await updateCompanyData(updateObject, findQuery, data);
+      !directorName || directorName !== '' && name;
     }
-
-    if (!updateDirector) {
-      return res.status(409).json({
-        status: 409,
-        message: `Failed to update director's details`
-      })
-    }
-
+    
+    updateDirector = directorName !== '' && await updateDirectorData(name, directorName, details, user);
     return res.status(200).json({
       status: 200,
       message: `Director's details updated successfully `
     })
   } catch (error) {
-    console.log(error?.message);
     return res.status(409).json({
       status: 409,
       message: error?.message ? error?.message : `Failed to update director's details`
