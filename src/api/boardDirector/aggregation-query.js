@@ -260,7 +260,7 @@ export function getUpdateObjectForDirector(incomingUpdateObject, structuredObjec
 export async function getQueryData(name, updateObject) {
     try {
 
-        const allIds = await BoardDirector.distinct('_id', { BOSP004: { $in: [name] } });
+        // const oldDirectorData = await BoardDirector.find({ BOSP004: name });
 
         const nullValidationForDIN = [
             { din: { $ne: '' } },
@@ -268,24 +268,31 @@ export async function getQueryData(name, updateObject) {
             { din: { $ne: null } },
         ];
 
-        let dinConditionToCheckRedundantDIN = { din: updateObject?.din.trim() };
-
-        let nameConditionToCheckRedundantName = {
-            BOSP004: updateObject?.name.trim()
+        let dinConditionToCheckRedundantDIN = {
+            name: { $ne: name.trim() },
+            din: updateObject?.din.trim()
         };
 
-        if (allIds?.length > 0) {
-            nameConditionToCheckRedundantName =
-            {
-                ...nameConditionToCheckRedundantName,
-                _id: { $nin: allIds.map(_id => mongoose.Types.ObjectId(_id)) }
-            };
+        let nameConditionToCheckRedundantName = {
+            name: { $ne: name.trim() },
+            $or: [
+                { BOSP004: name.trim() },
+                { BOSP004: updateObject?.name.trim() }
+            ]
+        };
 
-            dinConditionToCheckRedundantDIN = {
-                ...dinConditionToCheckRedundantDIN,
-                _id: { $nin: allIds.map(_id => mongoose.Types.ObjectId(_id)) }
-            };
-        }
+        // if (oldDirectorData?.length > 0) {
+        //     nameConditionToCheckRedundantName =
+        //     {
+        //         ...nameConditionToCheckRedundantName,
+        //         _id: { $nin: oldDirectorData.map(director => mongoose.Types.ObjectId(director?._id)) }
+        //     };
+
+        //     dinConditionToCheckRedundantDIN = {
+        //         ...dinConditionToCheckRedundantDIN,
+        //         _id: { $nin: oldDirectorData.map(director => mongoose.Types.ObjectId(director?._id)) }
+        //     };
+        // }
 
 
         return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN };
