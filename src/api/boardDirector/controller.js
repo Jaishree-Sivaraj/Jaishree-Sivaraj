@@ -415,21 +415,14 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     const { name } = req.params;
     const { body, user } = req;
     const { companyList, details } = body;
+    let directorDetails = '';
 
-    // This is handled in F.E. Logic needs to be changed incase somethings are there
-    // const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
-    // if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
-    //   return res.status(409).json(checkForRedundantCINWithNoCessationDate)
-    // }
-
-    let updateDirector;
-    let directorName = '';
     for (let i = 0; i < companyList?.length; i++) {
-      const updateObject = companyList[i];
+      const incomingUpdateObject = companyList[i];
+
       const { dinConditionToCheckRedundantDIN,
         nameConditionToCheckRedundantName,
-        nullValidationForDIN } = await getQueryData(name, updateObject);
-      const findQuery = { BOSP004: name, status: true, companyId: updateObject?.companyId };
+        nullValidationForDIN } = await getQueryData(name, incomingUpdateObject);
 
       const checkRedundantData = await checkRedundantNameOrDIN(
         dinConditionToCheckRedundantDIN,
@@ -440,14 +433,16 @@ export const updateAndDeleteDirector = async (req, res, next) => {
         return res.status(409).json(checkRedundantData)
       }
 
-      const directorsDetailsWithCompany = await BoardDirector.find(findQuery);
-      const data = getUpdateObject(updateObject, directorsDetailsWithCompany, user);
-      // updating companyData
-      directorName = await updateCompanyData(updateObject, findQuery, data);
-      !directorName || directorName !== '' && name;
+      // Director's details is updated 1st and only the firsttime as all common details is updated at once.
+      if (i == 0) {
+        directorDetails = await updateDirectorData(name, details, incomingUpdateObject, user);
+      }
+
+      const data = getUpdateObject(incomingUpdateObject, directorDetails, user);
+      console.log(data);
+      await updateCompanyData(incomingUpdateObject, data);
     }
-    
-    updateDirector = directorName !== '' && await updateDirectorData(name, directorName, details, user);
+
     return res.status(200).json({
       status: 200,
       message: `Director's details updated successfully `
@@ -459,3 +454,10 @@ export const updateAndDeleteDirector = async (req, res, next) => {
     })
   }
 }
+
+
+    // This is handled in F.E. Logic needs to be changed incase somethings are there
+    // const checkForRedundantCINWithNoCessationDate = checkIfRedundantDataHaveCessationDate(companyList);
+    // if (Object.keys(checkForRedundantCINWithNoCessationDate).length !== 0) {
+    //   return res.status(409).json(checkForRedundantCINWithNoCessationDate)
+    // }
