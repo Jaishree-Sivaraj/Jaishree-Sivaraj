@@ -72,7 +72,7 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
         const totalKmpMemberYearsCount = await getTotalExpectedYear(allKmpMatrixDetails, distinctYears, KMP_MATRIX, fiscalYearEndMonth, fiscalYearEndDate);
 
         let multipliedValue = 0;
-        if (totalBoardMemberYearsCount && totalKmpMemberYearsCount) {
+        if (totalBoardMemberYearsCount?.length > o && totalKmpMemberYearsCount?.length > 0) {
             if (!isSFDR) {
                 totalExpectedBoardMatrixCount = getTotalCount(totalBoardMemberYearsCount, boardMatrixDatapoints);
                 totalExpectedKmpMatrixCount = getTotalCount(totalKmpMemberYearsCount, kmpMatrixDatapoints);
@@ -93,9 +93,8 @@ export async function getTotalMultipliedValues(standaloneDatapoints, boardMatrix
                 const totalQuantativeDatapoints = standaloneQuantitative * distinctYears.length + totalExpectedBoardMatrixCount + totalExpectedKmpMatrixCount;
                 multipliedValue = totalQualitativeDatapoints + totalQuantativeDatapoints;
             }
-
-            return multipliedValue;
         }
+        return multipliedValue;
 
     } catch (error) {
         console.log(error?.message)
@@ -146,7 +145,7 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
             const hasRepRaisedAnError = body.role == ClientRepresentative || body?.role == CompanyRepresentative
                 ? true
                 : false;
-                
+
             await TaskAssignment.updateOne({ _id: body.taskId }, {
                 $set: {
                     hasRepRaisedAnError
@@ -196,7 +195,7 @@ export async function conditionalResult(body, hasError, hasCorrection, condition
                     }
                 });
             }
-            
+
             taskStatusValue = body.role == QA ? VerificationCompleted : Completed
             taskStatusValue = body.role == Analyst ? CollectionCompleted : Completed
             const [query, update,] = [
