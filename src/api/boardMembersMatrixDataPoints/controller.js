@@ -722,6 +722,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
               taskId: taskObject?.id ? taskObject?.id : null,
               memberStatus: true,
               status: true,
+              updatedAt: new Date(),
+              createdAt: new Date(),
               createdBy: userDetail
             };
             boardMembersList.push(memberDetail);
@@ -903,6 +905,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
               hasError: false,
               taskId: taskObject?.id ? taskObject?.id : null,
               status: true,
+              updatedAt: new Date(),
+              createdAt: new Date(),
               createdBy: userDetail
             }
             kmpMembersList.push(memberDetail);
@@ -1055,6 +1059,9 @@ export const uploadBoardMembersData = async (req, res, next) => {
                         year: year,
                         fiscalYearEndDate: executiveMemberObject.fiscalYearEndDate,
                         status: true,
+                        correctionStatus: "Completed",
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
                         createdBy: userDetail
                       };
                       kmpMembersList.push(memberDetail)
