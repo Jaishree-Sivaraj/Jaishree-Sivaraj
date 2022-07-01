@@ -438,7 +438,6 @@ export const updateAndDeleteDirector = async (req, res, next) => {
       }
 
       const data = getUpdateObject(incomingUpdateObject, directorDetails, user);
-      console.log(data);
       await updateCompanyData(incomingUpdateObject, data);
     }
 
