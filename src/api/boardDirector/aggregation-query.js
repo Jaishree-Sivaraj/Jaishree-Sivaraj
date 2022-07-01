@@ -173,8 +173,8 @@ export function getUpdateObject(newIncomigUpdateObject, oldData, user) {
     try {
         let yearTimeStamp = 0;
         if (newIncomigUpdateObject?.cessationDate !== '') {
-            const splitYear = newIncomigUpdateObject?.cessationDate?.split('-');
-            yearTimeStamp = Math.floor(new Date(splitYear[2], Number(splitYear[1] - 1), splitYear[0]).getTime() / 1000);
+            const splitYear = newIncomigUpdateObject?.cessationDate;
+            yearTimeStamp = Math.floor(new Date(newIncomigUpdateObject?.cessationDate).getTime() / 1000);
         }
 
         let data = {
@@ -223,7 +223,10 @@ TODO: Things to be noted
  */
 
 export function getUpdateObjectForDirector(incomingUpdateObject, structuredObjectForUpdate, user) {
-    let yearTimeStamp;
+    let yearTimeStamp = 0;
+    if (incomingUpdateObject?.cessationDate !== '') {
+        yearTimeStamp = Math.floor(new Date(incomingUpdateObject?.cessationDate).getTime() / 1000);
+    }
     let data = {
         // CompanyLevel Data.
         companyName: structuredObjectForUpdate?.companyName,

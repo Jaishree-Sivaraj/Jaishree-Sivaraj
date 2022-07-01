@@ -51,7 +51,7 @@ export const create = async (req, res, next) => {
         });
         if (checkingDuplicateValue == true) {
           if (directorData[index]?.cessationDate != "") {
-            yearTimeStamp = Math.floor(new Date(parseInt(directorData[index]?.cessationDate)).getTime() / 1000);
+            yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
           }
           var data = {
             din: directorData[index]?.din,
@@ -84,7 +84,7 @@ export const create = async (req, res, next) => {
       else {
 
         if (directorData[index]?.cessationDate != "") {
-          yearTimeStamp = Math.floor(new Date(parseInt(directorData[index]?.cessationDate)).getTime() / 1000);
+          yearTimeStamp = Math.floor(new Date(directorData[index]?.cessationDate).getTime() / 1000);
         }
         var data = {
           din: directorData[index]?.din,
@@ -242,6 +242,7 @@ export const show = ({ params }, res, next) =>
     .catch(next);
 
 export const update = async ({ bodymen: { body }, params }, res, next) => {
+  console.log(body)
   let checkDirectorDin = await BoardDirector.find({ din: body.din });
   if (checkDirectorDin.length > 0) {
     checkDirectorDin.forEach(obj => {
