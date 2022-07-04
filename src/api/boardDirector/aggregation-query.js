@@ -173,7 +173,6 @@ export function getUpdateObject(newIncomigUpdateObject, oldData, user) {
     try {
         let yearTimeStamp = 0;
         if (newIncomigUpdateObject?.cessationDate !== '') {
-            const splitYear = newIncomigUpdateObject?.cessationDate;
             yearTimeStamp = Math.floor(new Date(newIncomigUpdateObject?.cessationDate).getTime() / 1000);
         }
 
@@ -188,6 +187,7 @@ export function getUpdateObject(newIncomigUpdateObject, oldData, user) {
             createdBy: user,
             status: true,
             isPresent: true,
+
             din: oldData?.din,
             BOSP004: oldData?.BOSP004,
             BODR005: oldData?.BODR005,
@@ -197,6 +197,7 @@ export function getUpdateObject(newIncomigUpdateObject, oldData, user) {
             qualification: oldData?.qualification,
             memberLevel: oldData?.memberLevel
         }
+
 
         if (newIncomigUpdateObject?.status == true || newIncomigUpdateObject?.status == false) {
             data = {
@@ -223,42 +224,34 @@ TODO: Things to be noted
  */
 
 export function getUpdateObjectForDirector(incomingUpdateObject, structuredObjectForUpdate, user) {
-    let yearTimeStamp = 0;
-    if (incomingUpdateObject?.cessationDate !== '') {
-        yearTimeStamp = Math.floor(new Date(incomingUpdateObject?.cessationDate).getTime() / 1000);
-    }
     let data = {
         // CompanyLevel Data.
         companyName: structuredObjectForUpdate?.companyName,
         companyId: structuredObjectForUpdate?.companyId,
         joiningDate: structuredObjectForUpdate?.joiningDate,
         memberType: structuredObjectForUpdate?.memberType,
-        endDateTimeStamp: yearTimeStamp,
+        endDateTimeStamp: structuredObjectForUpdate?.endDateTimeStamp,
         cin: structuredObjectForUpdate?.cin,
         cessationDate: structuredObjectForUpdate?.cessationDate,
         createdBy: user,
+        status: structuredObjectForUpdate?.status,
+        isPresent: structuredObjectForUpdate?.isPresent,
+
+        // Only director's data is to be updated
         // Director Level Data.
-        profilePhoto: structuredObjectForUpdate?.profilePhoto,
-        socialLinks: structuredObjectForUpdate?.socialLinks,
-        qualification: structuredObjectForUpdate?.qualification,
-        memberLevel: structuredObjectForUpdate?.memberLevel,
+        profilePhoto: incomingUpdateObject?.profilePhoto,
+        socialLinks: incomingUpdateObject?.socialLinks,
+        qualification: incomingUpdateObject?.qualification,
+        memberLevel: incomingUpdateObject?.memberLevel,
         BOSP004: incomingUpdateObject?.name,
         BODR005: incomingUpdateObject?.gender,
         dob: incomingUpdateObject?.dob,
-        din: incomingUpdateObject?.din,
-        status: true
+        din: incomingUpdateObject?.din
 
     }
 
-    if (incomingUpdateObject?.status == true || incomingUpdateObject?.status == false) {
-        data = {
-            ...data,
-            status: incomingUpdateObject?.status
-        }
-    }
     return data;
 }
-
 
 export async function getQueryData(name, updateObject) {
     try {
@@ -283,19 +276,6 @@ export async function getQueryData(name, updateObject) {
                 { BOSP004: updateObject?.name.trim() }
             ]
         };
-
-        // if (oldDirectorData?.length > 0) {
-        //     nameConditionToCheckRedundantName =
-        //     {
-        //         ...nameConditionToCheckRedundantName,
-        //         _id: { $nin: oldDirectorData.map(director => mongoose.Types.ObjectId(director?._id)) }
-        //     };
-
-        //     dinConditionToCheckRedundantDIN = {
-        //         ...dinConditionToCheckRedundantDIN,
-        //         _id: { $nin: oldDirectorData.map(director => mongoose.Types.ObjectId(director?._id)) }
-        //     };
-        // }
 
 
         return { dinConditionToCheckRedundantDIN, nameConditionToCheckRedundantName, nullValidationForDIN };
@@ -345,6 +325,7 @@ export async function updateCompanyData(updateObject, data) {
         // If the company already exists then update else create.
         let updateDirector;
         const findQuery = { BOSP004: data?.BOSP004, companyId: updateObject?.companyId, status: true };
+        // If the incomingData is true i.e, data already exists then we will mark it as true else, new record is created.
         if (updateObject?.isPresent) {
             updateDirector = await BoardDirector.findOneAndUpdate({
                 ...findQuery,
@@ -386,14 +367,13 @@ export async function updateDirectorData(name, details, incomingUpdateObject, us
                 await storeFileInS3(process.env.SCREENSHOT_BUCKET_NAME, profilePhotoFileName, profilePhotoItem)
             }
 
-            structuredObjectForUpdate.profilePhoto = profilePhotoFileName;
-            structuredObjectForUpdate.socialLinks = socialLinks;
-            structuredObjectForUpdate.qualification = qualification;
-            structuredObjectForUpdate.memberLevel = memberLevel;
+            incomingUpdateObject.profilePhoto = profilePhotoFileName;
+            incomingUpdateObject.socialLinks = socialLinks;
+            incomingUpdateObject.qualification = qualification;
+            incomingUpdateObject.memberLevel = memberLevel;
             const updateDirectorObject = getUpdateObjectForDirector(incomingUpdateObject, structuredObjectForUpdate, user);
             updateDirector = await BoardDirector.findOneAndUpdate({
-                _id: structuredObjectForUpdate?._id,
-                BOSP004: structuredObjectForUpdate?.BOSP004
+                _id: structuredObjectForUpdate?._id
             }, {
                 $set: updateDirectorObject
             }, { new: true });
