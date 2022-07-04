@@ -46,9 +46,9 @@ const config = {
   },
   test: {
     mongo: {
-      uri: 'mongodb://localhost/esgapi-dev',
+      uri: 'mongodb://localhost:7777/esgapi-dev',
       options: {
-        debug: true
+        debug: false
       }
     }
   },

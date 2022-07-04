@@ -242,7 +242,6 @@ export const show = ({ params }, res, next) =>
     .catch(next);
 
 export const update = async ({ bodymen: { body }, params }, res, next) => {
-  console.log(body)
   let checkDirectorDin = await BoardDirector.find({ din: body.din });
   if (checkDirectorDin.length > 0) {
     checkDirectorDin.forEach(obj => {
@@ -376,14 +375,22 @@ export const uploadBoardDirector = async (req, res, next) => {
           directorInfo[index].endDateTimeStamp = yearTimeStamp;
           if (directorInfo[index].joiningDate != null) {
             let joiningDate = (new Date(Math.round((directorInfo[index].joiningDate - 25569) * 86400 * 1000)));
-            directorInfo[index].joiningDate = (format(joiningDate, 'dd-MM-yyyy'));
+            var dateStr = (format(joiningDate, 'yyyy-MM-dd'));
+            const date = new Date(dateStr);
+            directorInfo[index].joiningDate = date.toISOString();
           }
-          if (directorInfo[index].cessationDate != null) {
+          if (directorInfo[index].cessationDate >1) {
             let cessationDate = (new Date(Math.round((directorInfo[index].cessationDate - 25569) * 86400 * 1000)));
-            directorInfo[index].cessationDate = (format(cessationDate, 'dd-MM-yyyy'));
+            var dateStr = (format(cessationDate, 'yyyy-MM-dd'));
+            const date = new Date(dateStr); 
+            directorInfo[index].cessationDate = date.toISOString();
+          }else{
+            directorInfo[index].cessationDate = "";
           } if (directorInfo[index].dob != null) {
             let dob = (new Date(Math.round((directorInfo[index].dob - 25569) * 86400 * 1000)));
-            directorInfo[index].dob = (format(dob, 'dd-MM-yyyy'));
+            var dateStr = (format(dob, 'yyyy-MM-dd'));
+            const date = new Date(dateStr);
+            directorInfo[index].dob = date.toISOString();
           }
           let checkDirectorName = await BoardDirector.find({ BOSP004: directorInfo[index].BOSP004 });
           if (checkDirectorName.length > 0) {
