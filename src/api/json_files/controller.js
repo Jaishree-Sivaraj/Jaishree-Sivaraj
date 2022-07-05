@@ -120,7 +120,8 @@ export const payLoadGenerationDetails = async ({ params }, res, next) => {
       response.pendingCompaniesData.push(obj);
     }
   }
-  await JsonFiles.find({ 'type': params.type, 'status': true }).populate({
+  var completedCompaniesIds = await ControversyTasks.find({ canGenerateJson: false, isJsonGenerated: true, status: true }).distinct('companyId')
+  await JsonFiles.find({ 'type': params.type, 'status': true, companyId: { $in: completedCompaniesIds } }).populate({
     path: 'companyId',
     populate: {
       path: 'clientTaxonomyId'
