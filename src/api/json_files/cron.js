@@ -1,5 +1,6 @@
 
 import { JsonFiles } from '.'
+import _ from 'lodash'
 import { CompaniesTasks } from "../companies_tasks";
 import { Controversy } from "../controversy"
 import { ControversyTasks } from "../controversy_tasks"
@@ -227,15 +228,15 @@ async function generateJson(body) {
                         .then(async (updatedJsonfiles) => {
                             await ControversyTasks.updateOne({ companyId: body.companyId }, { $set: { canGenerateJson: false, isJsonGenerated: true } })
                                 .then(async (updatedControversyTasks) => {
-                                    return res.status(200).json({ status: "200", message: body.type.toUpperCase() + " Json generated successfully!" });
+                                    resolve(body.type.toUpperCase() + " Json generated successfully!")
                                 }).catch(function (err) {
-                                    return res.status(500).json({ status: "500", message: err.message ? err.message : `error while updating compines tasks` });
+                                    reject(err.message ? err.message : `errror while updating compines tasks `)
                                 })
                         }).catch(function (err) {
-                            return res.status(500).json({ status: "500", message: err.message ? err.message : `error while updating json files` });
+                            reject(err.message ? err.message : `errror while updating compines tasks `)
                         })
                 }).catch(function (err) {
-                    return res.status(500).json({ status: "500", message: err.message ? err.message : `error while storing json files` });
+                    reject(err.message ? err.message : `errror while updating compines tasks `)
                 });
             }
         } else {
