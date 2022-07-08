@@ -698,7 +698,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
             let memberDetail = {
               memberName: memberName,
               dpCode: item['DP Code'] ? item['DP Code'] : '',
-              response: item[value],
+              response: item[value].replace(/,/g, ''),
               datapointId: datapointObject[0] ? datapointObject[0]?.id : null,
               companyId: taskObject?.companyId ? taskObject?.companyId?.id : null,
               year: item['Fiscal Year'],
@@ -882,8 +882,13 @@ export const uploadBoardMembersData = async (req, res, next) => {
           for (let kmpIndex = 0; kmpIndex < kmpMembersNameList?.length; kmpIndex++) {
             let value = kmpMembersNameList[kmpIndex].split("-");
             let memberDetail = {
+<<<<<<< HEAD
               memberName: value[0],
               response: item[value],
+=======
+              memberName: value,
+              response: item[value].replace(/,/g, ''),
+>>>>>>> 87a223fd41f7c459710047d4278989db072ebf06
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               memberStatus: true,
               datapointId: datapointObject[0] ? datapointObject[0].id : null,
@@ -1060,7 +1065,7 @@ export const uploadBoardMembersData = async (req, res, next) => {
                     if (responseToUpdate.length > 0) {
                       let memberDetail = {
                         memberName: executiveMemberObject.memberName,
-                        response: (responseToUpdate[0].response == '0' || responseToUpdate[0].response == 0 || responseToUpdate[0].response) ? responseToUpdate[0].response : '',
+                        response: (responseToUpdate[0].response == '0' || responseToUpdate[0].response == 0 || responseToUpdate[0].response) ? responseToUpdate[0]?.response?.replace(/,/g, '') : '',
                         sourceName: responseToUpdate[0].sourceName ? responseToUpdate[0].sourceName : '',
                         url: responseToUpdate[0].url ? responseToUpdate[0].url : '',
                         pageNumber: responseToUpdate[0].pageNumber ? responseToUpdate[0].pageNumber : '',
