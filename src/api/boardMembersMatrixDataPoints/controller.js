@@ -882,13 +882,8 @@ export const uploadBoardMembersData = async (req, res, next) => {
           for (let kmpIndex = 0; kmpIndex < kmpMembersNameList?.length; kmpIndex++) {
             let value = kmpMembersNameList[kmpIndex].split("-");
             let memberDetail = {
-<<<<<<< HEAD
-              memberName: value[0],
-              response: item[value],
-=======
               memberName: value,
               response: item[value].replace(/,/g, ''),
->>>>>>> 87a223fd41f7c459710047d4278989db072ebf06
               dpCode: item['DP Code'] ? item['DP Code'] : '',
               memberStatus: true,
               datapointId: datapointObject[0] ? datapointObject[0].id : null,
