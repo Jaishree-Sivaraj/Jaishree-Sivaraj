@@ -2,6 +2,8 @@ import { success, notFound } from '../../services/response/'
 import { ClientMaster } from '.';
 import { Companies } from '../companies';
 import mongoose, { Schema } from 'mongoose';
+import { ClientTaxonomy } from '../clientTaxonomy'
+
 
 export const create = ({ bodymen: { body } }, res, next) =>
   ClientMaster.create(body)
@@ -16,8 +18,30 @@ Companies.find({clientTaxonomyId: mongoose.Types.ObjectId(params.taxonomyId)} )
 .then(success(res))
 .catch(next)
 }
+
+export const getTexonomy = (req,res, next) =>{
+  ClientTaxonomy.find()
+  .then(notFound(res))
+  .then(result => {
+    let texonomyObjects = [];
+    if (result.length > 0) {
+      result.forEach(obj => {
+        texonomyObjects.push({
+          _id: obj._id,
+          taxonomyName: obj.taxonomyName
+        });
+      });
+    }
+    return res.status(200).json({
+      message: 'Texonomy List Retrieved successfully',
+      status: '200',
+      data: texonomyObjects,
+    });
+  })
+  .catch(next)
+  }
+
 export const show = ({ params }, res, next) =>{
-  console.log("gggg")
   ClientMaster.find(params.id)
     .then(notFound(res))
     .then((clientMaster) => clientMaster ? clientMaster.view() : null)
