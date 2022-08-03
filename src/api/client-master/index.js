@@ -7,7 +7,7 @@ import { schema } from './model'
 export ClientMaster, { schema } from './model'
 
 const router = new Router()
-const { clientId, clientName, taxonomy, companyList, country } = schema.tree
+const { clientId, clientName, taxonomy, country,reportsApplicable,status } = schema.tree
 
 /**
  * @api {post} /client-masters Create client master
@@ -27,7 +27,7 @@ const { clientId, clientName, taxonomy, companyList, country } = schema.tree
  */
 router.post('/',
   token({ required: true, roles: ['admin'] }),
-  body({ clientId, clientName, taxonomy, companyList, country }),
+  body({clientId, clientName, taxonomy, country,reportsApplicable,status }),
   create)
 
 /**
@@ -42,7 +42,7 @@ router.post('/',
  * @apiError {Object} 400 Some parameters may contain invalid values.
  * @apiError 401 admin access only.
  */
-router.get('/company-list/:taxonomyId',
+router.get('/',
   token({ required: true, roles: ['admin'] }),
   query(),
   index)
@@ -98,7 +98,7 @@ router.get('/:id',
  */
 router.put('/:id',
   token({ required: true, roles: ['admin'] }),
-  body({ clientId, clientName, taxonomy, companyList, country }),
+  body({ clientId, clientName, taxonomy, country,reportsApplicable,status }),
   update)
 
 /**

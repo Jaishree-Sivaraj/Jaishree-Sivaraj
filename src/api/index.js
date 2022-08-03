@@ -58,6 +58,7 @@ import temp from './temp'
 import boardDirector from './boardDirector'
 import masterCompanies from './masterCompanies'
 import clientMaster from './client-master'
+import resources from './resources'
 
 const router = new Router()
 
@@ -143,7 +144,9 @@ router.use('/temp', temp)
 router.use('/boardDirector', boardDirector)
 router.use('/mastercompanies', masterCompanies)
 router.use('/client-masters', clientMaster)
+router.use('/resources', resources)
 
 router.use('/', (req, res) => res.status(200).json({ message: "Location-Service - CHECK" }))
+
 
 export default router

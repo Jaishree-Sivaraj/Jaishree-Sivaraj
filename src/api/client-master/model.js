@@ -7,12 +7,17 @@ const clientMasterSchema = new Schema({
   clientName: {
     type: String
   },
-  taxonomy: {
-    type: String
+  reporstAplicable:{
+    type:Array
   },
-  companyList: {
-    type: String
+  status:{
+    type:Boolean
   },
+  taxonomy:{
+     type:Schema.ObjectId,
+    ref:'ClientTaxonomy',
+    },
+
   country: {
     type: String
   }
@@ -31,8 +36,9 @@ clientMasterSchema.methods = {
       id: this.id,
       clientId: this.clientId,
       clientName: this.clientName,
-      taxonomy: this.taxonomy,
-      companyList: this.companyList,
+      taxonomy: this.taxonomy ? this.taxonomy.view(full) : null,
+      reporstAplicable:this.reporstAplicable,
+      status:this.status,
       country: this.country,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

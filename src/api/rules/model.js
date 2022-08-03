@@ -13,10 +13,10 @@ const rulesSchema = new Schema({
   parameter: {
     type: String
   },
-  paramterIds:[{
+  paramterIds:{
     type: Schema.ObjectId,
     ref: 'Datapoints',
-  }],
+  },
   categoryId: {
     type: Schema.ObjectId,
     ref: 'Categories',
